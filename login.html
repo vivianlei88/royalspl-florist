@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會員登入 | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
+        .user-icon svg { display: block; }
+        .user-icon:hover { opacity: 0.7; }
+        .cart-icon { display: flex; align-items: center; justify-content: center; }
+        
+        .login-page { max-width: 500px; margin: 0 auto; padding: 60px 20px; }
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-icon { font-size: 60px; margin-bottom: 15px; }
+        .login-title { font-size: 28px; font-weight: 600; margin-bottom: 10px; }
+        .login-subtitle { font-size: 15px; color: #383431; }
+        
+        .tab-buttons { display: flex; gap: 0; margin-bottom: 25px; border-bottom: 2px solid #1A1A1A; }
+        .tab-btn { flex: 1; padding: 15px; background: transparent; border: none; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; color: #383431; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .tab-btn.active { color: #1A1A1A; border-bottom-color: #1A1A1A; }
+        
+        .login-form { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; font-family: inherit; background-color: white; }
+        .form-input:focus { outline: none; border-width: 2px; }
+        .form-error { color: #ff0000; font-size: 13px; margin-top: 5px; display: none; }
+        
+        .login-btn { width: 100%; padding: 15px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; margin-bottom: 15px; transition: all 0.3s; }
+        .login-btn:hover { background-color: #383431; }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .message-box { padding: 12px 15px; border-radius: 5px; font-size: 14px; margin-bottom: 15px; display: none; }
+        .message-box.success { background-color: #e8f5e9; color: #2e7d32; display: block; }
+        .message-box.error { background-color: #ffebee; color: #c62828; display: block; }
+        
+        .back-home { text-align: center; margin-top: 25px; }
+        .back-home-link { font-size: 14px; color: #383431; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="account.html" class="user-icon" aria-label="會員登入">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+                <a href="cart.html" class="cart-icon" aria-label="購物車">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">選單</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="index.html" class="nav-link"><span class="nav-zh">首頁</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item"><a href="login.html" class="nav-link"><span class="nav-zh">會員登入</span><span class="nav-en">MEMBER LOGIN</span></a></div>
+            <div class="nav-item"><a href="cart.html" class="nav-link"><span class="nav-zh">您的花禮</span><span class="nav-en">YOUR GIFTS</span></a></div>
+        </nav>
+    </div>
+
+    <main class="login-page">
+        <div class="login-header">
+            <div class="login-icon">👤</div>
+            <h1 class="login-title">會員中心</h1>
+            <p class="login-subtitle">登入或註冊您的帳戶</p>
+        </div>
+        
+        <div class="tab-buttons">
+            <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">登入</button>
+            <button class="tab-btn" id="registerTab" onclick="switchTab('register')">註冊</button>
+        </div>
+        
+        <div id="messageBox" class="message-box"></div>
+        
+        <!-- 登入表單 -->
+        <div class="login-form" id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="loginEmail" placeholder="請輸入Email">
+            </div>
+            <div class="form-group">
+                <label class="form-label">密碼</label>
+                <input type="password" class="form-input" id="loginPassword" placeholder="請輸入密碼">
+            </div>
+            <button class="login-btn" id="loginBtn" onclick="handleLogin()">登入</button>
+        </div>
+        
+        <!-- 註冊表單 -->
+        <div class="login-form" id="registerForm" style="display:none;">
+            <div class="form-group">
+                <label class="form-label">姓名</label>
+                <input type="text" class="form-input" id="registerName" placeholder="請輸入姓名">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="registerEmail" placeholder="請輸入Email">
+            </div>
+            <div class="form-group">
+                <label class="form-label">密碼</label>
+                <input type="password" class="form-input" id="registerPassword" placeholder="請輸入密碼（至少6位）">
+            </div>
+            <div class="form-group">
+                <label class="form-label">電話</label>
+                <input type="tel" class="form-input" id="registerPhone" placeholder="請輸入電話（選填）">
+            </div>
+            <button class="login-btn" id="registerBtn" onclick="handleRegister()">註冊</button>
+        </div>
+        
+        <div class="back-home">
+            <a href="index.html" class="back-home-link">← 返回首頁</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
+        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+    </footer>
+
+    <script>
+    const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function switchTab(tab) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const messageBox = document.getElementById('messageBox');
+        
+        messageBox.className = 'message-box';
+        messageBox.style.display = 'none';
+        
+        if (tab === 'login') {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+        } else {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+        }
+    }
+
+    function showMessage(type, text) {
+        const box = document.getElementById('messageBox');
+        box.className = 'message-box ' + type;
+        box.textContent = text;
+        box.style.display = 'block';
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!email || !password) {
+            showMessage('error', '請填寫Email和密碼');
+            return;
+        }
+        
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.textContent = '登入中...';
+        
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) throw error;
+            
+            showMessage('success', '✓ 登入成功！');
+            setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+        } catch (err) {
+            showMessage('error', '登入失敗：' + (err.message || '請檢查Email和密碼'));
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '登入';
+        }
+    }
+
+    async function handleRegister() {
+        const name = document.getElementById('registerName').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const phone = document.getElementById('registerPhone').value.trim();
+        
+        if (!name || !email || !password) {
+            showMessage('error', '請填寫姓名、Email和密碼');
+            return;
+        }
+        if (password.length < 6) {
+            showMessage('error', '密碼至少需要6位');
+            return;
+        }
+        
+        const btn = document.getElementById('registerBtn');
+        btn.disabled = true;
+        btn.textContent = '註冊中...';
+        
+        try {
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            
+            if (error) throw error;
+            
+            // 創建用戶資料
+            if (data.user) {
+                const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .insert({ id: data.user.id, name: name, phone: phone });
+                
+                if (profileError) console.error('創建用戶資料失敗:', profileError);
+            }
+            
+            showMessage('success', '✓ 註冊成功！請登入');
+            setTimeout(() => { switchTab('login'); }, 1500);
+        } catch (err) {
+            showMessage('error', '註冊失敗：' + (err.message || '請稍後再試'));
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '註冊';
+        }
+    }
+
+    function updateCartBadge() {
+        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        const badge = document.getElementById('cartBadge');
+        if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; }
+    }
+
+    const menuBtn = document.getElementById('menuBtn');
+    const navCloseBtn = document.getElementById('navCloseBtn');
+    const navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+
+    document.addEventListener('DOMContentLoaded', updateCartBadge);
+    </script>
+</body>
+</html>

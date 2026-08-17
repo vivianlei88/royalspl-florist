@@ -8,11 +8,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <style>
+        .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
+        .user-icon svg { display: block; }
+        .user-icon:hover { opacity: 0.7; }
+        .cart-icon { display: flex; align-items: center; justify-content: center; }
+        
         .cart-page { max-width: 900px; margin: 0 auto; padding: 40px 20px 60px; }
         .cart-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
         .back-link { font-size: 16px; color: #383431; cursor: pointer; }
         .cart-title { font-size: 28px; font-weight: 600; }
-        
         .cart-items { margin-bottom: 30px; }
         .cart-item { display: flex; align-items: center; gap: 20px; padding: 20px; background-color: #F3EFEA; border-radius: 10px; margin-bottom: 15px; }
         .cart-item-emoji { font-size: 50px; }
@@ -25,37 +29,27 @@
         .qty-btn { width: 30px; height: 30px; border: 1px solid #1A1A1A; background: transparent; font-size: 16px; cursor: pointer; border-radius: 3px; }
         .qty-num { font-size: 16px; font-weight: 600; min-width: 25px; text-align: center; }
         .cart-item-remove { background: none; border: none; color: #ff4444; font-size: 20px; cursor: pointer; padding: 5px; }
-        
         .cart-section { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 20px; margin-bottom: 15px; }
         .cart-section-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .cart-section-content { display: none; padding-top: 15px; }
         .cart-section-content.open { display: block; }
-        
         .card-options { display: flex; gap: 10px; flex-wrap: wrap; }
         .card-option { padding: 10px 20px; border: 1px solid #1A1A1A; border-radius: 5px; cursor: pointer; font-size: 14px; background: transparent; font-family: inherit; transition: all 0.2s; }
         .card-option.active { background-color: #1A1A1A; color: #FAF8F5; }
-        
         .card-textarea { width: 100%; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; margin-top: 10px; background-color: white; }
-        
         .form-input { width: 100%; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; margin-bottom: 10px; background-color: white; }
-        
         .coupon-input { display: flex; gap: 10px; }
         .coupon-input input { flex: 1; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; }
         .coupon-btn { padding: 12px 20px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; cursor: pointer; font-family: inherit; }
-        
         .cart-summary { background-color: #1A1A1A; color: #FAF8F5; padding: 30px; border-radius: 10px; margin-top: 30px; }
         .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 16px; }
         .summary-row.total { font-size: 24px; font-weight: 700; border-top: 1px solid rgba(250,248,245,0.3); padding-top: 15px; margin-top: 15px; }
         .checkout-btn { width: 100%; padding: 16px; background-color: #FAF8F5; color: #1A1A1A; border: none; border-radius: 5px; font-size: 18px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 20px; }
         .checkout-btn:hover { background-color: #F3EFEA; }
-        
         .empty-cart { text-align: center; padding: 80px 20px; }
         .empty-cart-emoji { font-size: 80px; margin-bottom: 20px; }
         .empty-cart-text { font-size: 18px; color: #383431; margin-bottom: 30px; }
         .continue-shopping-btn { display: inline-block; padding: 15px 40px; background-color: #1A1A1A; color: #FAF8F5; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: inherit; }
-        
-        .toast { position: fixed; top: 20px; right: 20px; background-color: #1A1A1A; color: #FAF8F5; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transform: translateY(-20px); transition: all 0.3s; }
-        .toast.show { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
@@ -67,7 +61,10 @@
                 <p class="logo-subtext">HONG KONG</p>
             </a>
             <div class="header-actions">
-                <a href="cart.html" class="cart-icon">
+                <a href=account.html" class="user-icon" aria-label="會員登入">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+                <a href="cart.html" class="cart-icon" aria-label="購物車">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     <span class="cart-badge" id="cartBadge">0</span>
                 </a>
@@ -83,6 +80,7 @@
         <nav class="nav-drawer-content">
             <div class="nav-item"><a href="index.html" class="nav-link"><span class="nav-zh">首頁</span><span class="nav-en">HOME</span></a></div>
             <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item"><a href="login.html" class="nav-link"><span class="nav-zh">會員登入</span><span class="nav-en">MEMBER LOGIN</span></a></div>
             <div class="nav-item"><a href="cart.html" class="nav-link"><span class="nav-zh">您的花禮</span><span class="nav-en">YOUR GIFTS</span></a></div>
         </nav>
     </div>
@@ -92,202 +90,105 @@
             <a href="products.html" class="back-link">← 繼續選購</a>
             <h1 class="cart-title">您的花禮</h1>
         </div>
-
         <div id="cartContent"></div>
     </main>
 
     <footer class="footer">
-        <div class="footer-slogan">
-            <p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p>
-            <p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p>
-        </div>
-        <div class="footer-bottom">
-            <a href="#" class="privacy-link">私隱政策 Privacy Policy</a>
-            <p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p>
-        </div>
+        <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
+        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
     <script>
     let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
-    let cardType = 'none'; // 'none' / 'yes' / 'blank'
+    let cardType = 'none';
     let cardMessage = '';
 
-    function saveCart() {
-        localStorage.setItem('royalspl_cart', JSON.stringify(cart));
-        updateCartBadge();
-    }
-
-    function updateCartBadge() {
-        const badge = document.getElementById('cartBadge');
-        if (badge) {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            badge.textContent = totalItems;
-            badge.style.display = totalItems > 0 ? 'flex' : 'none';
-        }
-    }
-
+    function saveCart() { localStorage.setItem('royalspl_cart', JSON.stringify(cart)); updateCartBadge(); }
+    function updateCartBadge() { const badge = document.getElementById('cartBadge'); if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; } }
     function renderCart() {
         const container = document.getElementById('cartContent');
         if (!container) return;
-
         if (cart.length === 0) {
-            container.innerHTML = `
-                <div class="empty-cart">
-                    <p class="empty-cart-emoji">🛒</p>
-                    <p class="empty-cart-text">您的花禮清單是空的</p>
-                    <a href="products.html" class="continue-shopping-btn">去選購花藝</a>
-                </div>
-            `;
+            container.innerHTML = `<div class="empty-cart"><p class="empty-cart-emoji">🛒</p><p class="empty-cart-text">您的花禮清單是空的</p><a href="products.html" class="continue-shopping-btn">去選購花藝</a></div>`;
             return;
         }
-
         let itemsHtml = cart.map((item, index) => {
             const addonsTotal = item.addons.reduce((sum, a) => sum + a.price, 0);
             const itemTotal = (item.price + addonsTotal) * item.quantity;
-            const addonsHtml = item.addons.length > 0 ? 
-                `<p class="cart-item-addons">+ ${item.addons.map(a => a.name).join(', ')}</p>` : '';
-            
-            return `
-                <div class="cart-item">
-                    <span class="cart-item-emoji">${item.emoji}</span>
-                    <div class="cart-item-info">
-                        <p class="cart-item-name">${item.name}</p>
-                        <p class="cart-item-name-en">${item.nameEn}</p>
-                        ${addonsHtml}
-                        <p class="cart-item-price">HK$${itemTotal}</p>
-                    </div>
-                    <div class="cart-item-quantity">
-                        <button class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
-                        <span class="qty-num">${item.quantity}</span>
-                        <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
-                    </div>
-                    <button class="cart-item-remove" onclick="removeItem(${index})">✕</button>
+            const addonsHtml = item.addons.length > 0 ? `<p class="cart-item-addons">+ ${item.addons.map(a => a.name).join(', ')}</p>` : '';
+            return `<div class="cart-item">
+                <span class="cart-item-emoji">${item.emoji}</span>
+                <div class="cart-item-info">
+                    <p class="cart-item-name">${item.name}</p>
+                    <p class="cart-item-name-en">${item.nameEn}</p>
+                    ${addonsHtml}
+                    <p class="cart-item-price">HK$${itemTotal}</p>
                 </div>
-            `;
+                <div class="cart-item-quantity">
+                    <button class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
+                    <span class="qty-num">${item.quantity}</span>
+                    <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                </div>
+                <button class="cart-item-remove" onclick="removeItem(${index})">✕</button>
+            </div>`;
         }).join('');
-
-        const subtotal = cart.reduce((sum, item) => {
-            const addonsTotal = item.addons.reduce((a, addon) => a + addon.price, 0);
-            return sum + (item.price + addonsTotal) * item.quantity;
-        }, 0);
-
-        // 心意卡填写框是否展开：cardType 为 yes 或 blank 时自动展开
+        const subtotal = cart.reduce((sum, item) => { const addonsTotal = item.addons.reduce((a, addon) => a + addon.price, 0); return sum + (item.price + addonsTotal) * item.quantity; }, 0);
         const cardSectionOpen = cardType === 'yes' || cardType === 'blank';
         const showTextarea = cardType === 'yes' || cardType === 'blank';
-
         container.innerHTML = `
             <div class="cart-items">${itemsHtml}</div>
-
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">
-                    需要心意卡嗎？
-                    <span>${cardSectionOpen ? '−' : '+'}</span>
-                </div>
+                <div class="cart-section-title" onclick="toggleSection(this)">需要心意卡嗎？<span>${cardSectionOpen ? '−' : '+'}</span></div>
                 <div class="cart-section-content ${cardSectionOpen ? 'open' : ''}">
                     <div class="card-options">
                         <button class="card-option ${cardType === 'yes' ? 'active' : ''}" onclick="setCardType('yes')">需要</button>
                         <button class="card-option ${cardType === 'none' ? 'active' : ''}" onclick="setCardType('none')">不需要</button>
                         <button class="card-option ${cardType === 'blank' ? 'active' : ''}" onclick="setCardType('blank')">需要空白心意卡</button>
                     </div>
-                    ${showTextarea ? `
-                        <textarea class="card-textarea" placeholder="請輸入祝福語..." oninput="cardMessage = this.value">${cardMessage}</textarea>
-                    ` : ''}
+                    ${showTextarea ? `<textarea class="card-textarea" placeholder="請輸入祝福語..." oninput="cardMessage = this.value">${cardMessage}</textarea>` : ''}
                 </div>
             </div>
-
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">
-                    訂購人聯絡方法（選填）
-                    <span>+</span>
-                </div>
+                <div class="cart-section-title" onclick="toggleSection(this)">訂購人聯絡方法（選填）<span>+</span></div>
                 <div class="cart-section-content">
                     <input type="text" class="form-input" placeholder="姓名">
                     <input type="email" class="form-input" placeholder="Email">
                     <input type="tel" class="form-input" placeholder="電話 / WhatsApp">
                 </div>
             </div>
-
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">
-                    特別事項（選填）
-                    <span>+</span>
-                </div>
-                <div class="cart-section-content">
-                    <textarea class="card-textarea" placeholder="請輸入特別事項..."></textarea>
-                </div>
+                <div class="cart-section-title" onclick="toggleSection(this)">特別事項（選填）<span>+</span></div>
+                <div class="cart-section-content"><textarea class="card-textarea" placeholder="請輸入特別事項..."></textarea></div>
             </div>
-
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">
-                    優惠碼
-                    <span>+</span>
-                </div>
-                <div class="cart-section-content">
-                    <div class="coupon-input">
-                        <input type="text" placeholder="輸入優惠碼">
-                        <button class="coupon-btn">套用</button>
-                    </div>
-                </div>
+                <div class="cart-section-title" onclick="toggleSection(this)">優惠碼<span>+</span></div>
+                <div class="cart-section-content"><div class="coupon-input"><input type="text" placeholder="輸入優惠碼"><button class="coupon-btn">套用</button></div></div>
             </div>
-
             <div class="cart-summary">
-                <div class="summary-row">
-                    <span>商品小計</span>
-                    <span>HK$${subtotal}</span>
-                </div>
-                <div class="summary-row">
-                    <span>運費</span>
-                    <span>結帳時計算</span>
-                </div>
-                <div class="summary-row total">
-                    <span>總計</span>
-                    <span>HK$${subtotal}</span>
-                </div>
+                <div class="summary-row"><span>商品小計</span><span>HK$${subtotal}</span></div>
+                <div class="summary-row"><span>運費</span><span>結帳時計算</span></div>
+                <div class="summary-row total"><span>總計</span><span>HK$${subtotal}</span></div>
                 <button class="checkout-btn" onclick="goCheckout()">前往結帳</button>
             </div>
         `;
     }
-
-    function changeQty(index, delta) {
-        cart[index].quantity = Math.max(1, cart[index].quantity + delta);
-        saveCart();
-        renderCart();
-    }
-
-    function removeItem(index) {
-        cart.splice(index, 1);
-        saveCart();
-        renderCart();
-        showToast('商品已移除');
-    }
-
+    function changeQty(index, delta) { cart[index].quantity = Math.max(1, cart[index].quantity + delta); saveCart(); renderCart(); }
+    function removeItem(index) { cart.splice(index, 1); saveCart(); renderCart(); }
     function setCardType(type) {
         cardType = type;
-        // 不需要重新渲染整个购物车，只更新心意卡部分
-        const sectionTitle = document.querySelector('.cart-section-title');
         const cardOptions = document.querySelectorAll('.card-option');
         const cardContent = document.querySelector('.cart-section-content');
         const existingTextarea = cardContent ? cardContent.querySelector('.card-textarea') : null;
-        
-        // 更新选项高亮
         cardOptions.forEach(btn => {
             btn.classList.remove('active');
-            if (btn.textContent === type || 
-                (type === 'yes' && btn.textContent === '需要') ||
-                (type === 'none' && btn.textContent === '不需要') ||
-                (type === 'blank' && btn.textContent === '需要空白心意卡')) {
-                btn.classList.add('active');
-            }
+            if ((type === 'yes' && btn.textContent === '需要') || (type === 'none' && btn.textContent === '不需要') || (type === 'blank' && btn.textContent === '需要空白心意卡')) { btn.classList.add('active'); }
         });
-        
-        // 更新展开状态
         const shouldOpen = type === 'yes' || type === 'blank';
+        const sectionTitle = document.querySelector('.cart-section-title');
         if (shouldOpen) {
             cardContent.classList.add('open');
             const span = sectionTitle.querySelector('span');
             if (span) span.textContent = '−';
-            
-            // 如果没有textarea，添加一个
             if (!existingTextarea) {
                 const textarea = document.createElement('textarea');
                 textarea.className = 'card-textarea';
@@ -300,48 +201,26 @@
             cardContent.classList.remove('open');
             const span = sectionTitle.querySelector('span');
             if (span) span.textContent = '+';
-            
-            // 移除textarea
-            if (existingTextarea) {
-                existingTextarea.remove();
-            }
+            if (existingTextarea) { existingTextarea.remove(); }
         }
     }
-
-    function toggleSection(element) {
-        const content = element.nextElementSibling;
-        content.classList.toggle('open');
-        const span = element.querySelector('span');
-        if (span) span.textContent = content.classList.contains('open') ? '−' : '+';
-    }
-
+    function toggleSection(element) { const content = element.nextElementSibling; content.classList.toggle('open'); const span = element.querySelector('span'); if (span) span.textContent = content.classList.contains('open') ? '−' : '+'; }
     function goCheckout() {
         if (cart.length === 0) {
-            showToast('購物車為空，請先添加商品');
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;';
+            toast.textContent = '購物車為空，請先添加商品';
+            document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500);
             return;
         }
         window.location.href = 'checkout.html';
     }
-
-    function showToast(message) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.classList.add('show'), 10);
-        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 2500);
-    }
-
     const menuBtn = document.getElementById('menuBtn');
     const navCloseBtn = document.getElementById('navCloseBtn');
     const navDrawer = document.getElementById('navDrawer');
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        updateCartBadge();
-        renderCart();
-    });
+    document.addEventListener('DOMContentLoaded', function() { updateCartBadge(); renderCart(); });
     </script>
 </body>
 </html>

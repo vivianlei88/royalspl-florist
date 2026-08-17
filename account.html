@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會員中心 | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
+        .user-icon svg { display: block; }
+        .user-icon:hover { opacity: 0.7; }
+        .cart-icon { display: flex; align-items: center; justify-content: center; }
+        
+        .account-page { max-width: 800px; margin: 0 auto; padding: 40px 20px 60px; }
+        .account-header { margin-bottom: 30px; }
+        .account-title { font-size: 28px; font-weight: 600; }
+        
+        .account-card { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 25px; margin-bottom: 20px; }
+        .account-card-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        
+        .profile-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(26,26,26,0.08); }
+        .profile-label { font-size: 14px; font-weight: 600; }
+        .profile-value { font-size: 14px; color: #383431; }
+        
+        .logout-btn { width: 100%; padding: 15px; background-color: #ff4444; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 20px; }
+        .logout-btn:hover { background-color: #cc0000; }
+        
+        .not-logged-in { text-align: center; padding: 60px 20px; }
+        .not-logged-in-emoji { font-size: 60px; margin-bottom: 20px; }
+        .not-logged-in-text { font-size: 16px; color: #383431; margin-bottom: 25px; }
+        .login-link-btn { display: inline-block; padding: 14px 35px; background-color: #1A1A1A; color: #FAF8F5; border-radius: 5px; font-size: 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="account.html" class="user-icon" aria-label="會員中心">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+                <a href="cart.html" class="cart-icon" aria-label="購物車">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">選單</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="index.html" class="nav-link"><span class="nav-zh">首頁</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item"><a href="account.html" class="nav-link"><span class="nav-zh">會員中心</span><span class="nav-en">ACCOUNT</span></a></div>
+            <div class="nav-item"><a href="cart.html" class="nav-link"><span class="nav-zh">您的花禮</span><span class="nav-en">YOUR GIFTS</span></a></div>
+        </nav>
+    </div>
+
+    <main class="account-page">
+        <div class="account-header">
+            <h1 class="account-title">會員中心</h1>
+        </div>
+        <div id="accountContent">
+            <div style="text-align:center;padding:40px;">載入中...</div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
+        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+    </footer>
+
+    <script>
+    const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function loadAccount() {
+        const container = document.getElementById('accountContent');
+        
+        try {
+            const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+            
+            if (authError || !user) {
+                container.innerHTML = `
+                    <div class="not-logged-in">
+                        <p class="not-logged-in-emoji">👤</p>
+                        <p class="not-logged-in-text">您尚未登入</p>
+                        <a href="login.html" class="login-link-btn">前往登入</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('user_profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+            
+            const name = profile && profile.name ? profile.name : '未設定';
+            const phone = profile && profile.phone ? profile.phone : '未設定';
+            const tier = profile && profile.tier ? profile.tier : '一般';
+            const points = profile && profile.points ? profile.points : 0;
+            
+            container.innerHTML = `
+                <div class="account-card">
+                    <h2 class="account-card-title">個人資訊</h2>
+                    <div class="profile-row"><span class="profile-label">Email</span><span class="profile-value">${user.email}</span></div>
+                    <div class="profile-row"><span class="profile-label">姓名</span><span class="profile-value">${name}</span></div>
+                    <div class="profile-row"><span class="profile-label">電話</span><span class="profile-value">${phone}</span></div>
+                    <div class="profile-row"><span class="profile-label">會員等級</span><span class="profile-value">${tier}</span></div>
+                    <div class="profile-row"><span class="profile-label">積分</span><span class="profile-value">${points}</span></div>
+                </div>
+                
+                <div class="account-card">
+                    <h2 class="account-card-title">我的訂單</h2>
+                    <p style="font-size:14px;color:#383431;">訂單功能即將上線</p>
+                </div>
+                
+                <button class="logout-btn" onclick="handleLogout()">登出</button>
+            `;
+        } catch (err) {
+            console.error('載入會員中心失敗:', err);
+            container.innerHTML = '<div style="text-align:center;padding:40px;">❌ 載入失敗</div>';
+        }
+    }
+
+    async function handleLogout() {
+        await supabaseClient.auth.signOut();
+        window.location.href = 'index.html';
+    }
+
+    function updateCartBadge() {
+        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        const badge = document.getElementById('cartBadge');
+        if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; }
+    }
+
+    const menuBtn = document.getElementById('menuBtn');
+    const navCloseBtn = document.getElementById('navCloseBtn');
+    const navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAccount();
+        updateCartBadge();
+    });
+    </script>
+</body>
+</html>
