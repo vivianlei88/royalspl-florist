@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品詳情 | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        .detail-page { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px; }
+        .detail-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 30px; }
+        
+        .detail-image-area { background-color: #F3EFEA; border-radius: 10px; display: flex; align-items: center; justify-content: center; min-height: 500px; }
+        .detail-emoji { font-size: 200px; }
+        
+        .detail-info-area { padding: 20px 0; }
+        .detail-subtitle-en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; color: #383431; }
+        .detail-title-zh { font-size: 40px; font-weight: 500; font-style: italic; margin: 10px 0; }
+        .detail-price { font-size: 32px; font-weight: 700; margin: 20px 0; }
+        .detail-status { display: inline-block; padding: 6px 16px; font-size: 14px; font-weight: 600; border-radius: 3px; margin-bottom: 20px; }
+        .status-in-stock { background-color: #1A1A1A; color: #FAF8F5; }
+        .status-pre-order { border: 1px solid #1A1A1A; color: #1A1A1A; }
+        .detail-description { font-size: 16px; color: #383431; line-height: 1.8; margin-bottom: 25px; }
+        
+        .detail-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
+        .detail-tag { padding: 6px 14px; border: 1px solid #1A1A1A; border-radius: 15px; font-size: 13px; }
+        
+        .scent-notes { margin-bottom: 25px; }
+        .scent-label { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+        .scent-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .scent-pill { padding: 6px 14px; background-color: #F3EFEA; border-radius: 15px; font-size: 13px; }
+        
+        .specs-matrix { border-top: 1px solid rgba(26,26,26,0.15); padding-top: 20px; margin-bottom: 25px; }
+        .spec-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(26,26,26,0.08); }
+        .spec-label { font-size: 14px; font-weight: 600; }
+        .spec-value { font-size: 14px; color: #383431; }
+        
+        .addon-section { margin-bottom: 25px; }
+        .addon-label { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+        .addon-item { display: flex; align-items: center; gap: 12px; padding: 12px; background-color: #F3EFEA; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+        .addon-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .addon-emoji { font-size: 30px; }
+        .addon-info { flex: 1; }
+        .addon-name { font-size: 14px; font-weight: 600; }
+        .addon-price { font-size: 13px; color: #383431; }
+        
+        .quantity-selector { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .qty-btn { width: 40px; height: 40px; border: 1px solid #1A1A1A; background: transparent; font-size: 20px; cursor: pointer; border-radius: 5px; }
+        .qty-display { font-size: 20px; font-weight: 600; min-width: 40px; text-align: center; }
+        
+        .purchase-actions { display: flex; flex-direction: column; gap: 12px; }
+        .add-to-cart-btn { width: 100%; padding: 16px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit; }
+        .add-to-cart-btn:hover { background-color: #383431; }
+        .buy-now-btn { width: 100%; padding: 16px; background-color: transparent; border: 2px solid #1A1A1A; color: #1A1A1A; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .buy-now-btn:hover { background-color: #F3EFEA; }
+        
+        .total-display { font-size: 24px; font-weight: 700; text-align: right; margin: 20px 0; }
+        
+        .detail-seo-section { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(26,26,26,0.15); }
+        .seo-collapsible { margin-bottom: 10px; }
+        .seo-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #F3EFEA; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        .seo-content { display: none; padding: 15px; background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 0 0 5px 5px; font-size: 14px; color: #383431; line-height: 1.8; }
+        .seo-content.open { display: block; }
+        
+        .toast { position: fixed; top: 20px; right: 20px; background-color: #1A1A1A; color: #FAF8F5; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transform: translateY(-20px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            .detail-container { grid-template-columns: 1fr; gap: 30px; }
+            .detail-image-area { min-height: 300px; }
+            .detail-emoji { font-size: 120px; }
+            .detail-title-zh { font-size: 30px; }
+            .detail-price { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="cart.html" class="cart-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">選單</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="index.html" class="nav-link"><span class="nav-zh">首頁</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item"><a href="cart.html" class="nav-link"><span class="nav-zh">購物車</span><span class="nav-en">CART</span></a></div>
+        </nav>
+    </div>
+
+    <main class="detail-page">
+        <div style="margin-bottom: 10px;">
+            <a href="products.html" style="font-size: 14px; color: #383431;">← 返回所有花藝</a>
+        </div>
+        <div class="section-header" style="padding: 0;">
+            <span class="section-subtitle-en" id="detailSubtitleEn">PRODUCT DETAILS</span>
+            <h2 class="section-title-zh" style="font-size: 28px;">商品詳情</h2>
+        </div>
+        
+        <div class="detail-container">
+            <div class="detail-image-area">
+                <span class="detail-emoji" id="detailEmoji">🌸</span>
+            </div>
+            
+            <div class="detail-info-area">
+                <p class="detail-subtitle-en" id="detailNameEn">Crimson Peony Bouquet</p>
+                <h1 class="detail-title-zh" id="detailNameZh">緋芍集</h1>
+                <div class="detail-status" id="detailStatus">[現貨]</div>
+                <p class="detail-price" id="detailPrice">HK$688</p>
+                <p class="detail-description" id="detailDescription"></p>
+                
+                <div class="detail-tags" id="detailTags"></div>
+                
+                <div class="scent-notes">
+                    <p class="scent-label">SCENT NOTES 香氣筆記</p>
+                    <div class="scent-pills" id="scentPills"></div>
+                </div>
+                
+                <div class="specs-matrix" id="specsMatrix"></div>
+                
+                <div class="addon-section">
+                    <p class="addon-label">精選加購配件</p>
+                    <label class="addon-item">
+                        <input type="checkbox" id="addonVase" value="180" onchange="updateTotal()">
+                        <span class="addon-emoji">🏺</span>
+                        <div class="addon-info">
+                            <p class="addon-name">經典極簡玻璃花瓶</p>
+                            <p class="addon-price">+HK$180</p>
+                        </div>
+                    </label>
+                    <label class="addon-item">
+                        <input type="checkbox" id="addonPreservative" value="30" onchange="updateTotal()">
+                        <span class="addon-emoji">💧</span>
+                        <div class="addon-info">
+                            <p class="addon-name">荷蘭進口植物保鮮劑</p>
+                            <p class="addon-price">+HK$30</p>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="quantity-selector">
+                    <button class="qty-btn" onclick="changeQuantity(-1)">−</button>
+                    <span class="qty-display" id="qtyDisplay">1</span>
+                    <button class="qty-btn" onclick="changeQuantity(1)">+</button>
+                </div>
+                
+                <div class="total-display" id="totalDisplay">總計：HK$688</div>
+                
+                <div class="purchase-actions">
+                    <button class="add-to-cart-btn" onclick="handleAddToCart()">加入購物車</button>
+                    <button class="buy-now-btn" onclick="handleBuyNow()">立即購買</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detail-seo-section">
+            <div class="seo-collapsible">
+                <div class="seo-header" onclick="toggleSeo(this)">🌿 花材護理知識 <span>+</span></div>
+                <div class="seo-content">
+                    鮮花護理建議：<br>
+                    1. 每日更換清水，保持水質清潔<br>
+                    2. 斜剪花腳45度，增加吸水面積<br>
+                    3. 避免陽光直射，放置陰涼通風處<br>
+                    4. 定期清除枯萎花瓣和葉片
+                </div>
+            </div>
+            <div class="seo-collapsible">
+                <div class="seo-header" onclick="toggleSeo(this)">🔒 香港隱私條例 <span>+</span></div>
+                <div class="seo-content">
+                    根據香港《個人資料(私隱)條例》，我們承諾：<br>
+                    1. 收集的個人資料僅用於訂單處理和配送<br>
+                    2. 不會將您的資料出售或分享給第三方<br>
+                    3. 您有權查閱和更正您的個人資料
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-slogan">
+            <p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p>
+            <p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p>
+        </div>
+        <div class="footer-bottom">
+            <a href="#" class="privacy-link">私隱政策 Privacy Policy</a>
+            <p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    // ===== 商品數據（簡化版） =====
+    const products = [
+        { id: 1, name_zh: '緋芍集', name_en: 'Crimson Peony Bouquet', price: 688, emoji: '🌸', category: '招牌系列', description: '精選緋紅色芍藥，搭配綠葉，象徵富貴吉祥，適合各種重要場合。', tags: ['戀愛','生日','芍藥','經典風','HK$300-600','即日配送','可加賀卡'], scentNotes: ['古典玫瑰','荔枝','粉紅胡椒'], stock: '現貨', deliveryDays: 1, specs: { flowers: '緋紅芍藥 × 9', origin: '荷蘭 · 阿姆斯特丹', size: '高 45cm × 寬 35cm' } },
+        { id: 2, name_zh: '晨露玫瑰', name_en: 'Morning Dew Roses', price: 488, emoji: '🌹', category: '玫瑰花', description: '12支精選紅玫瑰，清晨採摘，新鮮直送，經典浪漫之選。', tags: ['戀愛','情人節','玫瑰','經典風','HK$300-600','即日配送','可加賀卡'], scentNotes: ['大馬士革玫瑰','晨露'], stock: '現貨', deliveryDays: 1, specs: { flowers: '紅玫瑰 × 12', origin: '肯亞 · 奈瓦沙', size: '高 40cm × 寬 30cm' } },
+        { id: 3, name_zh: '月光百合', name_en: 'Moonlight Lilies', price: 528, emoji: '🌷', category: '百合花', description: '優雅白色百合，清新脫俗，適合各種場合，純潔高貴。', tags: ['婚禮','探病','百合','韓式','HK$300-600','香港全境配送','可加賀卡'], scentNotes: ['白百合','茉莉'], stock: '現貨', deliveryDays: 1, specs: { flowers: '白百合 × 6', origin: '日本 · 鹿兒島', size: '高 50cm × 寬 30cm' } },
+        { id: 4, name_zh: '向日葵花束', name_en: 'Sunflower Bouquet', price: 398, emoji: '🌻', category: '向日葵', description: '陽光燦爛的向日葵，充滿活力與希望。', tags: ['生日','畢業季','向日葵','經典風','HK$300內','即日配送'], scentNotes: ['向日葵','青草'], stock: '現貨', deliveryDays: 1, specs: { flowers: '向日葵 × 8', origin: '中國 · 雲南', size: '高 40cm × 寬 35cm' } },
+        { id: 5, name_zh: '鬱金香花束', name_en: 'Tulip Bouquet', price: 458, emoji: '💐', category: '鬱金香', description: '多彩鬱金香，優雅大方，荷蘭進口。', tags: ['戀愛','生日','鬱金香','韓式','HK$300-600','香港全境配送'], scentNotes: ['鬱金香','清新'], stock: '現貨', deliveryDays: 1, specs: { flowers: '鬱金香 × 15', origin: '荷蘭 · 阿姆斯特丹', size: '高 35cm × 寬 30cm' } },
+        { id: 6, name_zh: '蘭花盆栽', name_en: 'Orchid Plant', price: 888, emoji: '🪴', category: '蘭花', description: '高貴蘭花盆栽，適合商務送禮。', tags: ['商務送禮','開張','蘭花','經典風','HK$800+','香港全境配送'], scentNotes: ['蘭花','木質'], stock: '現貨', deliveryDays: 2, specs: { flowers: '蝴蝶蘭 × 1', origin: '台灣 · 台南', size: '高 60cm × 寬 40cm' } },
+        { id: 7, name_zh: '粉紅玫瑰', name_en: 'Pink Roses', price: 428, emoji: '🌸', category: '玫瑰花', description: '12支粉玫瑰，溫柔浪漫。', tags: ['戀愛','情人節','玫瑰','韓式','HK$300-600','即日配送','可加賀卡'], scentNotes: ['粉玫瑰','蜜桃'], stock: '現貨', deliveryDays: 1, specs: { flowers: '粉玫瑰 × 12', origin: '肯亞 · 奈瓦沙', size: '高 40cm × 寬 30cm' } },
+        { id: 8, name_zh: '日式禪意花禮', name_en: 'Japanese Zen Floral Gift', price: 688, emoji: '🎋', category: '日式花禮', description: '日式極簡風格，禪意十足。', tags: ['商務送禮','喬遷','進口鮮花','日式極簡','HK$300-600','香港全境配送'], scentNotes: ['松木','苔蘚'], stock: '預訂', deliveryDays: 3, specs: { flowers: '進口花材混合', origin: '日本 · 京都', size: '高 45cm × 寬 30cm' } },
+        { id: 9, name_zh: '永生花盒', name_en: 'Preserved Flower Box', price: 1280, emoji: '🎁', category: '永生花', description: '精緻永生花盒，可保存2-3年。', tags: ['紀念日','婚禮','玫瑰','永生花','HK$1200+','香港全境配送','可加賀卡'], scentNotes: ['玫瑰','薰衣草'], stock: '現貨', deliveryDays: 1, specs: { flowers: '永生玫瑰 × 9', origin: '日本 · 東京', size: '高 20cm × 寬 25cm' } },
+        { id: 10, name_zh: '康乃馨花束', name_en: 'Carnation Bouquet', price: 298, emoji: '🌺', category: '康乃馨', description: '溫馨康乃馨，送給母親。', tags: ['母親節','探病','康乃馨','經典風','HK$300內','即日配送','可加賀卡'], scentNotes: ['康乃馨','丁香'], stock: '現貨', deliveryDays: 1, specs: { flowers: '康乃馨 × 18', origin: '中國 · 昆明', size: '高 35cm × 寬 30cm' } },
+        { id: 11, name_zh: '法式田園花籃', name_en: 'French Provincial Basket', price: 788, emoji: '🧺', category: '法式田園', description: '法式田園風格花籃。', tags: ['生日','喬遷','進口鮮花','法式田園','HK$800+','香港全境配送'], scentNotes: ['薰衣草','雛菊'], stock: '預訂', deliveryDays: 3, specs: { flowers: '混合花材', origin: '法國 · 普羅旺斯', size: '高 40cm × 寬 35cm' } },
+        { id: 12, name_zh: '牡丹花束', name_en: 'Peony Bouquet', price: 888, emoji: '💮', category: '芍藥牡丹', description: '富貴牡丹，花中之王。', tags: ['商務送禮','開張','芍藥','經典風','HK$800+','香港全境配送'], scentNotes: ['牡丹','檀香'], stock: '現貨', deliveryDays: 2, specs: { flowers: '牡丹 × 8', origin: '中國 · 洛陽', size: '高 50cm × 寬 40cm' } },
+        { id: 13, name_zh: '滿天星花束', name_en: "Baby's Breath Bouquet", price: 268, emoji: '✨', category: '滿天星', description: '清新滿天星，簡約浪漫。', tags: ['戀愛','生日','滿天星','韓式','HK$300內','即日配送'], scentNotes: ['滿天星','清新'], stock: '現貨', deliveryDays: 1, specs: { flowers: '滿天星 × 10', origin: '中國 · 雲南', size: '高 35cm × 寬 25cm' } },
+        { id: 14, name_zh: '聖誕花環', name_en: 'Christmas Wreath', price: 688, emoji: '🎄', category: '節慶花禮', description: '節日限定聖誕花環。', tags: ['聖誕節','進口鮮花','經典風','HK$300-600','香港全境配送'], scentNotes: ['松針','肉桂'], stock: '預訂', deliveryDays: 5, specs: { flowers: '松枝 + 裝飾', origin: '加拿大 · 溫哥華', size: '直徑 40cm' } },
+        { id: 15, name_zh: '荷花禪意花藝', name_en: 'Lotus Zen Arrangement', price: 988, emoji: '🪷', category: '荷花', description: '清雅荷花，禪意十足。', tags: ['商務送禮','開張','荷花','日式極簡','HK$800+','香港全境配送'], scentNotes: ['荷花','蓮葉'], stock: '預訂', deliveryDays: 4, specs: { flowers: '荷花 × 3', origin: '中國 · 杭州', size: '高 55cm × 寬 30cm' } },
+        { id: 16, name_zh: '畢業花束', name_en: 'Graduation Bouquet', price: 388, emoji: '🎓', category: '畢業花禮', description: '慶祝畢業的繽紛花束。', tags: ['畢業季','生日','向日葵','韓式','HK$300-600','即日配送','可加賀卡'], scentNotes: ['向日葵','雛菊'], stock: '現貨', deliveryDays: 1, specs: { flowers: '向日葵 + 雛菊', origin: '中國 · 雲南', size: '高 40cm × 寬 30cm' } },
+        { id: 17, name_zh: '婚禮手捧花', name_en: 'Wedding Bouquet', price: 1280, emoji: '💐', category: '婚禮花禮', description: '精緻婚禮手捧花。', tags: ['婚禮','紀念日','玫瑰','經典風','HK$1200+','香港全境配送'], scentNotes: ['白玫瑰','鈴蘭'], stock: '預訂', deliveryDays: 7, specs: { flowers: '白玫瑰 + 鈴蘭', origin: '荷蘭 · 阿姆斯特丹', size: '高 30cm × 寬 25cm' } },
+        { id: 18, name_zh: '中秋花禮', name_en: 'Mid-Autumn Floral Gift', price: 588, emoji: '🏮', category: '節慶花禮', description: '中秋佳節限定花禮。', tags: ['中秋節','進口鮮花','經典風','HK$300-600','香港全境配送'], scentNotes: ['桂花','菊花'], stock: '現貨', deliveryDays: 2, specs: { flowers: '菊花 + 桂花', origin: '中國 · 廣州', size: '高 40cm × 寬 30cm' } },
+        { id: 19, name_zh: '進口藍玫瑰', name_en: 'Imported Blue Roses', price: 1580, emoji: '💙', category: '進口鮮花', description: '稀有進口藍玫瑰，限量發售。', tags: ['戀愛','紀念日','玫瑰','進口鮮花','HK$1200+','香港全境配送','可加賀卡'], scentNotes: ['藍玫瑰','海洋'], stock: '預訂', deliveryDays: 5, specs: { flowers: '藍玫瑰 × 12', origin: '日本 · 東京', size: '高 45cm × 寬 35cm' } },
+        { id: 20, name_zh: '企業周年花籃', name_en: 'Corporate Anniversary Basket', price: 1880, emoji: '🏢', category: '商務花禮', description: '企業周年慶典花籃。', tags: ['商務送禮','企業周年','進口鮮花','經典風','HK$1200+','香港全境配送'], scentNotes: ['百合','蘭花'], stock: '預訂', deliveryDays: 5, specs: { flowers: '混合高級花材', origin: '多國進口', size: '高 80cm × 寬 60cm' } }
+    ];
+
+    let currentProduct = null;
+    let quantity = 1;
+
+    function getUrlParam(param) {
+        return new URLSearchParams(window.location.search).get(param);
+    }
+
+    function loadProduct() {
+        const id = getUrlParam('id');
+        currentProduct = products.find(p => p.id === parseInt(id));
+        if (!currentProduct) { window.location.href = 'products.html'; return; }
+        
+        document.getElementById('detailSubtitleEn').textContent = currentProduct.name_en.toUpperCase();
+        document.getElementById('detailNameEn').textContent = currentProduct.name_en;
+        document.getElementById('detailNameZh').textContent = currentProduct.name_zh;
+        document.getElementById('detailEmoji').textContent = currentProduct.emoji;
+        document.getElementById('detailPrice').textContent = `HK$${currentProduct.price}`;
+        document.getElementById('detailDescription').textContent = currentProduct.description;
+        
+        const statusEl = document.getElementById('detailStatus');
+        if (currentProduct.stock === '現貨') {
+            statusEl.textContent = '[現貨]';
+            statusEl.className = 'detail-status status-in-stock';
+        } else {
+            statusEl.textContent = `[預訂] 預計 ${currentProduct.deliveryDays} 天內發貨`;
+            statusEl.className = 'detail-status status-pre-order';
+        }
+        
+        document.getElementById('detailTags').innerHTML = currentProduct.tags.map(tag => 
+            `<span class="detail-tag">${tag}</span>`
+        ).join('');
+        
+        document.getElementById('scentPills').innerHTML = (currentProduct.scentNotes || []).map(note => 
+            `<span class="scent-pill">${note}</span>`
+        ).join('');
+        
+        document.getElementById('specsMatrix').innerHTML = `
+            <div class="spec-row"><span class="spec-label">花材</span><span class="spec-value">${currentProduct.specs.flowers}</span></div>
+            <div class="spec-row"><span class="spec-label">產地</span><span class="spec-value">${currentProduct.specs.origin}</span></div>
+            <div class="spec-row"><span class="spec-label">規格</span><span class="spec-value">${currentProduct.specs.size}</span></div>
+        `;
+        
+        updateTotal();
+    }
+
+    function changeQuantity(delta) {
+        quantity = Math.max(1, quantity + delta);
+        document.getElementById('qtyDisplay').textContent = quantity;
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const vase = document.getElementById('addonVase').checked ? 180 : 0;
+        const preservative = document.getElementById('addonPreservative').checked ? 30 : 0;
+        const total = (currentProduct.price + vase + preservative) * quantity;
+        document.getElementById('totalDisplay').textContent = `總計：HK$${total}`;
+    }
+
+    function handleAddToCart() {
+        const vase = document.getElementById('addonVase').checked;
+        const preservative = document.getElementById('addonPreservative').checked;
+        const addons = [];
+        if (vase) addons.push({ name: '經典極簡玻璃花瓶', price: 180 });
+        if (preservative) addons.push({ name: '荷蘭進口植物保鮮劑', price: 30 });
+        
+        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        cart.push({
+            productId: currentProduct.id,
+            name: currentProduct.name_zh,
+            nameEn: currentProduct.name_en,
+            price: currentProduct.price,
+            emoji: currentProduct.emoji,
+            quantity: quantity,
+            addons: addons
+        });
+        localStorage.setItem('royalspl_cart', JSON.stringify(cart));
+        updateCartBadge();
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = `✓ ${currentProduct.name_zh} 已加入購物車`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 2500);
+    }
+
+    function handleBuyNow() {
+        handleAddToCart();
+        window.location.href = 'cart.html';
+    }
+
+    function updateCartBadge() {
+        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        const badge = document.getElementById('cartBadge');
+        if (badge) {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            badge.textContent = totalItems;
+            badge.style.display = totalItems > 0 ? 'flex' : 'none';
+        }
+    }
+
+    function toggleSeo(element) {
+        const content = element.nextElementSibling;
+        content.classList.toggle('open');
+        const span = element.querySelector('span');
+        if (span) span.textContent = content.classList.contains('open') ? '−' : '+';
+    }
+
+    const menuBtn = document.getElementById('menuBtn');
+    const navCloseBtn = document.getElementById('navCloseBtn');
+    const navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadProduct();
+        updateCartBadge();
+    });
+    </script>
+</body>
+</html>

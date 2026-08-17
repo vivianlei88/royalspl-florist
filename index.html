@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoyalSpl Florist Hong Kong | 香港花店</title>
+    <meta name="description" content="RoyalSpl Florist Hong Kong - 極簡奢華花藝，香港鮮花配送">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* ===== 臻選系列 - 非對稱藝廊排版 ===== */
+        .collections-section {
+            padding-bottom: 80px;
+        }
+        
+        .collections-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+        
+        .collection-card {
+            background-color: #F3EFEA;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            overflow: hidden;
+            padding: 30px 20px;
+        }
+        
+        .collection-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        }
+        
+        /* Row 1 - 高挑直式 3/4 */
+        .collection-card-1,
+        .collection-card-2,
+        .collection-card-3 {
+            aspect-ratio: 3/4;
+        }
+        
+        /* Card 2 下移位移 */
+        .collection-card-2 {
+            transform: translateY(0);
+        }
+        
+        /* Row 2 */
+        .collection-card-4 {
+            aspect-ratio: 3/4;
+        }
+        
+        /* Card 5 - 寬幅橫式 4/3 + 下移 */
+        .collection-card-5 {
+            aspect-ratio: 4/3;
+            transform: translateY(0);
+            margin-top: 0;
+        }
+        
+        /* Card 6 - 正方形 1/1 */
+        .collection-card-6 {
+            aspect-ratio: 1/1;
+        }
+        
+        .collection-emoji {
+            font-size: 70px;
+            margin-bottom: 20px;
+        }
+        
+        .collection-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #1A1A1A;
+        }
+        
+        .collection-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            letter-spacing: 1px;
+            color: #383431;
+            text-transform: uppercase;
+        }
+        
+        /* 精選花藝 - 2行×3列 */
+        .featured-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+        
+        .product-card {
+            background-color: #FAF8F5;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+            display: block;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        
+        .product-emoji {
+            font-size: 70px;
+            margin-bottom: 20px;
+        }
+        
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #1A1A1A;
+        }
+        
+        .product-name-en {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            color: #383431;
+            margin-bottom: 10px;
+        }
+        
+        .product-price {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1A1A1A;
+        }
+        
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .tag-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border: 1px solid #1A1A1A;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #1A1A1A;
+        }
+        
+        .add-to-cart-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            background-color: #1A1A1A;
+            color: #FAF8F5;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .add-to-cart-btn:hover {
+            background-color: #383431;
+        }
+        
+        /* 桌面端：Card 2 和 Card 5 下移 */
+        @media (min-width: 769px) {
+            .collection-card-2 {
+                transform: translateY(40px);
+            }
+            .collection-card-5 {
+                transform: translateY(30px);
+            }
+            .collection-card-2:hover,
+            .collection-card-5:hover {
+                transform: translateY(35px);
+            }
+            .collection-card-5:hover {
+                transform: translateY(25px);
+            }
+        }
+        
+        /* 平板端 */
+        @media (max-width: 768px) {
+            .collections-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            .featured-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            .collection-card-1,
+            .collection-card-2,
+            .collection-card-3,
+            .collection-card-4,
+            .collection-card-5,
+            .collection-card-6 {
+                aspect-ratio: auto;
+                min-height: 200px;
+                transform: none !important;
+                margin-top: 0 !important;
+            }
+        }
+        
+        /* 手機端 */
+        @media (max-width: 480px) {
+            .collections-grid {
+                grid-template-columns: 1fr;
+            }
+            .featured-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="cart.html" class="cart-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 全屏導航抽屜 -->
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">選單</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="index.html" class="nav-link"><span class="nav-zh">首頁</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item" data-expandable>
+                <div class="nav-link" onclick="toggleNavSection(this)">
+                    <span class="nav-zh">節慶場合</span>
+                    <span class="nav-en">OCCASIONS</span>
+                    <span class="nav-plus">+</span>
+                </div>
+                <div class="nav-submenu">
+                    <a href="products.html?tag=情人節" class="nav-sub-link">情人節</a>
+                    <a href="products.html?tag=母親節" class="nav-sub-link">母親節</a>
+                    <a href="products.html?tag=中秋節" class="nav-sub-link">中秋節</a>
+                    <a href="products.html?tag=生日" class="nav-sub-link">生日</a>
+                    <a href="products.html?tag=婚禮" class="nav-sub-link">婚禮</a>
+                    <a href="products.html?tag=開張" class="nav-sub-link">開張</a>
+                    <a href="products.html?tag=商務送禮" class="nav-sub-link">商務送禮</a>
+                </div>
+            </div>
+            <div class="nav-item" data-expandable>
+                <div class="nav-link" onclick="toggleNavSection(this)">
+                    <span class="nav-zh">花材種類</span>
+                    <span class="nav-en">FLOWER TYPES</span>
+                    <span class="nav-plus">+</span>
+                </div>
+                <div class="nav-submenu">
+                    <a href="products.html?tag=玫瑰" class="nav-sub-link">玫瑰</a>
+                    <a href="products.html?tag=鬱金香" class="nav-sub-link">鬱金香</a>
+                    <a href="products.html?tag=芍藥" class="nav-sub-link">芍藥(牡丹)</a>
+                    <a href="products.html?tag=荷花" class="nav-sub-link">荷花</a>
+                    <a href="products.html?tag=進口鮮花" class="nav-sub-link">進口鮮花</a>
+                </div>
+            </div>
+            <div class="nav-item"><a href="cart.html" class="nav-link"><span class="nav-zh">您的花禮</span><span class="nav-en">YOUR GIFTS</span></a></div>
+        </nav>
+    </div>
+
+    <!-- Hero Banner -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">RoyalSpl Florist</h1>
+            <p class="hero-subtitle">Crimson Peony Collection</p>
+            <a href="products.html?tag=芍藥" class="hero-cta">緋芍集</a>
+        </div>
+    </section>
+
+    <!-- 臻選系列 - 非對稱藝廊排版 -->
+    <section class="collections-section">
+        <div class="section-header">
+            <span class="section-subtitle-en">THE COLLECTIONS</span>
+            <h2 class="section-title-zh">臻選系列</h2>
+        </div>
+        
+        <div class="collections-grid">
+            <!-- Row 1 -->
+            <a href="products.html?tag=法式田園" class="collection-card collection-card-1">
+                <div class="collection-emoji">🌿</div>
+                <h3 class="collection-title">法式田園風</h3>
+                <p class="collection-subtitle">French Provincial</p>
+            </a>
+            <a href="products.html?tag=日式極簡" class="collection-card collection-card-2">
+                <div class="collection-emoji">🎋</div>
+                <h3 class="collection-title">日式花禮</h3>
+                <p class="collection-subtitle">Japanese-Style Gifts</p>
+            </a>
+            <a href="products.html?tag=即日配送" class="collection-card collection-card-3">
+                <div class="collection-emoji">🚚</div>
+                <h3 class="collection-title">即日送花</h3>
+                <p class="collection-subtitle">Same-Day Delivery</p>
+            </a>
+            
+            <!-- Row 2 -->
+            <a href="products.html?tag=生日" class="collection-card collection-card-4">
+                <div class="collection-emoji">🎂</div>
+                <h3 class="collection-title">生日派對</h3>
+                <p class="collection-subtitle">Birthday Party</p>
+            </a>
+            <a href="products.html?tag=探親" class="collection-card collection-card-5">
+                <div class="collection-emoji">🌸</div>
+                <h3 class="collection-title">探親訪友</h3>
+                <p class="collection-subtitle">Crimson Peony Collection</p>
+            </a>
+            <a href="products.html?tag=婚禮" class="collection-card collection-card-6">
+                <div class="collection-emoji">💒</div>
+                <h3 class="collection-title">婚禮花禮</h3>
+                <p class="collection-subtitle">Wedding Floral Gifts</p>
+            </a>
+        </div>
+    </section>
+
+    <!-- 精選花藝 - 2行×3列 -->
+    <section class="featured-section">
+        <div class="section-header">
+            <span class="section-subtitle-en">FEATURED WORKS</span>
+            <h2 class="section-title-zh">精選花藝</h2>
+        </div>
+        <div class="featured-grid" id="featuredProducts"></div>
+    </section>
+
+    <!-- 關於我們 -->
+    <section class="about-section">
+        <div class="about-content">
+            <span class="section-subtitle-en">ABOUT US</span>
+            <h2 class="section-title-zh">關於我們</h2>
+            <p class="about-text">
+                RoyalSpl Florist 致力於為香港帶來最優質的花藝體驗。<br>
+                每一束花都是藝術品，每一個細節都體現匠心。
+            </p>
+            <a href="#" class="about-link">了解更多 →</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-slogan">
+            <p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p>
+            <p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p>
+        </div>
+        <div class="footer-links">
+            <div class="footer-column">
+                <a href="products.html" class="footer-link">所有花藝</a>
+                <a href="products.html?tag=情人節" class="footer-link">節慶場合</a>
+                <a href="products.html?tag=訂閱" class="footer-link">訂閱花禮</a>
+            </div>
+            <div class="footer-column">
+                <a href="#" class="footer-link">Blog</a>
+                <a href="#" class="footer-link">常見問題</a>
+                <a href="#" class="footer-link">聯絡我們</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <a href="#" class="privacy-link">私隱政策 Privacy Policy</a>
+            <p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    // ===== 商品數據（精選6款） =====
+    const products = [
+        { id: 1, name_zh: '緋芍集', name_en: 'Crimson Peony Bouquet', price: 688, emoji: '🌸', tags: ['戀愛','芍藥','經典風'] },
+        { id: 2, name_zh: '晨露玫瑰', name_en: 'Morning Dew Roses', price: 488, emoji: '🌹', tags: ['戀愛','玫瑰','經典風'] },
+        { id: 3, name_zh: '月光百合', name_en: 'Moonlight Lilies', price: 528, emoji: '🌷', tags: ['婚禮','百合','韓式'] },
+        { id: 4, name_zh: '向日葵花束', name_en: 'Sunflower Bouquet', price: 398, emoji: '🌻', tags: ['生日','向日葵','經典風'] },
+        { id: 5, name_zh: '鬱金香花束', name_en: 'Tulip Bouquet', price: 458, emoji: '💐', tags: ['戀愛','鬱金香','韓式'] },
+        { id: 6, name_zh: '蘭花盆栽', name_en: 'Orchid Plant', price: 888, emoji: '🪴', tags: ['商務送禮','蘭花','經典風'] }
+    ];
+
+    // 渲染精選商品
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('featuredProducts');
+        if (container) {
+            container.innerHTML = products.map(p => `
+                <a href="product-detail.html?id=${p.id}" class="product-card">
+                    <div class="product-emoji">${p.emoji}</div>
+                    <h3 class="product-name">${p.name_zh}</h3>
+                    <p class="product-name-en">${p.name_en}</p>
+                    <p class="product-price">HK$${p.price}</p>
+                    <div class="product-tags">
+                        ${p.tags.map(tag => `<span class="tag-pill">${tag}</span>`).join('')}
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.preventDefault(); event.stopPropagation(); addToCart(${p.id})">加入購物車</button>
+                </a>
+            `).join('');
+        }
+        
+        // 更新購物車徽章
+        updateCartBadge();
+    });
+
+    // 購物車功能
+    function addToCart(productId) {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+        
+        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        const existingItem = cart.find(item => item.productId === productId);
+        
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                productId: product.id,
+                name: product.name_zh,
+                nameEn: product.name_en,
+                price: product.price,
+                emoji: product.emoji,
+                quantity: 1,
+                addons: []
+            });
+        }
+        
+        localStorage.setItem('royalspl_cart', JSON.stringify(cart));
+        updateCartBadge();
+        
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;font-size:14px;transition:all 0.3s;';
+        toast.textContent = `✓ ${product.name_zh} 已加入購物車`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    }
+
+    function updateCartBadge() {
+        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        const badge = document.getElementById('cartBadge');
+        if (badge) {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            badge.textContent = totalItems;
+            badge.style.display = totalItems > 0 ? 'flex' : 'none';
+        }
+    }
+
+    function toggleNavSection(element) {
+        const submenu = element.nextElementSibling;
+        const plus = element.querySelector('.nav-plus');
+        if (submenu) {
+            submenu.classList.toggle('open');
+            if (plus) plus.textContent = submenu.classList.contains('open') ? '−' : '+';
+        }
+    }
+
+    const menuBtn = document.getElementById('menuBtn');
+    const navCloseBtn = document.getElementById('navCloseBtn');
+    const navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+    </script>
+</body>
+</html>

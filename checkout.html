@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>結帳 | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        .checkout-page { max-width: 900px; margin: 0 auto; padding: 40px 20px 60px; }
+        .checkout-header { margin-bottom: 30px; }
+        .back-link { font-size: 16px; color: #383431; cursor: pointer; }
+        .checkout-title { font-size: 28px; font-weight: 600; margin-top: 10px; }
+        
+        .checkout-section { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 25px; margin-bottom: 20px; }
+        .checkout-section-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; font-family: inherit; background-color: white; }
+        .form-input:focus { outline: none; border-width: 2px; }
+        .form-error { color: #ff0000; font-size: 13px; margin-top: 5px; display: none; }
+        
+        /* 地址輸入框特別加寬 */
+        .address-input { min-height: 50px; line-height: 1.5; }
+        
+        .delivery-tier-banner { padding: 16px 20px; background-color: #1A1A1A; color: #FAF8F5; border-radius: 8px; margin-top: 15px; display: none; }
+        .delivery-tier-banner.show { display: block; }
+        .delivery-tier-banner .tier-zh { font-weight: 600; font-size: 16px; }
+        .delivery-tier-banner .tier-en { font-family: 'Cormorant Garamond', serif; font-size: 14px; margin-top: 5px; opacity: 0.85; }
+        
+        .tier-list { display: flex; flex-direction: column; gap: 10px; }
+        .tier-item { border: 2px solid rgba(26,26,26,0.2); border-radius: 8px; padding: 15px 18px; transition: all 0.3s; cursor: pointer; }
+        .tier-item:hover { border-color: rgba(26,26,26,0.5); }
+        .tier-item.active { background-color: #1A1A1A; color: #FAF8F5; border-color: #1A1A1A; }
+        .tier-item.manual { border-style: dashed; }
+        .tier-item.active.manual { border-color: #FAF8F5; border-style: solid; }
+        .tier-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .tier-item-label { font-weight: 700; font-size: 15px; }
+        .tier-item-fee { font-weight: 700; font-size: 15px; }
+        .tier-item-area { font-size: 13px; }
+        .tier-item.active .tier-item-area { color: #D0C8C0; }
+        .tier-list-note { font-size: 12px; color: #383431; margin-top: 10px; }
+        
+        .time-slot-options { display: flex; flex-direction: column; gap: 10px; }
+        .time-slot-option { border: 1px solid #1A1A1A; border-radius: 8px; cursor: pointer; transition: all 0.2s; overflow: hidden; }
+        .time-slot-option:hover { background-color: #F3EFEA; }
+        .time-slot-option.selected { background-color: #1A1A1A; color: #FAF8F5; }
+        .time-slot-main { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px; }
+        .time-slot-name { font-size: 15px; font-weight: 600; }
+        .time-slot-fee { font-size: 14px; }
+        .time-slot-expand { padding: 0 18px 15px; display: none; }
+        .time-slot-expand.open { display: block; }
+        .hour-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .hour-pill { padding: 8px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 13px; cursor: pointer; background: transparent; font-family: inherit; }
+        .time-slot-option.selected .hour-pill { border-color: #FAF8F5; color: #FAF8F5; }
+        .hour-pill.selected-hour { background-color: #FAF8F5; color: #1A1A1A !important; font-weight: 600; }
+        
+        .date-input { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; font-family: inherit; background-color: white; }
+        .date-hint { font-size: 13px; color: #383431; margin-top: 8px; }
+        
+        .order-summary { background-color: #1A1A1A; color: #FAF8F5; padding: 25px; border-radius: 10px; }
+        .summary-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .summary-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; }
+        .summary-divider { border-top: 1px solid rgba(250,248,245,0.2); margin: 15px 0; }
+        .summary-total { display: flex; justify-content: space-between; font-size: 22px; font-weight: 700; }
+        .delivery-fee-formula { font-size: 12px; color: #AAA; margin-top: 10px; text-align: right; }
+        
+        .payment-btn { width: 100%; padding: 18px; background-color: #FAF8F5; color: #1A1A1A; border: none; border-radius: 5px; font-size: 18px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 20px; transition: all 0.3s; }
+        .payment-btn:hover { background-color: #F3EFEA; }
+        
+        .toast { position: fixed; top: 20px; right: 20px; background-color: #1A1A1A; color: #FAF8F5; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transform: translateY(-20px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        
+        .order-success { text-align: center; padding: 60px 20px; display: none; }
+        .success-emoji { font-size: 80px; margin-bottom: 20px; }
+        .success-title { font-size: 24px; font-weight: 600; margin-bottom: 10px; }
+        .success-order-code { font-size: 18px; color: #383431; margin-bottom: 30px; }
+        .success-actions { display: flex; gap: 15px; justify-content: center; }
+        .success-btn { display: inline-block; padding: 14px 30px; border-radius: 5px; font-size: 15px; cursor: pointer; font-family: inherit; }
+        .success-btn.primary { background-color: #1A1A1A; color: #FAF8F5; }
+        .success-btn.secondary { border: 1px solid #1A1A1A; color: #1A1A1A; background: transparent; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="cart.html" class="cart-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="checkout-page">
+        <div id="checkoutForm">
+            <div class="checkout-header">
+                <a href="cart.html" class="back-link">← 返回購物車</a>
+                <h1 class="checkout-title">結帳</h1>
+            </div>
+
+            <!-- 收花人資料（3行排列） -->
+            <div class="checkout-section">
+                <h2 class="checkout-section-title">收花人資料</h2>
+                
+                <!-- 第1行：姓名 -->
+                <div class="form-group">
+                    <label class="form-label">收花人姓名 *</label>
+                    <input type="text" class="form-input" id="recipientName" placeholder="請輸入收花人姓名">
+                    <p class="form-error" id="recipientNameError">請填寫收花人姓名</p>
+                </div>
+                
+                <!-- 第2行：電話 -->
+                <div class="form-group">
+                    <label class="form-label">收花人電話 *</label>
+                    <input type="tel" class="form-input" id="recipientPhone" placeholder="請輸入電話號碼">
+                    <p class="form-error" id="recipientPhoneError">請填寫有效電話號碼</p>
+                </div>
+                
+                <!-- 第3行：地址（全寬） -->
+                <div class="form-group">
+                    <label class="form-label">收花人地址 *</label>
+                    <input type="text" class="form-input address-input" id="recipientAddress" placeholder="請輸入送花地址（中/英文皆可，英文地址可較長）" oninput="autoDetectArea(this.value)">
+                    <p class="form-error" id="recipientAddressError">請填寫送花地址</p>
+                </div>
+                
+                <!-- 偵測結果 Banner -->
+                <div class="delivery-tier-banner" id="autoDetectBanner">
+                    <div class="tier-zh" id="autoDetectTierZh"></div>
+                    <div class="tier-en" id="autoDetectTierEn"></div>
+                </div>
+            </div>
+
+            <!-- 5大Tier列表 -->
+            <div class="checkout-section">
+                <h2 class="checkout-section-title">配送地區及附加費</h2>
+                <div class="tier-list" id="tierList">
+                    <div class="tier-item" data-tier="tier1" data-fee="90" onclick="manualSelectTier('tier1')">
+                        <div class="tier-item-header">
+                            <span class="tier-item-label">Tier 1</span>
+                            <span class="tier-item-fee">滿HK$500免費，否則HK$90</span>
+                        </div>
+                        <p class="tier-item-area">新界及港九鐵路沿線市區屋苑/商廈</p>
+                    </div>
+                    <div class="tier-item" data-tier="tier2" data-fee="100" onclick="manualSelectTier('tier2')">
+                        <div class="tier-item-header">
+                            <span class="tier-item-label">Tier 2</span>
+                            <span class="tier-item-fee">+HK$100</span>
+                        </div>
+                        <p class="tier-item-area">屯門近郊/掃管笏/深井/汀九等</p>
+                    </div>
+                    <div class="tier-item" data-tier="tier3" data-fee="150" onclick="manualSelectTier('tier3')">
+                        <div class="tier-item-header">
+                            <span class="tier-item-label">Tier 3</span>
+                            <span class="tier-item-fee">+HK$150</span>
+                        </div>
+                        <p class="tier-item-area">西貢市中心/港島半山/南區/淺水灣/赤柱等</p>
+                    </div>
+                    <div class="tier-item" data-tier="tier4" data-fee="200" onclick="manualSelectTier('tier4')">
+                        <div class="tier-item-header">
+                            <span class="tier-item-label">Tier 4</span>
+                            <span class="tier-item-fee">+HK$200</span>
+                        </div>
+                        <p class="tier-item-area">山頂/大潭/清水灣/香港科技大學等</p>
+                    </div>
+                    <div class="tier-item" data-tier="tier5" data-fee="300" onclick="manualSelectTier('tier5')">
+                        <div class="tier-item-header">
+                            <span class="tier-item-label">Tier 5</span>
+                            <span class="tier-item-fee">+HK$300</span>
+                        </div>
+                        <p class="tier-item-area">南大嶼山/愉景灣/馬灣/離島/機場/迪士尼等</p>
+                    </div>
+                </div>
+                <p class="tier-list-note">💡 系統自動偵測優先；若偵測失靈，請點擊上方地區手動選擇</p>
+            </div>
+
+            <!-- 配送日期 -->
+            <div class="checkout-section">
+                <h2 class="checkout-section-title">配送日期</h2>
+                <div class="form-group">
+                    <label class="form-label">選擇日期 *</label>
+                    <input type="date" class="date-input" id="deliveryDate" onchange="validateDeliveryDate()">
+                    <p class="form-error" id="deliveryDateError">請選擇配送日期</p>
+                    <p class="date-hint" id="dateHint"></p>
+                </div>
+            </div>
+
+            <!-- 派送時段 -->
+            <div class="checkout-section">
+                <h2 class="checkout-section-title">派送時段</h2>
+                <div class="time-slot-options" id="timeSlotOptions">
+                    <div class="time-slot-option selected" data-slot="full_day" data-fee="90" onclick="selectTimeSlot(this)">
+                        <div class="time-slot-main">
+                            <span class="time-slot-name">① 全日派送 (10:00–18:00)</span>
+                            <span class="time-slot-fee">滿HK$500免費，否則HK$90</span>
+                        </div>
+                    </div>
+                    <div class="time-slot-option" data-slot="specified_time" data-fee="150" onclick="selectTimeSlot(this)">
+                        <div class="time-slot-main">
+                            <span class="time-slot-name">② 指定時間派送</span>
+                            <span class="time-slot-fee">+HK$150</span>
+                        </div>
+                        <div class="time-slot-expand">
+                            <div class="hour-pills">
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '10:00-11:00')">10:00-11:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '11:00-12:00')">11:00-12:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '12:00-13:00')">12:00-13:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '13:00-14:00')">13:00-14:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '14:00-15:00')">14:00-15:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '15:00-16:00')">15:00-16:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '16:00-17:00')">16:00-17:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '17:00-18:00')">17:00-18:00</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-slot-option" data-slot="evening" data-fee="250" onclick="selectTimeSlot(this)">
+                        <div class="time-slot-main">
+                            <span class="time-slot-name">③ 夜晚派送 (19:00–24:00)</span>
+                            <span class="time-slot-fee">+HK$250</span>
+                        </div>
+                        <div class="time-slot-expand">
+                            <div class="hour-pills">
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '19:00-20:00')">19:00-20:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '20:00-21:00')">20:00-21:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '21:00-22:00')">21:00-22:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '22:00-23:00')">22:00-23:00</button>
+                                <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '23:00-24:00')">23:00-24:00</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-slot-option" data-slot="same_day_express" data-fee="200" onclick="selectTimeSlot(this)">
+                        <div class="time-slot-main">
+                            <span class="time-slot-name">④ 即日加急派送 (13:00後訂單)</span>
+                            <span class="time-slot-fee">+HK$200</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 訂單摘要 -->
+            <div class="order-summary" id="orderSummary"></div>
+        </div>
+
+        <!-- 訂單成功 -->
+        <div class="order-success" id="orderSuccess">
+            <p class="success-emoji">🎉</p>
+            <h2 class="success-title">訂單提交成功！</h2>
+            <p class="success-order-code" id="successOrderCode"></p>
+            <div class="success-actions">
+                <a href="index.html" class="success-btn primary">返回首頁</a>
+                <a href="products.html" class="success-btn secondary">繼續選購</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-slogan">
+            <p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p>
+            <p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p>
+        </div>
+        <div class="footer-bottom">
+            <a href="#" class="privacy-link">私隱政策 Privacy Policy</a>
+            <p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+    let selectedTimeSlot = 'full_day';
+    let selectedTimeFee = 90;
+    let detectedArea = '';
+    let manualArea = '';
+    let selectedHour = '';
+
+    const areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
+
+    const areaKeywords = {
+        tier5: {
+            zh: ['愉景灣', '馬灣', '離島', '機場', '迪士尼', '大嶼山', '長洲', '南丫島', '坪洲', '東涌', '梅窩', '昂坪', '大澳', '貝澳'],
+            en: ['discovery bay', 'ma wan', 'lantau', 'cheung chau', 'lamma island', 'peng chau', 'tung chung', 'mui wo', 'ngong ping', 'tai o', 'pui o', 'outlying islands', 'airport', 'disneyland', 'hong kong airport', 'hk airport']
+        },
+        tier4: {
+            zh: ['山頂', '大潭', '清水灣', '香港科技大學', '科大', '石澳', '鶴咀', '龍脊'],
+            en: ['the peak', 'victoria peak', 'tai tam', 'clear water bay', 'hkust', 'hong kong university of science and technology', 'shek o', "cape d'aguilar", "dragon's back"]
+        },
+        tier3: {
+            zh: ['西貢', '半山', '南區', '淺水灣', '赤柱', '薄扶林', '香港仔', '鴨脷洲', '黃竹坑', '壽臣山', '深水灣', '大浪灣'],
+            en: ['sai kung', 'mid-levels', 'mid levels', 'southern district', 'repluse bay', 'repulse bay', 'stanley', 'pokfulam', 'pok fu lam', 'aberdeen', 'ap lei chau', 'wong chuk hang', 'shouson hill', 'deep water bay', 'big wave bay']
+        },
+        tier2: {
+            zh: ['屯門', '掃管笏', '深井', '汀九', '黃金海岸', '小欖', '青龍頭', '大欖'],
+            en: ['tuen mun', 'so kwun wat', 'sham tseng', 'ting kau', 'gold coast', 'siu lam', 'tsing lung tau', 'tai lam']
+        },
+        tier1: {
+            zh: ['旺角', '尖沙咀', '中環', '銅鑼灣', '灣仔', '九龍塘', '沙田', '荃灣', '觀塘', '將軍澳', '北角', '太古', '西灣河', '筲箕灣', '紅磡', '土瓜灣', '深水埗', '長沙灣', '荔枝角', '美孚', '大圍', '火炭', '大埔', '粉嶺', '上水', '元朗', '天水圍', '青衣', '葵芳', '葵興', '荔景', '油麻地', '佐敦', '太子', '鑽石山', '黃大仙', '樂富', '九龍灣', '牛頭角', '藍田', '油塘', '調景嶺', '坑口', '寶琳', '康城', '馬鞍山', '第一城', '石門', '新界', '九龍', '香港島'],
+            en: ['mong kok', 'tsim sha tsui', 'central', 'causeway bay', 'wan chai', 'kowloon tong', 'sha tin', 'shatin', 'tsuen wan', 'kwun tong', 'tseung kwan o', 'north point', 'taikoo', 'sai wan ho', 'shau kei wan', 'hung hom', 'to kwa wan', 'sham shui po', 'cheung sha wan', 'lai chi kok', 'mei foo', 'tai wai', 'fo tan', 'tai po', 'fanling', 'sheung shui', 'yuen long', 'tin shui wai', 'tsing yi', 'kwai fong', 'kwai hing', 'lai king', 'yau ma tei', 'jordan', 'prince edward', 'diamond hill', 'wong tai sin', 'lok fu', 'kowloon bay', 'ngau tau kok', 'lam tin', 'yau tong', 'tiu keng leng', 'hang hau', 'po lam', 'lohas park', 'ma on shan', 'city one', 'shek mun', 'new territories', 'kowloon', 'hong kong island']
+        }
+    };
+
+    const areaNames = {
+        tier1: { zh: 'Tier 1 - 新界及港九鐵路沿線市區', en: 'Urban areas along MTR lines (NT & Kowloon)' },
+        tier2: { zh: 'Tier 2 - 屯門近郊/掃管笏/深井/汀九等', en: 'Tuen Mun outskirts / So Kwun Wat / Sham Tseng' },
+        tier3: { zh: 'Tier 3 - 西貢市中心/港島半山/南區等', en: 'Sai Kung Town / Mid-Levels / Southern District' },
+        tier4: { zh: 'Tier 4 - 山頂/大潭/清水灣等', en: 'The Peak / Tai Tam / Clear Water Bay' },
+        tier5: { zh: 'Tier 5 - 南大嶼山/愉景灣/離島等', en: 'South Lantau / Discovery Bay / Outlying Islands' }
+    };
+
+    function getEffectiveArea() {
+        return detectedArea || manualArea;
+    }
+    function getEffectiveAreaFee() {
+        const area = getEffectiveArea();
+        return area ? areaFees[area] : 0;
+    }
+    function updateCartBadge() {
+        const badge = document.getElementById('cartBadge');
+        if (badge) {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            badge.textContent = totalItems;
+            badge.style.display = totalItems > 0 ? 'flex' : 'none';
+        }
+    }
+    function getSubtotal() {
+        return cart.reduce((sum, item) => {
+            const addonsTotal = item.addons.reduce((a, addon) => a + addon.price, 0);
+            return sum + (item.price + addonsTotal) * item.quantity;
+        }, 0);
+    }
+    function getDeliveryFee() {
+        const subtotal = getSubtotal();
+        const area = getEffectiveArea();
+        const areaFee = getEffectiveAreaFee();
+        let fee = Math.max(areaFee, selectedTimeFee);
+        if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 500) { fee = 0; }
+        return fee;
+    }
+    function getTotal() { return getSubtotal() + getDeliveryFee(); }
+
+    function autoDetectArea(address) {
+        if (!address || address.trim() === '') {
+            detectedArea = '';
+            document.getElementById('autoDetectBanner').classList.remove('show');
+            highlightTierItem(manualArea || '');
+            renderSummary();
+            return;
+        }
+        const lowerAddress = address.toLowerCase();
+        let detected = '';
+        for (const tier in areaKeywords) {
+            const zhMatch = areaKeywords[tier].zh.some(k => address.includes(k));
+            const enMatch = areaKeywords[tier].en.some(k => lowerAddress.includes(k));
+            if (zhMatch || enMatch) { detected = tier; break; }
+        }
+        if (detected) {
+            detectedArea = detected;
+            manualArea = '';
+            const banner = document.getElementById('autoDetectBanner');
+            document.getElementById('autoDetectTierZh').textContent = `📍 已偵測地區：${areaNames[detected].zh}`;
+            document.getElementById('autoDetectTierEn').textContent = `Detected: ${areaNames[detected].en} | 附加費: HK$${areaFees[detected]}`;
+            banner.classList.add('show');
+            highlightTierItem(detected);
+        } else {
+            detectedArea = '';
+            document.getElementById('autoDetectBanner').classList.remove('show');
+            highlightTierItem(manualArea || '');
+        }
+        renderSummary();
+    }
+
+    function manualSelectTier(tier) {
+        manualArea = tier;
+        detectedArea = '';
+        highlightTierItem(tier);
+        const banner = document.getElementById('autoDetectBanner');
+        document.getElementById('autoDetectTierZh').textContent = `📍 已手動選擇：${areaNames[tier].zh}`;
+        document.getElementById('autoDetectTierEn').textContent = `Manual: ${areaNames[tier].en} | 附加費: HK$${areaFees[tier]}`;
+        banner.classList.add('show');
+        renderSummary();
+    }
+
+    function highlightTierItem(tier) {
+        document.querySelectorAll('.tier-item').forEach(item => {
+            item.classList.remove('active');
+            item.classList.remove('manual');
+            if (tier && item.getAttribute('data-tier') === tier) {
+                item.classList.add('active');
+                if (manualArea === tier && !detectedArea) { item.classList.add('manual'); }
+            }
+        });
+    }
+
+    function selectTimeSlot(element) {
+        document.querySelectorAll('.time-slot-option').forEach(el => {
+            el.classList.remove('selected');
+            const expand = el.querySelector('.time-slot-expand');
+            if (expand) expand.classList.remove('open');
+        });
+        element.classList.add('selected');
+        selectedTimeSlot = element.getAttribute('data-slot');
+        selectedTimeFee = parseInt(element.getAttribute('data-fee'));
+        const expand = element.querySelector('.time-slot-expand');
+        if (expand && (selectedTimeSlot === 'specified_time' || selectedTimeSlot === 'evening')) { expand.classList.add('open'); }
+        renderSummary();
+    }
+
+    function selectHour(element, hour) {
+        document.querySelectorAll('.hour-pill').forEach(el => el.classList.remove('selected-hour'));
+        element.classList.add('selected-hour');
+        selectedHour = hour;
+        renderSummary();
+    }
+
+    function getMaxDeliveryDays() {
+        let maxDays = 0;
+        cart.forEach(item => { if (item.deliveryDays && item.deliveryDays > 1) { maxDays = Math.max(maxDays, item.deliveryDays); } });
+        return maxDays;
+    }
+
+    function setupDatePicker() {
+        const dateInput = document.getElementById('deliveryDate');
+        const hint = document.getElementById('dateHint');
+        if (!dateInput) return;
+        const today = new Date();
+        const maxDeliveryDays = getMaxDeliveryDays();
+        let minDate = new Date(today);
+        if (maxDeliveryDays > 0) {
+            minDate.setDate(minDate.getDate() + maxDeliveryDays);
+            hint.textContent = `⚠️ 購物車含預訂商品，最早可配送日期為 ${maxDeliveryDays} 天後`;
+        } else {
+            minDate.setDate(minDate.getDate() + 1);
+            hint.textContent = '✓ 現貨商品，可選擇明日及未來日期';
+        }
+        dateInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+    }
+
+    function validateDeliveryDate() {
+        const dateInput = document.getElementById('deliveryDate');
+        const error = document.getElementById('deliveryDateError');
+        if (!dateInput.value) { error.style.display = 'block'; return false; }
+        error.style.display = 'none';
+        return true;
+    }
+
+    function renderSummary() {
+        const container = document.getElementById('orderSummary');
+        if (!container) return;
+        const subtotal = getSubtotal();
+        const deliveryFee = getDeliveryFee();
+        const total = getTotal();
+        const area = getEffectiveArea();
+        const areaFee = getEffectiveAreaFee();
+        const itemsHtml = cart.map(item => `
+            <div class="summary-item">
+                <span>${item.emoji} ${item.name} × ${item.quantity}</span>
+                <span>HK$${item.price * item.quantity}</span>
+            </div>
+        `).join('');
+        container.innerHTML = `
+            <h3 class="summary-title">訂單摘要</h3>
+            ${itemsHtml}
+            <div class="summary-divider"></div>
+            <div class="summary-item"><span>商品小計</span><span>HK$${subtotal}</span></div>
+            <div class="summary-item"><span>配送費 ${selectedHour ? '(' + selectedHour + ')' : ''}</span><span>${deliveryFee === 0 ? '免費' : 'HK$' + deliveryFee}</span></div>
+            ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 HK$${selectedTimeFee}, 地區費 HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
+            <div class="summary-divider"></div>
+            <div class="summary-total"><span>總計</span><span>HK$${total}</span></div>
+            <button class="payment-btn" onclick="submitOrder()">確認下單</button>
+        `;
+    }
+
+    function validateForm() {
+        let isValid = true;
+        const recipientName = document.getElementById('recipientName').value.trim();
+        const recipientPhone = document.getElementById('recipientPhone').value.trim();
+        const recipientAddress = document.getElementById('recipientAddress').value.trim();
+        if (!recipientName) { document.getElementById('recipientNameError').style.display = 'block'; isValid = false; }
+        else { document.getElementById('recipientNameError').style.display = 'none'; }
+        const phoneRegex = /^[0-9+\-\s]{8,}$/;
+        if (!recipientPhone || !phoneRegex.test(recipientPhone)) { document.getElementById('recipientPhoneError').style.display = 'block'; isValid = false; }
+        else { document.getElementById('recipientPhoneError').style.display = 'none'; }
+        if (!recipientAddress) { document.getElementById('recipientAddressError').style.display = 'block'; isValid = false; }
+        else { document.getElementById('recipientAddressError').style.display = 'none'; }
+        if (!validateDeliveryDate()) isValid = false;
+        if (!getEffectiveArea()) { showToast('請輸入地址或手動選擇配送地區'); isValid = false; }
+        return isValid;
+    }
+
+    function submitOrder() {
+        if (cart.length === 0) { showToast('購物車為空'); window.location.href = 'products.html'; return; }
+        if (!validateForm()) return;
+        const orderCode = 'RS' + Date.now().toString().slice(-8);
+        document.getElementById('checkoutForm').style.display = 'none';
+        document.getElementById('orderSuccess').style.display = 'block';
+        document.getElementById('successOrderCode').textContent = `訂單編號：${orderCode}`;
+        cart = [];
+        localStorage.setItem('royalspl_cart', JSON.stringify(cart));
+        updateCartBadge();
+    }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 2500);
+    }
+
+    const menuBtn = document.getElementById('menuBtn');
+    const navCloseBtn = document.getElementById('navCloseBtn');
+    const navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartBadge();
+        renderSummary();
+        setupDatePicker();
+    });
+    </script>
+</body>
+</html>

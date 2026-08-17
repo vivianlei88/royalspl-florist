@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>所有花藝 | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        .product-status {
+            display: inline-block;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 3px;
+            margin-bottom: 10px;
+        }
+        .in-stock { background-color: #1A1A1A; color: #FAF8F5; }
+        .pre-order { background-color: transparent; border: 1px solid #1A1A1A; color: #1A1A1A; }
+        .products-page { padding-bottom: 60px; }
+        .filter-section { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .search-bar { margin-bottom: 25px; }
+        .search-input {
+            width: 100%; padding: 14px 20px; border: 1px solid #1A1A1A;
+            border-radius: 5px; font-size: 16px; background-color: white; font-family: inherit;
+        }
+        .filter-dimensions { margin-bottom: 25px; }
+        .filter-group { margin-bottom: 20px; }
+        .filter-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #1A1A1A; }
+        .filter-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .filter-pill {
+            padding: 8px 16px; border: 1px solid #1A1A1A; background: transparent;
+            color: #1A1A1A; border-radius: 20px; font-size: 13px; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+        }
+        .filter-pill:hover { background-color: #F3EFEA; }
+        .filter-pill.active { background-color: #1A1A1A; color: #FAF8F5; }
+        .products-toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding-top: 20px; border-top: 1px solid rgba(26,26,26,0.1);
+        }
+        .products-count { font-size: 14px; color: #383431; font-weight: 500; }
+        .sort-select {
+            padding: 8px 15px; border: 1px solid #1A1A1A; border-radius: 3px;
+            font-size: 14px; background-color: white; cursor: pointer; font-family: inherit;
+        }
+        .products-grid {
+            max-width: 1200px; margin: 0 auto; padding: 0 20px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;
+        }
+        .no-results { text-align: center; padding: 60px 20px; }
+        .no-results-emoji { font-size: 60px; margin-bottom: 20px; }
+        .no-results-text { font-size: 18px; margin-bottom: 25px; color: #383431; }
+        .clear-filter-btn {
+            padding: 12px 30px; background-color: #1A1A1A; color: #FAF8F5;
+            border: none; border-radius: 5px; font-size: 15px; cursor: pointer; font-family: inherit;
+        }
+        .toast {
+            position: fixed; top: 20px; right: 20px; background-color: #1A1A1A;
+            color: #FAF8F5; padding: 15px 25px; border-radius: 5px; z-index: 9999;
+            font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(-20px);
+            transition: all 0.3s ease; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="cart.html" class="cart-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">選單</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item"><div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">節慶場合</span><span class="nav-en">OCCASIONS</span><span class="nav-plus">+</span></div>
+                <div class="nav-submenu">
+                    <a href="products.html?tag=情人節" class="nav-sub-link">情人節</a>
+                    <a href="products.html?tag=母親節" class="nav-sub-link">母親節</a>
+                    <a href="products.html?tag=中秋節" class="nav-sub-link">中秋節</a>
+                    <a href="products.html?tag=生日" class="nav-sub-link">生日</a>
+                    <a href="products.html?tag=婚禮" class="nav-sub-link">婚禮</a>
+                    <a href="products.html?tag=開張" class="nav-sub-link">開張</a>
+                    <a href="products.html?tag=商務送禮" class="nav-sub-link">商務送禮</a>
+                </div>
+            </div>
+            <div class="nav-item"><div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">花材種類</span><span class="nav-en">FLOWER TYPES</span><span class="nav-plus">+</span></div>
+                <div class="nav-submenu">
+                    <a href="products.html?tag=玫瑰" class="nav-sub-link">玫瑰</a>
+                    <a href="products.html?tag=鬱金香" class="nav-sub-link">鬱金香</a>
+                    <a href="products.html?tag=芍藥" class="nav-sub-link">芍藥(牡丹)</a>
+                    <a href="products.html?tag=荷花" class="nav-sub-link">荷花</a>
+                    <a href="products.html?tag=進口鮮花" class="nav-sub-link">進口鮮花</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <main class="products-page">
+        <div class="section-header">
+            <span class="section-subtitle-en">THE COLLECTION</span>
+            <h2 class="section-title-zh">所有花藝</h2>
+        </div>
+        <div class="filter-section">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="🔍 搜索花藝..." class="search-input">
+            </div>
+            <div class="filter-dimensions">
+                <div class="filter-group">
+                    <label class="filter-label">場景用途</label>
+                    <div class="filter-pills" id="filterOccasion"></div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">核心花材</label>
+                    <div class="filter-pills" id="filterFlower"></div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">設計風格</label>
+                    <div class="filter-pills" id="filterStyle"></div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">價格區間</label>
+                    <div class="filter-pills" id="filterPrice"></div>
+                </div>
+            </div>
+            <div class="products-toolbar">
+                <span class="products-count" id="productsCount">共 0 款花藝</span>
+                <select class="sort-select" id="sortSelect">
+                    <option value="default">默認排序</option>
+                    <option value="price_asc">價格：低到高</option>
+                    <option value="price_desc">價格：高到低</option>
+                </select>
+            </div>
+        </div>
+        <div class="products-grid" id="productsGrid"></div>
+        <div class="no-results" id="noResults" style="display:none;">
+            <p class="no-results-emoji">🌸</p>
+            <p class="no-results-text">沒有找到符合條件的花藝</p>
+            <button class="clear-filter-btn" onclick="clearAllFilters()">清除所有篩選</button>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-slogan">
+            <p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p>
+            <p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p>
+        </div>
+        <div class="footer-bottom">
+            <a href="#" class="privacy-link">私隱政策 Privacy Policy</a>
+            <p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    // ===== 商品數據 =====
+    const products = [
+        { id: 1, name_zh: '緋芍集', name_en: 'Crimson Peony Bouquet', price: 688, emoji: '🌸', category: '招牌系列', description: '精選緋紅色芍藥，象徵富貴吉祥。', tags: ['戀愛','生日','芍藥','經典風','HK$300-600','即日配送','可加賀卡'], stock: '現貨' },
+        { id: 2, name_zh: '晨露玫瑰', name_en: 'Morning Dew Roses', price: 488, emoji: '🌹', category: '玫瑰花', description: '12支精選紅玫瑰，清晨採摘。', tags: ['戀愛','情人節','玫瑰','經典風','HK$300-600','即日配送','可加賀卡'], stock: '現貨' },
+        { id: 3, name_zh: '月光百合', name_en: 'Moonlight Lilies', price: 528, emoji: '🌷', category: '百合花', description: '優雅白色百合，清新脫俗。', tags: ['婚禮','探病','百合','韓式','HK$300-600','香港全境配送','可加賀卡'], stock: '現貨' },
+        { id: 4, name_zh: '向日葵花束', name_en: 'Sunflower Bouquet', price: 398, emoji: '🌻', category: '向日葵', description: '陽光燦爛的向日葵。', tags: ['生日','畢業季','向日葵','經典風','HK$300內','即日配送'], stock: '現貨' },
+        { id: 5, name_zh: '鬱金香花束', name_en: 'Tulip Bouquet', price: 458, emoji: '💐', category: '鬱金香', description: '多彩鬱金香，荷蘭進口。', tags: ['戀愛','生日','鬱金香','韓式','HK$300-600','香港全境配送'], stock: '現貨' },
+        { id: 6, name_zh: '蘭花盆栽', name_en: 'Orchid Plant', price: 888, emoji: '🪴', category: '蘭花', description: '高貴蘭花盆栽，商務送禮。', tags: ['商務送禮','開張','蘭花','經典風','HK$800+','香港全境配送'], stock: '現貨' },
+        { id: 7, name_zh: '粉紅玫瑰', name_en: 'Pink Roses', price: 428, emoji: '🌸', category: '玫瑰花', description: '12支粉玫瑰，溫柔浪漫。', tags: ['戀愛','情人節','玫瑰','韓式','HK$300-600','即日配送','可加賀卡'], stock: '現貨' },
+        { id: 8, name_zh: '日式禪意花禮', name_en: 'Japanese Zen Floral Gift', price: 688, emoji: '🎋', category: '日式花禮', description: '日式極簡風格，禪意十足。', tags: ['商務送禮','喬遷','進口鮮花','日式極簡','HK$300-600','香港全境配送'], stock: '預訂' },
+        { id: 9, name_zh: '永生花盒', name_en: 'Preserved Flower Box', price: 1280, emoji: '🎁', category: '永生花', description: '精緻永生花盒，可保存2-3年。', tags: ['紀念日','婚禮','玫瑰','永生花','HK$1200+','香港全境配送','可加賀卡'], stock: '現貨' },
+        { id: 10, name_zh: '康乃馨花束', name_en: 'Carnation Bouquet', price: 298, emoji: '🌺', category: '康乃馨', description: '溫馨康乃馨，送給母親。', tags: ['母親節','探病','康乃馨','經典風','HK$300內','即日配送','可加賀卡'], stock: '現貨' },
+        { id: 11, name_zh: '法式田園花籃', name_en: 'French Provincial Basket', price: 788, emoji: '🧺', category: '法式田園', description: '法式田園風格花籃。', tags: ['生日','喬遷','進口鮮花','法式田園','HK$800+','香港全境配送'], stock: '預訂' },
+        { id: 12, name_zh: '牡丹花束', name_en: 'Peony Bouquet', price: 888, emoji: '💮', category: '芍藥牡丹', description: '富貴牡丹，花中之王。', tags: ['商務送禮','開張','芍藥','經典風','HK$800+','香港全境配送'], stock: '現貨' },
+        { id: 13, name_zh: '滿天星花束', name_en: "Baby's Breath Bouquet", price: 268, emoji: '✨', category: '滿天星', description: '清新滿天星，簡約浪漫。', tags: ['戀愛','生日','滿天星','韓式','HK$300內','即日配送'], stock: '現貨' },
+        { id: 14, name_zh: '聖誕花環', name_en: 'Christmas Wreath', price: 688, emoji: '🎄', category: '節慶花禮', description: '節日限定聖誕花環。', tags: ['聖誕節','進口鮮花','經典風','HK$300-600','香港全境配送'], stock: '預訂' },
+        { id: 15, name_zh: '荷花禪意花藝', name_en: 'Lotus Zen Arrangement', price: 988, emoji: '🪷', category: '荷花', description: '清雅荷花，禪意十足。', tags: ['商務送禮','開張','荷花','日式極簡','HK$800+','香港全境配送'], stock: '預訂' },
+        { id: 16, name_zh: '畢業花束', name_en: 'Graduation Bouquet', price: 388, emoji: '🎓', category: '畢業花禮', description: '慶祝畢業的繽紛花束。', tags: ['畢業季','生日','向日葵','韓式','HK$300-600','即日配送','可加賀卡'], stock: '現貨' },
+        { id: 17, name_zh: '婚禮手捧花', name_en: 'Wedding Bouquet', price: 1280, emoji: '💐', category: '婚禮花禮', description: '精緻婚禮手捧花。', tags: ['婚禮','紀念日','玫瑰','經典風','HK$1200+','香港全境配送'], stock: '預訂' },
+        { id: 18, name_zh: '中秋花禮', name_en: 'Mid-Autumn Floral Gift', price: 588, emoji: '🏮', category: '節慶花禮', description: '中秋佳節限定花禮。', tags: ['中秋節','進口鮮花','經典風','HK$300-600','香港全境配送'], stock: '現貨' },
+        { id: 19, name_zh: '進口藍玫瑰', name_en: 'Imported Blue Roses', price: 1580, emoji: '💙', category: '進口鮮花', description: '稀有進口藍玫瑰，限量發售。', tags: ['戀愛','紀念日','玫瑰','進口鮮花','HK$1200+','香港全境配送','可加賀卡'], stock: '預訂' },
+        { id: 20, name_zh: '企業周年花籃', name_en: 'Corporate Anniversary Basket', price: 1880, emoji: '🏢', category: '商務花禮', description: '企業周年慶典花籃。', tags: ['商務送禮','企業周年','進口鮮花','經典風','HK$1200+','香港全境配送'], stock: '預訂' }
+    ];
+
+    const tagDimensions = {
+        '場景用途': ['戀愛','生日','情人節','母親節','中秋節','畢業季','聖誕節','婚禮','紀念日','探病','開張','喬遷','商務送禮','企業周年'],
+        '核心花材': ['玫瑰','鬱金香','芍藥','荷花','百合','康乃馨','向日葵','滿天星','蘭花','牡丹','進口鮮花'],
+        '設計風格': ['經典風','韓式','日式極簡','法式田園','永生花'],
+        '價格區間': ['HK$300內','HK$300-600','HK$800+','HK$1200+']
+    };
+
+    // ===== 篩選邏輯 =====
+    let selectedTags = [];
+    let searchKeyword = '';
+    let currentSort = 'default';
+
+    function getProductsByTags(tags) {
+        if (!tags || tags.length === 0) return products;
+        return products.filter(p => tags.every(tag => p.tags.includes(tag)));
+    }
+
+    function getUrlParam(param) {
+        return new URLSearchParams(window.location.search).get(param);
+    }
+
+    function initFilterPills() {
+        const dimensions = [
+            { id: 'filterOccasion', tags: tagDimensions['場景用途'] },
+            { id: 'filterFlower', tags: tagDimensions['核心花材'] },
+            { id: 'filterStyle', tags: tagDimensions['設計風格'] },
+            { id: 'filterPrice', tags: tagDimensions['價格區間'] }
+        ];
+        dimensions.forEach(dim => {
+            const container = document.getElementById(dim.id);
+            if (container) {
+                container.innerHTML = dim.tags.map(tag => 
+                    `<button class="filter-pill" data-tag="${tag}" onclick="toggleTag('${tag}')">${tag}</button>`
+                ).join('');
+            }
+        });
+    }
+
+    function toggleTag(tag) {
+        const index = selectedTags.indexOf(tag);
+        if (index > -1) { selectedTags.splice(index, 1); } 
+        else { selectedTags.push(tag); }
+        updateFilterUI();
+        renderProducts();
+    }
+
+    function updateFilterUI() {
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            const tag = pill.getAttribute('data-tag');
+            if (selectedTags.includes(tag)) { pill.classList.add('active'); }
+            else { pill.classList.remove('active'); }
+        });
+    }
+
+    function clearAllFilters() {
+        selectedTags = [];
+        searchKeyword = '';
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.value = '';
+        updateFilterUI();
+        renderProducts();
+    }
+
+    function renderProducts() {
+        const grid = document.getElementById('productsGrid');
+        const count = document.getElementById('productsCount');
+        const noResults = document.getElementById('noResults');
+        if (!grid) return;
+
+        let filteredProducts = getProductsByTags(selectedTags);
+        if (searchKeyword) {
+            const keyword = searchKeyword.toLowerCase();
+            filteredProducts = filteredProducts.filter(p =>
+                p.name_zh.includes(searchKeyword) ||
+                p.name_en.toLowerCase().includes(keyword) ||
+                p.description.includes(searchKeyword) ||
+                p.tags.some(tag => tag.includes(searchKeyword))
+            );
+        }
+        if (currentSort === 'price_asc') { filteredProducts.sort((a,b) => a.price - b.price); }
+        else if (currentSort === 'price_desc') { filteredProducts.sort((a,b) => b.price - a.price); }
+
+        if (count) { count.textContent = `共 ${filteredProducts.length} 款花藝`; }
+        if (filteredProducts.length === 0) {
+            grid.innerHTML = '';
+            if (noResults) noResults.style.display = 'block';
+            return;
+        }
+        if (noResults) noResults.style.display = 'none';
+
+        grid.innerHTML = filteredProducts.map(product => `
+            <a href="product-detail.html?id=${product.id}" class="product-card">
+                <div class="product-emoji">${product.emoji}</div>
+                <div class="product-status ${product.stock === '現貨' ? 'in-stock' : 'pre-order'}">${product.stock === '現貨' ? '[現貨]' : '[預訂]'}</div>
+                <h3 class="product-name">${product.name_zh}</h3>
+                <p class="product-name-en">${product.name_en}</p>
+                <p class="product-price">HK$${product.price}</p>
+                <div class="product-tags">${product.tags.slice(0,4).map(tag => `<span class="tag-pill">${tag}</span>`).join('')}</div>
+            </a>
+        `).join('');
+    }
+
+    // ===== 初始化 =====
+    document.addEventListener('DOMContentLoaded', function() {
+        initFilterPills();
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        if (searchInput) { searchInput.addEventListener('input', function() { searchKeyword = this.value; renderProducts(); }); }
+        if (sortSelect) { sortSelect.addEventListener('change', function() { currentSort = this.value; renderProducts(); }); }
+        const urlTag = getUrlParam('tag');
+        if (urlTag) { selectedTags.push(urlTag); updateFilterUI(); }
+        renderProducts();
+    });
+
+    // ===== 導航抽屜 =====
+    function toggleNavSection(element) {
+        const submenu = element.nextElementSibling;
+        const plus = element.querySelector('.nav-plus');
+        if (submenu) { submenu.classList.toggle('open'); if (plus) plus.textContent = submenu.classList.contains('open') ? '−' : '+'; }
+    }
+    const menuBtn = document.getElementById('menuBtn');
+    const navCloseBtn = document.getElementById('navCloseBtn');
+    const navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+    </script>
+</body>
+</html>
