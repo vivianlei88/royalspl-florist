@@ -8,13 +8,12 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
         .user-icon svg { display: block; }
         .user-icon:hover { opacity: 0.7; }
         .cart-icon { display: flex; align-items: center; justify-content: center; }
-        
         .product-status { display: inline-block; padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: 3px; margin-bottom: 10px; }
         .in-stock { background-color: #1A1A1A; color: #FAF8F5; }
         .pre-order { background-color: transparent; border: 1px solid #1A1A1A; color: #1A1A1A; }
@@ -37,7 +36,6 @@
         .no-results-emoji { font-size: 60px; margin-bottom: 20px; }
         .no-results-text { font-size: 18px; margin-bottom: 25px; color: #383431; }
         .clear-filter-btn { padding: 12px 30px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 15px; cursor: pointer; font-family: inherit; }
-        .loading-skeleton { text-align: center; padding: 60px 20px; font-size: 18px; color: #383431; }
     </style>
 </head>
 <body>
@@ -49,7 +47,7 @@
                 <p class="logo-subtext">HONG KONG</p>
             </a>
             <div class="header-actions">
-                <a href="account.html" class="user-icon" aria-label="會員登入">
+                <a href="account.html" class="user-icon" aria-label="會員中心">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
                 <a href="cart.html" class="cart-icon" aria-label="購物車">
@@ -90,7 +88,7 @@
                     <a href="products.html?tag=進口鮮花" class="nav-sub-link">進口鮮花</a>
                 </div>
             </div>
-            <div class="nav-item"><a href="login.html" class="nav-link"><span class="nav-zh">會員登入</span><span class="nav-en">MEMBER LOGIN</span></a></div>
+            <div class="nav-item"><a href="account.html" class="nav-link"><span class="nav-zh">會員中心</span><span class="nav-en">ACCOUNT</span></a></div>
             <div class="nav-item"><a href="cart.html" class="nav-link"><span class="nav-zh">您的花禮</span><span class="nav-en">YOUR GIFTS</span></a></div>
         </nav>
     </div>
@@ -132,7 +130,7 @@
             </div>
         </div>
         <div class="products-grid" id="productsGrid">
-            <div class="loading-skeleton">🌸 正在載入花藝...</div>
+            <div style="text-align:center;padding:60px;grid-column:1/-1;">🌸 正在載入...</div>
         </div>
         <div class="no-results" id="noResults" style="display:none;">
             <p class="no-results-emoji">🌸</p>
@@ -142,28 +140,21 @@
     </main>
 
     <footer class="footer">
-        <div class="footer-slogan">
-            <p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p>
-            <p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p>
-        </div>
-        <div class="footer-bottom">
-            <a href="#" class="privacy-link">私隱政策 Privacy Policy</a>
-            <p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p>
-        </div>
+        <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
+        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
     <script>
-    // ===== Supabase 初始化 =====
-    const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let allProducts = [];
-    let selectedTags = [];
-    let searchKeyword = '';
-    let currentSort = 'default';
+    var allProducts = [];
+    var selectedTags = [];
+    var searchKeyword = '';
+    var currentSort = 'default';
 
-    const tagDimensions = {
+    var tagDimensions = {
         '場景用途': ['戀愛','生日','情人節','母親節','中秋節','畢業季','聖誕節','婚禮','紀念日','探病','開張','喬遷','商務送禮','企業周年'],
         '核心花材': ['玫瑰','鬱金香','芍藥','荷花','百合','康乃馨','向日葵','滿天星','蘭花','牡丹','進口鮮花'],
         '設計風格': ['經典風','韓式','日式極簡','法式田園','永生花'],
@@ -173,125 +164,134 @@
     function getUrlParam(param) { return new URLSearchParams(window.location.search).get(param); }
 
     function initFilterPills() {
-        const dimensions = [
+        var dimensions = [
             { id: 'filterOccasion', tags: tagDimensions['場景用途'] },
             { id: 'filterFlower', tags: tagDimensions['核心花材'] },
             { id: 'filterStyle', tags: tagDimensions['設計風格'] },
             { id: 'filterPrice', tags: tagDimensions['價格區間'] }
         ];
-        dimensions.forEach(dim => {
-            const container = document.getElementById(dim.id);
-            if (container) { container.innerHTML = dim.tags.map(tag => `<button class="filter-pill" data-tag="${tag}" onclick="toggleTag('${tag}')">${tag}</button>`).join(''); }
+        dimensions.forEach(function(dim) {
+            var container = document.getElementById(dim.id);
+            if (container) {
+                var html = '';
+                for (var i = 0; i < dim.tags.length; i++) {
+                    html += '<button class="filter-pill" data-tag="' + dim.tags[i] + '" onclick="toggleTag(\'' + dim.tags[i] + '\')">' + dim.tags[i] + '<\/button>';
+                }
+                container.innerHTML = html;
+            }
         });
     }
 
     function toggleTag(tag) {
-        const index = selectedTags.indexOf(tag);
+        var index = selectedTags.indexOf(tag);
         if (index > -1) { selectedTags.splice(index, 1); } else { selectedTags.push(tag); }
         updateFilterUI(); renderProducts();
     }
 
     function updateFilterUI() {
-        document.querySelectorAll('.filter-pill').forEach(pill => {
-            const tag = pill.getAttribute('data-tag');
-            if (selectedTags.includes(tag)) { pill.classList.add('active'); } else { pill.classList.remove('active'); }
+        document.querySelectorAll('.filter-pill').forEach(function(pill) {
+            var tag = pill.getAttribute('data-tag');
+            if (selectedTags.indexOf(tag) > -1) { pill.classList.add('active'); } else { pill.classList.remove('active'); }
         });
     }
 
     function clearAllFilters() {
         selectedTags = []; searchKeyword = '';
-        const searchInput = document.getElementById('searchInput');
+        var searchInput = document.getElementById('searchInput');
         if (searchInput) searchInput.value = '';
         updateFilterUI(); renderProducts();
     }
 
     function getFilteredProducts() {
-        let filtered = [...allProducts];
+        var filtered = allProducts.slice();
         if (selectedTags.length > 0) {
-            filtered = filtered.filter(p => selectedTags.every(tag => p.tags && p.tags.includes(tag)));
+            filtered = filtered.filter(function(p) {
+                return selectedTags.every(function(tag) { return p.tags && p.tags.indexOf(tag) > -1; });
+            });
         }
         if (searchKeyword) {
-            const keyword = searchKeyword.toLowerCase();
-            filtered = filtered.filter(p => 
-                (p.name_zh && p.name_zh.includes(searchKeyword)) ||
-                (p.name_en && p.name_en.toLowerCase().includes(keyword)) ||
-                (p.description && p.description.includes(searchKeyword)) ||
-                (p.tags && p.tags.some(tag => tag.includes(searchKeyword)))
-            );
+            var keyword = searchKeyword.toLowerCase();
+            filtered = filtered.filter(function(p) {
+                return (p.name_zh && p.name_zh.indexOf(searchKeyword) > -1) ||
+                       (p.name_en && p.name_en.toLowerCase().indexOf(keyword) > -1) ||
+                       (p.description && p.description.indexOf(searchKeyword) > -1) ||
+                       (p.tags && p.tags.some(function(tag) { return tag.indexOf(searchKeyword) > -1; }));
+            });
         }
-        if (currentSort === 'price_asc') { filtered.sort((a,b) => a.price - b.price); }
-        else if (currentSort === 'price_desc') { filtered.sort((a,b) => b.price - a.price); }
+        if (currentSort === 'price_asc') { filtered.sort(function(a,b) { return a.price - b.price; }); }
+        else if (currentSort === 'price_desc') { filtered.sort(function(a,b) { return b.price - a.price; }); }
         return filtered;
     }
 
     function renderProducts() {
-        const grid = document.getElementById('productsGrid');
-        const count = document.getElementById('productsCount');
-        const noResults = document.getElementById('noResults');
+        var grid = document.getElementById('productsGrid');
+        var count = document.getElementById('productsCount');
+        var noResults = document.getElementById('noResults');
         if (!grid) return;
-        const filteredProducts = getFilteredProducts();
-        if (count) { count.textContent = `共 ${filteredProducts.length} 款花藝`; }
+        var filteredProducts = getFilteredProducts();
+        if (count) { count.textContent = '共 ' + filteredProducts.length + ' 款花藝'; }
         if (filteredProducts.length === 0) { grid.innerHTML = ''; if (noResults) noResults.style.display = 'block'; return; }
         if (noResults) noResults.style.display = 'none';
-        grid.innerHTML = filteredProducts.map(product => `
-            <a href="product-detail.html?id=${product.id}" class="product-card">
-                <div class="product-emoji">${product.emoji || '🌸'}</div>
-                <div class="product-status ${product.stock === '現貨' ? 'in-stock' : 'pre-order'}">${product.stock === '現貨' ? '[現貨]' : '[預訂]'}</div>
-                <h3 class="product-name">${product.name_zh}</h3>
-                <p class="product-name-en">${product.name_en}</p>
-                <p class="product-price">HK$${product.price}</p>
-                <div class="product-tags">${(product.tags || []).slice(0,4).map(tag => `<span class="tag-pill">${tag}</span>`).join('')}</div>
-            </a>
-        `).join('');
+        var html = '';
+        for (var i = 0; i < filteredProducts.length; i++) {
+            var p = filteredProducts[i];
+            var tags = p.tags || [];
+            var stockClass = p.stock === '現貨' ? 'in-stock' : 'pre-order';
+            var stockText = p.stock === '現貨' ? '[現貨]' : '[預訂]';
+            html += '<a href="product-detail.html?id=' + p.id + '" class="product-card">';
+            html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            html += '<div class="product-status ' + stockClass + '">' + stockText + '<\/div>';
+            html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
+            html += '<p class="product-name-en">' + p.name_en + '<\/p>';
+            html += '<p class="product-price">HK$' + p.price + '<\/p>';
+            html += '<div class="product-tags">';
+            for (var j = 0; j < Math.min(tags.length, 4); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }
+            html += '<\/div>';
+            html += '<\/a>';
+        }
+        grid.innerHTML = html;
     }
 
     async function loadProducts() {
+        var grid = document.getElementById('productsGrid');
         try {
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('is_active', true)
-                .order('id', { ascending: true });
-            
-            if (error) throw error;
-            
-            allProducts = data || [];
+            var result = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: true });
+            if (result.error) throw result.error;
+            allProducts = result.data || [];
             renderProducts();
         } catch (err) {
             console.error('載入商品失敗:', err);
-            document.getElementById('productsGrid').innerHTML = `
-                <div class="loading-skeleton">❌ 載入失敗，請檢查網絡連接</div>
-            `;
+            grid.innerHTML = '<div style="text-align:center;padding:60px;grid-column:1/-1;">❌ 載入失敗</div>';
         }
     }
 
     function updateCartBadge() {
-        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
-        const badge = document.getElementById('cartBadge');
-        if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; }
+        var cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        var badge = document.getElementById('cartBadge');
+        if (badge) { var totalItems = cart.reduce(function(sum, item) { return sum + item.quantity; }, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; }
     }
 
     function toggleNavSection(element) {
-        const submenu = element.nextElementSibling;
-        const plus = element.querySelector('.nav-plus');
+        var submenu = element.nextElementSibling;
+        var plus = element.querySelector('.nav-plus');
         if (submenu) { submenu.classList.toggle('open'); if (plus) plus.textContent = submenu.classList.contains('open') ? '−' : '+'; }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         initFilterPills();
-        const searchInput = document.getElementById('searchInput');
-        const sortSelect = document.getElementById('sortSelect');
+        var searchInput = document.getElementById('searchInput');
+        var sortSelect = document.getElementById('sortSelect');
         if (searchInput) { searchInput.addEventListener('input', function() { searchKeyword = this.value; renderProducts(); }); }
         if (sortSelect) { sortSelect.addEventListener('change', function() { currentSort = this.value; renderProducts(); }); }
-        const urlTag = getUrlParam('tag');
+        var urlTag = getUrlParam('tag');
         if (urlTag) { selectedTags.push(urlTag); updateFilterUI(); }
         loadProducts();
         updateCartBadge();
     });
 
-    const menuBtn = document.getElementById('menuBtn');
-    const navCloseBtn = document.getElementById('navCloseBtn');
-    const navDrawer = document.getElementById('navDrawer');
+    var menuBtn = document.getElementById('menuBtn');
+    var navCloseBtn = document.getElementById('navCloseBtn');
+    var navDrawer = document.getElementById('navDrawer');
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
     </script>

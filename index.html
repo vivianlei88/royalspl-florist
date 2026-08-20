@@ -8,13 +8,12 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
         .user-icon svg { display: block; }
         .user-icon:hover { opacity: 0.7; }
         .cart-icon { display: flex; align-items: center; justify-content: center; }
-        
         .collections-section { padding-bottom: 80px; }
         .collections-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .collection-card { background-color: #F3EFEA; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: all 0.3s; cursor: pointer; overflow: hidden; padding: 30px 20px; }
@@ -26,7 +25,6 @@
         .collection-emoji { font-size: 70px; margin-bottom: 20px; }
         .collection-title { font-size: 20px; font-weight: 600; margin-bottom: 5px; color: #1A1A1A; }
         .collection-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 13px; letter-spacing: 1px; color: #383431; text-transform: uppercase; }
-        
         .featured-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .product-card { background-color: #FAF8F5; border-radius: 8px; padding: 30px; text-align: center; transition: all 0.3s; display: block; }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
@@ -38,22 +36,9 @@
         .tag-pill { display: inline-block; padding: 4px 12px; border: 1px solid #1A1A1A; border-radius: 15px; font-size: 12px; color: #1A1A1A; }
         .add-to-cart-btn { display: inline-block; width: 100%; padding: 12px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.3s; }
         .add-to-cart-btn:hover { background-color: #383431; }
-        
-        @media (min-width: 769px) {
-            .collection-card-2 { transform: translateY(40px); }
-            .collection-card-5 { transform: translateY(30px); }
-            .collection-card-2:hover { transform: translateY(35px); }
-            .collection-card-5:hover { transform: translateY(25px); }
-        }
-        @media (max-width: 768px) {
-            .collections-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
-            .featured-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
-            .collection-card-1, .collection-card-2, .collection-card-3, .collection-card-4, .collection-card-5, .collection-card-6 { aspect-ratio: auto; min-height: 200px; transform: none !important; }
-        }
-        @media (max-width: 480px) {
-            .collections-grid { grid-template-columns: 1fr; }
-            .featured-grid { grid-template-columns: 1fr; }
-        }
+        @media (min-width: 769px) { .collection-card-2 { transform: translateY(40px); } .collection-card-5 { transform: translateY(30px); } .collection-card-2:hover { transform: translateY(35px); } .collection-card-5:hover { transform: translateY(25px); } }
+        @media (max-width: 768px) { .collections-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } .featured-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } .collection-card-1, .collection-card-2, .collection-card-3, .collection-card-4, .collection-card-5, .collection-card-6 { aspect-ratio: auto; min-height: 200px; transform: none !important; } }
+        @media (max-width: 480px) { .collections-grid { grid-template-columns: 1fr; } .featured-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -65,7 +50,7 @@
                 <p class="logo-subtext">HONG KONG</p>
             </a>
             <div class="header-actions">
-                <a href="account.html" class="user-icon" aria-label="會員登入">
+                <a href="account.html" class="user-icon" aria-label="會員中心">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
                 <a href="cart.html" class="cart-icon" aria-label="購物車">
@@ -106,7 +91,7 @@
                     <a href="products.html?tag=進口鮮花" class="nav-sub-link">進口鮮花</a>
                 </div>
             </div>
-            <div class="nav-item"><a href="login.html" class="nav-link"><span class="nav-zh">會員登入</span><span class="nav-en">MEMBER LOGIN</span></a></div>
+            <div class="nav-item"><a href="account.html" class="nav-link"><span class="nav-zh">會員中心</span><span class="nav-en">ACCOUNT</span></a></div>
             <div class="nav-item"><a href="cart.html" class="nav-link"><span class="nav-zh">您的花禮</span><span class="nav-en">YOUR GIFTS</span></a></div>
         </nav>
     </div>
@@ -127,36 +112,12 @@
             <h2 class="section-title-zh">臻選系列</h2>
         </div>
         <div class="collections-grid">
-            <a href="products.html?tag=法式田園" class="collection-card collection-card-1">
-                <div class="collection-emoji">🌿</div>
-                <h3 class="collection-title">法式田園風</h3>
-                <p class="collection-subtitle">French Provincial</p>
-            </a>
-            <a href="products.html?tag=日式極簡" class="collection-card collection-card-2">
-                <div class="collection-emoji">🎋</div>
-                <h3 class="collection-title">日式花禮</h3>
-                <p class="collection-subtitle">Japanese-Style Gifts</p>
-            </a>
-            <a href="products.html?tag=即日配送" class="collection-card collection-card-3">
-                <div class="collection-emoji">🚚</div>
-                <h3 class="collection-title">即日送花</h3>
-                <p class="collection-subtitle">Same-Day Delivery</p>
-            </a>
-            <a href="products.html?tag=生日" class="collection-card collection-card-4">
-                <div class="collection-emoji">🎂</div>
-                <h3 class="collection-title">生日派對</h3>
-                <p class="collection-subtitle">Birthday Party</p>
-            </a>
-            <a href="products.html?tag=探親" class="collection-card collection-card-5">
-                <div class="collection-emoji">🌸</div>
-                <h3 class="collection-title">探親訪友</h3>
-                <p class="collection-subtitle">Crimson Peony Collection</p>
-            </a>
-            <a href="products.html?tag=婚禮" class="collection-card collection-card-6">
-                <div class="collection-emoji">💒</div>
-                <h3 class="collection-title">婚禮花禮</h3>
-                <p class="collection-subtitle">Wedding Floral Gifts</p>
-            </a>
+            <a href="products.html?tag=法式田園" class="collection-card collection-card-1"><div class="collection-emoji">🌿</div><h3 class="collection-title">法式田園風</h3><p class="collection-subtitle">French Provincial</p></a>
+            <a href="products.html?tag=日式極簡" class="collection-card collection-card-2"><div class="collection-emoji">🎋</div><h3 class="collection-title">日式花禮</h3><p class="collection-subtitle">Japanese-Style Gifts</p></a>
+            <a href="products.html?tag=即日配送" class="collection-card collection-card-3"><div class="collection-emoji">🚚</div><h3 class="collection-title">即日送花</h3><p class="collection-subtitle">Same-Day Delivery</p></a>
+            <a href="products.html?tag=生日" class="collection-card collection-card-4"><div class="collection-emoji">🎂</div><h3 class="collection-title">生日派對</h3><p class="collection-subtitle">Birthday Party</p></a>
+            <a href="products.html?tag=探親" class="collection-card collection-card-5"><div class="collection-emoji">🌸</div><h3 class="collection-title">探親訪友</h3><p class="collection-subtitle">Crimson Peony Collection</p></a>
+            <a href="products.html?tag=婚禮" class="collection-card collection-card-6"><div class="collection-emoji">💒</div><h3 class="collection-title">婚禮花禮</h3><p class="collection-subtitle">Wedding Floral Gifts</p></a>
         </div>
     </section>
 
@@ -174,108 +135,94 @@
         <div class="about-content">
             <span class="section-subtitle-en">ABOUT US</span>
             <h2 class="section-title-zh">關於我們</h2>
-            <p class="about-text">
-                RoyalSpl Florist 致力於為香港帶來最優質的花藝體驗。<br>
-                每一束花都是藝術品，每一個細節都體現匠心。
-            </p>
+            <p class="about-text">RoyalSpl Florist 致力於為香港帶來最優質的花藝體驗。<br>每一束花都是藝術品，每一個細節都體現匠心。</p>
             <a href="#" class="about-link">了解更多 →</a>
         </div>
     </section>
 
     <footer class="footer">
-        <div class="footer-slogan">
-            <p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p>
-            <p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p>
-        </div>
+        <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
         <div class="footer-links">
-            <div class="footer-column">
-                <a href="products.html" class="footer-link">所有花藝</a>
-                <a href="products.html?tag=情人節" class="footer-link">節慶場合</a>
-                <a href="products.html?tag=訂閱" class="footer-link">訂閱花禮</a>
-            </div>
-            <div class="footer-column">
-                <a href="#" class="footer-link">Blog</a>
-                <a href="#" class="footer-link">常見問題</a>
-                <a href="#" class="footer-link">聯絡我們</a>
-            </div>
+            <div class="footer-column"><a href="products.html" class="footer-link">所有花藝</a><a href="products.html?tag=情人節" class="footer-link">節慶場合</a><a href="products.html?tag=訂閱" class="footer-link">訂閱花禮</a></div>
+            <div class="footer-column"><a href="#" class="footer-link">Blog</a><a href="#" class="footer-link">常見問題</a><a href="#" class="footer-link">聯絡我們</a></div>
         </div>
-        <div class="footer-bottom">
-            <a href="#" class="privacy-link">私隱政策 Privacy Policy</a>
-            <p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p>
-        </div>
+        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
     <script>
-    const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let featuredProductsData = [];
+    var featuredProductsData = [];
 
     async function loadFeaturedProducts() {
+        var container = document.getElementById('featuredProducts');
         try {
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('is_active', true)
-                .limit(6)
-                .order('id', { ascending: true });
-            
-            if (error) throw error;
-            featuredProductsData = data || [];
+            var result = await supabaseClient.from('products').select('*').eq('is_active', true).limit(6).order('id', { ascending: true });
+            if (result.error) throw result.error;
+            featuredProductsData = result.data || [];
             renderFeaturedProducts();
         } catch (err) {
             console.error('載入商品失敗:', err);
-            document.getElementById('featuredProducts').innerHTML = '<div style="text-align:center;padding:40px;grid-column:1/-1;">❌ 載入失敗</div>';
+            container.innerHTML = '<div style="text-align:center;padding:40px;grid-column:1/-1;">❌ 載入失敗</div>';
         }
     }
 
     function renderFeaturedProducts() {
-        const container = document.getElementById('featuredProducts');
+        var container = document.getElementById('featuredProducts');
         if (!container) return;
-        container.innerHTML = featuredProductsData.map(p => `
-            <a href="product-detail.html?id=${p.id}" class="product-card">
-                <div class="product-emoji">${p.emoji || '🌸'}</div>
-                <h3 class="product-name">${p.name_zh}</h3>
-                <p class="product-name-en">${p.name_en}</p>
-                <p class="product-price">HK$${p.price}</p>
-                <div class="product-tags">${(p.tags || []).slice(0,3).map(tag => `<span class="tag-pill">${tag}</span>`).join('')}</div>
-                <button class="add-to-cart-btn" onclick="event.preventDefault(); event.stopPropagation(); addToCart(${p.id})">加入購物車</button>
-            </a>
-        `).join('');
+        var html = '';
+        for (var i = 0; i < featuredProductsData.length; i++) {
+            var p = featuredProductsData[i];
+            var tags = p.tags || [];
+            html += '<a href="product-detail.html?id=' + p.id + '" class="product-card">';
+            html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
+            html += '<p class="product-name-en">' + p.name_en + '<\/p>';
+            html += '<p class="product-price">HK$' + p.price + '<\/p>';
+            html += '<div class="product-tags">';
+            for (var j = 0; j < Math.min(tags.length, 3); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }
+            html += '<\/div>';
+            html += '<button class="add-to-cart-btn" onclick="event.preventDefault(); event.stopPropagation(); addToCart(' + p.id + ')">加入購物車<\/button>';
+            html += '<\/a>';
+        }
+        container.innerHTML = html;
     }
 
     function addToCart(productId) {
-        const product = featuredProductsData.find(p => p.id === productId);
+        var product = null;
+        for (var i = 0; i < featuredProductsData.length; i++) { if (featuredProductsData[i].id === productId) { product = featuredProductsData[i]; break; } }
         if (!product) return;
-        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
-        const existingItem = cart.find(item => item.productId === productId);
+        var cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        var existingItem = null;
+        for (var j = 0; j < cart.length; j++) { if (cart[j].productId === productId) { existingItem = cart[j]; break; } }
         if (existingItem) { existingItem.quantity += 1; }
         else { cart.push({ productId: product.id, name: product.name_zh, nameEn: product.name_en, price: parseFloat(product.price), emoji: product.emoji || '🌸', quantity: 1, addons: [], deliveryDays: product.delivery_days || 1 }); }
         localStorage.setItem('royalspl_cart', JSON.stringify(cart));
         updateCartBadge();
-        const toast = document.createElement('div');
+        var toast = document.createElement('div');
         toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;';
-        toast.textContent = `✓ ${product.name_zh} 已加入購物車`;
+        toast.textContent = '✓ ' + product.name_zh + ' 已加入購物車';
         document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2500);
+        setTimeout(function() { toast.remove(); }, 2500);
     }
 
     function updateCartBadge() {
-        const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
-        const badge = document.getElementById('cartBadge');
-        if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; }
+        var cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        var badge = document.getElementById('cartBadge');
+        if (badge) { var totalItems = cart.reduce(function(sum, item) { return sum + item.quantity; }, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; }
     }
 
     function toggleNavSection(element) {
-        const submenu = element.nextElementSibling;
-        const plus = element.querySelector('.nav-plus');
+        var submenu = element.nextElementSibling;
+        var plus = element.querySelector('.nav-plus');
         if (submenu) { submenu.classList.toggle('open'); if (plus) plus.textContent = submenu.classList.contains('open') ? '−' : '+'; }
     }
 
-    const menuBtn = document.getElementById('menuBtn');
-    const navCloseBtn = document.getElementById('navCloseBtn');
-    const navDrawer = document.getElementById('navDrawer');
+    var menuBtn = document.getElementById('menuBtn');
+    var navCloseBtn = document.getElementById('navCloseBtn');
+    var navDrawer = document.getElementById('navDrawer');
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
