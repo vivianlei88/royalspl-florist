@@ -3,235 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>後台管理 | RoyalSpl Florist Hong Kong</title>
+    <title>後台管理 | RoyalSpl Florist</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        .admin-page { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 10px; }
-        .admin-title { font-size: 28px; font-weight: 600; }
-        .admin-nav { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .admin-nav-btn { padding: 10px 20px; border: 1px solid #1A1A1A; border-radius: 5px; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .admin-nav-btn.active { background-color: #1A1A1A; color: #FAF8F5; }
-        .logout-link { font-size: 14px; color: #383431; cursor: pointer; text-decoration: underline; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; }
         
-        .login-page { max-width: 400px; margin: 80px auto; text-align: center; }
-        .login-icon { font-size: 50px; margin-bottom: 20px; }
-        .login-title { font-size: 24px; font-weight: 600; margin-bottom: 30px; }
-        .login-form { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 30px; }
-        .form-group { margin-bottom: 20px; text-align: left; }
+        .login-container { max-width: 400px; margin: 100px auto; background: white; border-radius: 10px; padding: 40px; box-shadow: 0 5px 30px rgba(0,0,0,0.1); text-align: center; }
+        .login-container h1 { font-size: 22px; margin-bottom: 25px; }
+        .login-container input { width: 100%; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; margin-bottom: 15px; font-size: 15px; }
+        .login-container button { width: 100%; padding: 14px; background: #1A1A1A; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .login-error { color: red; font-size: 13px; margin-top: 10px; display: none; }
+        
+        .admin-container { display: none; }
+        
+        .topbar { background: #1A1A1A; color: white; padding: 0 30px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar h1 { font-size: 18px; font-weight: 600; }
+        .topbar a { color: #ccc; font-size: 14px; text-decoration: none; }
+        
+        .sidebar { width: 200px; background: #F3EFEA; min-height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; padding: 20px 0; }
+        .sidebar-item { display: block; padding: 14px 25px; font-size: 15px; font-weight: 600; cursor: pointer; color: #383431; border-left: 3px solid transparent; }
+        .sidebar-item:hover { background: #e8e0d6; }
+        .sidebar-item.active { background: white; border-left-color: #1A1A1A; color: #1A1A1A; }
+        
+        .main-content { margin-left: 200px; padding: 30px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-title { font-size: 24px; font-weight: 600; }
+        .btn { padding: 10px 20px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+        .btn-primary { background: #1A1A1A; color: white; }
+        .btn-primary:hover { background: #383431; }
+        .btn-secondary { background: transparent; border: 1px solid #1A1A1A; }
+        .btn-danger { background: #ff4444; color: white; }
+        .btn-small { padding: 6px 12px; font-size: 12px; }
+        
+        .search-bar { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; margin-bottom: 20px; }
+        
+        .data-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .data-table th { background: #1A1A1A; color: white; padding: 14px 15px; text-align: left; font-size: 13px; }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .data-table tr:hover { background: #F9F6F2; }
+        .product-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+        .emoji-img { font-size: 30px; }
+        
+        .form-container { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 700px; }
+        .form-container h2 { font-size: 20px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 18px; }
         .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-        .form-input, .form-select, .form-textarea { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; font-family: inherit; background-color: white; }
+        .form-input, .form-select, .form-textarea { width: 100%; padding: 11px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; }
         .form-textarea { resize: vertical; min-height: 80px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { padding: 12px 25px; border: none; border-radius: 5px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .btn-primary { background-color: #1A1A1A; color: #FAF8F5; }
-        .btn-primary:hover { background-color: #383431; }
-        .btn-secondary { background-color: transparent; border: 1px solid #1A1A1A; color: #1A1A1A; }
-        .btn-danger { background-color: #ff4444; color: white; }
-        .btn-small { padding: 6px 12px; font-size: 13px; }
-        .btn-success { background-color: #2e7d32; color: white; }
-        .login-btn { width: 100%; padding: 14px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .login-error { color: #ff0000; font-size: 14px; margin-top: 10px; display: none; }
+        .form-actions { display: flex; gap: 10px; margin-top: 25px; }
         
-        .upload-section { background-color: #FAF8F5; border: 2px dashed #1A1A1A; border-radius: 10px; padding: 30px; text-align: center; margin-bottom: 20px; cursor: pointer; transition: all 0.3s; }
-        .upload-section:hover, .upload-section.dragover { background-color: #F3EFEA; }
-        .upload-emoji { font-size: 40px; margin-bottom: 10px; }
-        .upload-text { font-size: 15px; font-weight: 600; }
-        .upload-hint { font-size: 12px; color: #383431; }
-        .upload-progress { margin-top: 10px; font-size: 14px; display: none; }
-        .uploaded-images { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .uploaded-image-item { position: relative; width: 80px; height: 80px; border-radius: 5px; overflow: hidden; }
-        .uploaded-image-item img { width: 100%; height: 100%; object-fit: cover; }
-        .remove-img { position: absolute; top: 2px; right: 2px; background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; }
+        .upload-area { border: 2px dashed #1A1A1A; border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; margin-bottom: 15px; }
+        .upload-area:hover { background: #F9F6F2; }
+        .upload-area.dragover { background: #F3EFEA; }
+        .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 10px; }
+        .uploaded-img-item { position: relative; width: 70px; height: 70px; }
+        .uploaded-img-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
+        .uploaded-img-item .del-btn { position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; }
         
-        .product-form { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 25px; margin-bottom: 20px; display: none; }
-        .product-form.show { display: block; }
-        .form-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .spectrum-wrap { display: flex; align-items: center; gap: 12px; }
+        .spectrum-wrap input[type="range"] { flex: 1; }
+        .spectrum-val { font-size: 18px; font-weight: 700; min-width: 35px; text-align: center; }
         
-        .search-bar { margin-bottom: 20px; }
-        .search-input { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; font-family: inherit; }
+        .toast { position: fixed; top: 20px; right: 20px; background: #1A1A1A; color: white; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transition: all 0.3s; }
+        .toast.show { opacity: 1; }
         
-        /* 風格光譜滑塊 */
-        .spectrum-container { display: flex; align-items: center; gap: 15px; }
-        .spectrum-container input[type="range"] { flex: 1; -webkit-appearance: none; height: 6px; background: linear-gradient(to right, #ff6b9d, #1A1A1A); border-radius: 3px; outline: none; cursor: pointer; }
-        .spectrum-container input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: #1A1A1A; border: 3px solid #FAF8F5; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        .spectrum-value { font-size: 18px; font-weight: 700; min-width: 40px; text-align: center; }
-        .spectrum-labels { display: flex; justify-content: space-between; font-size: 12px; color: #383431; margin-top: 5px; }
-        
-        .products-table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 10px; overflow: hidden; }
-        .products-table th { background-color: #1A1A1A; color: #FAF8F5; padding: 12px 10px; text-align: left; font-size: 13px; }
-        .products-table td { padding: 10px; border-bottom: 1px solid rgba(26,26,26,0.1); font-size: 13px; vertical-align: middle; }
-        .products-table tr:hover { background-color: #F3EFEA; }
-        .product-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
-        .product-emoji-thumb { font-size: 35px; }
-        .eye-toggle { cursor: pointer; font-size: 20px; }
-        .action-btns { display: flex; gap: 5px; flex-wrap: wrap; }
-        
-        .init-section { background-color: #FFF3E0; border: 1px solid #FF9800; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-        .init-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #E65100; }
-        
-        .toast { position: fixed; top: 20px; right: 20px; background-color: #1A1A1A; color: #FAF8F5; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transform: translateY(-20px); transition: all 0.3s; }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        
-        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+        .empty-state { text-align: center; padding: 50px; color: #888; }
     </style>
 </head>
 <body>
-    <!-- 登入頁面 -->
-    <div id="loginPage" class="login-page">
-        <div class="login-icon">🔐</div>
-        <h1 class="login-title">後台管理登入</h1>
-        <div class="login-form">
-            <div class="form-group">
-                <label class="form-label">帳號</label>
-                <input type="text" class="form-input" id="adminUser" placeholder="請輸入帳號">
-            </div>
-            <div class="form-group">
-                <label class="form-label">密碼</label>
-                <input type="password" class="form-input" id="adminPass" placeholder="請輸入密碼">
-            </div>
-            <button class="login-btn" onclick="handleAdminLogin()">登入</button>
-            <p class="login-error" id="loginError">帳號或密碼錯誤</p>
-        </div>
+    <!-- ===== 登入頁 ===== -->
+    <div id="loginPage" class="login-container">
+        <h1>🔐 後台管理登入</h1>
+        <input type="text" id="loginUser" placeholder="帳號">
+        <input type="password" id="loginPass" placeholder="密碼">
+        <button onclick="doLogin()">登入</button>
+        <p class="login-error" id="loginError">帳號或密碼錯誤</p>
     </div>
 
-    <!-- 管理頁面 -->
-    <div id="adminPage" class="admin-page" style="display:none;">
-        <div class="admin-header">
-            <h1 class="admin-title">🌸 後台管理</h1>
-            <div>
-                <a href="index.html" style="font-size:14px;color:#383431;margin-right:15px;">← 返回前台</a>
-                <span class="logout-link" onclick="handleLogout()">登出</span>
-            </div>
+    <!-- ===== 後台主體 ===== -->
+    <div id="adminPage" class="admin-container">
+        <div class="topbar">
+            <h1>🌸 RoyalSpl 後台管理</h1>
+            <a href="index.html">← 返回前台</a>
+            <a href="#" onclick="doLogout()">登出</a>
         </div>
-
-        <!-- 初始化按鈕 -->
-        <div class="init-section" id="initSection">
-            <p class="init-title">⚡ 首次使用請先初始化數據庫</p>
-            <p style="font-size:13px;margin-bottom:10px;">點擊按鈕自動創建加購配件表</p>
-            <button class="btn btn-success" onclick="initDatabase()">初始化數據庫</button>
+        
+        <div class="sidebar">
+            <div class="sidebar-item active" data-page="products" onclick="switchPage('products')">📦 商品管理</div>
+            <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">🎁 加購配件</div>
+            <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">📋 訂單管理</div>
         </div>
-
-        <!-- 導航 -->
-        <div class="admin-nav">
-            <button class="admin-nav-btn active" id="navProducts" onclick="switchTab('products')">商品管理</button>
-            <button class="admin-nav-btn" id="navAddons" onclick="switchTab('addons')">加購配件</button>
-        </div>
-
-        <!-- 商品管理 -->
-        <div id="tabProducts">
-            <div class="search-bar">
-                <input type="text" class="search-input" id="productSearch" placeholder="🔍 搜索商品名稱..." oninput="filterProducts()">
+        
+        <div class="main-content">
+            <!-- ===== 商品列表頁 ===== -->
+            <div id="page-products-list">
+                <div class="page-header">
+                    <h2 class="page-title">商品管理</h2>
+                    <button class="btn btn-primary" onclick="showAddForm()">+ 新增商品</button>
+                </div>
+                <input type="text" class="search-bar" id="productSearch" placeholder="🔍 搜索商品名稱..." oninput="filterProducts()">
+                <div id="productsTable"></div>
             </div>
             
-            <div class="upload-section" id="uploadSection">
-                <div class="upload-emoji">📸</div>
-                <p class="upload-text">拖拉圖片到這裡批量上傳</p>
-                <p class="upload-hint">或點擊選擇（上傳後自動填入下方表單）</p>
-                <input type="file" id="fileInput" multiple accept="image/*" style="display:none;">
-                <div class="upload-progress" id="uploadProgress"></div>
-                <div class="uploaded-images" id="uploadedImages"></div>
-            </div>
-
-            <button class="btn btn-primary" style="margin-bottom:20px;" onclick="showAddForm()">+ 新增商品</button>
-
-            <div class="product-form" id="productForm">
-                <h2 class="form-title" id="formTitle">新增商品</h2>
-                <input type="hidden" id="productId">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">中文名稱 *</label>
-                        <input type="text" class="form-input" id="nameZh" placeholder="如：緋芍集">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">英文名稱 *</label>
-                        <input type="text" class="form-input" id="nameEn" placeholder="如：Crimson Peony Bouquet">
-                    </div>
+            <!-- ===== 商品表單頁 ===== -->
+            <div id="page-products-form" style="display:none;">
+                <div class="page-header">
+                    <h2 class="page-title" id="formTitle">新增商品</h2>
+                    <button class="btn btn-secondary" onclick="showProductsList()">← 返回列表</button>
                 </div>
-                <div class="form-row">
+                <div class="form-container">
+                    <input type="hidden" id="productId">
                     <div class="form-group">
-                        <label class="form-label">價格 (HKD) *</label>
-                        <input type="number" class="form-input" id="price" placeholder="如：688" step="0.01">
+                        <label class="form-label">商品圖片（拖拽上傳，第一張為主圖）</label>
+                        <div class="upload-area" id="uploadArea">
+                            <p>📸 點擊或拖拽圖片到這裡上傳</p>
+                            <input type="file" id="fileInput" multiple accept="image/*" style="display:none;">
+                        </div>
+                        <div class="uploaded-imgs" id="uploadedImages"></div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">分類</label>
-                        <input type="text" class="form-input" id="category" placeholder="如：玫瑰花">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">中文名稱 *</label>
+                            <input type="text" class="form-input" id="nameZh" placeholder="如：緋芍集">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">英文名稱 *</label>
+                            <input type="text" class="form-input" id="nameEn" placeholder="如：Crimson Peony Bouquet">
+                        </div>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">圖片 URL</label>
-                        <input type="text" class="form-input" id="imageUrl" placeholder="上傳後自動填入">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">價格 (HKD) *</label>
+                            <input type="number" class="form-input" id="price" placeholder="688" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">分類</label>
+                            <input type="text" class="form-input" id="category" placeholder="如：玫瑰花">
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">庫存狀態</label>
-                        <select class="form-select" id="stock">
-                            <option value="現貨">現貨</option>
-                            <option value="預訂">預訂</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">描述</label>
-                    <textarea class="form-textarea" id="description" placeholder="商品描述..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">標籤（用逗號分隔）</label>
-                    <input type="text" class="form-input" id="tags" placeholder="如：戀愛,生日,玫瑰,經典風,HK$300-600">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">香氣筆記（用逗號分隔）</label>
-                    <input type="text" class="form-input" id="scentNotes" placeholder="如：古典玫瑰,荔枝,粉紅胡椒">
-                </div>
-                
-                <!-- 風格光譜滑塊 -->
-                <div class="form-group">
-                    <label class="form-label">風格光譜數值（0-100）</label>
-                    <div class="spectrum-container">
-                        <span style="font-size:13px;font-weight:600;">浪漫</span>
-                        <input type="range" id="styleSpectrum" min="0" max="100" value="50" oninput="document.getElementById('styleValue').textContent = this.value">
-                        <span style="font-size:13px;font-weight:600;">雅緻</span>
-                        <span class="spectrum-value" id="styleValue">50</span>
-                    </div>
-                    <div class="spectrum-labels">
-                        <span>ROMANTIC 浪漫</span>
-                        <span>SOPHISTICATED 雅緻</span>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">發貨天數</label>
-                        <input type="number" class="form-input" id="deliveryDays" value="1" min="1">
+                        <label class="form-label">描述</label>
+                        <textarea class="form-textarea" id="description" placeholder="商品描述..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">前台顯示</label>
-                        <select class="form-select" id="isActive">
-                            <option value="true">✅ 上架</option>
-                            <option value="false">❌ 下架</option>
-                        </select>
+                        <label class="form-label">標籤（逗號分隔）</label>
+                        <input type="text" class="form-input" id="tags" placeholder="戀愛,生日,玫瑰,經典風">
                     </div>
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-primary" onclick="saveProduct()">保存</button>
-                    <button class="btn btn-secondary" onclick="hideForm()">取消</button>
+                    <div class="form-group">
+                        <label class="form-label">香氣筆記（逗號分隔）</label>
+                        <input type="text" class="form-input" id="scentNotes" placeholder="古典玫瑰,荔枝">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">風格光譜數值</label>
+                        <div class="spectrum-wrap">
+                            <span>浪漫</span>
+                            <input type="range" id="styleSpectrum" min="0" max="100" value="50" oninput="document.getElementById('styleVal').textContent=this.value">
+                            <span>雅緻</span>
+                            <span class="spectrum-val" id="styleVal">50</span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">庫存狀態</label>
+                            <select class="form-select" id="stock">
+                                <option value="現貨">現貨</option>
+                                <option value="預訂">預訂</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">發貨天數</label>
+                            <input type="number" class="form-input" id="deliveryDays" value="1" min="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">前台顯示</label>
+                            <select class="form-select" id="isActive">
+                                <option value="true">✅ 上架</option>
+                                <option value="false">❌ 下架</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="saveProduct()">💾 保存商品</button>
+                        <button class="btn btn-secondary" onclick="showProductsList()">取消</button>
+                    </div>
                 </div>
             </div>
-
-            <div id="productsList">
-                <p style="padding:20px;text-align:center;">載入中...</p>
+            
+            <!-- ===== 加購配件頁 ===== -->
+            <div id="page-addons" style="display:none;">
+                <div class="page-header">
+                    <h2 class="page-title">加購配件</h2>
+                    <button class="btn btn-primary" onclick="showAddonForm()">+ 新增配件</button>
+                </div>
+                <div id="addonsTable"></div>
             </div>
-        </div>
-
-        <!-- 加購配件 -->
-        <div id="tabAddons" style="display:none;">
-            <button class="btn btn-primary" style="margin-bottom:20px;" onclick="showAddonForm()">+ 新增配件</button>
-            <div id="addonsList">
-                <p style="padding:20px;text-align:center;">載入中...</p>
+            
+            <!-- ===== 訂單管理頁 ===== -->
+            <div id="page-orders" style="display:none;">
+                <div class="page-header">
+                    <h2 class="page-title">訂單管理</h2>
+                </div>
+                <div id="ordersTable"></div>
             </div>
         </div>
     </div>
@@ -240,102 +217,57 @@
     var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    
     var ADMIN_USER = 'admin';
     var ADMIN_PASS = 'royalspl2024';
     var allProducts = [];
-    var uploadedUrls = [];
+    var uploadedImages = [];
 
-    function handleAdminLogin() {
-        var user = document.getElementById('adminUser').value.trim();
-        var pass = document.getElementById('adminPass').value;
-        if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    // ===== 登入 =====
+    function doLogin() {
+        var u = document.getElementById('loginUser').value.trim();
+        var p = document.getElementById('loginPass').value;
+        if (u === ADMIN_USER && p === ADMIN_PASS) {
             localStorage.setItem('royalspl_admin', 'true');
-            showAdminPage();
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminPage').style.display = 'block';
+            loadProducts();
+            loadAddons();
+            loadOrders();
         } else {
             document.getElementById('loginError').style.display = 'block';
         }
     }
-    function handleLogout() { localStorage.removeItem('royalspl_admin'); location.reload(); }
-    function showLoginPage() { document.getElementById('loginPage').style.display = 'block'; document.getElementById('adminPage').style.display = 'none'; }
-    function showAdminPage() {
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('adminPage').style.display = 'block';
-        loadProducts();
-        loadAddons();
+    function doLogout() {
+        localStorage.removeItem('royalspl_admin');
+        location.reload();
     }
 
-    async function initDatabase() {
-        showToast('正在初始化...');
-        try {
-            var testAddons = await supabaseClient.from('addons').select('id').limit(1);
-            if (testAddons.error) {
-                showToast('請在Supabase SQL Editor手動執行建表SQL');
-            } else {
-                showToast('✓ 數據庫已就緒');
-                document.getElementById('initSection').style.display = 'none';
-            }
-        } catch (err) {
-            showToast('請在Supabase SQL Editor手動執行建表SQL');
-        }
-    }
-
-    var uploadSection = document.getElementById('uploadSection');
-    var fileInput = document.getElementById('fileInput');
-    uploadSection.addEventListener('click', function() { fileInput.click(); });
-    fileInput.addEventListener('change', function() { handleFiles(this.files); });
-    uploadSection.addEventListener('dragover', function(e) { e.preventDefault(); uploadSection.classList.add('dragover'); });
-    uploadSection.addEventListener('dragleave', function() { uploadSection.classList.remove('dragover'); });
-    uploadSection.addEventListener('drop', function(e) { e.preventDefault(); uploadSection.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
-
-    async function handleFiles(files) {
-        var progress = document.getElementById('uploadProgress');
-        progress.style.display = 'block';
-        for (var i = 0; i < files.length; i++) {
-            progress.textContent = '上傳中 ' + (i+1) + '/' + files.length + '...';
-            var fd = new FormData();
-            fd.append('file', files[i]);
-            try {
-                var res = await fetch('/r2-upload', { method: 'POST', body: fd });
-                var data = await res.json();
-                if (data.url) {
-                    uploadedUrls.push(data.url);
-                    renderUploadedImages();
-                    document.getElementById('imageUrl').value = data.url;
-                    showToast('✓ 上傳成功');
-                }
-            } catch (err) { showToast('上傳失敗'); }
-        }
-        progress.style.display = 'none';
-    }
-
-    function renderUploadedImages() {
-        var container = document.getElementById('uploadedImages');
-        var html = '';
-        for (var i = 0; i < uploadedUrls.length; i++) {
-            html += '<div class="uploaded-image-item"><img src="' + uploadedUrls[i] + '"><button class="remove-img" onclick="removeUploaded(' + i + ')">✕</button></div>';
-        }
-        container.innerHTML = html;
-    }
-    function removeUploaded(index) { uploadedUrls.splice(index, 1); renderUploadedImages(); }
-
-    function switchTab(tab) {
-        document.getElementById('navProducts').classList.remove('active');
-        document.getElementById('navAddons').classList.remove('active');
-        if (tab === 'products') {
-            document.getElementById('navProducts').classList.add('active');
-            document.getElementById('tabProducts').style.display = 'block';
-            document.getElementById('tabAddons').style.display = 'none';
+    // ===== 頁面切換 =====
+    function switchPage(page) {
+        document.querySelectorAll('.sidebar-item').forEach(function(el) { el.classList.remove('active'); });
+        document.querySelector('[data-page="' + page + '"]').classList.add('active');
+        
+        document.getElementById('page-products-list').style.display = 'none';
+        document.getElementById('page-products-form').style.display = 'none';
+        document.getElementById('page-addons').style.display = 'none';
+        document.getElementById('page-orders').style.display = 'none';
+        
+        if (page === 'products') {
+            document.getElementById('page-products-list').style.display = 'block';
             loadProducts();
-        } else {
-            document.getElementById('navAddons').classList.add('active');
-            document.getElementById('tabProducts').style.display = 'none';
-            document.getElementById('tabAddons').style.display = 'block';
+        } else if (page === 'addons') {
+            document.getElementById('page-addons').style.display = 'block';
             loadAddons();
+        } else if (page === 'orders') {
+            document.getElementById('page-orders').style.display = 'block';
+            loadOrders();
         }
     }
 
     function showAddForm() {
+        document.getElementById('page-products-list').style.display = 'none';
+        document.getElementById('page-products-form').style.display = 'block';
         document.getElementById('formTitle').textContent = '新增商品';
         document.getElementById('productId').value = '';
         document.getElementById('nameZh').value = '';
@@ -346,36 +278,55 @@
         document.getElementById('tags').value = '';
         document.getElementById('scentNotes').value = '';
         document.getElementById('styleSpectrum').value = '50';
-        document.getElementById('styleValue').textContent = '50';
+        document.getElementById('styleVal').textContent = '50';
         document.getElementById('stock').value = '現貨';
         document.getElementById('deliveryDays').value = '1';
         document.getElementById('isActive').value = 'true';
-        document.getElementById('imageUrl').value = uploadedUrls.length > 0 ? uploadedUrls[uploadedUrls.length - 1] : '';
-        document.getElementById('productForm').classList.add('show');
+        uploadedImages = [];
+        renderUploadedImages();
     }
 
-    function hideForm() { document.getElementById('productForm').classList.remove('show'); }
-
-    function showEditForm(p) {
-        document.getElementById('formTitle').textContent = '編輯商品';
-        document.getElementById('productId').value = p.id;
-        document.getElementById('nameZh').value = p.name_zh || '';
-        document.getElementById('nameEn').value = p.name_en || '';
-        document.getElementById('price').value = p.price || '';
-        document.getElementById('category').value = p.category || '';
-        document.getElementById('description').value = p.description || '';
-        document.getElementById('tags').value = (p.tags || []).join(',');
-        document.getElementById('scentNotes').value = (p.scent_notes || []).join(',');
-        var spectrumVal = p.style_spectrum !== null && p.style_spectrum !== undefined ? p.style_spectrum : 50;
-        document.getElementById('styleSpectrum').value = spectrumVal;
-        document.getElementById('styleValue').textContent = spectrumVal;
-        document.getElementById('stock').value = p.stock || '現貨';
-        document.getElementById('deliveryDays').value = p.delivery_days || 1;
-        document.getElementById('isActive').value = String(p.is_active !== false);
-        document.getElementById('imageUrl').value = p.image_url || '';
-        document.getElementById('productForm').classList.add('show');
+    function showProductsList() {
+        document.getElementById('page-products-form').style.display = 'none';
+        document.getElementById('page-products-list').style.display = 'block';
+        loadProducts();
     }
 
+    // ===== 圖片上傳 =====
+    var uploadArea = document.getElementById('uploadArea');
+    var fileInput = document.getElementById('fileInput');
+    uploadArea.addEventListener('click', function() { fileInput.click(); });
+    fileInput.addEventListener('change', function() { handleUploadFiles(this.files); });
+    uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', function() { uploadArea.classList.remove('dragover'); });
+    uploadArea.addEventListener('drop', function(e) { e.preventDefault(); uploadArea.classList.remove('dragover'); handleUploadFiles(e.dataTransfer.files); });
+
+    async function handleUploadFiles(files) {
+        for (var i = 0; i < files.length; i++) {
+            var fd = new FormData();
+            fd.append('file', files[i]);
+            try {
+                var res = await fetch('/r2-upload', { method: 'POST', body: fd });
+                var data = await res.json();
+                if (data.url) {
+                    uploadedImages.push(data.url);
+                    renderUploadedImages();
+                }
+            } catch (err) { showToast('上傳失敗'); }
+        }
+    }
+
+    function renderUploadedImages() {
+        var container = document.getElementById('uploadedImages');
+        var html = '';
+        for (var i = 0; i < uploadedImages.length; i++) {
+            html += '<div class="uploaded-img-item"><img src="' + uploadedImages[i] + '"><button class="del-btn" onclick="removeImage(' + i + ')">✕</button></div>';
+        }
+        container.innerHTML = html;
+    }
+    function removeImage(index) { uploadedImages.splice(index, 1); renderUploadedImages(); }
+
+    // ===== 商品保存 =====
     async function saveProduct() {
         var id = document.getElementById('productId').value;
         var data = {
@@ -390,55 +341,48 @@
             stock: document.getElementById('stock').value,
             delivery_days: parseInt(document.getElementById('deliveryDays').value) || 1,
             is_active: document.getElementById('isActive').value === 'true',
-            image_url: document.getElementById('imageUrl').value.trim() || null
+            image_url: uploadedImages.length > 0 ? uploadedImages[0] : null,
+            images: uploadedImages
         };
+        
+        if (!data.name_zh || !data.name_en || !data.price) { showToast('請填寫必要欄位'); return; }
+        
         try {
             var result;
             if (id) { result = await supabaseClient.from('products').update(data).eq('id', id); }
             else { result = await supabaseClient.from('products').insert(data); }
             if (result.error) throw result.error;
             showToast('✓ 保存成功');
-            hideForm();
-            loadProducts();
+            showProductsList();
         } catch (err) { showToast('保存失敗：' + err.message); }
     }
 
-    async function deleteProduct(id) {
-        if (!confirm('確定刪除？')) return;
-        await supabaseClient.from('products').delete().eq('id', id);
-        loadProducts();
-        showToast('✓ 已刪除');
-    }
-
-    async function toggleProductActive(id, current) {
-        await supabaseClient.from('products').update({ is_active: !current }).eq('id', id);
-        loadProducts();
-    }
-
+    // ===== 商品列表 =====
     async function loadProducts() {
-        var container = document.getElementById('productsList');
+        var container = document.getElementById('productsTable');
         try {
             var result = await supabaseClient.from('products').select('*').order('id', { ascending: true });
+            if (result.error) throw result.error;
             allProducts = result.data || [];
-            renderProductsList(allProducts);
-        } catch (err) { container.innerHTML = '<p>載入失敗</p>'; }
+            renderProductsTable(allProducts);
+        } catch (err) { container.innerHTML = '<div class="empty-state">❌ 載入失敗</div>'; }
     }
 
     function filterProducts() {
-        var keyword = document.getElementById('productSearch').value.toLowerCase();
+        var kw = document.getElementById('productSearch').value.toLowerCase();
         var filtered = allProducts.filter(function(p) {
-            return (p.name_zh && p.name_zh.toLowerCase().indexOf(keyword) > -1) ||
-                   (p.name_en && p.name_en.toLowerCase().indexOf(keyword) > -1);
+            return (p.name_zh && p.name_zh.toLowerCase().indexOf(kw) > -1) ||
+                   (p.name_en && p.name_en.toLowerCase().indexOf(kw) > -1);
         });
-        renderProductsList(filtered);
+        renderProductsTable(filtered);
     }
 
-    function renderProductsList(list) {
-        var container = document.getElementById('productsList');
-        var html = '<table class="products-table"><thead><tr><th>圖片</th><th>名稱</th><th>價格</th><th>分類</th><th>庫存</th><th>光譜</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
+    function renderProductsTable(list) {
+        var container = document.getElementById('productsTable');
+        var html = '<table class="data-table"><thead><tr><th>圖片</th><th>名稱</th><th>價格</th><th>分類</th><th>庫存</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
         for (var i = 0; i < list.length; i++) {
             var p = list[i];
-            var img = p.image_url ? '<img class="product-thumb" src="' + p.image_url + '">' : '<span class="product-emoji-thumb">🌸</span>';
+            var img = p.image_url ? '<img class="product-img" src="' + p.image_url + '">' : '<span class="emoji-img">🌸</span>';
             var eye = p.is_active !== false ? '👁️' : '🚫';
             html += '<tr>';
             html += '<td>' + img + '</td>';
@@ -446,15 +390,48 @@
             html += '<td>HK$' + p.price + '</td>';
             html += '<td>' + (p.category || '-') + '</td>';
             html += '<td>' + p.stock + '</td>';
-            html += '<td>' + (p.style_spectrum !== null ? p.style_spectrum : '-') + '</td>';
-            html += '<td><span class="eye-toggle" onclick="toggleProductActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td>';
-            html += '<td><div class="action-btns"><button class="btn btn-secondary btn-small" onclick="showEditForm(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">編輯</button><button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></div></td>';
+            html += '<td onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')" style="cursor:pointer;">' + eye + '</td>';
+            html += '<td><button class="btn btn-secondary btn-small" onclick="showEditForm(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">編輯</button> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td>';
             html += '</tr>';
         }
         html += '</tbody></table>';
         container.innerHTML = html;
     }
 
+    function showEditForm(p) {
+        document.getElementById('page-products-list').style.display = 'none';
+        document.getElementById('page-products-form').style.display = 'block';
+        document.getElementById('formTitle').textContent = '編輯商品';
+        document.getElementById('productId').value = p.id;
+        document.getElementById('nameZh').value = p.name_zh || '';
+        document.getElementById('nameEn').value = p.name_en || '';
+        document.getElementById('price').value = p.price || '';
+        document.getElementById('category').value = p.category || '';
+        document.getElementById('description').value = p.description || '';
+        document.getElementById('tags').value = (p.tags || []).join(',');
+        document.getElementById('scentNotes').value = (p.scent_notes || []).join(',');
+        document.getElementById('styleSpectrum').value = p.style_spectrum || 50;
+        document.getElementById('styleVal').textContent = p.style_spectrum || 50;
+        document.getElementById('stock').value = p.stock || '現貨';
+        document.getElementById('deliveryDays').value = p.delivery_days || 1;
+        document.getElementById('isActive').value = String(p.is_active !== false);
+        uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
+        renderUploadedImages();
+    }
+
+    async function deleteProduct(id) {
+        if (!confirm('確定刪除？')) return;
+        await supabaseClient.from('products').delete().eq('id', id);
+        showToast('✓ 已刪除');
+        loadProducts();
+    }
+
+    async function toggleActive(id, current) {
+        await supabaseClient.from('products').update({ is_active: !current }).eq('id', id);
+        loadProducts();
+    }
+
+    // ===== 加購配件 =====
     function showAddonForm() {
         var name = prompt('配件名稱（中文）：');
         if (!name) return;
@@ -462,21 +439,21 @@
         var price = parseFloat(prompt('價格 (HKD)：') || '0');
         var stock = parseInt(prompt('庫存數量：') || '0');
         if (!price) { showToast('請輸入有效價格'); return; }
-        supabaseClient.from('addons').insert({ name_zh: name, name_en: nameEn, price: price, stock: stock }).then(function(result) {
-            if (result.error) { showToast('請先初始化數據庫'); return; }
+        supabaseClient.from('addons').insert({ name_zh: name, name_en: nameEn, price: price, stock: stock }).then(function(r) {
+            if (r.error) { showToast('添加失敗'); return; }
             showToast('✓ 配件已添加');
             loadAddons();
         });
     }
 
     async function loadAddons() {
-        var container = document.getElementById('addonsList');
+        var container = document.getElementById('addonsTable');
         try {
             var result = await supabaseClient.from('addons').select('*');
-            if (result.error) { container.innerHTML = '<p>尚未初始化，請先執行SQL建表</p>'; return; }
+            if (result.error) { container.innerHTML = '<div class="empty-state">請先創建 addons 表</div>'; return; }
             var addons = result.data || [];
-            if (addons.length === 0) { container.innerHTML = '<p>暫無配件，點擊上方按鈕新增</p>'; return; }
-            var html = '<table class="products-table"><thead><tr><th>ID</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>';
+            if (addons.length === 0) { container.innerHTML = '<div class="empty-state">暫無配件</div>'; return; }
+            var html = '<table class="data-table"><thead><tr><th>ID</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>';
             for (var i = 0; i < addons.length; i++) {
                 var a = addons[i];
                 html += '<tr><td>' + a.id + '</td><td>' + a.name_zh + (a.name_en ? '<br><small>' + a.name_en + '</small>' : '') + '</td><td>HK$' + a.price + '</td><td>' + a.stock + '</td>';
@@ -484,14 +461,31 @@
             }
             html += '</tbody></table>';
             container.innerHTML = html;
-        } catch (err) { container.innerHTML = '<p>載入失敗</p>'; }
+        } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; }
     }
 
     async function deleteAddon(id) {
         if (!confirm('確定刪除？')) return;
         await supabaseClient.from('addons').delete().eq('id', id);
         loadAddons();
-        showToast('✓ 已刪除');
+    }
+
+    // ===== 訂單管理 =====
+    async function loadOrders() {
+        var container = document.getElementById('ordersTable');
+        try {
+            var result = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+            if (result.error) { container.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; }
+            var orders = result.data || [];
+            if (orders.length === 0) { container.innerHTML = '<div class="empty-state">📋 暫無訂單</div>'; return; }
+            var html = '<table class="data-table"><thead><tr><th>訂單編號</th><th>日期</th><th>收花人</th><th>電話</th><th>地址</th><th>總金額</th><th>狀態</th></tr></thead><tbody>';
+            for (var i = 0; i < orders.length; i++) {
+                var o = orders[i];
+                html += '<tr><td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>' + o.recipient_address + '</td><td>HK$' + o.total_amount + '</td><td>' + o.status + '</td></tr>';
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; }
     }
 
     function showToast(msg) {
@@ -504,8 +498,13 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        if (localStorage.getItem('royalspl_admin') === 'true') { showAdminPage(); }
-        else { showLoginPage(); }
+        if (localStorage.getItem('royalspl_admin') === 'true') {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminPage').style.display = 'block';
+            loadProducts();
+            loadAddons();
+            loadOrders();
+        }
     });
     </script>
 </body>
