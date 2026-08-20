@@ -1,7 +1,3 @@
-// ============================================
-// RoyalSpl Florist - R2 圖片上傳（使用 Binding）
-// ============================================
-
 export async function onRequestPost(context) {
   const request = context.request;
   const env = context.env;
@@ -32,7 +28,7 @@ export async function onRequestPost(context) {
 
     await env.IMAGES.put(fileName, file.stream(), {
       httpMetadata: {
-        contentType: file.type || 'image/png'
+        contentType: file.type || 'image/jpeg'
       }
     });
 
