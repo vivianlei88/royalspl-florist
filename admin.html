@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>後台管理 | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        .admin-page { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 10px; }
+        .admin-title { font-size: 28px; font-weight: 600; }
+        .admin-nav { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .admin-nav-btn { padding: 10px 20px; border: 1px solid #1A1A1A; border-radius: 5px; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .admin-nav-btn.active { background-color: #1A1A1A; color: #FAF8F5; }
+        .logout-link { font-size: 14px; color: #383431; cursor: pointer; text-decoration: underline; }
+        
+        .login-page { max-width: 400px; margin: 80px auto; text-align: center; }
+        .login-icon { font-size: 50px; margin-bottom: 20px; }
+        .login-title { font-size: 24px; font-weight: 600; margin-bottom: 30px; }
+        .login-form { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 30px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .form-input, .form-select, .form-textarea { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; font-family: inherit; background-color: white; }
+        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 5px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .btn-primary { background-color: #1A1A1A; color: #FAF8F5; }
+        .btn-primary:hover { background-color: #383431; }
+        .btn-secondary { background-color: transparent; border: 1px solid #1A1A1A; color: #1A1A1A; }
+        .btn-danger { background-color: #ff4444; color: white; }
+        .btn-small { padding: 6px 12px; font-size: 13px; }
+        .btn-success { background-color: #2e7d32; color: white; }
+        .login-btn { width: 100%; padding: 14px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .login-error { color: #ff0000; font-size: 14px; margin-top: 10px; display: none; }
+        
+        .upload-section { background-color: #FAF8F5; border: 2px dashed #1A1A1A; border-radius: 10px; padding: 30px; text-align: center; margin-bottom: 20px; cursor: pointer; transition: all 0.3s; }
+        .upload-section:hover, .upload-section.dragover { background-color: #F3EFEA; }
+        .upload-emoji { font-size: 40px; margin-bottom: 10px; }
+        .upload-text { font-size: 15px; font-weight: 600; }
+        .upload-hint { font-size: 12px; color: #383431; }
+        .upload-progress { margin-top: 10px; font-size: 14px; display: none; }
+        .uploaded-images { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .uploaded-image-item { position: relative; width: 80px; height: 80px; border-radius: 5px; overflow: hidden; }
+        .uploaded-image-item img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-img { position: absolute; top: 2px; right: 2px; background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; }
+        
+        .product-form { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 25px; margin-bottom: 20px; display: none; }
+        .product-form.show { display: block; }
+        .form-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        
+        .search-bar { margin-bottom: 20px; }
+        .search-input { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; font-family: inherit; }
+        
+        .products-table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 10px; overflow: hidden; }
+        .products-table th { background-color: #1A1A1A; color: #FAF8F5; padding: 12px 10px; text-align: left; font-size: 13px; }
+        .products-table td { padding: 10px; border-bottom: 1px solid rgba(26,26,26,0.1); font-size: 13px; vertical-align: middle; }
+        .products-table tr:hover { background-color: #F3EFEA; }
+        .product-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
+        .product-emoji-thumb { font-size: 35px; }
+        .eye-toggle { cursor: pointer; font-size: 20px; }
+        .action-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+        
+        .init-section { background-color: #FFF3E0; border: 1px solid #FF9800; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .init-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #E65100; }
+        
+        .toast { position: fixed; top: 20px; right: 20px; background-color: #1A1A1A; color: #FAF8F5; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transform: translateY(-20px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- 登入頁面 -->
+    <div id="loginPage" class="login-page">
+        <div class="login-icon">🔐</div>
+        <h1 class="login-title">後台管理登入</h1>
+        <div class="login-form">
+            <div class="form-group">
+                <label class="form-label">帳號</label>
+                <input type="text" class="form-input" id="adminUser" placeholder="請輸入帳號">
+            </div>
+            <div class="form-group">
+                <label class="form-label">密碼</label>
+                <input type="password" class="form-input" id="adminPass" placeholder="請輸入密碼">
+            </div>
+            <button class="login-btn" onclick="handleAdminLogin()">登入</button>
+            <p class="login-error" id="loginError">帳號或密碼錯誤</p>
+        </div>
+    </div>
+
+    <!-- 管理頁面 -->
+    <div id="adminPage" class="admin-page" style="display:none;">
+        <div class="admin-header">
+            <h1 class="admin-title">🌸 後台管理</h1>
+            <div>
+                <a href="index.html" style="font-size:14px;color:#383431;margin-right:15px;">← 返回前台</a>
+                <span class="logout-link" onclick="handleLogout()">登出</span>
+            </div>
+        </div>
+
+        <!-- 初始化按鈕 -->
+        <div class="init-section" id="initSection">
+            <p class="init-title">⚡ 首次使用請先初始化數據庫</p>
+            <p style="font-size:13px;margin-bottom:10px;">點擊按鈕自動創建加購配件表、商品規格變體表</p>
+            <button class="btn btn-success" onclick="initDatabase()">初始化數據庫</button>
+        </div>
+
+        <!-- 導航 -->
+        <div class="admin-nav">
+            <button class="admin-nav-btn active" id="navProducts" onclick="switchTab('products')">商品管理</button>
+            <button class="admin-nav-btn" id="navAddons" onclick="switchTab('addons')">加購配件</button>
+        </div>
+
+        <!-- 商品管理 -->
+        <div id="tabProducts">
+            <div class="search-bar">
+                <input type="text" class="search-input" id="productSearch" placeholder="🔍 搜索商品名稱..." oninput="filterProducts()">
+            </div>
+            
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-emoji">📸</div>
+                <p class="upload-text">拖拉圖片到這裡批量上傳</p>
+                <p class="upload-hint">或點擊選擇（上傳後自動填入下方表單）</p>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display:none;">
+                <div class="upload-progress" id="uploadProgress"></div>
+                <div class="uploaded-images" id="uploadedImages"></div>
+            </div>
+
+            <button class="btn btn-primary" style="margin-bottom:20px;" onclick="showAddForm()">+ 新增商品</button>
+
+            <div class="product-form" id="productForm">
+                <h2 class="form-title" id="formTitle">新增商品</h2>
+                <input type="hidden" id="productId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">SKU（自動生成）</label>
+                        <input type="text" class="form-input" id="sku" readonly placeholder="保存後自動生成">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">中文名稱 *</label>
+                        <input type="text" class="form-input" id="nameZh" placeholder="如：緋芍集">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">英文名稱 *</label>
+                        <input type="text" class="form-input" id="nameEn" placeholder="如：Crimson Peony Bouquet">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">價格 (HKD) *</label>
+                        <input type="number" class="form-input" id="price" placeholder="如：688" step="0.01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">分類</label>
+                        <input type="text" class="form-input" id="category" placeholder="如：玫瑰花">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">圖片 URL</label>
+                        <input type="text" class="form-input" id="imageUrl" placeholder="上傳後自動填入">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">描述</label>
+                    <textarea class="form-textarea" id="description" placeholder="商品描述..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">標籤（用逗號分隔）</label>
+                    <input type="text" class="form-input" id="tags" placeholder="如：戀愛,生日,玫瑰,經典風,HK$300-600">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">香氣筆記（用逗號分隔）</label>
+                    <input type="text" class="form-input" id="scentNotes" placeholder="如：古典玫瑰,荔枝,粉紅胡椒">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">風格光譜數值（0-100）</label>
+                        <input type="number" class="form-input" id="styleSpectrum" min="0" max="100" placeholder="50" value="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">庫存狀態</label>
+                        <select class="form-select" id="stock">
+                            <option value="現貨">現貨</option>
+                            <option value="預訂">預訂</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">發貨天數</label>
+                        <input type="number" class="form-input" id="deliveryDays" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">前台顯示</label>
+                        <select class="form-select" id="isActive">
+                            <option value="true">✅ 上架</option>
+                            <option value="false">❌ 下架</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="saveProduct()">保存</button>
+                    <button class="btn btn-secondary" onclick="hideForm()">取消</button>
+                </div>
+            </div>
+
+            <div id="productsList">
+                <p style="padding:20px;text-align:center;">載入中...</p>
+            </div>
+        </div>
+
+        <!-- 加購配件 -->
+        <div id="tabAddons" style="display:none;">
+            <button class="btn btn-primary" style="margin-bottom:20px;" onclick="showAddonForm()">+ 新增配件</button>
+            <div id="addonsList">
+                <p style="padding:20px;text-align:center;">載入中...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    var ADMIN_USER = 'admin';
+    var ADMIN_PASS = 'royalspl2024';
+    var allProducts = [];
+    var uploadedUrls = [];
+
+    // ===== 登入 =====
+    function handleAdminLogin() {
+        var user = document.getElementById('adminUser').value.trim();
+        var pass = document.getElementById('adminPass').value;
+        if (user === ADMIN_USER && pass === ADMIN_PASS) {
+            localStorage.setItem('royalspl_admin', 'true');
+            showAdminPage();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
+    function handleLogout() { localStorage.removeItem('royalspl_admin'); location.reload(); }
+    function showLoginPage() { document.getElementById('loginPage').style.display = 'block'; document.getElementById('adminPage').style.display = 'none'; }
+    function showAdminPage() {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('adminPage').style.display = 'block';
+        loadProducts();
+        loadAddons();
+    }
+
+    // ===== 初始化數據庫 =====
+    async function initDatabase() {
+        showToast('正在初始化...');
+        try {
+            // 嘗試查詢 addons 表，如果失敗則創建
+            var testAddons = await supabaseClient.from('addons').select('id').limit(1);
+            if (testAddons.error) {
+                await supabaseClient.rpc('exec_sql', { sql: 'CREATE TABLE IF NOT EXISTS addons (id SERIAL PRIMARY KEY, name_zh VARCHAR(100), name_en VARCHAR(100), price DECIMAL(10,2), stock INT DEFAULT 0, image_url TEXT, is_active BOOLEAN DEFAULT true, created_at TIMESTAMP DEFAULT NOW())' });
+            }
+            var testVariants = await supabaseClient.from('product_variants').select('id').limit(1);
+            if (testVariants.error) {
+                await supabaseClient.rpc('exec_sql', { sql: 'CREATE TABLE IF NOT EXISTS product_variants (id SERIAL PRIMARY KEY, product_id INT, variant_name VARCHAR(50), variant_price DECIMAL(10,2), is_active BOOLEAN DEFAULT true)' });
+            }
+            showToast('✓ 初始化成功！');
+            document.getElementById('initSection').style.display = 'none';
+        } catch (err) {
+            showToast('初始化失敗，請在Supabase執行SQL（見訊息）');
+            console.error(err);
+        }
+    }
+
+    // ===== 圖片上傳 =====
+    var uploadSection = document.getElementById('uploadSection');
+    var fileInput = document.getElementById('fileInput');
+    uploadSection.addEventListener('click', function() { fileInput.click(); });
+    fileInput.addEventListener('change', function() { handleFiles(this.files); });
+    uploadSection.addEventListener('dragover', function(e) { e.preventDefault(); uploadSection.classList.add('dragover'); });
+    uploadSection.addEventListener('dragleave', function() { uploadSection.classList.remove('dragover'); });
+    uploadSection.addEventListener('drop', function(e) { e.preventDefault(); uploadSection.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+
+    async function handleFiles(files) {
+        var progress = document.getElementById('uploadProgress');
+        progress.style.display = 'block';
+        for (var i = 0; i < files.length; i++) {
+            progress.textContent = '上傳中 ' + (i+1) + '/' + files.length + '...';
+            var fd = new FormData();
+            fd.append('file', files[i]);
+            try {
+                var res = await fetch('/r2-upload', { method: 'POST', body: fd });
+                var data = await res.json();
+                if (data.url) {
+                    uploadedUrls.push(data.url);
+                    renderUploadedImages();
+                    document.getElementById('imageUrl').value = data.url;
+                    showToast('✓ 上傳成功');
+                }
+            } catch (err) { showToast('上傳失敗'); }
+        }
+        progress.style.display = 'none';
+    }
+
+    function renderUploadedImages() {
+        var container = document.getElementById('uploadedImages');
+        var html = '';
+        for (var i = 0; i < uploadedUrls.length; i++) {
+            html += '<div class="uploaded-image-item"><img src="' + uploadedUrls[i] + '"><button class="remove-img" onclick="removeUploaded(' + i + ')">✕</button></div>';
+        }
+        container.innerHTML = html;
+    }
+    function removeUploaded(index) { uploadedUrls.splice(index, 1); renderUploadedImages(); }
+
+    // ===== 切換標籤 =====
+    function switchTab(tab) {
+        document.getElementById('navProducts').classList.remove('active');
+        document.getElementById('navAddons').classList.remove('active');
+        if (tab === 'products') {
+            document.getElementById('navProducts').classList.add('active');
+            document.getElementById('tabProducts').style.display = 'block';
+            document.getElementById('tabAddons').style.display = 'none';
+            loadProducts();
+        } else {
+            document.getElementById('navAddons').classList.add('active');
+            document.getElementById('tabProducts').style.display = 'none';
+            document.getElementById('tabAddons').style.display = 'block';
+            loadAddons();
+        }
+    }
+
+    // ===== 商品管理 =====
+    function showAddForm() {
+        document.getElementById('formTitle').textContent = '新增商品';
+        document.getElementById('productId').value = '';
+        document.getElementById('nameZh').value = '';
+        document.getElementById('nameEn').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('category').value = '';
+        document.getElementById('description').value = '';
+        document.getElementById('tags').value = '';
+        document.getElementById('scentNotes').value = '';
+        document.getElementById('styleSpectrum').value = '50';
+        document.getElementById('stock').value = '現貨';
+        document.getElementById('deliveryDays').value = '1';
+        document.getElementById('isActive').value = 'true';
+        document.getElementById('imageUrl').value = uploadedUrls.length > 0 ? uploadedUrls[uploadedUrls.length - 1] : '';
+        document.getElementById('productForm').classList.add('show');
+    }
+
+    function hideForm() { document.getElementById('productForm').classList.remove('show'); }
+
+    function showEditForm(p) {
+        document.getElementById('formTitle').textContent = '編輯商品';
+        document.getElementById('productId').value = p.id;
+        document.getElementById('nameZh').value = p.name_zh || '';
+        document.getElementById('nameEn').value = p.name_en || '';
+        document.getElementById('price').value = p.price || '';
+        document.getElementById('category').value = p.category || '';
+        document.getElementById('description').value = p.description || '';
+        document.getElementById('tags').value = (p.tags || []).join(',');
+        document.getElementById('scentNotes').value = (p.scent_notes || []).join(',');
+        document.getElementById('styleSpectrum').value = p.style_spectrum || 50;
+        document.getElementById('stock').value = p.stock || '現貨';
+        document.getElementById('deliveryDays').value = p.delivery_days || 1;
+        document.getElementById('isActive').value = String(p.is_active !== false);
+        document.getElementById('imageUrl').value = p.image_url || '';
+        document.getElementById('productForm').classList.add('show');
+    }
+
+    async function saveProduct() {
+        var id = document.getElementById('productId').value;
+        var data = {
+            name_zh: document.getElementById('nameZh').value.trim(),
+            name_en: document.getElementById('nameEn').value.trim(),
+            price: parseFloat(document.getElementById('price').value),
+            category: document.getElementById('category').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            tags: document.getElementById('tags').value.split(',').map(function(t){return t.trim();}).filter(Boolean),
+            scent_notes: document.getElementById('scentNotes').value.split(',').map(function(t){return t.trim();}).filter(Boolean),
+            style_spectrum: parseInt(document.getElementById('styleSpectrum').value) || 50,
+            stock: document.getElementById('stock').value,
+            delivery_days: parseInt(document.getElementById('deliveryDays').value) || 1,
+            is_active: document.getElementById('isActive').value === 'true',
+            image_url: document.getElementById('imageUrl').value.trim() || null
+        };
+        try {
+            var result;
+            if (id) { result = await supabaseClient.from('products').update(data).eq('id', id); }
+            else { result = await supabaseClient.from('products').insert(data); }
+            if (result.error) throw result.error;
+            showToast('✓ 保存成功');
+            hideForm();
+            loadProducts();
+        } catch (err) { showToast('保存失敗：' + err.message); }
+    }
+
+    async function deleteProduct(id) {
+        if (!confirm('確定刪除？')) return;
+        await supabaseClient.from('products').delete().eq('id', id);
+        loadProducts();
+        showToast('✓ 已刪除');
+    }
+
+    async function toggleProductActive(id, current) {
+        await supabaseClient.from('products').update({ is_active: !current }).eq('id', id);
+        loadProducts();
+    }
+
+    async function loadProducts() {
+        var container = document.getElementById('productsList');
+        try {
+            var result = await supabaseClient.from('products').select('*').order('id', { ascending: true });
+            allProducts = result.data || [];
+            renderProductsList(allProducts);
+        } catch (err) { container.innerHTML = '<p>載入失敗</p>'; }
+    }
+
+    function filterProducts() {
+        var keyword = document.getElementById('productSearch').value.toLowerCase();
+        var filtered = allProducts.filter(function(p) {
+            return (p.name_zh && p.name_zh.toLowerCase().indexOf(keyword) > -1) ||
+                   (p.name_en && p.name_en.toLowerCase().indexOf(keyword) > -1);
+        });
+        renderProductsList(filtered);
+    }
+
+    function renderProductsList(list) {
+        var container = document.getElementById('productsList');
+        var html = '<table class="products-table"><thead><tr><th>圖片</th><th>SKU</th><th>名稱</th><th>價格</th><th>分類</th><th>庫存</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
+        for (var i = 0; i < list.length; i++) {
+            var p = list[i];
+            var img = p.image_url ? '<img class="product-thumb" src="' + p.image_url + '">' : '<span class="product-emoji-thumb">🌸</span>';
+            var eye = p.is_active !== false ? '👁️' : '🚫';
+            html += '<tr>';
+            html += '<td>' + img + '</td>';
+            html += '<td>RS-' + String(p.id).padStart(3, '0') + '</td>';
+            html += '<td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td>';
+            html += '<td>HK$' + p.price + '</td>';
+            html += '<td>' + (p.category || '-') + '</td>';
+            html += '<td>' + p.stock + '</td>';
+            html += '<td><span class="eye-toggle" onclick="toggleProductActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td>';
+            html += '<td><div class="action-btns"><button class="btn btn-secondary btn-small" onclick="showEditForm(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">編輯</button><button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></div></td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // ===== 加購配件 =====
+    function showAddonForm() {
+        var name = prompt('配件名稱（中文）：');
+        if (!name) return;
+        var nameEn = prompt('配件名稱（英文）：') || '';
+        var price = parseFloat(prompt('價格 (HKD)：') || '0');
+        var stock = parseInt(prompt('庫存數量：') || '0');
+        if (!price) { showToast('請輸入有效價格'); return; }
+        supabaseClient.from('addons').insert({ name_zh: name, name_en: nameEn, price: price, stock: stock }).then(function() {
+            showToast('✓ 配件已添加');
+            loadAddons();
+        });
+    }
+
+    async function loadAddons() {
+        var container = document.getElementById('addonsList');
+        try {
+            var result = await supabaseClient.from('addons').select('*');
+            if (result.error) { container.innerHTML = '<p>尚未初始化，請先點擊初始化按鈕</p>'; return; }
+            var addons = result.data || [];
+            if (addons.length === 0) { container.innerHTML = '<p>暫無配件，點擊上方按鈕新增</p>'; return; }
+            var html = '<table class="products-table"><thead><tr><th>ID</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>';
+            for (var i = 0; i < addons.length; i++) {
+                var a = addons[i];
+                html += '<tr><td>' + a.id + '</td><td>' + a.name_zh + (a.name_en ? '<br><small>' + a.name_en + '</small>' : '') + '</td><td>HK$' + a.price + '</td><td>' + a.stock + '</td>';
+                html += '<td><button class="btn btn-danger btn-small" onclick="deleteAddon(' + a.id + ')">刪除</button></td></tr>';
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (err) { container.innerHTML = '<p>載入失敗</p>'; }
+    }
+
+    async function deleteAddon(id) {
+        if (!confirm('確定刪除？')) return;
+        await supabaseClient.from('addons').delete().eq('id', id);
+        loadAddons();
+        showToast('✓ 已刪除');
+    }
+
+    function showToast(msg) {
+        var toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.classList.add('show'); }, 10);
+        setTimeout(function() { toast.classList.remove('show'); setTimeout(function() { toast.remove(); }, 300); }, 2500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (localStorage.getItem('royalspl_admin') === 'true') { showAdminPage(); }
+        else { showLoginPage(); }
+    });
+    </script>
+</body>
+</html>
