@@ -42,7 +42,7 @@
         .name-col { max-width: 160px; }
         .name-col b { font-size: 17px; }
         .name-col small { font-size: 14px; display: block; }
-        .form-container { background: white; border-radius: 10px; padding: 35px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 800px; }
+        .form-container { background: white; border-radius: 10px; padding: 35px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 700px; }
         .form-group { margin-bottom: 22px; }
         .form-label { display: block; font-size: 16px; font-weight: 600; margin-bottom: 10px; }
         .form-input, .form-select, .form-textarea { width: 100%; padding: 14px 16px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 16px; font-family: inherit; }
@@ -50,7 +50,7 @@
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
         .form-actions { display: flex; gap: 12px; margin-top: 30px; }
-        .upload-area { border: 2px dashed #1A1A1A; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; margin-bottom: 15px; font-size: 16px; }
+        .upload-area { border: 2px dashed #1A1A1A; border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; margin-bottom: 15px; font-size: 16px; }
         .upload-area:hover { background: #F9F6F2; }
         .upload-area.dragover { background: #F3EFEA; }
         .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -122,6 +122,7 @@
                 </div>
                 <div id="productsTable"></div>
             </div>
+            
             <div id="page-products-form" style="display:none;">
                 <div class="page-header">
                     <h2 class="page-title" id="formTitle">新增商品</h2>
@@ -131,130 +132,69 @@
                     <input type="hidden" id="productId">
                     <div class="form-group">
                         <label class="form-label">商品圖片（拖拽上傳）</label>
-                        <div class="upload-area" id="uploadArea">
-                            <p>點擊或拖拽圖片到這裡上傳</p>
-                            <input type="file" id="fileInput" multiple accept="image/*" style="display:none;">
-                        </div>
+                        <div class="upload-area" id="uploadArea"><p>點擊或拖拽圖片到這裡上傳</p><input type="file" id="fileInput" multiple accept="image/*" style="display:none;"></div>
                         <div class="uploaded-imgs" id="uploadedImages"></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">SKU（自動生成）</label>
-                            <input type="text" class="form-input" id="sku" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">中文名稱</label>
-                            <input type="text" class="form-input" id="nameZh">
-                        </div>
+                        <div class="form-group"><label class="form-label">SKU（自動生成）</label><input type="text" class="form-input" id="sku" readonly></div>
+                        <div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="nameZh"></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">英文名稱</label>
-                            <input type="text" class="form-input" id="nameEn">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">價格 (HKD)</label>
-                            <input type="number" class="form-input" id="price" step="0.01">
-                        </div>
+                        <div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="nameEn"></div>
+                        <div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">分類</label>
-                            <input type="text" class="form-input" id="category">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">庫存狀態</label>
-                            <select class="form-select" id="stock" onchange="toggleDeliveryDays()">
-                                <option value="現貨">現貨</option>
-                                <option value="預訂">預訂</option>
-                            </select>
-                        </div>
+                        <div class="form-group"><label class="form-label">分類</label><input type="text" class="form-input" id="category"></div>
+                        <div class="form-group"><label class="form-label">庫存狀態</label><select class="form-select" id="stock" onchange="toggleDeliveryDays()"><option value="現貨">現貨</option><option value="預訂">預訂</option></select></div>
                     </div>
-                    <div class="form-group" id="deliveryDaysGroup">
-                        <label class="form-label">預計發貨天數</label>
-                        <input type="number" class="form-input" id="deliveryDays" value="3" min="1">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">描述</label>
-                        <textarea class="form-textarea" id="description"></textarea>
-                    </div>
-                    
-                    <!-- 規格資訊 -->
+                    <div class="form-group" id="deliveryDaysGroup"><label class="form-label">預計發貨天數</label><input type="number" class="form-input" id="deliveryDays" value="3" min="1"></div>
+                    <div class="form-group"><label class="form-label">描述</label><textarea class="form-textarea" id="description"></textarea></div>
                     <div class="form-row-3">
-                        <div class="form-group">
-                            <label class="form-label">花材</label>
-                            <input type="text" class="form-input" id="specsFlowers" placeholder="如：緋紅芍藥 × 9">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">產地</label>
-                            <input type="text" class="form-input" id="specsOrigin" placeholder="如：荷蘭 · 阿姆斯特丹">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">規格</label>
-                            <input type="text" class="form-input" id="specsSize" placeholder="如：高 45cm × 寬 35cm">
-                        </div>
+                        <div class="form-group"><label class="form-label">花材</label><input type="text" class="form-input" id="specsFlowers"></div>
+                        <div class="form-group"><label class="form-label">產地</label><input type="text" class="form-input" id="specsOrigin"></div>
+                        <div class="form-group"><label class="form-label">規格</label><input type="text" class="form-input" id="specsSize"></div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">場景用途標籤</label>
-                        <div class="tag-pills" id="tagOccasion"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">核心花材標籤</label>
-                        <div class="tag-pills" id="tagFlower"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">設計風格標籤</label>
-                        <div class="tag-pills" id="tagStyle"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">價格區間標籤</label>
-                        <div class="tag-pills" id="tagPrice"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">香氣筆記（逗號分隔）</label>
-                        <input type="text" class="form-input" id="scentNotes">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">風格光譜數值</label>
-                        <div class="spectrum-wrap">
-                            <span>浪漫</span>
-                            <input type="range" id="styleSpectrum" min="0" max="100" value="50" oninput="document.getElementById('styleVal').textContent=this.value">
-                            <span>雅緻</span>
-                            <span class="spectrum-val" id="styleVal">50</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">前台顯示</label>
-                        <select class="form-select" id="isActive">
-                            <option value="true">上架</option>
-                            <option value="false">下架</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">規格變體（Variants）</label>
-                        <div id="variantsList"></div>
-                        <button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">關聯加購配件</label>
-                        <div class="addon-checkbox-list" id="addonsCheckboxList"></div>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-primary" onclick="saveProduct()">保存商品</button>
-                        <button class="btn btn-secondary" onclick="showProductsList()">取消</button>
-                    </div>
+                    <div class="form-group"><label class="form-label">場景用途標籤</label><div class="tag-pills" id="tagOccasion"></div></div>
+                    <div class="form-group"><label class="form-label">核心花材標籤</label><div class="tag-pills" id="tagFlower"></div></div>
+                    <div class="form-group"><label class="form-label">設計風格標籤</label><div class="tag-pills" id="tagStyle"></div></div>
+                    <div class="form-group"><label class="form-label">價格區間標籤</label><div class="tag-pills" id="tagPrice"></div></div>
+                    <div class="form-group"><label class="form-label">香氣筆記（逗號分隔）</label><input type="text" class="form-input" id="scentNotes"></div>
+                    <div class="form-group"><label class="form-label">風格光譜數值</label><div class="spectrum-wrap"><span>浪漫</span><input type="range" id="styleSpectrum" min="0" max="100" value="50" oninput="document.getElementById('styleVal').textContent=this.value"><span>雅緻</span><span class="spectrum-val" id="styleVal">50</span></div></div>
+                    <div class="form-group"><label class="form-label">前台顯示</label><select class="form-select" id="isActive"><option value="true">上架</option><option value="false">下架</option></select></div>
+                    <div class="form-group"><label class="form-label">規格變體（Variants）</label><div id="variantsList"></div><button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button></div>
+                    <div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>
+                    <div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div>
                 </div>
             </div>
+            
             <div id="page-addons" style="display:none;">
                 <div class="page-header">
                     <h2 class="page-title">加購配件</h2>
                     <button class="btn btn-primary" onclick="showAddonForm()">新增配件</button>
                 </div>
                 <div id="addonsTable"></div>
+                <div id="addonFormContainer" style="display:none;margin-top:20px;">
+                    <div class="form-container">
+                        <h2 id="addonFormTitle" style="font-size:20px;font-weight:600;margin-bottom:20px;">新增配件</h2>
+                        <input type="hidden" id="addonId">
+                        <div class="form-group">
+                            <label class="form-label">配件圖片</label>
+                            <div class="upload-area" id="addonUploadArea"><p>點擊上傳圖片</p><input type="file" id="addonFileInput" accept="image/*" style="display:none;"></div>
+                            <div id="addonImagePreview" style="margin-top:10px;"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="addonNameZh"></div>
+                            <div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="addonNameEn"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="addonPrice" step="0.01"></div>
+                            <div class="form-group"><label class="form-label">庫存數量</label><input type="number" class="form-input" id="addonStock" min="0"></div>
+                        </div>
+                        <div class="form-actions"><button class="btn btn-primary" onclick="saveAddon()">保存配件</button><button class="btn btn-secondary" onclick="hideAddonForm()">取消</button></div>
+                    </div>
+                </div>
             </div>
+            
             <div id="page-orders" style="display:none;">
                 <div class="page-header"><h2 class="page-title">訂單管理</h2></div>
                 <div id="ordersTable"></div>
@@ -274,6 +214,7 @@
     var selectedAddons = [];
     var allAddons = [];
     var selectedTags = [];
+    var addonUploadedImage = '';
 
     var tagCategories = {
         tagOccasion: ['情人節','母親節','中秋節','清明節','畢業季','端午','聖誕節','生日','週年','婚禮','彌月','探病','帛事','開張','喬遷','商務送禮','企業周年'],
@@ -565,43 +506,13 @@
         container.innerHTML = html;
     }
 
-    function toggleCheckAll() {
-        var checkAll = document.getElementById('checkAll');
-        document.querySelectorAll('.row-check').forEach(function(cb) { cb.checked = checkAll.checked; });
-    }
-    function getCheckedIds() {
-        var ids = [];
-        document.querySelectorAll('.row-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); });
-        return ids;
-    }
-    async function bulkSetStock(stock) {
-        var ids = getCheckedIds();
-        if (ids.length === 0) { showToast('請先勾選商品'); return; }
-        await supabaseClient.from('products').update({ stock: stock }).in('id', ids);
-        showToast('批量更新完成'); loadProducts();
-    }
-    async function bulkSetActive(active) {
-        var ids = getCheckedIds();
-        if (ids.length === 0) { showToast('請先勾選商品'); return; }
-        await supabaseClient.from('products').update({ is_active: active }).in('id', ids);
-        showToast('批量更新完成'); loadProducts();
-    }
-    async function bulkDelete() {
-        var ids = getCheckedIds();
-        if (ids.length === 0) { showToast('請先勾選商品'); return; }
-        if (!confirm('確定刪除 ' + ids.length + ' 個商品？')) return;
-        await supabaseClient.from('products').delete().in('id', ids);
-        showToast('批量刪除完成'); loadProducts();
-    }
-    async function deleteProduct(id) {
-        if (!confirm('確定刪除？')) return;
-        await supabaseClient.from('products').delete().eq('id', id);
-        showToast('已刪除'); loadProducts();
-    }
-    async function toggleActive(id, current) {
-        await supabaseClient.from('products').update({ is_active: !current }).eq('id', id);
-        loadProducts();
-    }
+    function toggleCheckAll() { var checkAll = document.getElementById('checkAll'); document.querySelectorAll('.row-check').forEach(function(cb) { cb.checked = checkAll.checked; }); }
+    function getCheckedIds() { var ids = []; document.querySelectorAll('.row-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
+    async function bulkSetStock(stock) { var ids = getCheckedIds(); if (ids.length === 0) { showToast('請先勾選商品'); return; } await supabaseClient.from('products').update({ stock: stock }).in('id', ids); showToast('批量更新完成'); loadProducts(); }
+    async function bulkSetActive(active) { var ids = getCheckedIds(); if (ids.length === 0) { showToast('請先勾選商品'); return; } await supabaseClient.from('products').update({ is_active: active }).in('id', ids); showToast('批量更新完成'); loadProducts(); }
+    async function bulkDelete() { var ids = getCheckedIds(); if (ids.length === 0) { showToast('請先勾選商品'); return; } if (!confirm('確定刪除 ' + ids.length + ' 個商品？')) return; await supabaseClient.from('products').delete().in('id', ids); showToast('批量刪除完成'); loadProducts(); }
+    async function deleteProduct(id) { if (!confirm('確定刪除？')) return; await supabaseClient.from('products').delete().eq('id', id); showToast('已刪除'); loadProducts(); }
+    async function toggleActive(id, current) { await supabaseClient.from('products').update({ is_active: !current }).eq('id', id); loadProducts(); }
 
     function exportCSV() {
         if (allProducts.length === 0) { showToast('沒有商品可匯出'); return; }
@@ -632,21 +543,7 @@
                 var data = {};
                 for (var j = 0; j < header.length; j++) { data[header[j].trim()] = values[j] ? values[j].trim() : ''; }
                 if (data.name_zh && data.price) {
-                    var productData = {
-                        name_zh: data.name_zh,
-                        name_en: data.name_en || '',
-                        price: parseFloat(data.price),
-                        category: data.category || '',
-                        description: data.description || '',
-                        specs_flowers: data.specs_flowers || '',
-                        specs_origin: data.specs_origin || '',
-                        specs_size: data.specs_size || '',
-                        tags: data.tags ? data.tags.split('|').filter(Boolean) : [],
-                        stock: data.stock || '現貨',
-                        delivery_days: parseInt(data.delivery_days) || 1,
-                        is_active: data.is_active !== 'false',
-                        image_url: data.image_url || null
-                    };
+                    var productData = { name_zh: data.name_zh, name_en: data.name_en || '', price: parseFloat(data.price), category: data.category || '', description: data.description || '', specs_flowers: data.specs_flowers || '', specs_origin: data.specs_origin || '', specs_size: data.specs_size || '', tags: data.tags ? data.tags.split('|').filter(Boolean) : [], stock: data.stock || '現貨', delivery_days: parseInt(data.delivery_days) || 1, is_active: data.is_active !== 'false', image_url: data.image_url || null };
                     if (data.id) { await supabaseClient.from('products').update(productData).eq('id', data.id); }
                     else { await supabaseClient.from('products').insert(productData); }
                 }
@@ -656,31 +553,90 @@
         reader.readAsText(file);
     }
 
+    // ===== 加購配件完整功能 =====
+    var addonUploadArea = document.getElementById('addonUploadArea');
+    var addonFileInput = document.getElementById('addonFileInput');
+    addonUploadArea.addEventListener('click', function() { addonFileInput.click(); });
+    addonFileInput.addEventListener('change', function() { handleAddonFileUpload(this.files[0]); });
+    addonUploadArea.addEventListener('dragover', function(e) { e.preventDefault(); addonUploadArea.classList.add('dragover'); });
+    addonUploadArea.addEventListener('dragleave', function() { addonUploadArea.classList.remove('dragover'); });
+    addonUploadArea.addEventListener('drop', function(e) { e.preventDefault(); addonUploadArea.classList.remove('dragover'); handleAddonFileUpload(e.dataTransfer.files[0]); });
+
+    async function handleAddonFileUpload(file) {
+        if (!file) return;
+        var fd = new FormData();
+        fd.append('file', file);
+        try {
+            var res = await fetch('/r2-upload', { method: 'POST', body: fd });
+            var data = await res.json();
+            if (data.url) { addonUploadedImage = data.url; document.getElementById('addonImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">'; showToast('圖片上傳成功'); }
+        } catch (err) { showToast('上傳失敗'); }
+    }
+
     function showAddonForm() {
-        var name = prompt('配件名稱（中文）：');
-        if (!name) return;
-        var nameEn = prompt('配件名稱（英文）：') || '';
-        var price = parseFloat(prompt('價格 (HKD)：') || '0');
-        var stock = parseInt(prompt('庫存數量：') || '0');
-        if (!price) { showToast('請輸入有效價格'); return; }
-        supabaseClient.from('addons').insert({ name_zh: name, name_en: nameEn, price: price, stock: stock }).then(function(r) {
-            if (r.error) { showToast('添加失敗'); return; }
-            showToast('配件已添加'); loadAddons();
-        });
+        document.getElementById('addonFormContainer').style.display = 'block';
+        document.getElementById('addonFormTitle').textContent = '新增配件';
+        document.getElementById('addonId').value = '';
+        document.getElementById('addonNameZh').value = '';
+        document.getElementById('addonNameEn').value = '';
+        document.getElementById('addonPrice').value = '';
+        document.getElementById('addonStock').value = '';
+        addonUploadedImage = '';
+        document.getElementById('addonImagePreview').innerHTML = '';
+    }
+
+    function hideAddonForm() { document.getElementById('addonFormContainer').style.display = 'none'; }
+
+    function showEditAddonFormById(id) {
+        for (var i = 0; i < allAddons.length; i++) {
+            if (allAddons[i].id === id) {
+                var a = allAddons[i];
+                document.getElementById('addonFormContainer').style.display = 'block';
+                document.getElementById('addonFormTitle').textContent = '編輯配件';
+                document.getElementById('addonId').value = a.id;
+                document.getElementById('addonNameZh').value = a.name_zh || '';
+                document.getElementById('addonNameEn').value = a.name_en || '';
+                document.getElementById('addonPrice').value = a.price || '';
+                document.getElementById('addonStock').value = a.stock || '';
+                addonUploadedImage = a.image_url || '';
+                document.getElementById('addonImagePreview').innerHTML = a.image_url ? '<img src="' + a.image_url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">' : '';
+                return;
+            }
+        }
+    }
+
+    async function saveAddon() {
+        var id = document.getElementById('addonId').value;
+        var nameZh = document.getElementById('addonNameZh').value.trim();
+        var nameEn = document.getElementById('addonNameEn').value.trim();
+        var price = parseFloat(document.getElementById('addonPrice').value);
+        var stock = parseInt(document.getElementById('addonStock').value) || 0;
+        if (!nameZh || !price) { showToast('請填寫必要欄位'); return; }
+        var data = { name_zh: nameZh, name_en: nameEn, price: price, stock: stock, image_url: addonUploadedImage || null };
+        try {
+            var result;
+            if (id) { result = await supabaseClient.from('addons').update(data).eq('id', id); }
+            else { result = await supabaseClient.from('addons').insert(data); }
+            if (result.error) throw result.error;
+            showToast('配件保存成功');
+            hideAddonForm();
+            loadAddons();
+        } catch (err) { showToast('保存失敗：' + err.message); }
     }
 
     async function loadAddons() {
         var container = document.getElementById('addonsTable');
         try {
-            var result = await supabaseClient.from('addons').select('*');
+            var result = await supabaseClient.from('addons').select('*').order('id', { ascending: true });
             if (result.error) { container.innerHTML = '<div class="empty-state">請先創建 addons 表</div>'; return; }
             allAddons = result.data || [];
             if (allAddons.length === 0) { container.innerHTML = '<div class="empty-state">暫無配件</div>'; return; }
-            var html = '<table class="data-table"><thead><tr><th>ID</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>';
+            var html = '<table class="data-table"><thead><tr><th>圖片</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>';
             for (var i = 0; i < allAddons.length; i++) {
                 var a = allAddons[i];
-                html += '<tr><td>' + a.id + '</td><td>' + a.name_zh + (a.name_en ? '<br><small>' + a.name_en + '</small>' : '') + '</td><td>HK$' + a.price + '</td><td>' + a.stock + '</td>';
-                html += '<td><button class="btn btn-danger btn-small" onclick="deleteAddon(' + a.id + ')">刪除</button></td></tr>';
+                var img = a.image_url ? '<img class="product-img-lg" src="' + a.image_url + '">' : '<span>無圖</span>';
+                html += '<tr><td>' + img + '</td><td><b>' + a.name_zh + '</b>' + (a.name_en ? '<br><small>' + a.name_en + '</small>' : '') + '</td><td>HK$' + a.price + '</td><td>' + a.stock + '</td>';
+                html += '<td><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="showEditAddonFormById(' + a.id + ')">編輯</button><button class="btn btn-danger btn-small" onclick="deleteAddon(' + a.id + ')">刪除</button></div></td></tr>';
             }
             html += '</tbody></table>';
             container.innerHTML = html;
@@ -690,6 +646,7 @@
     async function deleteAddon(id) {
         if (!confirm('確定刪除？')) return;
         await supabaseClient.from('addons').delete().eq('id', id);
+        showToast('已刪除');
         loadAddons();
     }
 
