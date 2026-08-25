@@ -7,26 +7,22 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; font-size: 17px; }
-        
         .login-container { max-width: 450px; margin: 100px auto; background: white; border-radius: 10px; padding: 45px; box-shadow: 0 5px 30px rgba(0,0,0,0.1); text-align: center; }
         .login-container h1 { font-size: 26px; margin-bottom: 30px; }
         .login-container input { width: 100%; padding: 15px; border: 1px solid #1A1A1A; border-radius: 5px; margin-bottom: 18px; font-size: 17px; }
         .login-container button { width: 100%; padding: 16px; background: #1A1A1A; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: 600; cursor: pointer; }
         .login-error { color: red; font-size: 15px; margin-top: 10px; display: none; }
-        
         .admin-container { display: none; }
         .topbar { background: #1A1A1A; color: white; padding: 0 30px; height: 65px; display: flex; align-items: center; justify-content: space-between; }
         .topbar h1 { font-size: 20px; font-weight: 600; }
         .topbar-links { display: flex; gap: 20px; }
         .topbar a { color: #ccc; font-size: 16px; text-decoration: none; cursor: pointer; }
-        
         .sidebar { width: 220px; background: #F3EFEA; min-height: calc(100vh - 65px); position: fixed; left: 0; top: 65px; padding: 25px 0; }
         .sidebar-item { display: block; padding: 18px 30px; font-size: 18px; font-weight: 600; cursor: pointer; color: #383431; border-left: 3px solid transparent; }
         .sidebar-item:hover { background: #e8e0d6; }
         .sidebar-item.active { background: white; border-left-color: #1A1A1A; color: #1A1A1A; }
-        
         .main-content { margin-left: 220px; padding: 30px; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 12px; }
         .page-title { font-size: 26px; font-weight: 600; }
@@ -37,26 +33,23 @@
         .btn-danger { background: #ff4444; color: white; }
         .btn-small { padding: 8px 14px; font-size: 14px; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        
         .search-bar { width: 100%; padding: 14px 18px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 17px; margin-bottom: 18px; }
-        
         .data-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .data-table th { background: #1A1A1A; color: white; padding: 15px 14px; text-align: left; font-size: 15px; white-space: nowrap; }
         .data-table td { padding: 12px 14px; border-bottom: 1px solid #eee; font-size: 16px; vertical-align: middle; }
         .data-table tr:hover { background: #F9F6F2; }
         .product-img-lg { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; }
-        .name-col { max-width: 180px; }
+        .name-col { max-width: 160px; }
         .name-col b { font-size: 17px; }
         .name-col small { font-size: 14px; display: block; }
-        
         .form-container { background: white; border-radius: 10px; padding: 35px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 800px; }
         .form-group { margin-bottom: 22px; }
         .form-label { display: block; font-size: 16px; font-weight: 600; margin-bottom: 10px; }
         .form-input, .form-select, .form-textarea { width: 100%; padding: 14px 16px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 16px; font-family: inherit; }
         .form-textarea { resize: vertical; min-height: 90px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
         .form-actions { display: flex; gap: 12px; margin-top: 30px; }
-        
         .upload-area { border: 2px dashed #1A1A1A; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; margin-bottom: 15px; font-size: 16px; }
         .upload-area:hover { background: #F9F6F2; }
         .upload-area.dragover { background: #F3EFEA; }
@@ -64,33 +57,26 @@
         .uploaded-img-item { position: relative; width: 100px; height: 100px; }
         .uploaded-img-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
         .del-btn { position: absolute; top: -8px; right: -8px; background: red; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; }
-        
         .spectrum-wrap { display: flex; align-items: center; gap: 12px; font-size: 15px; }
         .spectrum-wrap input[type="range"] { flex: 1; height: 8px; }
         .spectrum-val { font-size: 20px; font-weight: 700; min-width: 40px; text-align: center; }
-        
         .variant-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
         .variant-row input { flex: 1; padding: 12px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; }
-        
+        .tag-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag-pill { padding: 10px 18px; border: 1px solid #1A1A1A; border-radius: 25px; font-size: 14px; cursor: pointer; background: transparent; font-family: inherit; transition: all 0.2s; }
+        .tag-pill:hover { background: #F3EFEA; }
+        .tag-pill.active { background: #1A1A1A; color: #FAF8F5; }
         .addon-checkbox-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .addon-checkbox-item { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; font-size: 15px; }
         .addon-checkbox-item:hover { background: #F9F6F2; }
         .addon-checkbox-item input { width: 20px; height: 20px; }
-        
         .checkbox-col { width: 35px; }
         .checkbox-col input { width: 18px; height: 18px; cursor: pointer; }
-        
         .toast { position: fixed; top: 20px; right: 20px; background: #1A1A1A; color: white; padding: 18px 28px; border-radius: 8px; z-index: 9999; font-size: 16px; opacity: 0; transition: all 0.3s; }
         .toast.show { opacity: 1; }
         .empty-state { text-align: center; padding: 60px; color: #888; font-size: 17px; }
-        
-        @media (max-width: 768px) {
-            .sidebar { width: 60px; }
-            .sidebar-item { padding: 15px 10px; font-size: 0; }
-            .main-content { margin-left: 60px; }
-            .form-row { grid-template-columns: 1fr; }
-            .addon-checkbox-list { grid-template-columns: 1fr; }
-        }.empty-state { text-align: center; padding: 50px; color: #888; }
+        #deliveryDaysGroup { display: none; }
+        @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } .addon-checkbox-list { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -178,20 +164,55 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">庫存狀態</label>
-                            <select class="form-select" id="stock">
+                            <select class="form-select" id="stock" onchange="toggleDeliveryDays()">
                                 <option value="現貨">現貨</option>
                                 <option value="預訂">預訂</option>
                             </select>
                         </div>
                     </div>
+                    <div class="form-group" id="deliveryDaysGroup">
+                        <label class="form-label">預計發貨天數</label>
+                        <input type="number" class="form-input" id="deliveryDays" value="3" min="1">
+                    </div>
+                    
                     <div class="form-group">
                         <label class="form-label">描述</label>
                         <textarea class="form-textarea" id="description"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">標籤（逗號分隔）</label>
-                        <input type="text" class="form-input" id="tags">
+                    
+                    <!-- 規格資訊 -->
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label class="form-label">花材</label>
+                            <input type="text" class="form-input" id="specsFlowers" placeholder="如：緋紅芍藥 × 9">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">產地</label>
+                            <input type="text" class="form-input" id="specsOrigin" placeholder="如：荷蘭 · 阿姆斯特丹">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">規格</label>
+                            <input type="text" class="form-input" id="specsSize" placeholder="如：高 45cm × 寬 35cm">
+                        </div>
                     </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">場景用途標籤</label>
+                        <div class="tag-pills" id="tagOccasion"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">核心花材標籤</label>
+                        <div class="tag-pills" id="tagFlower"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">設計風格標籤</label>
+                        <div class="tag-pills" id="tagStyle"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">價格區間標籤</label>
+                        <div class="tag-pills" id="tagPrice"></div>
+                    </div>
+                    
                     <div class="form-group">
                         <label class="form-label">香氣筆記（逗號分隔）</label>
                         <input type="text" class="form-input" id="scentNotes">
@@ -205,18 +226,12 @@
                             <span class="spectrum-val" id="styleVal">50</span>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">發貨天數</label>
-                            <input type="number" class="form-input" id="deliveryDays" value="1" min="1">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">前台顯示</label>
-                            <select class="form-select" id="isActive">
-                                <option value="true">上架</option>
-                                <option value="false">下架</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">前台顯示</label>
+                        <select class="form-select" id="isActive">
+                            <option value="true">上架</option>
+                            <option value="false">下架</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">規格變體（Variants）</label>
@@ -258,6 +273,44 @@
     var variants = [];
     var selectedAddons = [];
     var allAddons = [];
+    var selectedTags = [];
+
+    var tagCategories = {
+        tagOccasion: ['情人節','母親節','中秋節','清明節','畢業季','端午','聖誕節','生日','週年','婚禮','彌月','探病','帛事','開張','喬遷','商務送禮','企業周年'],
+        tagFlower: ['玫瑰','鬱金香','芍藥','荷花','百合','康乃馨','向日葵','滿天星','蘭花','牡丹','進口鮮花'],
+        tagStyle: ['經典風','韓式','日式極簡','法式田園','永生花'],
+        tagPrice: ['HK$300內','HK$300-600','HK$800+','HK$1200+']
+    };
+
+    function initTagPills() {
+        for (var groupId in tagCategories) {
+            var container = document.getElementById(groupId);
+            var tags = tagCategories[groupId];
+            var html = '';
+            for (var i = 0; i < tags.length; i++) {
+                html += '<button type="button" class="tag-pill" data-tag="' + tags[i] + '" onclick="toggleTag(this)">' + tags[i] + '</button>';
+            }
+            container.innerHTML = html;
+        }
+    }
+    function toggleTag(btn) {
+        var tag = btn.getAttribute('data-tag');
+        var idx = selectedTags.indexOf(tag);
+        if (idx > -1) { selectedTags.splice(idx, 1); btn.classList.remove('active'); }
+        else { selectedTags.push(tag); btn.classList.add('active'); }
+    }
+    function setSelectedTags(tags) {
+        selectedTags = tags || [];
+        document.querySelectorAll('.tag-pill').forEach(function(pill) {
+            var tag = pill.getAttribute('data-tag');
+            if (selectedTags.indexOf(tag) > -1) { pill.classList.add('active'); }
+            else { pill.classList.remove('active'); }
+        });
+    }
+    function toggleDeliveryDays() {
+        var stock = document.getElementById('stock').value;
+        document.getElementById('deliveryDaysGroup').style.display = stock === '預訂' ? 'block' : 'none';
+    }
 
     function doLogin() {
         var u = document.getElementById('loginUser').value.trim();
@@ -266,6 +319,7 @@
             localStorage.setItem('royalspl_admin', 'true');
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('adminPage').style.display = 'block';
+            initTagPills();
             loadProducts(); loadAddons(); loadOrders();
         } else { document.getElementById('loginError').style.display = 'block'; }
     }
@@ -294,14 +348,18 @@
         document.getElementById('price').value = '';
         document.getElementById('category').value = '';
         document.getElementById('description').value = '';
-        document.getElementById('tags').value = '';
+        document.getElementById('specsFlowers').value = '';
+        document.getElementById('specsOrigin').value = '';
+        document.getElementById('specsSize').value = '';
         document.getElementById('scentNotes').value = '';
         document.getElementById('styleSpectrum').value = '50';
         document.getElementById('styleVal').textContent = '50';
         document.getElementById('stock').value = '現貨';
-        document.getElementById('deliveryDays').value = '1';
+        document.getElementById('deliveryDays').value = '3';
         document.getElementById('isActive').value = 'true';
         uploadedImages = []; variants = []; selectedAddons = [];
+        setSelectedTags([]);
+        toggleDeliveryDays();
         renderUploadedImages(); renderVariants(); renderAddonsCheckbox();
     }
 
@@ -328,15 +386,19 @@
         document.getElementById('price').value = p.price || '';
         document.getElementById('category').value = p.category || '';
         document.getElementById('description').value = p.description || '';
-        document.getElementById('tags').value = (p.tags || []).join(',');
+        document.getElementById('specsFlowers').value = p.specs_flowers || '';
+        document.getElementById('specsOrigin').value = p.specs_origin || '';
+        document.getElementById('specsSize').value = p.specs_size || '';
         document.getElementById('scentNotes').value = (p.scent_notes || []).join(',');
         document.getElementById('styleSpectrum').value = p.style_spectrum || 50;
         document.getElementById('styleVal').textContent = p.style_spectrum || 50;
         document.getElementById('stock').value = p.stock || '現貨';
-        document.getElementById('deliveryDays').value = p.delivery_days || 1;
+        document.getElementById('deliveryDays').value = p.delivery_days || 3;
         document.getElementById('isActive').value = String(p.is_active !== false);
         uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
         selectedAddons = p.linked_addons || [];
+        setSelectedTags(p.tags || []);
+        toggleDeliveryDays();
         renderUploadedImages();
         renderAddonsCheckbox();
         loadVariants(p.id);
@@ -412,7 +474,7 @@
             html += a.name_zh + ' (HK$' + a.price + ')';
             html += '</label>';
         }
-        if (allAddons.length === 0) { html = '<p style="font-size:13px;color:#888;">暫無配件，請先在加購配件中添加</p>'; }
+        if (allAddons.length === 0) { html = '<p>暫無配件</p>'; }
         container.innerHTML = html;
     }
     function toggleAddon(id) {
@@ -428,7 +490,10 @@
             price: parseFloat(document.getElementById('price').value),
             category: document.getElementById('category').value.trim(),
             description: document.getElementById('description').value.trim(),
-            tags: document.getElementById('tags').value.split(',').map(function(t){return t.trim();}).filter(Boolean),
+            specs_flowers: document.getElementById('specsFlowers').value.trim(),
+            specs_origin: document.getElementById('specsOrigin').value.trim(),
+            specs_size: document.getElementById('specsSize').value.trim(),
+            tags: selectedTags,
             scent_notes: document.getElementById('scentNotes').value.split(',').map(function(t){return t.trim();}).filter(Boolean),
             style_spectrum: parseInt(document.getElementById('styleSpectrum').value),
             stock: document.getElementById('stock').value,
@@ -488,7 +553,7 @@
             html += '<td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td>';
             html += '<td>' + img + '</td>';
             html += '<td>' + sku + '</td>';
-            html += '<td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td>';
+            html += '<td class="name-col"><b>' + p.name_zh + '</b><small>' + p.name_en + '</small></td>';
             html += '<td>HK$' + p.price + '</td>';
             html += '<td>' + (p.category || '-') + '</td>';
             html += '<td>' + p.stock + '</td>';
@@ -540,12 +605,12 @@
 
     function exportCSV() {
         if (allProducts.length === 0) { showToast('沒有商品可匯出'); return; }
-        var header = 'id,name_zh,name_en,price,category,description,tags,stock,delivery_days,is_active,image_url';
+        var header = 'id,name_zh,name_en,price,category,description,specs_flowers,specs_origin,specs_size,tags,stock,delivery_days,is_active,image_url';
         var rows = [header];
         for (var i = 0; i < allProducts.length; i++) {
             var p = allProducts[i];
             var tags = (p.tags || []).join('|');
-            rows.push([p.id, p.name_zh, p.name_en, p.price, p.category || '', p.description || '', tags, p.stock, p.delivery_days || 1, p.is_active !== false, p.image_url || ''].join(','));
+            rows.push([p.id, p.name_zh, p.name_en, p.price, p.category || '', p.description || '', p.specs_flowers || '', p.specs_origin || '', p.specs_size || '', tags, p.stock, p.delivery_days || 1, p.is_active !== false, p.image_url || ''].join(','));
         }
         var csv = rows.join('\n');
         var blob = new Blob([csv], { type: 'text/csv' });
@@ -573,6 +638,9 @@
                         price: parseFloat(data.price),
                         category: data.category || '',
                         description: data.description || '',
+                        specs_flowers: data.specs_flowers || '',
+                        specs_origin: data.specs_origin || '',
+                        specs_size: data.specs_size || '',
                         tags: data.tags ? data.tags.split('|').filter(Boolean) : [],
                         stock: data.stock || '現貨',
                         delivery_days: parseInt(data.delivery_days) || 1,
@@ -655,6 +723,7 @@
         if (localStorage.getItem('royalspl_admin') === 'true') {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('adminPage').style.display = 'block';
+            initTagPills();
             loadProducts(); loadAddons(); loadOrders();
         }
     });
