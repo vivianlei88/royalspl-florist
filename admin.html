@@ -98,6 +98,7 @@
         </div>
         <div class="sidebar">
             <div class="sidebar-item active" data-page="products" onclick="switchPage('products')">商品管理</div>
+            <div class="sidebar-item" data-page="categories" onclick="switchPage('categories')">商品分類</div>
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
         </div>
@@ -166,6 +167,38 @@
                     <div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div>
                 </div>
             </div>
+                        <!-- 商品分類 -->
+            <div id="page-categories" style="display:none;">
+                <div class="page-header">
+                    <h2 class="page-title">商品分類</h2>
+                    <button class="btn btn-primary" onclick="showCategoryForm()">新增分類</button>
+                </div>
+                <div class="btn-group" style="margin-bottom:15px;">
+                    <button class="btn btn-secondary btn-small" onclick="bulkCategoryDelete()">批量刪除</button>
+                    <button class="btn btn-secondary btn-small" onclick="bulkCategoryActive(true)">批量上架</button>
+                    <button class="btn btn-secondary btn-small" onclick="bulkCategoryActive(false)">批量下架</button>
+                </div>
+                <div id="categoryFormContainer" style="display:none;margin-bottom:20px;">
+                    <div class="form-container">
+                        <h2 id="categoryFormTitle" style="font-size:20px;font-weight:600;margin-bottom:20px;">新增分類</h2>
+                        <input type="hidden" id="categoryId">
+                        <div class="form-group">
+                            <label class="form-label">分類圖片</label>
+                            <div class="upload-area" id="categoryUploadArea"><p>點擊上傳圖片</p><input type="file" id="categoryFileInput" accept="image/*" style="display:none;"></div>
+                            <div id="categoryImagePreview" style="margin-top:10px;"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="categoryNameZh"></div>
+                            <div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="categoryNameEn"></div>
+                        </div>
+                        <div class="form-group"><label class="form-label">文案簡介</label><textarea class="form-textarea" id="categoryDescription"></textarea></div>
+                        <div class="form-group"><label class="form-label">排序數字（越小越靠前）</label><input type="number" class="form-input" id="categorySortOrder" value="0"></div>
+                        <div class="form-actions"><button class="btn btn-primary" onclick="saveCategory()">保存分類</button><button class="btn btn-secondary" onclick="hideCategoryForm()">取消</button></div>
+                    </div>
+                </div>
+                <div class="category-grid" id="categoriesGrid"></div>
+            </div>
+
             
             <div id="page-addons" style="display:none;">
                 <div class="page-header">
@@ -213,6 +246,9 @@
     var variants = [];
     var selectedAddons = [];
     var allAddons = [];
+    var allCategories = [];
+    var categoryUploadedImage = '';
+    var selectedCategoryProducts = [];
     var selectedTags = [];
     var addonUploadedImage = '';
 
@@ -261,7 +297,7 @@
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('adminPage').style.display = 'block';
             initTagPills();
-            loadProducts(); loadAddons(); loadOrders();
+            loadProducts(); loadAddons(); loadCategories(); loadOrders();
         } else { document.getElementById('loginError').style.display = 'block'; }
     }
     function doLogout() { localStorage.removeItem('royalspl_admin'); location.reload(); }
@@ -272,8 +308,10 @@
         document.getElementById('page-products-list').style.display = 'none';
         document.getElementById('page-products-form').style.display = 'none';
         document.getElementById('page-addons').style.display = 'none';
+        document.getElementById('page-categories').style.display = 'none';
         document.getElementById('page-orders').style.display = 'none';
         if (page === 'products') { document.getElementById('page-products-list').style.display = 'block'; loadProducts(); }
+        else if (page === 'categories') { document.getElementById('page-categories').style.display = 'block'; loadCategories(); }
         else if (page === 'addons') { document.getElementById('page-addons').style.display = 'block'; loadAddons(); }
         else if (page === 'orders') { document.getElementById('page-orders').style.display = 'block'; loadOrders(); }
     }
@@ -667,6 +705,196 @@
         } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; }
     }
 
+        // ===== 商品分類 =====
+    var categoryUploadArea = document.getElementById('categoryUploadArea');
+    var categoryFileInput = document.getElementById('categoryFileInput');
+    categoryUploadArea.addEventListener('click', function() { categoryFileInput.click(); });
+    categoryFileInput.addEventListener('change', function() { handleCategoryFileUpload(this.files[0]); });
+
+    async function handleCategoryFileUpload(file) {
+        if (!file) return;
+        var fd = new FormData();
+        fd.append('file', file);
+        try {
+            var res = await fetch('/r2-upload', { method: 'POST', body: fd });
+            var data = await res.json();
+            if (data.url) {
+                categoryUploadedImage = data.url;
+                document.getElementById('categoryImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">';
+                showToast('圖片上傳成功');
+            }
+        } catch (err) {}
+    }
+
+    function showCategoryForm() {
+        document.getElementById('categoryFormContainer').style.display = 'block';
+        document.getElementById('categoryFormTitle').textContent = '新增分類';
+        document.getElementById('categoryId').value = '';
+        document.getElementById('categoryNameZh').value = '';
+        document.getElementById('categoryNameEn').value = '';
+        document.getElementById('categoryDescription').value = '';
+        document.getElementById('categorySortOrder').value = '0';
+        categoryUploadedImage = '';
+        document.getElementById('categoryImagePreview').innerHTML = '';
+    }
+    function hideCategoryForm() { document.getElementById('categoryFormContainer').style.display = 'none'; }
+
+    function showEditCategoryForm(c) {
+        document.getElementById('categoryFormContainer').style.display = 'block';
+        document.getElementById('categoryFormTitle').textContent = '編輯分類';
+        document.getElementById('categoryId').value = c.id;
+        document.getElementById('categoryNameZh').value = c.name_zh || '';
+        document.getElementById('categoryNameEn').value = c.name_en || '';
+        document.getElementById('categoryDescription').value = c.description || '';
+        document.getElementById('categorySortOrder').value = c.sort_order || 0;
+        categoryUploadedImage = c.image_url || '';
+        document.getElementById('categoryImagePreview').innerHTML = c.image_url ? '<img src="' + c.image_url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">' : '';
+    }
+
+    async function saveCategory() {
+        var id = document.getElementById('categoryId').value;
+        var data = {
+            name_zh: document.getElementById('categoryNameZh').value.trim(),
+            name_en: document.getElementById('categoryNameEn').value.trim(),
+            description: document.getElementById('categoryDescription').value.trim(),
+            sort_order: parseInt(document.getElementById('categorySortOrder').value) || 0,
+            image_url: categoryUploadedImage || null,
+            is_active: true
+        };
+        if (!data.name_zh) { showToast('請填寫分類名稱'); return; }
+        try {
+            var result;
+            if (id) { result = await supabaseClient.from('categories').update(data).eq('id', id); }
+            else { result = await supabaseClient.from('categories').insert(data); }
+            if (result.error) throw result.error;
+            showToast('分類保存成功');
+            hideCategoryForm();
+            loadCategories();
+        } catch (err) { showToast('保存失敗：' + err.message); }
+    }
+
+    async function loadCategories() {
+        var container = document.getElementById('categoriesGrid');
+        try {
+            var result = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true });
+            if (result.error) { container.innerHTML = '<div class="empty-state">請先創建 categories 表</div>'; return; }
+            allCategories = result.data || [];
+            if (allCategories.length === 0) { container.innerHTML = '<div class="empty-state">暫無分類</div>'; return; }
+            var html = '';
+            for (var i = 0; i < allCategories.length; i++) {
+                var c = allCategories[i];
+                var img = c.image_url ? '<img class="category-card-img" src="' + c.image_url + '">' : '<div style="height:180px;display:flex;align-items:center;justify-content:center;background:#F3EFEA;">無圖</div>';
+                html += '<div class="category-card" draggable="true" data-id="' + c.id + '" onclick="openProductSelect(' + c.id + ')" ondragstart="categoryDragStart(event)" ondragover="categoryDragOver(event)" ondrop="categoryDrop(event)" ondragend="categoryDragEnd(event)">';
+                html += '<input type="checkbox" class="category-card-check" onclick="event.stopPropagation()" value="' + c.id + '">';
+                html += img;
+                html += '<div class="category-card-body">';
+                html += '<p class="category-card-name">' + c.name_zh + '</p>';
+                html += '<p class="category-card-name-en">' + (c.name_en || '') + '</p>';
+                html += '<p class="category-card-status">' + (c.is_active !== false ? '顯示中' : '已隱藏') + ' | 排序: ' + (c.sort_order || 0) + '</p>';
+                html += '<div class="btn-group" style="margin-top:8px;" onclick="event.stopPropagation()">';
+                html += '<button class="btn btn-secondary btn-small" onclick="showEditCategoryForm(' + JSON.stringify(c).replace(/"/g, '&quot;') + ')">編輯</button>';
+                html += '<button class="btn btn-danger btn-small" onclick="deleteCategory(' + c.id + ')">刪除</button>';
+                html += '</div></div></div>';
+            }
+            container.innerHTML = html;
+        } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; }
+    }
+
+    async function deleteCategory(id) {
+        if (!confirm('確定刪除？')) return;
+        await supabaseClient.from('categories').delete().eq('id', id);
+        showToast('已刪除');
+        loadCategories();
+    }
+
+    function getCheckedCategoryIds() {
+        var ids = [];
+        document.querySelectorAll('.category-card-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); });
+        return ids;
+    }
+    async function bulkCategoryDelete() {
+        var ids = getCheckedCategoryIds();
+        if (ids.length === 0) { showToast('請先勾選分類'); return; }
+        if (!confirm('刪除 ' + ids.length + ' 個分類？')) return;
+        await supabaseClient.from('categories').delete().in('id', ids);
+        showToast('批量刪除完成');
+        loadCategories();
+    }
+    async function bulkCategoryActive(active) {
+        var ids = getCheckedCategoryIds();
+        if (ids.length === 0) { showToast('請先勾選分類'); return; }
+        await supabaseClient.from('categories').update({ is_active: active }).in('id', ids);
+        showToast('批量更新完成');
+        loadCategories();
+    }
+
+    var draggedCategoryId = null;
+    function categoryDragStart(e) { draggedCategoryId = parseInt(e.target.getAttribute('data-id')); e.target.classList.add('dragging'); }
+    function categoryDragOver(e) { e.preventDefault(); e.target.classList.add('drag-over'); }
+    function categoryDragEnd(e) { e.target.classList.remove('dragging'); document.querySelectorAll('.category-card').forEach(function(el) { el.classList.remove('drag-over'); }); }
+    function categoryDrop(e) {
+        e.preventDefault();
+        var targetId = parseInt(e.target.getAttribute('data-id'));
+        if (draggedCategoryId === targetId) return;
+        var draggedIdx = -1, targetIdx = -1;
+        for (var i = 0; i < allCategories.length; i++) {
+            if (allCategories[i].id === draggedCategoryId) draggedIdx = i;
+            if (allCategories[i].id === targetId) targetIdx = i;
+        }
+        if (draggedIdx > -1 && targetIdx > -1) {
+            var temp = allCategories[draggedIdx];
+            allCategories.splice(draggedIdx, 1);
+            allCategories.splice(targetIdx, 0, temp);
+            saveCategoryOrder();
+            loadCategories();
+        }
+    }
+    async function saveCategoryOrder() {
+        for (var i = 0; i < allCategories.length; i++) {
+            await supabaseClient.from('categories').update({ sort_order: i + 1 }).eq('id', allCategories[i].id);
+        }
+        showToast('排序已保存');
+    }
+
+    async function openProductSelect(categoryId) {
+        document.getElementById('modalCategoryId').value = categoryId;
+        var container = document.getElementById('modalProductList');
+        selectedCategoryProducts = [];
+        var result = await supabaseClient.from('products').select('*').eq('category_id', categoryId);
+        if (result.data) { for (var i = 0; i < result.data.length; i++) { selectedCategoryProducts.push(result.data[i].id); } }
+        var html = '';
+        for (var j = 0; j < allProducts.length; j++) {
+            var p = allProducts[j];
+            var checked = selectedCategoryProducts.indexOf(p.id) > -1 ? 'checked' : '';
+            html += '<label class="modal-product-item">';
+            html += '<input type="checkbox" value="' + p.id + '" ' + checked + ' onchange="toggleCategoryProduct(' + p.id + ')">';
+            html += (p.image_url ? '<img src="' + p.image_url + '">' : '<span>無圖</span>');
+            html += p.name_zh + ' (HK$' + p.price + ')';
+            html += '</label>';
+        }
+        container.innerHTML = html;
+        document.getElementById('productSelectModal').classList.add('show');
+    }
+    function toggleCategoryProduct(id) {
+        var idx = selectedCategoryProducts.indexOf(id);
+        if (idx > -1) { selectedCategoryProducts.splice(idx, 1); } else { selectedCategoryProducts.push(id); }
+    }
+    function closeProductModal() { document.getElementById('productSelectModal').classList.remove('show'); }
+    async function saveCategoryProducts() {
+        var categoryId = parseInt(document.getElementById('modalCategoryId').value);
+        var result = await supabaseClient.from('products').select('id').eq('category_id', categoryId);
+        if (result.data) {
+            for (var i = 0; i < result.data.length; i++) {
+                await supabaseClient.from('products').update({ category_id: null }).eq('id', result.data[i].id);
+            }
+        }
+        for (var j = 0; j < selectedCategoryProducts.length; j++) {
+            await supabaseClient.from('products').update({ category_id: categoryId }).eq('id', selectedCategoryProducts[j]);
+        }
+        showToast('分類商品已保存');
+        closeProductModal();
+    }
+
     function showToast(msg) {
         var toast = document.createElement('div');
         toast.className = 'toast';
@@ -681,7 +909,7 @@
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('adminPage').style.display = 'block';
             initTagPills();
-            loadProducts(); loadAddons(); loadOrders();
+             loadProducts(); loadAddons(); loadCategories(); loadOrders();
         }
     });
     </script>
