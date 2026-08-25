@@ -32,7 +32,7 @@ export async function onRequestPost(context) {
       }
     });
 
-    const publicUrl = 'https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/' + fileName;
+    const publicUrl = 'https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/' + fileName;
 
     return new Response(JSON.stringify({ url: publicUrl }), {
       status: 200,
