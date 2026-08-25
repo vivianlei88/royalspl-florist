@@ -7,66 +7,90 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; }
-        .login-container { max-width: 400px; margin: 100px auto; background: white; border-radius: 10px; padding: 40px; box-shadow: 0 5px 30px rgba(0,0,0,0.1); text-align: center; }
-        .login-container h1 { font-size: 22px; margin-bottom: 25px; }
-        .login-container input { width: 100%; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; margin-bottom: 15px; font-size: 15px; }
-        .login-container button { width: 100%; padding: 14px; background: #1A1A1A; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; }
-        .login-error { color: red; font-size: 13px; margin-top: 10px; display: none; }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; font-size: 17px; }
+        
+        .login-container { max-width: 450px; margin: 100px auto; background: white; border-radius: 10px; padding: 45px; box-shadow: 0 5px 30px rgba(0,0,0,0.1); text-align: center; }
+        .login-container h1 { font-size: 26px; margin-bottom: 30px; }
+        .login-container input { width: 100%; padding: 15px; border: 1px solid #1A1A1A; border-radius: 5px; margin-bottom: 18px; font-size: 17px; }
+        .login-container button { width: 100%; padding: 16px; background: #1A1A1A; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: 600; cursor: pointer; }
+        .login-error { color: red; font-size: 15px; margin-top: 10px; display: none; }
+        
         .admin-container { display: none; }
-        .topbar { background: #1A1A1A; color: white; padding: 0 30px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-        .topbar h1 { font-size: 18px; font-weight: 600; }
-        .topbar-links { display: flex; gap: 15px; }
-        .topbar a { color: #ccc; font-size: 14px; text-decoration: none; cursor: pointer; }
-        .sidebar { width: 200px; background: #F3EFEA; min-height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; padding: 20px 0; }
-        .sidebar-item { display: block; padding: 14px 25px; font-size: 15px; font-weight: 600; cursor: pointer; color: #383431; border-left: 3px solid transparent; }
+        .topbar { background: #1A1A1A; color: white; padding: 0 30px; height: 65px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar h1 { font-size: 20px; font-weight: 600; }
+        .topbar-links { display: flex; gap: 20px; }
+        .topbar a { color: #ccc; font-size: 16px; text-decoration: none; cursor: pointer; }
+        
+        .sidebar { width: 220px; background: #F3EFEA; min-height: calc(100vh - 65px); position: fixed; left: 0; top: 65px; padding: 25px 0; }
+        .sidebar-item { display: block; padding: 18px 30px; font-size: 18px; font-weight: 600; cursor: pointer; color: #383431; border-left: 3px solid transparent; }
         .sidebar-item:hover { background: #e8e0d6; }
         .sidebar-item.active { background: white; border-left-color: #1A1A1A; color: #1A1A1A; }
-        .main-content { margin-left: 200px; padding: 25px; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .page-title { font-size: 22px; font-weight: 600; }
-        .btn { padding: 9px 18px; border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+        
+        .main-content { margin-left: 220px; padding: 30px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 12px; }
+        .page-title { font-size: 26px; font-weight: 600; }
+        .btn { padding: 12px 22px; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
         .btn-primary { background: #1A1A1A; color: white; }
         .btn-primary:hover { background: #383431; }
         .btn-secondary { background: transparent; border: 1px solid #1A1A1A; }
         .btn-danger { background: #ff4444; color: white; }
-        .btn-small { padding: 5px 10px; font-size: 12px; }
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        .search-bar { width: 100%; padding: 11px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; margin-bottom: 15px; }
+        .btn-small { padding: 8px 14px; font-size: 14px; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .search-bar { width: 100%; padding: 14px 18px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 17px; margin-bottom: 18px; }
+        
         .data-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .data-table th { background: #1A1A1A; color: white; padding: 12px; text-align: left; font-size: 12px; }
-        .data-table td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
+        .data-table th { background: #1A1A1A; color: white; padding: 15px 14px; text-align: left; font-size: 15px; white-space: nowrap; }
+        .data-table td { padding: 12px 14px; border-bottom: 1px solid #eee; font-size: 16px; vertical-align: middle; }
         .data-table tr:hover { background: #F9F6F2; }
-        .product-img-lg { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; }
-        .form-container { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 750px; }
-        .form-group { margin-bottom: 18px; }
-        .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-        .form-input, .form-select, .form-textarea { width: 100%; padding: 11px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; }
-        .form-textarea { resize: vertical; min-height: 70px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-actions { display: flex; gap: 10px; margin-top: 25px; }
-        .upload-area { border: 2px dashed #1A1A1A; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 10px; }
+        .product-img-lg { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; }
+        .name-col { max-width: 180px; }
+        .name-col b { font-size: 17px; }
+        .name-col small { font-size: 14px; display: block; }
+        
+        .form-container { background: white; border-radius: 10px; padding: 35px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 800px; }
+        .form-group { margin-bottom: 22px; }
+        .form-label { display: block; font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+        .form-input, .form-select, .form-textarea { width: 100%; padding: 14px 16px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 16px; font-family: inherit; }
+        .form-textarea { resize: vertical; min-height: 90px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-actions { display: flex; gap: 12px; margin-top: 30px; }
+        
+        .upload-area { border: 2px dashed #1A1A1A; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; margin-bottom: 15px; font-size: 16px; }
         .upload-area:hover { background: #F9F6F2; }
         .upload-area.dragover { background: #F3EFEA; }
-        .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 8px; }
-        .uploaded-img-item { position: relative; width: 65px; height: 65px; }
-        .uploaded-img-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
-        .del-btn { position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; }
-        .spectrum-wrap { display: flex; align-items: center; gap: 10px; }
-        .spectrum-wrap input[type="range"] { flex: 1; }
-        .spectrum-val { font-size: 16px; font-weight: 700; min-width: 30px; text-align: center; }
-        .variant-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-        .variant-row input { flex: 1; padding: 8px 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 13px; }
-        .addon-checkbox-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .addon-checkbox-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
+        .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 12px; }
+        .uploaded-img-item { position: relative; width: 100px; height: 100px; }
+        .uploaded-img-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        .del-btn { position: absolute; top: -8px; right: -8px; background: red; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; }
+        
+        .spectrum-wrap { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+        .spectrum-wrap input[type="range"] { flex: 1; height: 8px; }
+        .spectrum-val { font-size: 20px; font-weight: 700; min-width: 40px; text-align: center; }
+        
+        .variant-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+        .variant-row input { flex: 1; padding: 12px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; }
+        
+        .addon-checkbox-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .addon-checkbox-item { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; font-size: 15px; }
         .addon-checkbox-item:hover { background: #F9F6F2; }
-        .addon-checkbox-item input { width: 18px; height: 18px; }
-        .checkbox-col { width: 30px; }
-        .checkbox-col input { width: 16px; height: 16px; cursor: pointer; }
-        .toast { position: fixed; top: 20px; right: 20px; background: #1A1A1A; color: white; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transition: all 0.3s; }
+        .addon-checkbox-item input { width: 20px; height: 20px; }
+        
+        .checkbox-col { width: 35px; }
+        .checkbox-col input { width: 18px; height: 18px; cursor: pointer; }
+        
+        .toast { position: fixed; top: 20px; right: 20px; background: #1A1A1A; color: white; padding: 18px 28px; border-radius: 8px; z-index: 9999; font-size: 16px; opacity: 0; transition: all 0.3s; }
         .toast.show { opacity: 1; }
-        .empty-state { text-align: center; padding: 50px; color: #888; }
+        .empty-state { text-align: center; padding: 60px; color: #888; font-size: 17px; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar-item { padding: 15px 10px; font-size: 0; }
+            .main-content { margin-left: 60px; }
+            .form-row { grid-template-columns: 1fr; }
+            .addon-checkbox-list { grid-template-columns: 1fr; }
+        }.empty-state { text-align: center; padding: 50px; color: #888; }
     </style>
 </head>
 <body>
