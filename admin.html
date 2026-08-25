@@ -9,71 +9,67 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; }
-        
         .login-container { max-width: 400px; margin: 100px auto; background: white; border-radius: 10px; padding: 40px; box-shadow: 0 5px 30px rgba(0,0,0,0.1); text-align: center; }
         .login-container h1 { font-size: 22px; margin-bottom: 25px; }
         .login-container input { width: 100%; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; margin-bottom: 15px; font-size: 15px; }
         .login-container button { width: 100%; padding: 14px; background: #1A1A1A; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; }
         .login-error { color: red; font-size: 13px; margin-top: 10px; display: none; }
-        
         .admin-container { display: none; }
         .topbar { background: #1A1A1A; color: white; padding: 0 30px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
         .topbar h1 { font-size: 18px; font-weight: 600; }
-        .topbar a { color: #ccc; font-size: 14px; text-decoration: none; margin-left: 15px; }
-        .topbar-links { display: flex; gap: 10px; }
-        
+        .topbar-links { display: flex; gap: 15px; }
+        .topbar a { color: #ccc; font-size: 14px; text-decoration: none; cursor: pointer; }
         .sidebar { width: 200px; background: #F3EFEA; min-height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; padding: 20px 0; }
         .sidebar-item { display: block; padding: 14px 25px; font-size: 15px; font-weight: 600; cursor: pointer; color: #383431; border-left: 3px solid transparent; }
         .sidebar-item:hover { background: #e8e0d6; }
         .sidebar-item.active { background: white; border-left-color: #1A1A1A; color: #1A1A1A; }
-        
-        .main-content { margin-left: 200px; padding: 30px; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .page-title { font-size: 24px; font-weight: 600; }
-        .btn { padding: 10px 20px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+        .main-content { margin-left: 200px; padding: 25px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .page-title { font-size: 22px; font-weight: 600; }
+        .btn { padding: 9px 18px; border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
         .btn-primary { background: #1A1A1A; color: white; }
         .btn-primary:hover { background: #383431; }
         .btn-secondary { background: transparent; border: 1px solid #1A1A1A; }
         .btn-danger { background: #ff4444; color: white; }
-        .btn-small { padding: 6px 12px; font-size: 12px; }
-        
-        .search-bar { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; margin-bottom: 20px; }
+        .btn-small { padding: 5px 10px; font-size: 12px; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .search-bar { width: 100%; padding: 11px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; margin-bottom: 15px; }
         .data-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .data-table th { background: #1A1A1A; color: white; padding: 14px 15px; text-align: left; font-size: 13px; }
-        .data-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .data-table th { background: #1A1A1A; color: white; padding: 12px; text-align: left; font-size: 12px; }
+        .data-table td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
         .data-table tr:hover { background: #F9F6F2; }
-        .product-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
-        .emoji-img { font-size: 28px; color: #888; }
-        
-        .form-container { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 700px; }
-        .form-container h2 { font-size: 20px; margin-bottom: 25px; }
+        .product-img-lg { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; }
+        .form-container { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 750px; }
         .form-group { margin-bottom: 18px; }
         .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
         .form-input, .form-select, .form-textarea { width: 100%; padding: 11px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; }
-        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-textarea { resize: vertical; min-height: 70px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-actions { display: flex; gap: 10px; margin-top: 25px; }
-        
-        .upload-area { border: 2px dashed #1A1A1A; border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; margin-bottom: 15px; }
+        .upload-area { border: 2px dashed #1A1A1A; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 10px; }
         .upload-area:hover { background: #F9F6F2; }
         .upload-area.dragover { background: #F3EFEA; }
-        .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 10px; }
-        .uploaded-img-item { position: relative; width: 70px; height: 70px; }
+        .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 8px; }
+        .uploaded-img-item { position: relative; width: 65px; height: 65px; }
         .uploaded-img-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
-        .uploaded-img-item .del-btn { position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; }
-        
-        .spectrum-wrap { display: flex; align-items: center; gap: 12px; }
+        .del-btn { position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; }
+        .spectrum-wrap { display: flex; align-items: center; gap: 10px; }
         .spectrum-wrap input[type="range"] { flex: 1; }
-        .spectrum-val { font-size: 18px; font-weight: 700; min-width: 35px; text-align: center; }
-        .eye-icon { cursor: pointer; font-size: 16px; }
-        
+        .spectrum-val { font-size: 16px; font-weight: 700; min-width: 30px; text-align: center; }
+        .variant-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .variant-row input { flex: 1; padding: 8px 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 13px; }
+        .addon-checkbox-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .addon-checkbox-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
+        .addon-checkbox-item:hover { background: #F9F6F2; }
+        .addon-checkbox-item input { width: 18px; height: 18px; }
+        .checkbox-col { width: 30px; }
+        .checkbox-col input { width: 16px; height: 16px; cursor: pointer; }
         .toast { position: fixed; top: 20px; right: 20px; background: #1A1A1A; color: white; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transition: all 0.3s; }
         .toast.show { opacity: 1; }
         .empty-state { text-align: center; padding: 50px; color: #888; }
     </style>
 </head>
 <body>
-    <!-- 登入頁 -->
     <div id="loginPage" class="login-container">
         <h1>後台管理登入</h1>
         <input type="text" id="loginUser" placeholder="帳號">
@@ -82,34 +78,40 @@
         <p class="login-error" id="loginError">帳號或密碼錯誤</p>
     </div>
 
-    <!-- 後台主體 -->
     <div id="adminPage" class="admin-container">
         <div class="topbar">
             <h1>RoyalSpl 後台管理</h1>
             <div class="topbar-links">
                 <a href="index.html">返回前台</a>
-                <a href="#" onclick="doLogout()">登出</a>
+                <a onclick="doLogout()">登出</a>
             </div>
         </div>
-        
         <div class="sidebar">
             <div class="sidebar-item active" data-page="products" onclick="switchPage('products')">商品管理</div>
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
         </div>
-        
         <div class="main-content">
-            <!-- 商品列表頁 -->
             <div id="page-products-list">
                 <div class="page-header">
                     <h2 class="page-title">商品管理</h2>
-                    <button class="btn btn-primary" onclick="showAddForm()">新增商品</button>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="exportCSV()">下載 CSV</button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('csvFileInput').click()">上傳 CSV</button>
+                        <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])">
+                        <button class="btn btn-primary" onclick="showAddForm()">新增商品</button>
+                    </div>
                 </div>
                 <input type="text" class="search-bar" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()">
+                <div class="btn-group" style="margin-bottom:15px;">
+                    <button class="btn btn-secondary btn-small" onclick="bulkSetStock('現貨')">批量設現貨</button>
+                    <button class="btn btn-secondary btn-small" onclick="bulkSetStock('預訂')">批量設預訂</button>
+                    <button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button>
+                    <button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button>
+                    <button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button>
+                </div>
                 <div id="productsTable"></div>
             </div>
-            
-            <!-- 商品表單頁 -->
             <div id="page-products-form" style="display:none;">
                 <div class="page-header">
                     <h2 class="page-title" id="formTitle">新增商品</h2>
@@ -118,7 +120,7 @@
                 <div class="form-container">
                     <input type="hidden" id="productId">
                     <div class="form-group">
-                        <label class="form-label">商品圖片（拖拽上傳，第一張為主圖）</label>
+                        <label class="form-label">商品圖片（拖拽上傳）</label>
                         <div class="upload-area" id="uploadArea">
                             <p>點擊或拖拽圖片到這裡上傳</p>
                             <input type="file" id="fileInput" multiple accept="image/*" style="display:none;">
@@ -127,35 +129,48 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">中文名稱</label>
-                            <input type="text" class="form-input" id="nameZh" placeholder="如：緋芍集">
+                            <label class="form-label">SKU（自動生成）</label>
+                            <input type="text" class="form-input" id="sku" readonly>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">英文名稱</label>
-                            <input type="text" class="form-input" id="nameEn" placeholder="如：Crimson Peony Bouquet">
+                            <label class="form-label">中文名稱</label>
+                            <input type="text" class="form-input" id="nameZh">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">價格 (HKD)</label>
-                            <input type="number" class="form-input" id="price" placeholder="688" step="0.01">
+                            <label class="form-label">英文名稱</label>
+                            <input type="text" class="form-input" id="nameEn">
                         </div>
                         <div class="form-group">
+                            <label class="form-label">價格 (HKD)</label>
+                            <input type="number" class="form-input" id="price" step="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
                             <label class="form-label">分類</label>
-                            <input type="text" class="form-input" id="category" placeholder="如：玫瑰花">
+                            <input type="text" class="form-input" id="category">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">庫存狀態</label>
+                            <select class="form-select" id="stock">
+                                <option value="現貨">現貨</option>
+                                <option value="預訂">預訂</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">描述</label>
-                        <textarea class="form-textarea" id="description" placeholder="商品描述..."></textarea>
+                        <textarea class="form-textarea" id="description"></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label">標籤（逗號分隔）</label>
-                        <input type="text" class="form-input" id="tags" placeholder="戀愛,生日,玫瑰,經典風">
+                        <input type="text" class="form-input" id="tags">
                     </div>
                     <div class="form-group">
                         <label class="form-label">香氣筆記（逗號分隔）</label>
-                        <input type="text" class="form-input" id="scentNotes" placeholder="古典玫瑰,荔枝">
+                        <input type="text" class="form-input" id="scentNotes">
                     </div>
                     <div class="form-group">
                         <label class="form-label">風格光譜數值</label>
@@ -168,18 +183,9 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">庫存狀態</label>
-                            <select class="form-select" id="stock">
-                                <option value="現貨">現貨</option>
-                                <option value="預訂">預訂</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
                             <label class="form-label">發貨天數</label>
                             <input type="number" class="form-input" id="deliveryDays" value="1" min="1">
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">前台顯示</label>
                             <select class="form-select" id="isActive">
@@ -188,14 +194,21 @@
                             </select>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">規格變體（Variants）</label>
+                        <div id="variantsList"></div>
+                        <button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">關聯加購配件</label>
+                        <div class="addon-checkbox-list" id="addonsCheckboxList"></div>
+                    </div>
                     <div class="form-actions">
                         <button class="btn btn-primary" onclick="saveProduct()">保存商品</button>
                         <button class="btn btn-secondary" onclick="showProductsList()">取消</button>
                     </div>
                 </div>
             </div>
-            
-            <!-- 加購配件頁 -->
             <div id="page-addons" style="display:none;">
                 <div class="page-header">
                     <h2 class="page-title">加購配件</h2>
@@ -203,12 +216,8 @@
                 </div>
                 <div id="addonsTable"></div>
             </div>
-            
-            <!-- 訂單管理頁 -->
             <div id="page-orders" style="display:none;">
-                <div class="page-header">
-                    <h2 class="page-title">訂單管理</h2>
-                </div>
+                <div class="page-header"><h2 class="page-title">訂單管理</h2></div>
                 <div id="ordersTable"></div>
             </div>
         </div>
@@ -218,11 +227,13 @@
     var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
     var ADMIN_USER = 'admin';
     var ADMIN_PASS = 'royalspl2024';
     var allProducts = [];
     var uploadedImages = [];
+    var variants = [];
+    var selectedAddons = [];
+    var allAddons = [];
 
     function doLogin() {
         var u = document.getElementById('loginUser').value.trim();
@@ -231,12 +242,8 @@
             localStorage.setItem('royalspl_admin', 'true');
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('adminPage').style.display = 'block';
-            loadProducts();
-            loadAddons();
-            loadOrders();
-        } else {
-            document.getElementById('loginError').style.display = 'block';
-        }
+            loadProducts(); loadAddons(); loadOrders();
+        } else { document.getElementById('loginError').style.display = 'block'; }
     }
     function doLogout() { localStorage.removeItem('royalspl_admin'); location.reload(); }
 
@@ -257,6 +264,7 @@
         document.getElementById('page-products-form').style.display = 'block';
         document.getElementById('formTitle').textContent = '新增商品';
         document.getElementById('productId').value = '';
+        document.getElementById('sku').value = '';
         document.getElementById('nameZh').value = '';
         document.getElementById('nameEn').value = '';
         document.getElementById('price').value = '';
@@ -269,14 +277,58 @@
         document.getElementById('stock').value = '現貨';
         document.getElementById('deliveryDays').value = '1';
         document.getElementById('isActive').value = 'true';
-        uploadedImages = [];
-        renderUploadedImages();
+        uploadedImages = []; variants = []; selectedAddons = [];
+        renderUploadedImages(); renderVariants(); renderAddonsCheckbox();
     }
 
     function showProductsList() {
         document.getElementById('page-products-form').style.display = 'none';
         document.getElementById('page-products-list').style.display = 'block';
         loadProducts();
+    }
+
+    function showEditFormById(id) {
+        for (var i = 0; i < allProducts.length; i++) {
+            if (allProducts[i].id === id) { showEditForm(allProducts[i]); return; }
+        }
+    }
+
+    function showEditForm(p) {
+        document.getElementById('page-products-list').style.display = 'none';
+        document.getElementById('page-products-form').style.display = 'block';
+        document.getElementById('formTitle').textContent = '編輯商品';
+        document.getElementById('productId').value = p.id;
+        document.getElementById('sku').value = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
+        document.getElementById('nameZh').value = p.name_zh || '';
+        document.getElementById('nameEn').value = p.name_en || '';
+        document.getElementById('price').value = p.price || '';
+        document.getElementById('category').value = p.category || '';
+        document.getElementById('description').value = p.description || '';
+        document.getElementById('tags').value = (p.tags || []).join(',');
+        document.getElementById('scentNotes').value = (p.scent_notes || []).join(',');
+        document.getElementById('styleSpectrum').value = p.style_spectrum || 50;
+        document.getElementById('styleVal').textContent = p.style_spectrum || 50;
+        document.getElementById('stock').value = p.stock || '現貨';
+        document.getElementById('deliveryDays').value = p.delivery_days || 1;
+        document.getElementById('isActive').value = String(p.is_active !== false);
+        uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
+        selectedAddons = p.linked_addons || [];
+        renderUploadedImages();
+        renderAddonsCheckbox();
+        loadVariants(p.id);
+    }
+
+    async function loadVariants(productId) {
+        variants = [];
+        try {
+            var result = await supabaseClient.from('product_variants').select('*').eq('product_id', productId);
+            if (result.data) {
+                for (var i = 0; i < result.data.length; i++) {
+                    variants.push({ name: result.data[i].variant_name, price: result.data[i].variant_price });
+                }
+            }
+        } catch (err) {}
+        renderVariants();
     }
 
     var uploadArea = document.getElementById('uploadArea');
@@ -296,7 +348,7 @@
                 var data = await res.json();
                 if (data.url) { uploadedImages.push(data.url); renderUploadedImages(); }
                 else { showToast('上傳失敗'); }
-            } catch (err) { showToast('上傳失敗，請檢查R2配置'); }
+            } catch (err) { showToast('上傳失敗'); }
         }
     }
 
@@ -309,6 +361,40 @@
         container.innerHTML = html;
     }
     function removeImage(index) { uploadedImages.splice(index, 1); renderUploadedImages(); }
+
+    function addVariantRow() { variants.push({ name: '', price: '' }); renderVariants(); }
+    function removeVariant(index) { variants.splice(index, 1); renderVariants(); }
+    function renderVariants() {
+        var container = document.getElementById('variantsList');
+        var html = '';
+        for (var i = 0; i < variants.length; i++) {
+            html += '<div class="variant-row">';
+            html += '<input type="text" placeholder="規格名稱" value="' + variants[i].name + '" onchange="variants[' + i + '].name=this.value">';
+            html += '<input type="number" placeholder="價格" value="' + variants[i].price + '" onchange="variants[' + i + '].price=this.value">';
+            html += '<button class="btn btn-danger btn-small" onclick="removeVariant(' + i + ')">刪除</button>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    function renderAddonsCheckbox() {
+        var container = document.getElementById('addonsCheckboxList');
+        var html = '';
+        for (var i = 0; i < allAddons.length; i++) {
+            var a = allAddons[i];
+            var checked = selectedAddons.indexOf(a.id) > -1 ? 'checked' : '';
+            html += '<label class="addon-checkbox-item">';
+            html += '<input type="checkbox" value="' + a.id + '" ' + checked + ' onchange="toggleAddon(' + a.id + ')">';
+            html += a.name_zh + ' (HK$' + a.price + ')';
+            html += '</label>';
+        }
+        if (allAddons.length === 0) { html = '<p style="font-size:13px;color:#888;">暫無配件，請先在加購配件中添加</p>'; }
+        container.innerHTML = html;
+    }
+    function toggleAddon(id) {
+        var idx = selectedAddons.indexOf(id);
+        if (idx > -1) { selectedAddons.splice(idx, 1); } else { selectedAddons.push(id); }
+    }
 
     async function saveProduct() {
         var id = document.getElementById('productId').value;
@@ -325,14 +411,25 @@
             delivery_days: parseInt(document.getElementById('deliveryDays').value) || 1,
             is_active: document.getElementById('isActive').value === 'true',
             image_url: uploadedImages.length > 0 ? uploadedImages[0] : null,
-            images: uploadedImages
+            images: uploadedImages,
+            linked_addons: selectedAddons
         };
-        if (!data.name_zh || !data.name_en || !data.price) { showToast('請填寫必要欄位'); return; }
+        if (!data.name_zh || !data.price) { showToast('請填寫必要欄位'); return; }
         try {
             var result;
             if (id) { result = await supabaseClient.from('products').update(data).eq('id', id); }
             else { result = await supabaseClient.from('products').insert(data); }
             if (result.error) throw result.error;
+            var productId = id;
+            if (!productId && result.data && result.data.length > 0) { productId = result.data[0].id; }
+            if (productId) {
+                await supabaseClient.from('product_variants').delete().eq('product_id', productId);
+                for (var i = 0; i < variants.length; i++) {
+                    if (variants[i].name && variants[i].price) {
+                        await supabaseClient.from('product_variants').insert({ product_id: productId, variant_name: variants[i].name, variant_price: parseFloat(variants[i].price) });
+                    }
+                }
+            }
             showToast('保存成功');
             showProductsList();
         } catch (err) { showToast('保存失敗：' + err.message); }
@@ -357,56 +454,114 @@
 
     function renderProductsTable(list) {
         var container = document.getElementById('productsTable');
-        var html = '<table class="data-table"><thead><tr><th>圖片</th><th>名稱</th><th>價格</th><th>分類</th><th>庫存</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
+        var html = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAll" onchange="toggleCheckAll()"></th><th>圖片</th><th>SKU</th><th>名稱</th><th>價格</th><th>分類</th><th>庫存</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
         for (var i = 0; i < list.length; i++) {
             var p = list[i];
-            var img = p.image_url ? '<img class="product-img" src="' + p.image_url + '">' : '<span class="emoji-img">無圖</span>';
+            var img = p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '<span>無圖</span>';
+            var sku = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
             var eye = p.is_active !== false ? '顯示' : '隱藏';
             html += '<tr>';
+            html += '<td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td>';
             html += '<td>' + img + '</td>';
+            html += '<td>' + sku + '</td>';
             html += '<td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td>';
             html += '<td>HK$' + p.price + '</td>';
             html += '<td>' + (p.category || '-') + '</td>';
             html += '<td>' + p.stock + '</td>';
-            html += '<td><span class="eye-icon" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td>';
-            html += '<td><button class="btn btn-secondary btn-small" onclick="showEditForm(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">編輯</button> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td>';
+            html += '<td><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td>';
+            html += '<td><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button><button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></div></td>';
             html += '</tr>';
         }
         html += '</tbody></table>';
         container.innerHTML = html;
     }
 
-    function showEditForm(p) {
-        document.getElementById('page-products-list').style.display = 'none';
-        document.getElementById('page-products-form').style.display = 'block';
-        document.getElementById('formTitle').textContent = '編輯商品';
-        document.getElementById('productId').value = p.id;
-        document.getElementById('nameZh').value = p.name_zh || '';
-        document.getElementById('nameEn').value = p.name_en || '';
-        document.getElementById('price').value = p.price || '';
-        document.getElementById('category').value = p.category || '';
-        document.getElementById('description').value = p.description || '';
-        document.getElementById('tags').value = (p.tags || []).join(',');
-        document.getElementById('scentNotes').value = (p.scent_notes || []).join(',');
-        document.getElementById('styleSpectrum').value = p.style_spectrum || 50;
-        document.getElementById('styleVal').textContent = p.style_spectrum || 50;
-        document.getElementById('stock').value = p.stock || '現貨';
-        document.getElementById('deliveryDays').value = p.delivery_days || 1;
-        document.getElementById('isActive').value = String(p.is_active !== false);
-        uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
-        renderUploadedImages();
+    function toggleCheckAll() {
+        var checkAll = document.getElementById('checkAll');
+        document.querySelectorAll('.row-check').forEach(function(cb) { cb.checked = checkAll.checked; });
     }
-
+    function getCheckedIds() {
+        var ids = [];
+        document.querySelectorAll('.row-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); });
+        return ids;
+    }
+    async function bulkSetStock(stock) {
+        var ids = getCheckedIds();
+        if (ids.length === 0) { showToast('請先勾選商品'); return; }
+        await supabaseClient.from('products').update({ stock: stock }).in('id', ids);
+        showToast('批量更新完成'); loadProducts();
+    }
+    async function bulkSetActive(active) {
+        var ids = getCheckedIds();
+        if (ids.length === 0) { showToast('請先勾選商品'); return; }
+        await supabaseClient.from('products').update({ is_active: active }).in('id', ids);
+        showToast('批量更新完成'); loadProducts();
+    }
+    async function bulkDelete() {
+        var ids = getCheckedIds();
+        if (ids.length === 0) { showToast('請先勾選商品'); return; }
+        if (!confirm('確定刪除 ' + ids.length + ' 個商品？')) return;
+        await supabaseClient.from('products').delete().in('id', ids);
+        showToast('批量刪除完成'); loadProducts();
+    }
     async function deleteProduct(id) {
         if (!confirm('確定刪除？')) return;
         await supabaseClient.from('products').delete().eq('id', id);
-        showToast('已刪除');
-        loadProducts();
+        showToast('已刪除'); loadProducts();
     }
-
     async function toggleActive(id, current) {
         await supabaseClient.from('products').update({ is_active: !current }).eq('id', id);
         loadProducts();
+    }
+
+    function exportCSV() {
+        if (allProducts.length === 0) { showToast('沒有商品可匯出'); return; }
+        var header = 'id,name_zh,name_en,price,category,description,tags,stock,delivery_days,is_active,image_url';
+        var rows = [header];
+        for (var i = 0; i < allProducts.length; i++) {
+            var p = allProducts[i];
+            var tags = (p.tags || []).join('|');
+            rows.push([p.id, p.name_zh, p.name_en, p.price, p.category || '', p.description || '', tags, p.stock, p.delivery_days || 1, p.is_active !== false, p.image_url || ''].join(','));
+        }
+        var csv = rows.join('\n');
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'products.csv'; a.click();
+        showToast('CSV 已下載');
+    }
+
+    function importCSV(file) {
+        var reader = new FileReader();
+        reader.onload = async function(e) {
+            var lines = e.target.result.split('\n');
+            if (lines.length < 2) { showToast('CSV 格式錯誤'); return; }
+            var header = lines[0].split(',');
+            for (var i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                var values = lines[i].split(',');
+                var data = {};
+                for (var j = 0; j < header.length; j++) { data[header[j].trim()] = values[j] ? values[j].trim() : ''; }
+                if (data.name_zh && data.price) {
+                    var productData = {
+                        name_zh: data.name_zh,
+                        name_en: data.name_en || '',
+                        price: parseFloat(data.price),
+                        category: data.category || '',
+                        description: data.description || '',
+                        tags: data.tags ? data.tags.split('|').filter(Boolean) : [],
+                        stock: data.stock || '現貨',
+                        delivery_days: parseInt(data.delivery_days) || 1,
+                        is_active: data.is_active !== 'false',
+                        image_url: data.image_url || null
+                    };
+                    if (data.id) { await supabaseClient.from('products').update(productData).eq('id', data.id); }
+                    else { await supabaseClient.from('products').insert(productData); }
+                }
+            }
+            showToast('CSV 匯入完成'); loadProducts();
+        };
+        reader.readAsText(file);
     }
 
     function showAddonForm() {
@@ -418,8 +573,7 @@
         if (!price) { showToast('請輸入有效價格'); return; }
         supabaseClient.from('addons').insert({ name_zh: name, name_en: nameEn, price: price, stock: stock }).then(function(r) {
             if (r.error) { showToast('添加失敗'); return; }
-            showToast('配件已添加');
-            loadAddons();
+            showToast('配件已添加'); loadAddons();
         });
     }
 
@@ -428,11 +582,11 @@
         try {
             var result = await supabaseClient.from('addons').select('*');
             if (result.error) { container.innerHTML = '<div class="empty-state">請先創建 addons 表</div>'; return; }
-            var addons = result.data || [];
-            if (addons.length === 0) { container.innerHTML = '<div class="empty-state">暫無配件</div>'; return; }
+            allAddons = result.data || [];
+            if (allAddons.length === 0) { container.innerHTML = '<div class="empty-state">暫無配件</div>'; return; }
             var html = '<table class="data-table"><thead><tr><th>ID</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>';
-            for (var i = 0; i < addons.length; i++) {
-                var a = addons[i];
+            for (var i = 0; i < allAddons.length; i++) {
+                var a = allAddons[i];
                 html += '<tr><td>' + a.id + '</td><td>' + a.name_zh + (a.name_en ? '<br><small>' + a.name_en + '</small>' : '') + '</td><td>HK$' + a.price + '</td><td>' + a.stock + '</td>';
                 html += '<td><button class="btn btn-danger btn-small" onclick="deleteAddon(' + a.id + ')">刪除</button></td></tr>';
             }
@@ -477,9 +631,7 @@
         if (localStorage.getItem('royalspl_admin') === 'true') {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('adminPage').style.display = 'block';
-            loadProducts();
-            loadAddons();
-            loadOrders();
+            loadProducts(); loadAddons(); loadOrders();
         }
     });
     </script>
