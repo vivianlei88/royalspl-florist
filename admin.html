@@ -5,9 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>後台管理 | RoyalSpl Florist</title>
     <link rel="stylesheet" href="css/style.css">
+        <div class="modal-overlay" id="productSelectModal">
+        <div class="modal-content">
+            <h2 class="modal-title">選擇商品加入分類</h2>
+            <input type="hidden" id="modalCategoryId">
+            <div class="modal-product-list" id="modalProductList"></div>
+            <div class="form-actions" style="margin-top:20px;">
+                <button class="btn btn-primary" onclick="saveCategoryProducts()">保存</button>
+                <button class="btn btn-secondary" onclick="closeProductModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+   
+            .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .category-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); cursor: pointer; position: relative; transition: all 0.3s; }
+        .category-card:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .category-card-img { width: 100%; height: 180px; object-fit: cover; }
+        .category-card-body { padding: 15px; }
+        .category-card-name { font-size: 18px; font-weight: 600; }
+        .category-card-name-en { font-size: 13px; color: #383431; }
+        .category-card-status { font-size: 13px; margin-top: 5px; }
+        .category-card-check { position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; cursor: pointer; z-index: 10; }
+        .category-card.dragging { opacity: 0.5; }
+        .category-card.drag-over { border: 2px dashed #1A1A1A; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: white; border-radius: 10px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        .modal-product-list { display: flex; flex-direction: column; gap: 10px; }
+        .modal-product-item { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
+        .modal-product-item:hover { background: #F9F6F2; }
+        .modal-product-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+        .modal-product-item input { width: 18px; height: 18px; }
+
+       </style> * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; font-size: 17px; }
         .login-container { max-width: 450px; margin: 100px auto; background: white; border-radius: 10px; padding: 45px; box-shadow: 0 5px 30px rgba(0,0,0,0.1); text-align: center; }
         .login-container h1 { font-size: 26px; margin-bottom: 30px; }
@@ -19,7 +52,7 @@
         .topbar h1 { font-size: 20px; font-weight: 600; }
         .topbar-links { display: flex; gap: 20px; }
         .topbar a { color: #ccc; font-size: 16px; text-decoration: none; cursor: pointer; }
-        .sidebar { width: 220px; background: #F3EFEA; min-height: calc(100vh - 65px); position: fixed; left: 0; top: 65px; padding: 25px 0; }
+        .sidebar { width: 220px;  background: #F3EFEA; min-height: calc(100vh - 65px); position: fixed; left: 0; top: 65px; padding: 25px 0; }
         .sidebar-item { display: block; padding: 18px 30px; font-size: 18px; font-weight: 600; cursor: pointer; color: #383431; border-left: 3px solid transparent; }
         .sidebar-item:hover { background: #e8e0d6; }
         .sidebar-item.active { background: white; border-left-color: #1A1A1A; color: #1A1A1A; }
@@ -231,6 +264,19 @@
             <div id="page-orders" style="display:none;">
                 <div class="page-header"><h2 class="page-title">訂單管理</h2></div>
                 <div id="ordersTable"></div>
+            </div>
+        </div>
+    </div>
+
+        <!-- 商品選擇彈窗 -->
+    <div class="modal-overlay" id="productSelectModal">
+        <div class="modal-content">
+            <h2 class="modal-title">選擇商品加入分類</h2>
+            <input type="hidden" id="modalCategoryId">
+            <div class="modal-product-list" id="modalProductList"></div>
+            <div class="form-actions" style="margin-top:20px;">
+                <button class="btn btn-primary" onclick="saveCategoryProducts()">保存</button>
+                <button class="btn btn-secondary" onclick="closeProductModal()">取消</button>
             </div>
         </div>
     </div>
