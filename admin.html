@@ -81,8 +81,15 @@
         .category-card-name-en { font-size: 13px; color: #383431; }
         .category-card-status { font-size: 13px; margin-top: 5px; }
         .category-card-check { position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; cursor: pointer; z-index: 10; }
-        .category-card.dragging { opacity: 0.5; }
-        .category-card.drag-over { border: 2px dashed #1A1A1A; }
+        .category-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .category-product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: grab; transition: all 0.3s; }
+        .category-product-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .category-product-card.dragging { opacity: 0.5; cursor: grabbing; }
+        .category-product-card img { width: 100%; height: 140px; object-fit: cover; }
+        .category-product-card-body { padding: 12px; }
+        .category-product-card-name { font-size: 15px; font-weight: 600; }
+        .category-product-card-price { font-size: 14px; color: #383431; }
+        .category-product-card-remove { margin-top: 8px; width: 100%; padding: 6px; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998; display: none; align-items: center; justify-content: center; }
         .modal-overlay.show { display: flex; }
         .modal-content { background: white; border-radius: 10px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
@@ -97,16 +104,6 @@
         .empty-state { text-align: center; padding: 60px; color: #888; font-size: 17px; }
         #deliveryDaysGroup { display: none; }
         @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } .addon-checkbox-list { grid-template-columns: 1fr; } }
-            .category-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .category-product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: grab; transition: all 0.3s; }
-        .category-product-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .category-product-card.dragging { opacity: 0.5; cursor: grabbing; }
-        .category-product-card img { width: 100%; height: 140px; object-fit: cover; }
-        .category-product-card-body { padding: 12px; }
-        .category-product-card-name { font-size: 15px; font-weight: 600; }
-        .category-product-card-price { font-size: 14px; color: #383431; }
-        .category-product-card-remove { margin-top: 8px; width: 100%; padding: 6px; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; }
-
     </style>
 </head>
 <body>
@@ -157,7 +154,15 @@
                 </div>
                 <div class="form-container">
                     <input type="hidden" id="productId">
-                    <div class="form-group"><label class="form-label">商品圖片（拖拽上傳）</label><div class="upload-area" id="uploadArea"><p>點擊或拖拽圖片到這裡上傳</p><input type="file" id="fileInput" multiple accept="image/*" style="display:none;"></div><div class="uploaded-imgs" id="uploadedImages"></div></div>
+                    <div class="form-group">
+    <label class="form-label">商品圖片（拖拽上傳或黏貼網址）</label>
+    <div class="upload-area" id="uploadArea"><p>點擊或拖拽圖片到這裡上傳</p><input type="file" id="fileInput" multiple accept="image/*" style="display:none;"></div>
+    <div class="uploaded-imgs" id="uploadedImages"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+        <input type="text" class="form-input" id="imageUrlInput" placeholder="黏貼圖片網址，如 https://..." style="flex:1;">
+        <button type="button" class="btn btn-secondary" onclick="addImageByUrl()">添加圖片</button>
+    </div>
+</div>
                     <div class="form-row"><div class="form-group"><label class="form-label">SKU</label><input type="text" class="form-input" id="sku" readonly></div><div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="nameZh"></div></div>
                     <div class="form-row"><div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="nameEn"></div><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div></div>
                     <div class="form-row"><div class="form-group"><label class="form-label">分類</label><input type="text" class="form-input" id="category"></div><div class="form-group"><label class="form-label">庫存狀態</label><select class="form-select" id="stock" onchange="toggleDeliveryDays()"><option value="現貨">現貨</option><option value="預訂">預訂</option></select></div></div>
@@ -176,69 +181,36 @@
                     <div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div>
                 </div>
             </div>
-                        <div id="page-categories" style="display:none;">
-                <!-- 分類列表視圖 -->
+            <div id="page-categories" style="display:none;">
                 <div id="categoryListView">
-                    <div class="page-header">
-                        <h2 class="page-title">商品分類</h2>
-                        <button class="btn btn-primary" onclick="showCategoryForm()">新增分類</button>
-                    </div>
-                    <div class="btn-group" style="margin-bottom:15px;">
-                        <button class="btn btn-secondary btn-small" onclick="bulkCategoryDelete()">批量刪除</button>
-                        <button class="btn btn-secondary btn-small" onclick="bulkCategoryActive(true)">批量上架</button>
-                        <button class="btn btn-secondary btn-small" onclick="bulkCategoryActive(false)">批量下架</button>
-                    </div>
-                    <div id="categoryFormContainer" style="display:none;margin-bottom:20px;">
-                        <div class="form-container">
-                            <h2 id="categoryFormTitle" style="font-size:20px;font-weight:600;margin-bottom:20px;">新增分類</h2>
-                            <input type="hidden" id="categoryId">
-                            <div class="form-group">
-                                <label class="form-label">分類圖片</label>
-                                <div class="upload-area" id="categoryUploadArea"><p>點擊上傳圖片</p><input type="file" id="categoryFileInput" accept="image/*" style="display:none;"></div>
-                                <div id="categoryImagePreview" style="margin-top:10px;"></div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="categoryNameZh"></div>
-                                <div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="categoryNameEn"></div>
-                            </div>
-                            <div class="form-group"><label class="form-label">文案簡介</label><textarea class="form-textarea" id="categoryDescription"></textarea></div>
-                            <div class="form-actions"><button class="btn btn-primary" onclick="saveCategory()">保存分類</button><button class="btn btn-secondary" onclick="hideCategoryForm()">取消</button></div>
-                        </div>
-                    </div>
+                    <div class="page-header"><h2 class="page-title">商品分類</h2><button class="btn btn-primary" onclick="showCategoryForm()">新增分類</button></div>
+                    <div class="btn-group" style="margin-bottom:15px;"><button class="btn btn-secondary btn-small" onclick="bulkCategoryDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="bulkCategoryActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkCategoryActive(false)">批量下架</button></div>
+                    <div id="categoryFormContainer" style="display:none;margin-bottom:20px;"><div class="form-container"><h2 id="categoryFormTitle" style="font-size:20px;font-weight:600;margin-bottom:20px;">新增分類</h2><input type="hidden" id="categoryId"><div class="form-group"><label class="form-label">分類圖片</label><div class="upload-area" id="categoryUploadArea"><p>點擊上傳圖片</p><input type="file" id="categoryFileInput" accept="image/*" style="display:none;"></div><div id="categoryImagePreview" style="margin-top:10px;"></div></div><div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="categoryNameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="categoryNameEn"></div></div><div class="form-group"><label class="form-label">文案簡介</label><textarea class="form-textarea" id="categoryDescription"></textarea></div><div class="form-actions"><button class="btn btn-primary" onclick="saveCategory()">保存分類</button><button class="btn btn-secondary" onclick="hideCategoryForm()">取消</button></div></div></div>
                     <div class="category-grid" id="categoriesGrid"></div>
                 </div>
-                
-                <!-- 分類詳情視圖 -->
                 <div id="categoryDetailView" style="display:none;">
-                    <div class="page-header">
-                        <button class="btn btn-secondary" onclick="showCategoryList()">返回列表</button>
-                        <h2 class="page-title" id="categoryDetailTitle">分類詳情</h2>
-                        <button class="btn btn-primary" onclick="saveCategoryDetail()">保存所有更改</button>
-                    </div>
+                    <div class="page-header"><button class="btn btn-secondary" onclick="showCategoryList()">返回列表</button><h2 class="page-title" id="categoryDetailTitle">分類詳情</h2><button class="btn btn-primary" onclick="saveCategoryDetail()">保存所有更改</button></div>
                     <div class="form-container" style="max-width:100%;margin-bottom:20px;">
                         <input type="hidden" id="categoryDetailId">
                         <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">分類圖片</label>
-                                <div class="upload-area" id="categoryDetailUploadArea"><p>點擊更換圖片</p><input type="file" id="categoryDetailFileInput" accept="image/*" style="display:none;"></div>
-                                <div id="categoryDetailImagePreview" style="margin-top:10px;"></div>
-                            </div>
-                            <div>
-                                <div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="categoryDetailNameZh"></div>
-                                <div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="categoryDetailNameEn"></div>
-                            </div>
+                            <div class="form-group"><label class="form-label">分類圖片</label><div class="upload-area" id="categoryDetailUploadArea"><p>點擊更換圖片</p><input type="file" id="categoryDetailFileInput" accept="image/*" style="display:none;"></div><div id="categoryDetailImagePreview" style="margin-top:10px;"></div></div>
+                            <div><div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="categoryDetailNameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="categoryDetailNameEn"></div></div>
                         </div>
                         <div class="form-group"><label class="form-label">文案簡介</label><textarea class="form-textarea" id="categoryDetailDescription"></textarea></div>
                     </div>
-                    
-                    <div class="page-header">
-                        <h3 style="font-size:20px;font-weight:600;">分類內商品</h3>
-                        <button class="btn btn-primary" onclick="openProductSelectForCategory()">添加商品</button>
-                    </div>
+                    <div class="page-header"><h3 style="font-size:20px;font-weight:600;">分類內商品</h3><button class="btn btn-primary" onclick="openProductSelectForCategory()">添加商品</button></div>
                     <div class="category-products-grid" id="categoryProductsGrid"></div>
                     <p style="font-size:14px;color:#888;margin-top:10px;">拖拽商品卡片調整順序，完成後點擊保存</p>
                 </div>
             </div>
+            <div id="page-addons" style="display:none;">
+                <div class="page-header"><h2 class="page-title">加購配件</h2><button class="btn btn-primary" onclick="showAddonForm()">新增配件</button></div>
+                <div id="addonsTable"></div>
+                <div id="addonFormContainer" style="display:none;margin-top:20px;"><div class="form-container"><h2 id="addonFormTitle" style="font-size:20px;font-weight:600;margin-bottom:20px;">新增配件</h2><input type="hidden" id="addonId"><div class="form-group"><label class="form-label">配件圖片</label><div class="upload-area" id="addonUploadArea"><p>點擊上傳圖片</p><input type="file" id="addonFileInput" accept="image/*" style="display:none;"></div><div id="addonImagePreview" style="margin-top:10px;"></div></div><div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="addonNameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="addonNameEn"></div></div><div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="addonPrice" step="0.01"></div><div class="form-group"><label class="form-label">庫存數量</label><input type="number" class="form-input" id="addonStock" min="0"></div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveAddon()">保存配件</button><button class="btn btn-secondary" onclick="hideAddonForm()">取消</button></div></div></div>
+            </div>
+            <div id="page-orders" style="display:none;">
+                <div class="page-header"><h2 class="page-title">訂單管理</h2></div>
+                <div id="ordersTable"></div>
             </div>
         </div>
     </div>
@@ -267,7 +239,9 @@
     var selectedTags = [];
     var addonUploadedImage = '';
     var categoryUploadedImage = '';
+    var categoryDetailUploadedImage = '';
     var selectedCategoryProducts = [];
+    var categoryDetailProducts = [];
 
     var tagCategories = {
         tagOccasion: ['情人節','母親節','中秋節','清明節','畢業季','端午','聖誕節','生日','週年','婚禮','彌月','探病','帛事','開張','喬遷','商務送禮','企業周年'],
@@ -298,7 +272,7 @@
         document.getElementById('page-addons').style.display = 'none';
         document.getElementById('page-orders').style.display = 'none';
         if (page === 'products') { document.getElementById('page-products-list').style.display = 'block'; loadProducts(); }
-        else if (page === 'categories') { document.getElementById('page-categories').style.display = 'block'; loadCategories(); }
+        else if (page === 'categories') { document.getElementById('page-categories').style.display = 'block'; document.getElementById('categoryListView').style.display = 'block'; document.getElementById('categoryDetailView').style.display = 'none'; loadCategories(); }
         else if (page === 'addons') { document.getElementById('page-addons').style.display = 'block'; loadAddons(); }
         else if (page === 'orders') { document.getElementById('page-orders').style.display = 'block'; loadOrders(); }
     }
@@ -414,7 +388,14 @@
         for (var i = 0; i < uploadedImages.length; i++) { html += '<div class="uploaded-img-item"><img src="' + uploadedImages[i] + '"><button class="del-btn" onclick="removeImage(' + i + ')">×</button></div>'; }
         container.innerHTML = html;
     }
-    function removeImage(index) { uploadedImages.splice(index, 1); renderUploadedImages(); }
+    function removeImage(index)    function addImageByUrl() {
+        var url = document.getElementById('imageUrlInput').value.trim();
+        if (!url) { showToast('請輸入圖片網址'); return; }
+        uploadedImages.push(url);
+        renderUploadedImages();
+        document.getElementById('imageUrlInput').value = '';
+        showToast('圖片已添加');
+    } { uploadedImages.splice(index, 1); renderUploadedImages(); }
     function addVariantRow() { variants.push({ name: '', price: '' }); renderVariants(); }
     function removeVariant(index) { variants.splice(index, 1); renderVariants(); }
     function renderVariants() {
@@ -431,7 +412,7 @@
             var checked = selectedAddons.indexOf(a.id) > -1 ? 'checked' : '';
             html += '<label class="addon-checkbox-item"><input type="checkbox" value="' + a.id + '" ' + checked + ' onchange="toggleAddon(' + a.id + ')">' + a.name_zh + ' (HK$' + a.price + ')</label>';
         }
-        if (allAddons.length === 0) { html = '<p>暫無配件</p>'; }
+        if (!allAddons.length) { html = '<p>暫無配件</p>'; }
         container.innerHTML = html;
     }
     function toggleAddon(id) { var idx = selectedAddons.indexOf(id); if (idx > -1) { selectedAddons.splice(idx, 1); } else { selectedAddons.push(id); } }
@@ -592,12 +573,6 @@
     async function deleteAddon(id) { if (!confirm('確定刪除？')) return; await supabaseClient.from('addons').delete().eq('id', id); showToast('已刪除'); loadAddons(); }
 
     // ===== 商品分類 =====
-        // ===== 商品分類 =====
-    var categoryUploadedImage = '';
-    var categoryDetailUploadedImage = '';
-    var selectedCategoryProducts = [];
-    var categoryDetailProducts = [];
-
     var categoryUploadArea = document.getElementById('categoryUploadArea');
     var categoryFileInput = document.getElementById('categoryFileInput');
     categoryUploadArea.addEventListener('click', function() { categoryFileInput.click(); });
@@ -607,7 +582,6 @@
         var fd = new FormData(); fd.append('file', file);
         try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { categoryUploadedImage = data.url; document.getElementById('categoryImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (err) {}
     }
-
     var categoryDetailUploadArea = document.getElementById('categoryDetailUploadArea');
     var categoryDetailFileInput = document.getElementById('categoryDetailFileInput');
     categoryDetailUploadArea.addEventListener('click', function() { categoryDetailFileInput.click(); });
@@ -617,7 +591,6 @@
         var fd = new FormData(); fd.append('file', file);
         try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { categoryDetailUploadedImage = data.url; document.getElementById('categoryDetailImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (err) {}
     }
-
     function showCategoryForm() {
         document.getElementById('categoryFormContainer').style.display = 'block';
         document.getElementById('categoryFormTitle').textContent = '新增分類';
@@ -629,56 +602,42 @@
         document.getElementById('categoryImagePreview').innerHTML = '';
     }
     function hideCategoryForm() { document.getElementById('categoryFormContainer').style.display = 'none'; }
-
     async function saveCategory() {
         var id = document.getElementById('categoryId').value;
         var data = { name_zh: document.getElementById('categoryNameZh').value.trim(), name_en: document.getElementById('categoryNameEn').value.trim(), description: document.getElementById('categoryDescription').value.trim(), image_url: categoryUploadedImage || null, is_active: true };
         if (!data.name_zh) { showToast('請填寫分類名稱'); return; }
         try { var result; if (id) { result = await supabaseClient.from('categories').update(data).eq('id', id); } else { result = await supabaseClient.from('categories').insert(data); } if (result.error) throw result.error; showToast('保存成功'); hideCategoryForm(); loadCategories(); } catch (err) { showToast('保存失敗'); }
     }
-
+    async function getCategoryProductCount(categoryId) {
+        try { var result = await supabaseClient.from('products').select('id', { count: 'exact' }).eq('category_id', categoryId); return result.count || 0; } catch (err) { return 0; }
+    }
     async function loadCategories() {
         var container = document.getElementById('categoriesGrid');
         try {
             var result = await supabaseClient.from('categories').select('*').order('id', { ascending: true });
             if (result.error) { container.innerHTML = '<div class="empty-state">請先創建 categories 表</div>'; return; }
             allCategories = result.data || [];
-            if (!allCategories.length) { container.innerHTML = '<div class="empty-state">暫無分類，點擊新增分類</div>'; return; }
+            if (!allCategories.length) { container.innerHTML = '<div class="empty-state">暫無分類</div>'; return; }
             var html = '';
             for (var i = 0; i < allCategories.length; i++) {
                 var c = allCategories[i];
-                var productCount = await getCategoryProductCount(c.id);
+                var count = await getCategoryProductCount(c.id);
                 html += '<div class="category-card" data-id="' + c.id + '" onclick="openCategoryDetail(' + c.id + ')">';
                 html += '<input type="checkbox" class="category-card-check" onclick="event.stopPropagation()" value="' + c.id + '">';
                 html += c.image_url ? '<img class="category-card-img" src="' + c.image_url + '">' : '<div style="height:180px;background:#F3EFEA;display:flex;align-items:center;justify-content:center;">無圖</div>';
-                html += '<div class="category-card-body"><p class="category-card-name">' + c.name_zh + '</p><p class="category-card-name-en">' + (c.name_en || '') + '</p>';
-                html += '<p class="category-card-status">' + productCount + ' 個商品 | ' + (c.is_active !== false ? '顯示中' : '已隱藏') + '</p>';
-                html += '</div></div>';
+                html += '<div class="category-card-body"><p class="category-card-name">' + c.name_zh + '</p><p class="category-card-name-en">' + (c.name_en || '') + '</p><p class="category-card-status">' + count + ' 個商品 | ' + (c.is_active !== false ? '顯示中' : '已隱藏') + '</p></div></div>';
             }
             container.innerHTML = html;
         } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; }
     }
-
-    async function getCategoryProductCount(categoryId) {
-        try {
-            var result = await supabaseClient.from('products').select('id', { count: 'exact' }).eq('category_id', categoryId);
-            return result.count || 0;
-        } catch (err) { return 0; }
-    }
-
-    function showCategoryList() {
-        document.getElementById('categoryListView').style.display = 'block';
-        document.getElementById('categoryDetailView').style.display = 'none';
-        loadCategories();
-    }
-
+    function showCategoryList() { document.getElementById('categoryListView').style.display = 'block'; document.getElementById('categoryDetailView').style.display = 'none'; loadCategories(); }
     async function openCategoryDetail(categoryId) {
         var category = null;
         for (var i = 0; i < allCategories.length; i++) { if (allCategories[i].id === categoryId) { category = allCategories[i]; break; } }
         if (!category) return;
         document.getElementById('categoryListView').style.display = 'none';
         document.getElementById('categoryDetailView').style.display = 'block';
-        document.getElementById('categoryDetailTitle').textContent = category.name_zh + '（' + (category.name_en || '') + '）';
+        document.getElementById('categoryDetailTitle').textContent = category.name_zh + (category.name_en ? '（' + category.name_en + '）' : '');
         document.getElementById('categoryDetailId').value = category.id;
         document.getElementById('categoryDetailNameZh').value = category.name_zh || '';
         document.getElementById('categoryDetailNameEn').value = category.name_en || '';
@@ -687,29 +646,24 @@
         document.getElementById('categoryDetailImagePreview').innerHTML = category.image_url ? '<img src="' + category.image_url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">' : '';
         await loadCategoryProducts(categoryId);
     }
-
     async function loadCategoryProducts(categoryId) {
         var container = document.getElementById('categoryProductsGrid');
         try {
             var result = await supabaseClient.from('products').select('*').eq('category_id', categoryId).order('sort_order_in_category', { ascending: true });
             if (result.error) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; return; }
             categoryDetailProducts = result.data || [];
-            if (!categoryDetailProducts.length) { container.innerHTML = '<div class="empty-state">暫無商品，點擊添加商品</div>'; return; }
+            if (!categoryDetailProducts.length) { container.innerHTML = '<div class="empty-state">暫無商品</div>'; return; }
             var html = '';
             for (var i = 0; i < categoryDetailProducts.length; i++) {
                 var p = categoryDetailProducts[i];
                 html += '<div class="category-product-card" draggable="true" data-index="' + i + '" ondragstart="productDragStart(event)" ondragover="productDragOver(event)" ondrop="productDrop(event)" ondragend="productDragEnd(event)">';
                 html += p.image_url ? '<img src="' + p.image_url + '">' : '<div style="height:140px;background:#F3EFEA;display:flex;align-items:center;justify-content:center;">無圖</div>';
-                html += '<div class="category-product-card-body">';
-                html += '<p class="category-product-card-name">' + p.name_zh + '</p>';
-                html += '<p class="category-product-card-price">HK$' + p.price + '</p>';
-                html += '<button class="category-product-card-remove" onclick="removeProductFromCategory(' + p.id + ')">移除</button>';
-                html += '</div></div>';
+                html += '<div class="category-product-card-body"><p class="category-product-card-name">' + p.name_zh + '</p><p class="category-product-card-price">HK$' + p.price + '</p>';
+                html += '<button class="category-product-card-remove" onclick="removeProductFromCategory(' + p.id + ')">移除</button></div></div>';
             }
             container.innerHTML = html;
         } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; }
     }
-
     var draggedProductIndex = null;
     function productDragStart(e) { draggedProductIndex = parseInt(e.target.getAttribute('data-index')); e.target.classList.add('dragging'); }
     function productDragOver(e) { e.preventDefault(); }
@@ -723,36 +677,22 @@
         categoryDetailProducts.splice(targetIndex, 0, temp);
         loadCategoryProducts(parseInt(document.getElementById('categoryDetailId').value));
     }
-
     function removeProductFromCategory(productId) {
         if (!confirm('從分類中移除？')) return;
         categoryDetailProducts = categoryDetailProducts.filter(function(p) { return p.id !== productId; });
         loadCategoryProducts(parseInt(document.getElementById('categoryDetailId').value));
         showToast('已移除，請點擊保存');
     }
-
     async function saveCategoryDetail() {
         var categoryId = parseInt(document.getElementById('categoryDetailId').value);
-        var categoryData = {
-            name_zh: document.getElementById('categoryDetailNameZh').value.trim(),
-            name_en: document.getElementById('categoryDetailNameEn').value.trim(),
-            description: document.getElementById('categoryDetailDescription').value.trim(),
-            image_url: categoryDetailUploadedImage || null
-        };
+        var categoryData = { name_zh: document.getElementById('categoryDetailNameZh').value.trim(), name_en: document.getElementById('categoryDetailNameEn').value.trim(), description: document.getElementById('categoryDetailDescription').value.trim(), image_url: categoryDetailUploadedImage || null };
         await supabaseClient.from('categories').update(categoryData).eq('id', categoryId);
-        var allProductsInCategory = await supabaseClient.from('products').select('id').eq('category_id', categoryId);
-        if (allProductsInCategory.data) {
-            for (var i = 0; i < allProductsInCategory.data.length; i++) {
-                await supabaseClient.from('products').update({ category_id: null }).eq('id', allProductsInCategory.data[i].id);
-            }
-        }
-        for (var j = 0; j < categoryDetailProducts.length; j++) {
-            await supabaseClient.from('products').update({ category_id: categoryId, sort_order_in_category: j + 1 }).eq('id', categoryDetailProducts[j].id);
-        }
+        var existing = await supabaseClient.from('products').select('id').eq('category_id', categoryId);
+        if (existing.data) { for (var i = 0; i < existing.data.length; i++) { await supabaseClient.from('products').update({ category_id: null }).eq('id', existing.data[i].id); } }
+        for (var j = 0; j < categoryDetailProducts.length; j++) { await supabaseClient.from('products').update({ category_id: categoryId, sort_order_in_category: j + 1 }).eq('id', categoryDetailProducts[j].id); }
         showToast('所有更改已保存');
         showCategoryList();
     }
-
     async function openProductSelectForCategory() {
         var categoryId = parseInt(document.getElementById('categoryDetailId').value);
         document.getElementById('modalCategoryId').value = categoryId;
@@ -769,26 +709,19 @@
         container.innerHTML = html;
         document.getElementById('productSelectModal').classList.add('show');
     }
-
-    function toggleCategoryProduct(id) {
-        var idx = selectedCategoryProducts.indexOf(id);
-        if (idx > -1) { selectedCategoryProducts.splice(idx, 1); } else { selectedCategoryProducts.push(id); }
-    }
+    function toggleCategoryProduct(id) { var idx = selectedCategoryProducts.indexOf(id); if (idx > -1) { selectedCategoryProducts.splice(idx, 1); } else { selectedCategoryProducts.push(id); } }
     function closeProductModal() { document.getElementById('productSelectModal').classList.remove('show'); }
     async function saveCategoryProducts() {
         var categoryId = parseInt(document.getElementById('modalCategoryId').value);
         categoryDetailProducts = [];
         for (var i = 0; i < selectedCategoryProducts.length; i++) {
             var pid = selectedCategoryProducts[i];
-            for (var j = 0; j < allProducts.length; j++) {
-                if (allProducts[j].id === pid) { categoryDetailProducts.push(allProducts[j]); break; }
-            }
+            for (var j = 0; j < allProducts.length; j++) { if (allProducts[j].id === pid) { categoryDetailProducts.push(allProducts[j]); break; } }
         }
         loadCategoryProducts(categoryId);
         showToast('商品已添加，請點擊保存');
         closeProductModal();
     }
-
     function getCheckedCategoryIds() { var ids = []; document.querySelectorAll('.category-card-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
     async function bulkCategoryDelete() { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').delete().in('id', ids); showToast('完成'); loadCategories(); }
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
