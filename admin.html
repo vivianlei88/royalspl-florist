@@ -458,8 +458,33 @@
     async function saveCategoryDetail() { var categoryId = parseInt(document.getElementById('categoryDetailId').value); var categoryData = { name_zh: document.getElementById('categoryDetailNameZh').value.trim(), name_en: document.getElementById('categoryDetailNameEn').value.trim(), description: document.getElementById('categoryDetailDescription').value.trim(), image_url: categoryDetailUploadedImage || null }; await supabaseClient.from('categories').update(categoryData).eq('id', categoryId); var existing = await supabaseClient.from('products').select('id').eq('category_id', categoryId); if (existing.data) { for (var i = 0; i < existing.data.length; i++) { await supabaseClient.from('products').update({ category_id: null }).eq('id', existing.data[i].id); } } for (var j = 0; j < categoryDetailProducts.length; j++) { await supabaseClient.from('products').update({ category_id: categoryId, sort_order_in_category: j + 1 }).eq('id', categoryDetailProducts[j].id); } showToast('所有更改已保存'); showCategoryList(); }
     async function openProductSelectForCategory() { var categoryId = parseInt(document.getElementById('categoryDetailId').value); document.getElementById('modalCategoryId').value = categoryId; var container = document.getElementById('modalProductList'); var currentIds = []; for (var i = 0; i < categoryDetailProducts.length; i++) { currentIds.push(categoryDetailProducts[i].id); } selectedCategoryProducts = currentIds.slice(); var html = ''; for (var j = 0; j < allProducts.length; j++) { var p = allProducts[j]; var checked = selectedCategoryProducts.indexOf(p.id) > -1 ? 'checked' : ''; html += '<label class="modal-product-item"><input type="checkbox" value="' + p.id + '" ' + checked + ' onchange="toggleCategoryProduct(' + p.id + ')">' + (p.image_url ? '<img src="' + p.image_url + '">' : '<span>無圖</span>') + p.name_zh + ' (HK$' + p.price + ')</label>'; } container.innerHTML = html; document.getElementById('productSelectModal').classList.add('show'); }
     function toggleCategoryProduct(id) { var idx = selectedCategoryProducts.indexOf(id); if (idx > -1) { selectedCategoryProducts.splice(idx, 1); } else { selectedCategoryProducts.push(id); } }
-    function closeProductModal() { document.getElementById('productSelectModal').classList.remove('show'); }
-    async function saveCategoryProducts() { var categoryId = parseInt(document.getElementById('modalCategoryId').value); categoryDetailProducts = []; for (var i = 0; i < selectedCategoryProducts.length; i++) { var pid = selectedCategoryProducts[i]; for (var j = 0; j < allProducts.length; j++) { if (allProducts[j].id === pid) { categoryDetailProducts.push(allProducts[j]); break; } } } loadCategoryProducts(categoryId); showToast('商品已添加，請點擊保存'); closeProductModal(); }
+    function closeProductModal() { document.getElementById('productSelectModal').classList.remove('show');
+        async function saveCategoryProducts() {
+        var categoryId = parseInt(document.getElementById('modalCategoryId').value);
+        categoryDetailProducts = [];
+        for (var i = 0; i < selectedCategoryProducts.length; i++) {
+            var pid = selectedCategoryProducts[i];
+            for (var j = 0; j < allProducts.length; j++) {
+                if (allProducts[j].id === pid) { categoryDetailProducts.push(allProducts[j]); break; }
+            }
+        }
+        renderCategoryProductsList();
+        showToast('商品已添加，請點擊保存');
+        closeProductModal();
+    }
+    function renderCategoryProductsList() {
+        var container = document.getElementById('categoryProductsGrid');
+        if (!categoryDetailProducts.length) { container.innerHTML = '<div class="empty-state">暫無商品</div>'; return; }
+        var html = '';
+        for (var i = 0; i < categoryDetailProducts.length; i++) {
+            var p = categoryDetailProducts[i];
+            html += '<div class="category-product-card" draggable="true" data-index="' + i + '" ondragstart="productDragStart(event)" ondragover="productDragOver(event)" ondrop="productDrop(event)" ondragend="productDragEnd(event)">';
+            html += p.image_url ? '<img src="' + p.image_url + '">' : '<div style="height:140px;background:#F3EFEA;display:flex;align-items:center;justify-content:center;">無圖</div>';
+            html += '<div class="category-product-card-body"><p class="category-product-card-name">' + p.name_zh + '</p><p class="category-product-card-price">HK$' + p.price + '</p>';
+            html += '<button class="category-product-card-remove" onclick="removeProductFromCategory(' + p.id + ')">移除</button></div></div>';
+        }
+        container.innerHTML = html;
+    }
     function getCheckedCategoryIds() { var ids = []; document.querySelectorAll('.category-card-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
     async function bulkCategoryDelete() { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').delete().in('id', ids); showToast('完成'); loadCategories(); }
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
