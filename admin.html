@@ -6,6 +6,7 @@
     <title>後台管理 | RoyalSpl Florist</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; font-size: 17px; }
@@ -203,8 +204,52 @@
                 <div id="addonFormContainer" style="display:none;margin-top:20px;"><div class="form-container"><h2 style="font-size:20px;font-weight:600;margin-bottom:20px;">新增配件</h2><input type="hidden" id="addonId"><div class="form-group"><label class="form-label">配件圖片</label><div class="upload-area" id="addonUploadArea"><p>點擊上傳圖片</p><input type="file" id="addonFileInput" accept="image/*" style="display:none;"></div><div id="addonImagePreview" style="margin-top:10px;"></div></div><div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input type="text" class="form-input" id="addonNameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input type="text" class="form-input" id="addonNameEn"></div></div><div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="addonPrice" step="0.01"></div><div class="form-group"><label class="form-label">庫存數量</label><input type="number" class="form-input" id="addonStock" min="0"></div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveAddon()">保存配件</button><button class="btn btn-secondary" onclick="hideAddonForm()">取消</button></div></div></div>
             </div>
             <div id="page-orders" style="display:none;">
-                <div class="page-header"><h2 class="page-title">訂單管理</h2></div>
+                <div class="page-header">
+                    <h2 class="page-title">訂單管理</h2>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button>
+                        <button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button>
+                    </div>
+                </div>
+                <div class="btn-group" style="margin-bottom:15px;">
+                    <select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;">
+                        <option value="all">全部狀態</option>
+                        <option value="pending">待處理</option>
+                        <option value="processing">製作中</option>
+                        <option value="delivering">配送中</option>
+                        <option value="delivered">已送達</option>
+                        <option value="cancelled">已取消</option>
+                    </select>
+                    <button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button>
+                </div>
                 <div id="ordersTable"></div>
+                <div id="addOrderFormContainer" style="display:none;margin-top:20px;">
+                    <div class="form-container" style="max-width:100%;">
+                        <h2 style="font-size:20px;font-weight:600;margin-bottom:20px;">新增訂單</h2>
+                        <div class="form-group"><label class="form-label">選擇商品（勾選）</label><div class="addon-checkbox-list" id="orderProductList"></div></div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">收件人姓名</label><input type="text" class="form-input" id="orderRecipientName"></div>
+                            <div class="form-group"><label class="form-label">收件人電話</label><input type="text" class="form-input" id="orderRecipientPhone"></div>
+                        </div>
+                        <div class="form-group"><label class="form-label">收件人地址</label><input type="text" class="form-input" id="orderRecipientAddress"></div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="orderDeliveryDate"></div>
+                            <div class="form-group"><label class="form-label">送貨時段</label><select class="form-select" id="orderDeliveryTime"><option value="全日派送">全日派送</option><option value="指定時間">指定時間</option><option value="夜晚派送">夜晚派送</option></select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="orderCardMessage"></textarea></div>
+                            <div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="orderRemarks"></textarea></div>
+                        </div>
+                        <div class="form-actions"><button class="btn btn-primary" onclick="saveNewOrder()">保存訂單</button><button class="btn btn-secondary" onclick="hideAddOrderForm()">取消</button></div>
+                    </div>
+                </div>
+                <div id="orderDetailView" style="display:none;margin-top:20px;">
+                    <div class="page-header">
+                        <button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button>
+                        <button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button>
+                    </div>
+                    <div class="form-container" style="max-width:100%;" id="orderDetailContent"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -227,6 +272,7 @@
     var allProducts = [];
     var allAddons = [];
     var allCategories = [];
+    var allOrders = [];
     var uploadedImages = [];
     var variants = [];
     var selectedAddons = [];
@@ -236,6 +282,8 @@
     var categoryDetailUploadedImage = '';
     var selectedCategoryProducts = [];
     var categoryDetailProducts = [];
+    var selectedOrderProducts = [];
+    var currentOrderDetail = null;
 
     var tagCategories = {
         tagOccasion: ['情人節','母親節','中秋節','清明節','畢業季','端午','聖誕節','生日','週年','婚禮','彌月','探病','帛事','開張','喬遷','商務送禮','企業周年'],
@@ -451,7 +499,22 @@
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
 
     // ===== 訂單管理 =====
-    async function loadOrders() { var container = document.getElementById('ordersTable'); try { var result = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); if (result.error) { container.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; } var orders = result.data || []; if (!orders.length) { container.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; } var html = '<table class="data-table"><thead><tr><th>訂單編號</th><th>日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th></tr></thead><tbody>'; for (var i = 0; i < orders.length; i++) { var o = orders[i]; html += '<tr><td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + '</td><td>' + o.status + '</td></tr>'; } html += '</tbody></table>'; container.innerHTML = html; } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; } }
+    async function loadOrders() { var container = document.getElementById('ordersTable'); try { var result = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); if (result.error) { container.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; } allOrders = result.data || []; renderOrdersTable(allOrders); } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; } }
+    function renderOrdersTable(orders) { var container = document.getElementById('ordersTable'); if (!orders.length) { container.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; } var html = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>'; for (var i = 0; i < orders.length; i++) { var o = orders[i]; html += '<tr><td class="checkbox-col"><input type="checkbox" class="order-check" value="' + o.id + '"></td><td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + '</td><td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="pending"' + (o.status === 'pending' ? ' selected' : '') + '>待處理</option><option value="processing"' + (o.status === 'processing' ? ' selected' : '') + '>製作中</option><option value="delivering"' + (o.status === 'delivering' ? ' selected' : '') + '>配送中</option><option value="delivered"' + (o.status === 'delivered' ? ' selected' : '') + '>已送達</option><option value="cancelled"' + (o.status === 'cancelled' ? ' selected' : '') + '>已取消</option></select></td><td><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button></div></td></tr>'; } html += '</tbody></table>'; container.innerHTML = html; }
+    function filterOrdersByStatus() { var filter = document.getElementById('orderStatusFilter').value; if (filter === 'all') { renderOrdersTable(allOrders); return; } var filtered = allOrders.filter(function(o) { return o.status === filter; }); renderOrdersTable(filtered); }
+    function toggleCheckAllOrders() { var c = document.getElementById('checkAllOrders'); document.querySelectorAll('.order-check').forEach(function(cb) { cb.checked = c.checked; }); }
+    function getCheckedOrderIds() { var ids = []; document.querySelectorAll('.order-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
+    async function bulkDeleteOrders() { var ids = getCheckedOrderIds(); if (!ids.length) { showToast('請先勾選訂單'); return; } if (!confirm('刪除 ' + ids.length + ' 個訂單？')) return; await supabaseClient.from('orders').delete().in('id', ids); showToast('完成'); loadOrders(); }
+    async function updateOrderStatus(orderId, status) { await supabaseClient.from('orders').update({ status: status }).eq('id', orderId); showToast('狀態已更新'); }
+    async function openOrderDetail(orderId) { for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { currentOrderDetail = allOrders[i]; break; } } if (!currentOrderDetail) return; document.getElementById('ordersTable').style.display = 'none'; document.getElementById('orderDetailView').style.display = 'block'; var o = currentOrderDetail; var html = ''; html += '<input type="hidden" id="orderDetailId" value="' + o.id + '">'; html += '<div class="form-row"><div class="form-group"><label class="form-label">訂單編號</label><input type="text" class="form-input" id="detailOrderCode" value="' + o.order_code + '"></div><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div></div>'; html += '<div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input type="text" class="form-input" id="detailRecipientName" value="' + (o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">收件人電話</label><input type="text" class="form-input" id="detailRecipientPhone" value="' + (o.recipient_phone || '') + '"></div></div>'; html += '<div class="form-group"><label class="form-label">收件人地址</label><input type="text" class="form-input" id="detailRecipientAddress" value="' + (o.recipient_address || '') + '"></div>'; html += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="detailCardMessage">' + (o.card_message || '') + '</textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="detailRemarks">' + (o.remarks || '') + '</textarea></div></div>'; html += '<div class="form-row"><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div><div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div></div>'; html += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div>'; document.getElementById('orderDetailContent').innerHTML = html; }
+    function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
+    async function saveOrderDetail() { var id = document.getElementById('orderDetailId').value; var data = { order_code: document.getElementById('detailOrderCode').value.trim(), delivery_date: document.getElementById('detailDeliveryDate').value, recipient_name: document.getElementById('detailRecipientName').value.trim(), recipient_phone: document.getElementById('detailRecipientPhone').value.trim(), recipient_address: document.getElementById('detailRecipientAddress').value.trim(), card_message: document.getElementById('detailCardMessage').value.trim(), remarks: document.getElementById('detailRemarks').value.trim(), delivery_fee: parseFloat(document.getElementById('detailDeliveryFee').value) || 0, total_amount: parseFloat(document.getElementById('detailTotalAmount').value) || 0 }; await supabaseClient.from('orders').update(data).eq('id', id); showToast('訂單已保存'); closeOrderDetail(); }
+    function downloadOrderPDF() { if (!currentOrderDetail) return; var o = currentOrderDetail; var html = '<div style="font-family:serif;padding:40px;max-width:600px;margin:0 auto;">'; html += '<h1 style="text-align:center;font-size:24px;border-bottom:3px solid #1E3A5F;padding-bottom:15px;">RoyalSpl Florist Hong Kong</h1>'; html += '<p style="text-align:center;">訂單確認書 Order Confirmation</p>'; html += '<table style="width:100%;margin:20px 0;"><tr><td><b>訂單編號：</b>' + o.order_code + '</td><td><b>送貨日期：</b>' + (o.delivery_date || '-') + '</td></tr><tr><td><b>收件人：</b>' + (o.recipient_name || '-') + '</td><td><b>電話：</b>' + (o.recipient_phone || '-') + '</td></tr><tr><td colspan="2"><b>地址：</b>' + (o.recipient_address || '-') + '</td></tr></table>'; html += '<table style="width:100%;border-collapse:collapse;margin:20px 0;"><tr style="background:#1E3A5F;color:white;"><th style="padding:10px;">商品</th><th style="padding:10px;">數量</th><th style="padding:10px;">單價</th><th style="padding:10px;">小計</th></tr><tr><td style="padding:10px;border:1px solid #ddd;">花禮商品</td><td style="padding:10px;border:1px solid #ddd;text-align:center;">1</td><td style="padding:10px;border:1px solid #ddd;text-align:right;">HK$' + (o.subtotal || 0) + '</td><td style="padding:10px;border:1px solid #ddd;text-align:right;">HK$' + (o.subtotal || 0) + '</td></tr></table>'; html += '<table style="width:50%;margin-left:auto;"><tr><td>運費：</td><td style="text-align:right;">HK$' + (o.delivery_fee || 0) + '</td></tr><tr style="font-size:20px;font-weight:bold;"><td>總計：</td><td style="text-align:right;">HK$' + (o.total_amount || 0) + '</td></tr></table>'; if (o.card_message) { html += '<div style="background:#FFF8E1;padding:15px;border-left:4px solid #FFC107;margin:20px 0;"><b>心意卡：</b>' + o.card_message + '</div>'; } html += '<p style="text-align:center;margin-top:40px;color:#666;">感謝您的訂購！</p>'; html += '</div>'; var printWindow = window.open('', '_blank'); printWindow.document.write(html); printWindow.document.close(); printWindow.print(); }
+    function showAddOrderForm() { document.getElementById('addOrderFormContainer').style.display = 'block'; var container = document.getElementById('orderProductList'); selectedOrderProducts = []; var html = ''; for (var i = 0; i < allProducts.length; i++) { var p = allProducts[i]; html += '<label class="addon-checkbox-item"><input type="checkbox" value="' + p.id + '" onchange="toggleOrderProduct(' + p.id + ')">' + p.name_zh + ' (HK$' + p.price + ')</label>'; } container.innerHTML = html; }
+    function hideAddOrderForm() { document.getElementById('addOrderFormContainer').style.display = 'none'; }
+    function toggleOrderProduct(id) { var idx = selectedOrderProducts.indexOf(id); if (idx > -1) { selectedOrderProducts.splice(idx, 1); } else { selectedOrderProducts.push(id); } }
+    async function saveNewOrder() { var recipientName = document.getElementById('orderRecipientName').value.trim(); var recipientPhone = document.getElementById('orderRecipientPhone').value.trim(); var recipientAddress = document.getElementById('orderRecipientAddress').value.trim(); var deliveryDate = document.getElementById('orderDeliveryDate').value; var cardMessage = document.getElementById('orderCardMessage').value.trim(); var remarks = document.getElementById('orderRemarks').value.trim(); if (!recipientName || !recipientPhone || !recipientAddress) { showToast('請填寫必要欄位'); return; } if (!selectedOrderProducts.length) { showToast('請選擇商品'); return; } var subtotal = 0; for (var i = 0; i < selectedOrderProducts.length; i++) { for (var j = 0; j < allProducts.length; j++) { if (allProducts[j].id === selectedOrderProducts[i]) { subtotal += parseFloat(allProducts[j].price); break; } } } var deliveryFee = 90; var totalAmount = subtotal + deliveryFee; var orderCode = 'RS' + Date.now().toString().slice(-8); var data = { order_code: orderCode, recipient_name: recipientName, recipient_phone: recipientPhone, recipient_address: recipientAddress, delivery_date: deliveryDate, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: cardMessage, remarks: remarks, subtotal: subtotal, delivery_fee: deliveryFee, total_amount: totalAmount, status: 'pending' }; var result = await supabaseClient.from('orders').insert(data); if (result.error) { showToast('保存失敗'); return; } showToast('訂單已創建'); hideAddOrderForm(); loadOrders(); }
+    function exportOrdersCSV() { if (!allOrders.length) { showToast('無訂單'); return; } var header = 'order_code,created_at,delivery_date,recipient_name,recipient_phone,recipient_address,total_amount,status'; var rows = [header]; for (var i = 0; i < allOrders.length; i++) { var o = allOrders[i]; rows.push([o.order_code, (o.created_at || '').slice(0,10), o.delivery_date || '', o.recipient_name || '', o.recipient_phone || '', o.recipient_address || '', o.total_amount || 0, o.status || ''].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orders.csv'; a.click(); }
 
     function showToast(msg) { var toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = msg; document.body.appendChild(toast); setTimeout(function() { toast.classList.add('show'); }, 10); setTimeout(function() { toast.classList.remove('show'); setTimeout(function() { toast.remove(); }, 300); }, 2500); }
 
