@@ -6,6 +6,29 @@
     <title>後台管理 | RoyalSpl Florist</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+            /* 模板預覽 */
+        .template-preview-content { font-family: serif; }
+        .template-preview-content h1 { font-size: 24px; text-align: center; border-bottom: 3px solid #1E3A5F; padding-bottom: 15px; }
+        .template-preview-content table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .template-preview-content th { background: #1E3A5F; color: white; padding: 10px; }
+        .template-preview-content td { padding: 10px; border: 1px solid #ddd; }
+        .template-preview-logo { text-align: center; margin-bottom: 15px; }
+        .template-preview-logo img { max-width: 80px; max-height: 80px; object-fit: contain; }
+        
+        /* 分類商品卡片 */
+        .category-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .category-product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: grab; }
+        .category-product-card.dragging { opacity: 0.5; }
+        .category-product-card img { width: 100%; height: 140px; object-fit: cover; }
+        .category-product-card-body { padding: 12px; }
+        .category-product-card-remove { margin-top: 8px; width: 100%; padding: 6px; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        
+        /* 商品變體 */
+        .spectrum-wrap { display: flex; align-items: center; gap: 12px; }
+        .spectrum-wrap input[type="range"] { flex: 1; }
+        .spectrum-val { font-size: 20px; font-weight: 700; min-width: 40px; text-align: center; }
+        .variant-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+        .variant-row input { flex: 1; padding: 12px 14px; border: 1px solid #1A1A1A; border-radius: 5px; }
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; font-size: 17px; }
