@@ -101,6 +101,8 @@
         .template-preview-logo img { max-width: 80px; max-height: 80px; object-fit: contain; }
         .order-product-item { display: inline-block; margin: 5px; text-align: center; }
         .order-product-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; display: block; }
+        .collection-card-edit { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 15px; }
+        .collection-card-edit img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
         @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -116,6 +118,8 @@
         <div class="topbar"><h1>RoyalSpl 後台管理</h1><div class="topbar-links"><a href="index.html">返回前台</a><a onclick="doLogout()">登出</a></div></div>
         <div class="sidebar">
             <div class="sidebar-item active" data-page="analytics" onclick="switchPage('analytics')">數據分析</div>
+            <div class="sidebar-item" data-page="homepage" onclick="switchPage('homepage')">首頁管理</div>
+            <div class="sidebar-item" data-page="content" onclick="switchPage('content')">文案內容</div>
             <div class="sidebar-item" data-page="products" onclick="switchPage('products')">商品管理</div>
             <div class="sidebar-item" data-page="categories" onclick="switchPage('categories')">商品分類</div>
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
@@ -126,10 +130,10 @@
     </div>
     <div class="modal-overlay" id="productSelectModal">
         <div class="modal-content">
-            <h2 class="modal-title">選擇商品加入分類</h2>
+            <h2 class="modal-title">選擇商品</h2>
             <input type="hidden" id="modalCategoryId">
             <div class="modal-product-list" id="modalProductList"></div>
-            <div class="form-actions" style="margin-top:20px;"><button class="btn btn-primary" onclick="saveCategoryProducts()">保存</button><button class="btn btn-secondary" onclick="closeProductModal()">取消</button></div>
+            <div class="form-actions" style="margin-top:20px;"><button class="btn btn-primary" onclick="saveModalProducts()">保存</button><button class="btn btn-secondary" onclick="closeProductModal()">取消</button></div>
         </div>
     </div>
         <script>
@@ -152,6 +156,7 @@
     var selectedCategoryProducts = [];
     var categoryDetailProducts = [];
     var selectedOrderProducts = [];
+    var selectedFeaturedProducts = [];
     var currentOrderDetail = null;
     var selectedTemplateProduct = null;
     var tagCategories = {
@@ -194,6 +199,8 @@
         document.querySelector('[data-page="' + page + '"]').classList.add('active');
         var c = document.getElementById('mainContent');
         if (page === 'analytics') { renderAnalyticsPage(c); }
+        else if (page === 'homepage') { renderHomepagePage(c); }
+        else if (page === 'content') { renderContentPage(c); }
         else if (page === 'products') { renderProductsPage(c); }
         else if (page === 'categories') { renderCategoriesPage(c); }
         else if (page === 'addons') { renderAddonsPage(c); }
@@ -240,7 +247,330 @@
         } catch (e) {}
     }
 
-    // ==================== 商品管理 ====================
+    // ==================== 首頁管理 ====================
+    function renderHomepagePage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">首頁管理</h2><button class="btn btn-primary" onclick="saveHomepageSettings()">保存全部</button></div>';
+        c.innerHTML += '<div class="form-container" style="max-width:100%;">';
+        c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">Hero Banner</h3>';
+        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">主標題</label><input class="form-input" id="heroTitle"></div><div class="form-group"><label class="form-label">副標題</label><input class="form-input" id="heroSubtitle"></div></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">背景圖片</label><div class="upload-area" id="heroUploadArea"><p>點擊上傳圖片</p><input type="file" id="heroFileInput" accept="image/*" style="display:none;"></div><div id="heroImagePreview"></div></div>';
+        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">CTA 文字</label><input class="form-input" id="heroCtaText"></div><div class="form-group"><label class="form-label">CTA 連結</label><input class="form-input" id="heroCtaLink"></div></div>';
+        c.innerHTML += '<hr style="margin:25px 0;border-top:1px solid #ddd;">';
+        c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">臻選系列（6卡片）</h3><div class="category-grid" id="collectionCardsGrid"></div>';
+        c.innerHTML += '<hr style="margin:25px 0;border-top:1px solid #ddd;">';
+        c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">精選花藝</h3><button class="btn btn-secondary btn-small" onclick="openFeaturedProductSelect()">選擇商品</button><div class="category-products-grid" id="featuredProductsGrid" style="margin-top:15px;"></div>';
+        c.innerHTML += '<hr style="margin:25px 0;border-top:1px solid #ddd;">';
+        c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">關於我們</h3><div class="form-group"><textarea class="form-textarea" id="aboutText" style="min-height:150px;"></textarea></div>';
+        c.innerHTML += '</div>';
+        loadHomepageData();
+        loadCollectionCards();
+        loadFeaturedProducts();
+        initHeroUpload();
+    }
+    var heroUploadedImage = '';
+    function initHeroUpload() { var ua = document.getElementById('heroUploadArea'); var fi = document.getElementById('heroFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleHeroFileUpload(this.files[0]); }; } }
+    async function handleHeroFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { heroUploadedImage = data.url; document.getElementById('heroImagePreview').innerHTML = '<img src="' + data.url + '" style="width:200px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (e) {} }
+    async function loadHomepageData() {
+        try {
+            var r = await supabaseClient.from('homepage_settings').select('*').limit(1);
+            if (r.data && r.data.length > 0) {
+                var d = r.data[0];
+                document.getElementById('heroTitle').value = d.hero_title || '';
+                document.getElementById('heroSubtitle').value = d.hero_subtitle || '';
+                document.getElementById('heroCtaText').value = d.hero_cta_text || '';
+                document.getElementById('heroCtaLink').value = d.hero_cta_link || '';
+                document.getElementById('aboutText').value = d.about_text || '';
+                heroUploadedImage = d.hero_image || '';
+                if (d.hero_image) { document.getElementById('heroImagePreview').innerHTML = '<img src="' + d.hero_image + '" style="width:200px;height:100px;object-fit:cover;border-radius:8px;">'; }
+            }
+        } catch (e) {}
+    }
+    async function saveHomepageSettings() {
+        var data = {
+            hero_title: document.getElementById('heroTitle').value.trim(),
+            hero_subtitle: document.getElementById('heroSubtitle').value.trim(),
+            hero_image: heroUploadedImage || null,
+            hero_cta_text: document.getElementById('heroCtaText').value.trim(),
+            hero_cta_link: document.getElementById('heroCtaLink').value.trim(),
+            about_text: document.getElementById('aboutText').value.trim()
+        };
+        try {
+            var r = await supabaseClient.from('homepage_settings').select('id').limit(1);
+            if (r.data && r.data.length > 0) { await supabaseClient.from('homepage_settings').update(data).eq('id', r.data[0].id); }
+            else { await supabaseClient.from('homepage_settings').insert(data); }
+            showToast('首頁設置已保存');
+        } catch (e) { showToast('保存失敗'); }
+    }
+    async function loadCollectionCards() {
+        var c = document.getElementById('collectionCardsGrid');
+        try {
+            var r = await supabaseClient.from('collection_cards').select('*').order('sort_order', { ascending: true });
+            var cards = r.data || [];
+            if (!cards.length) {
+                for (var i = 0; i < 6; i++) { await supabaseClient.from('collection_cards').insert({ title_zh: '卡片' + (i+1), title_en: 'Card ' + (i+1), sort_order: i+1 }); }
+                var r2 = await supabaseClient.from('collection_cards').select('*').order('sort_order', { ascending: true });
+                cards = r2.data || [];
+            }
+            var h = '';
+            for (var j = 0; j < cards.length; j++) {
+                var card = cards[j];
+                h += '<div class="collection-card-edit">' + (card.image_url ? '<img src="' + card.image_url + '">' : '<div style="height:150px;background:#F3EFEA;border-radius:8px;display:flex;align-items:center;justify-content:center;">無圖</div>');
+                h += '<div class="form-group" style="margin-top:10px;"><input class="form-input" placeholder="中文標題" value="' + (card.title_zh || '') + '" onchange="updateCollectionCard(' + card.id + ',\'title_zh\',this.value)"></div>';
+                h += '<div class="form-group"><input class="form-input" placeholder="英文標題" value="' + (card.title_en || '') + '" onchange="updateCollectionCard(' + card.id + ',\'title_en\',this.value)"></div>';
+                h += '<div class="form-group"><input class="form-input" placeholder="連結" value="' + (card.link_url || '') + '" onchange="updateCollectionCard(' + card.id + ',\'link_url\',this.value)"></div>';
+                h += '<div class="url-add-row"><input type="text" id="cardImg' + card.id + '" placeholder="圖片網址" value="' + (card.image_url || '') + '"><button class="btn btn-small btn-secondary" onclick="updateCardImage(' + card.id + ')">更新圖片</button></div>';
+                h += '</div>';
+            }
+            c.innerHTML = h;
+        } catch (e) { c.innerHTML = '請先創建 collection_cards 表'; }
+    }
+    async function updateCollectionCard(id, field, value) { await supabaseClient.from('collection_cards').update({ [field]: value }).eq('id', id); }
+    async function updateCardImage(id) { var url = document.getElementById('cardImg' + id).value.trim(); if (url) { await supabaseClient.from('collection_cards').update({ image_url: url }).eq('id', id); showToast('圖片已更新'); loadCollectionCards(); } }
+    async function loadFeaturedProducts() {
+        var c = document.getElementById('featuredProductsGrid');
+        try {
+            var r = await supabaseClient.from('featured_products').select('*').order('sort_order', { ascending: true });
+            selectedFeaturedProducts = r.data || [];
+            if (!selectedFeaturedProducts.length) { c.innerHTML = '<div class="empty-state">尚未選擇商品</div>'; return; }
+            var h = '';
+            for (var i = 0; i < selectedFeaturedProducts.length; i++) {
+                var fp = selectedFeaturedProducts[i];
+                var product = null;
+                for (var j = 0; j < allProducts.length; j++) { if (allProducts[j].id === fp.product_id) { product = allProducts[j]; break; } }
+                if (!product) continue;
+                h += '<div class="category-product-card" draggable="true" data-index="' + i + '" ondragstart="featuredDragStart(event)" ondragover="featuredDragOver(event)" ondrop="featuredDrop(event)" ondragend="featuredDragEnd(event)">';
+                h += product.image_url ? '<img src="' + product.image_url + '">' : '<div style="height:140px;background:#F3EFEA;"></div>';
+                h += '<div class="category-product-card-body"><p style="font-size:15px;font-weight:600;">' + product.name_zh + '</p><p style="font-size:14px;color:#383431;">HK$' + product.price + '</p><button class="category-product-card-remove" onclick="removeFeaturedProduct(' + fp.id + ')">移除</button></div></div>';
+            }
+            c.innerHTML = h;
+        } catch (e) { c.innerHTML = '請先創建 featured_products 表'; }
+    }
+    function openFeaturedProductSelect() {
+        var c = document.getElementById('modalProductList');
+        var currentIds = [];
+        for (var i = 0; i < selectedFeaturedProducts.length; i++) { currentIds.push(selectedFeaturedProducts[i].product_id); }
+        selectedFeaturedProducts = [];
+        var h = '';
+        for (var j = 0; j < allProducts.length; j++) {
+            var p = allProducts[j];
+            var checked = currentIds.indexOf(p.id) > -1 ? 'checked' : '';
+            h += '<label class="modal-product-item"><input type="checkbox" value="' + p.id + '" ' + checked + ' onchange="toggleFeaturedProduct(' + p.id + ')">' + (p.image_url ? '<img src="' + p.image_url + '">' : '<span>無圖</span>') + p.name_zh + ' (HK$' + p.price + ')</label>';
+        }
+        c.innerHTML = h;
+        document.getElementById('modalCategoryId').value = 'featured';
+        document.getElementById('productSelectModal').classList.add('show');
+    }
+    function toggleFeaturedProduct(id) { var idx = selectedFeaturedProducts.indexOf(id); if (idx > -1) { selectedFeaturedProducts.splice(idx, 1); } else { selectedFeaturedProducts.push(id); } }
+    function saveModalProducts() {
+        var mode = document.getElementById('modalCategoryId').value;
+        if (mode === 'featured') { saveFeaturedProducts(); }
+        else { saveCategoryProducts(); }
+    }
+    async function saveFeaturedProducts() {
+        await supabaseClient.from('featured_products').delete().neq('id', 0);
+        for (var i = 0; i < selectedFeaturedProducts.length; i++) {
+            await supabaseClient.from('featured_products').insert({ product_id: selectedFeaturedProducts[i], sort_order: i + 1 });
+        }
+        showToast('精選花藝已保存');
+        closeProductModal();
+        loadFeaturedProducts();
+    }
+    async function removeFeaturedProduct(id) { await supabaseClient.from('featured_products').delete().eq('id', id); loadFeaturedProducts(); }
+    var draggedFeaturedIndex = null;
+    function featuredDragStart(e) { draggedFeaturedIndex = parseInt(e.target.getAttribute('data-index')); }
+    function featuredDragOver(e) { e.preventDefault(); }
+    function featuredDragEnd(e) {}
+    async function featuredDrop(e) {
+        e.preventDefault();
+        var targetIndex = parseInt(e.target.getAttribute('data-index'));
+        if (draggedFeaturedIndex === null || targetIndex === null || draggedFeaturedIndex === targetIndex) return;
+        var temp = selectedFeaturedProducts[draggedFeaturedIndex];
+        selectedFeaturedProducts.splice(draggedFeaturedIndex, 1);
+        selectedFeaturedProducts.splice(targetIndex, 0, temp);
+        for (var i = 0; i < selectedFeaturedProducts.length; i++) { await supabaseClient.from('featured_products').update({ sort_order: i + 1 }).eq('id', selectedFeaturedProducts[i].id); }
+        loadFeaturedProducts();
+        showToast('排序已保存');
+    }
+        // ==================== 文案內容管理 ====================
+    function renderContentPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">文案內容管理</h2></div>';
+        c.innerHTML += '<div class="btn-group" style="margin-bottom:20px;">';
+        c.innerHTML += '<button class="btn btn-primary" onclick="switchContentTab(\'blog\')">Blog</button>';
+        c.innerHTML += '<button class="btn btn-secondary" onclick="switchContentTab(\'faq\')">常見問題</button>';
+        c.innerHTML += '<button class="btn btn-secondary" onclick="switchContentTab(\'contact\')">聯絡我們</button>';
+        c.innerHTML += '</div><div id="contentTabContainer"></div>';
+        switchContentTab('blog');
+    }
+    function switchContentTab(tab) {
+        var container = document.getElementById('contentTabContainer');
+        if (tab === 'blog') { renderBlogTab(container); }
+        else if (tab === 'faq') { renderFaqTab(container); }
+        else if (tab === 'contact') { renderContactTab(container); }
+    }
+
+    // ===== Blog =====
+    function renderBlogTab(container) {
+        container.innerHTML = '<div class="page-header"><h3 style="font-size:20px;font-weight:600;">Blog 文章管理</h3><button class="btn btn-primary" onclick="showBlogForm()">新增文章</button></div><div id="blogList"></div><div id="blogFormContainer" style="display:none;"></div>';
+        loadBlogPosts();
+    }
+    function showBlogForm() {
+        var c = document.getElementById('blogFormContainer');
+        c.style.display = 'block';
+        c.innerHTML = '<div class="form-container"><h3>新增文章</h3><input type="hidden" id="blogId">';
+        c.innerHTML += '<div class="form-group"><label class="form-label">標題</label><input class="form-input" id="blogTitle"></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">圖片</label><div class="upload-area" id="blogUploadArea"><p>點擊上傳圖片</p><input type="file" id="blogFileInput" accept="image/*" style="display:none;"></div><div id="blogImagePreview"></div></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">內容</label><textarea class="form-textarea" id="blogContent" style="min-height:150px;"></textarea></div>';
+        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">SEO標題</label><input class="form-input" id="blogSeoTitle"></div><div class="form-group"><label class="form-label">SEO描述</label><input class="form-input" id="blogSeoDesc"></div></div>';
+        c.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveBlogPost()">保存</button><button class="btn btn-secondary" onclick="hideBlogForm()">取消</button></div></div>';
+        blogUploadedImage = '';
+        initBlogUpload();
+    }
+    var blogUploadedImage = '';
+    function initBlogUpload() { var ua = document.getElementById('blogUploadArea'); var fi = document.getElementById('blogFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleBlogFileUpload(this.files[0]); }; } }
+    async function handleBlogFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { blogUploadedImage = data.url; document.getElementById('blogImagePreview').innerHTML = '<img src="' + data.url + '" style="width:150px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (e) {} }
+    function hideBlogForm() { document.getElementById('blogFormContainer').style.display = 'none'; }
+    function showEditBlogForm(post) {
+        var c = document.getElementById('blogFormContainer');
+        c.style.display = 'block';
+        c.innerHTML = '<div class="form-container"><h3>編輯文章</h3><input type="hidden" id="blogId" value="' + post.id + '">';
+        c.innerHTML += '<div class="form-group"><label class="form-label">標題</label><input class="form-input" id="blogTitle" value="' + (post.title || '') + '"></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">圖片</label><div class="upload-area" id="blogUploadArea"><p>點擊上傳圖片</p><input type="file" id="blogFileInput" accept="image/*" style="display:none;"></div><div id="blogImagePreview">' + (post.image_url ? '<img src="' + post.image_url + '" style="width:150px;height:100px;object-fit:cover;border-radius:8px;">' : '') + '</div></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">內容</label><textarea class="form-textarea" id="blogContent" style="min-height:150px;">' + (post.content || '') + '</textarea></div>';
+        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">SEO標題</label><input class="form-input" id="blogSeoTitle" value="' + (post.seo_title || '') + '"></div><div class="form-group"><label class="form-label">SEO描述</label><input class="form-input" id="blogSeoDesc" value="' + (post.seo_description || '') + '"></div></div>';
+        c.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveBlogPost()">保存</button><button class="btn btn-secondary" onclick="hideBlogForm()">取消</button></div></div>';
+        blogUploadedImage = post.image_url || '';
+        initBlogUpload();
+    }
+    async function saveBlogPost() {
+        var id = document.getElementById('blogId').value;
+        var data = {
+            title: document.getElementById('blogTitle').value.trim(),
+            content: document.getElementById('blogContent').value.trim(),
+            image_url: blogUploadedImage || null,
+            seo_title: document.getElementById('blogSeoTitle').value.trim(),
+            seo_description: document.getElementById('blogSeoDesc').value.trim()
+        };
+        if (!data.title) { showToast('請填寫標題'); return; }
+        try {
+            if (id) { await supabaseClient.from('blog_posts').update(data).eq('id', id); }
+            else { await supabaseClient.from('blog_posts').insert(data); }
+            showToast('文章已保存'); hideBlogForm(); loadBlogPosts();
+        } catch (e) { showToast('保存失敗'); }
+    }
+    async function loadBlogPosts() {
+        var c = document.getElementById('blogList');
+        try {
+            var r = await supabaseClient.from('blog_posts').select('*').order('created_at', { ascending: false });
+            var posts = r.data || [];
+            if (!posts.length) { c.innerHTML = '<div class="empty-state">暫無文章</div>'; return; }
+            var h = '<table class="data-table"><thead><tr><th>圖片</th><th>標題</th><th>發布</th><th>操作</th></tr></thead><tbody>';
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                h += '<tr><td>' + (p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '無圖') + '</td>';
+                h += '<td><b>' + p.title + '</b><br><small>' + (p.seo_title || '') + '</small></td>';
+                h += '<td>' + (p.is_published ? '已發布' : '草稿') + '</td>';
+                h += '<td><button class="btn btn-secondary btn-small" onclick="showEditBlogForm(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">編輯</button> <button class="btn btn-danger btn-small" onclick="deleteBlogPost(' + p.id + ')">刪除</button></td></tr>';
+            }
+            h += '</tbody></table>';
+            c.innerHTML = h;
+        } catch (e) { c.innerHTML = '請先創建 blog_posts 表'; }
+    }
+    async function deleteBlogPost(id) { if (!confirm('刪除？')) return; await supabaseClient.from('blog_posts').delete().eq('id', id); loadBlogPosts(); }
+
+    // ===== FAQ =====
+    function renderFaqTab(container) {
+        container.innerHTML = '<div class="page-header"><h3 style="font-size:20px;font-weight:600;">常見問題管理</h3><button class="btn btn-primary" onclick="showFaqForm()">新增問答</button></div><div id="faqList"></div><div id="faqFormContainer" style="display:none;"></div>';
+        loadFaqItems();
+    }
+    function showFaqForm() {
+        var c = document.getElementById('faqFormContainer');
+        c.style.display = 'block';
+        c.innerHTML = '<div class="form-container"><h3>新增問答</h3><input type="hidden" id="faqId">';
+        c.innerHTML += '<div class="form-group"><label class="form-label">問題</label><input class="form-input" id="faqQuestion"></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">答案</label><textarea class="form-textarea" id="faqAnswer"></textarea></div>';
+        c.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveFaqItem()">保存</button><button class="btn btn-secondary" onclick="hideFaqForm()">取消</button></div></div>';
+    }
+    function hideFaqForm() { document.getElementById('faqFormContainer').style.display = 'none'; }
+    function showEditFaqForm(item) {
+        var c = document.getElementById('faqFormContainer');
+        c.style.display = 'block';
+        c.innerHTML = '<div class="form-container"><h3>編輯問答</h3><input type="hidden" id="faqId" value="' + item.id + '">';
+        c.innerHTML += '<div class="form-group"><label class="form-label">問題</label><input class="form-input" id="faqQuestion" value="' + (item.question || '') + '"></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">答案</label><textarea class="form-textarea" id="faqAnswer">' + (item.answer || '') + '</textarea></div>';
+        c.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveFaqItem()">保存</button><button class="btn btn-secondary" onclick="hideFaqForm()">取消</button></div></div>';
+    }
+    async function saveFaqItem() {
+        var id = document.getElementById('faqId').value;
+        var data = { question: document.getElementById('faqQuestion').value.trim(), answer: document.getElementById('faqAnswer').value.trim() };
+        if (!data.question || !data.answer) { showToast('請填寫完整'); return; }
+        try {
+            if (id) { await supabaseClient.from('faq_items').update(data).eq('id', id); }
+            else { await supabaseClient.from('faq_items').insert(data); }
+            showToast('已保存'); hideFaqForm(); loadFaqItems();
+        } catch (e) { showToast('保存失敗'); }
+    }
+    async function loadFaqItems() {
+        var c = document.getElementById('faqList');
+        try {
+            var r = await supabaseClient.from('faq_items').select('*').order('sort_order', { ascending: true });
+            var items = r.data || [];
+            if (!items.length) { c.innerHTML = '<div class="empty-state">暫無問答</div>'; return; }
+            var h = '<table class="data-table"><thead><tr><th>問題</th><th>答案</th><th>操作</th></tr></thead><tbody>';
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                h += '<tr><td><b>' + item.question + '</b></td><td>' + (item.answer || '').slice(0, 100) + '...</td>';
+                h += '<td><button class="btn btn-secondary btn-small" onclick="showEditFaqForm(' + JSON.stringify(item).replace(/"/g, '&quot;') + ')">編輯</button> <button class="btn btn-danger btn-small" onclick="deleteFaqItem(' + item.id + ')">刪除</button></td></tr>';
+            }
+            h += '</tbody></table>';
+            c.innerHTML = h;
+        } catch (e) { c.innerHTML = '請先創建 faq_items 表'; }
+    }
+    async function deleteFaqItem(id) { if (!confirm('刪除？')) return; await supabaseClient.from('faq_items').delete().eq('id', id); loadFaqItems(); }
+
+    // ===== 聯絡我們 =====
+    function renderContactTab(container) {
+        container.innerHTML = '<div class="form-container"><h3 style="font-size:20px;font-weight:600;margin-bottom:20px;">聯絡我們設定</h3>';
+        container.innerHTML += '<div class="form-group"><label class="form-label">店鋪LOGO</label><div class="upload-area" id="contactLogoUploadArea"><p>點擊上傳LOGO</p><input type="file" id="contactLogoFileInput" accept="image/*" style="display:none;"></div><div id="contactLogoPreview"></div></div>';
+        container.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">電話</label><input class="form-input" id="contactPhone"></div><div class="form-group"><label class="form-label">Email</label><input class="form-input" id="contactEmail"></div></div>';
+        container.innerHTML += '<div class="form-group"><label class="form-label">地址</label><input class="form-input" id="contactAddress"></div>';
+        container.innerHTML += '<div class="form-group"><label class="form-label">地圖網址</label><input class="form-input" id="contactMapUrl" placeholder="Google Maps embed URL"></div>';
+        container.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveContactSettings()">保存</button></div></div>';
+        loadContactSettings();
+        initContactLogoUpload();
+    }
+    var contactLogoImage = '';
+    function initContactLogoUpload() { var ua = document.getElementById('contactLogoUploadArea'); var fi = document.getElementById('contactLogoFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleContactLogoUpload(this.files[0]); }; } }
+    async function handleContactLogoUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { contactLogoImage = data.url; document.getElementById('contactLogoPreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:contain;border-radius:8px;">'; } } catch (e) {} }
+    async function loadContactSettings() {
+        try {
+            var r = await supabaseClient.from('contact_settings').select('*').limit(1);
+            if (r.data && r.data.length > 0) {
+                var d = r.data[0];
+                document.getElementById('contactPhone').value = d.shop_phone || '';
+                document.getElementById('contactEmail').value = d.shop_email || '';
+                document.getElementById('contactAddress').value = d.shop_address || '';
+                document.getElementById('contactMapUrl').value = d.map_url || '';
+                contactLogoImage = d.shop_logo || '';
+                if (d.shop_logo) { document.getElementById('contactLogoPreview').innerHTML = '<img src="' + d.shop_logo + '" style="width:100px;height:100px;object-fit:contain;border-radius:8px;">'; }
+            }
+        } catch (e) {}
+    }
+    async function saveContactSettings() {
+        var data = {
+            shop_logo: contactLogoImage || null,
+            shop_phone: document.getElementById('contactPhone').value.trim(),
+            shop_email: document.getElementById('contactEmail').value.trim(),
+            shop_address: document.getElementById('contactAddress').value.trim(),
+            map_url: document.getElementById('contactMapUrl').value.trim()
+        };
+        try {
+            var r = await supabaseClient.from('contact_settings').select('id').limit(1);
+            if (r.data && r.data.length > 0) { await supabaseClient.from('contact_settings').update(data).eq('id', r.data[0].id); }
+            else { await supabaseClient.from('contact_settings').insert(data); }
+            showToast('聯絡資料已保存');
+        } catch (e) { showToast('保存失敗'); }
+    }
+        // ==================== 商品管理 ====================
     function renderProductsPage(c) {
         c.innerHTML = '<div id="productsListView"><div class="page-header"><h2 class="page-title">商品管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary" onclick="showAddForm()">新增商品</button></div></div><input type="text" class="search-bar" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group" style="margin-bottom:15px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
         loadProducts();
@@ -291,7 +621,7 @@
         selectedTags = p.tags || [];
         toggleDeliveryDays(); initTagPills(); renderUploadedImages(); renderAddonsCheckbox(); loadVariants(p.id); initUploadArea();
     }
-        function initUploadArea() { var ua = document.getElementById('uploadArea'); var fi = document.getElementById('fileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleUploadFiles(this.files); }; ua.addEventListener('dragover', function(e) { e.preventDefault(); }); ua.addEventListener('drop', function(e) { e.preventDefault(); handleUploadFiles(e.dataTransfer.files); }); } }
+    function initUploadArea() { var ua = document.getElementById('uploadArea'); var fi = document.getElementById('fileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleUploadFiles(this.files); }; ua.addEventListener('dragover', function(e) { e.preventDefault(); }); ua.addEventListener('drop', function(e) { e.preventDefault(); handleUploadFiles(e.dataTransfer.files); }); } }
     async function handleUploadFiles(files) { for (var i = 0; i < files.length; i++) { var fd = new FormData(); fd.append('file', files[i]); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { uploadedImages.push(data.url); renderUploadedImages(); } } catch (err) {} } }
     function renderUploadedImages() { var c = document.getElementById('uploadedImages'); if (!c) return; var h = ''; for (var i = 0; i < uploadedImages.length; i++) { h += '<div class="uploaded-img-item"><img src="' + uploadedImages[i] + '"><button class="del-btn" onclick="removeImage(' + i + ')">×</button></div>'; } c.innerHTML = h; }
     function removeImage(i) { uploadedImages.splice(i, 1); renderUploadedImages(); }
@@ -490,7 +820,7 @@
     }
     async function openProductSelectForCategory() {
         var categoryId = parseInt(document.getElementById('categoryDetailId').value);
-        document.getElementById('modalCategoryId').value = categoryId;
+        document.getElementById('modalCategoryId').value = 'category_' + categoryId;
         var c = document.getElementById('modalProductList');
         var currentIds = [];
         for (var i = 0; i < categoryDetailProducts.length; i++) { currentIds.push(categoryDetailProducts[i].id); }
@@ -510,7 +840,8 @@
     function getCheckedCategoryIds() { var ids = []; document.querySelectorAll('.category-card-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
     async function bulkCategoryDelete() { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').delete().in('id', ids); showToast('完成'); loadCategories(); }
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
-        // ==================== 訂單管理（含產品圖片+可編輯詳情+Stripe） ====================
+
+    // ==================== 訂單管理 ====================
     function renderOrdersPage(c) { c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>'; loadOrders(); }
     async function loadOrders() { var c = document.getElementById('ordersTable'); if (!c) return; try { var r = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); allOrders = r.data || []; renderOrdersTable(allOrders); } catch (e) { c.innerHTML = '暫無訂單'; } }
     function renderOrdersTable(orders) {
