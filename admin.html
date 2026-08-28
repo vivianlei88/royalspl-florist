@@ -158,6 +158,24 @@
         tagStyle: ['經典風','韓式','日式極簡','法式田園','永生花'],
         tagPrice: ['HK$300內','HK$300-600','HK$800+','HK$1200+']
     };
+    var areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
+    var areaKeywords = {
+        tier5: ['愉景灣','馬灣','離島','機場','迪士尼','大嶼山','長洲','南丫島','坪洲','東涌','梅窩','昂坪','discovery bay','lantau','airport'],
+        tier4: ['山頂','大潭','清水灣','香港科技大學','科大','石澳','the peak','tai tam','clear water bay','hkust'],
+        tier3: ['西貢','半山','南區','淺水灣','赤柱','薄扶林','香港仔','鴨脷洲','sai kung','mid-levels','repulse bay','stanley','pokfulam','aberdeen'],
+        tier2: ['屯門','掃管笏','深井','汀九','黃金海岸','小欖','青龍頭','tuen mun','sham tseng','gold coast'],
+        tier1: ['旺角','尖沙咀','中環','銅鑼灣','灣仔','九龍塘','沙田','荃灣','觀塘','將軍澳','北角','太古','紅磡','深水埗','大埔','元朗','青衣','葵芳','油麻地','黃大仙','九龍灣','藍田','馬鞍山','mong kok','central','causeway bay','sha tin','tsuen wan','kwun tong']
+    };
+    function detectDeliveryArea(address) {
+        if (!address) return 'tier1';
+        var lower = address.toLowerCase();
+        for (var tier in areaKeywords) {
+            for (var i = 0; i < areaKeywords[tier].length; i++) {
+                if (lower.indexOf(areaKeywords[tier][i].toLowerCase()) > -1) { return tier; }
+            }
+        }
+        return 'tier1';
+    }
 
     function doLogin() {
         if (document.getElementById('loginUser').value.trim() === ADMIN_USER && document.getElementById('loginPass').value === ADMIN_PASS) {
@@ -496,49 +514,10 @@
     async function bulkCategoryDelete() { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').delete().in('id', ids); showToast('完成'); loadCategories(); }
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
 
-    // ==================== 訂單管理（含Email+PDF+複製轉發） ====================
+    // ==================== 訂單管理（完整版：可編輯詳情+Stripe+產品圖片+店鋪資料） ====================
     function renderOrdersPage(c) { c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>'; loadOrders(); }
     async function loadOrders() { var c = document.getElementById('ordersTable'); if (!c) return; try { var r = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); allOrders = r.data || []; renderOrdersTable(allOrders); } catch (e) { c.innerHTML = '暫無訂單'; } }
-      async function createStripePayment(orderId) {
-        var order = null;
-        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
-        if (!order) return;
-        try {
-            var res = await fetch('/stripe-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'create_payment', orderId: order.id, amount: order.total_amount, orderCode: order.order_code })
-            });
-            var data = await res.json();
-            if (data.url) { window.open(data.url, '_blank'); showToast('支付連結已生成'); }
-            else { showToast('生成失敗：' + (data.error || '未知錯誤')); }
-        } catch (e) { showToast('網絡錯誤'); }
-    }
-    function showRefundForm(orderId) {
-        var order = null;
-        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
-        if (!order) return;
-        var amount = prompt('退款金額 (HKD)：\n全額退款請輸入 ' + order.total_amount + '\n部分退款請輸入金額', order.total_amount);
-        if (!amount) return;
-        var refundAmount = parseFloat(amount);
-        if (refundAmount <= 0) { showToast('請輸入有效金額'); return; }
-        if (refundAmount > order.total_amount) { showToast('退款金額不能超過訂單總額'); return; }
-        processRefund(order, refundAmount);
-    }
-    async function processRefund(order, refundAmount) {
-        try {
-            var res = await fetch('/stripe-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'refund', paymentIntentId: order.stripe_payment_intent_id, refundAmount: refundAmount })
-            });
-            var data = await res.json();
-            if (data.success) {
-                await supabaseClient.from('orders').update({ refund_status: 'refunded', status: 'cancelled' }).eq('id', order.id);
-                showToast('退款成功'); loadOrders();
-            } else { showToast('退款失敗：' + (data.error || '未知錯誤')); }
-        } catch (e) { showToast('網絡錯誤'); }
-    }
+    function renderOrdersTable(orders) {
         var c = document.getElementById('ordersTable');
         if (!orders.length) { c.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; }
         var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
@@ -547,16 +526,13 @@
             h += '<tr><td class="checkbox-col"><input type="checkbox" class="order-check" value="' + o.id + '"></td>';
             h += '<td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + '</td>';
             h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option></select></td>';
-               var actionBtns = '<button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button> ';
+            var actionBtns = '<button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button> ';
             actionBtns += '<button class="btn btn-secondary btn-small" onclick="downloadOrderPDFById(' + o.id + ')">PDF</button> ';
             actionBtns += '<button class="btn btn-secondary btn-small" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button> ';
-            if (o.status === 'unpaid') {
-                actionBtns += '<button class="btn btn-primary btn-small" onclick="createStripePayment(' + o.id + ')">收款</button> ';
-            }
-            if (o.status === 'paid' && o.stripe_payment_intent_id) {
-                actionBtns += '<button class="btn btn-danger btn-small" onclick="showRefundForm(' + o.id + ')">退款</button> ';
-            }
+            if (o.status === 'unpaid') { actionBtns += '<button class="btn btn-primary btn-small" onclick="createStripePayment(' + o.id + ')">收款</button> '; }
+            if (o.status === 'paid' && o.stripe_payment_intent_id) { actionBtns += '<button class="btn btn-danger btn-small" onclick="showRefundForm(' + o.id + ')">退款</button> '; }
             h += '<td><div class="btn-group">' + actionBtns + '</div></td></tr>';
+        }
         h += '</tbody></table>';
         c.innerHTML = h;
     }
@@ -591,24 +567,6 @@
     }
     function hideAddOrderForm() { document.getElementById('addOrderFormContainer').style.display = 'none'; }
     function toggleOrderProduct(id) { var idx = selectedOrderProducts.indexOf(id); if (idx > -1) { selectedOrderProducts.splice(idx, 1); } else { selectedOrderProducts.push(id); } }
-        var areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
-    var areaKeywords = {
-        tier5: ['愉景灣','馬灣','離島','機場','迪士尼','大嶼山','長洲','南丫島','坪洲','東涌','梅窩','昂坪','discovery bay','lantau','airport'],
-        tier4: ['山頂','大潭','清水灣','香港科技大學','科大','石澳','the peak','tai tam','clear water bay','hkust'],
-        tier3: ['西貢','半山','南區','淺水灣','赤柱','薄扶林','香港仔','鴨脷洲','sai kung','mid-levels','repulse bay','stanley','pokfulam','aberdeen'],
-        tier2: ['屯門','掃管笏','深井','汀九','黃金海岸','小欖','青龍頭','tuen mun','sham tseng','gold coast'],
-        tier1: ['旺角','尖沙咀','中環','銅鑼灣','灣仔','九龍塘','沙田','荃灣','觀塘','將軍澳','北角','太古','紅磡','深水埗','大埔','元朗','青衣','葵芳','油麻地','黃大仙','九龍灣','藍田','馬鞍山','mong kok','central','causeway bay','sha tin','tsuen wan','kwun tong']
-    };
-    function detectDeliveryArea(address) {
-        if (!address) return 'tier1';
-        var lower = address.toLowerCase();
-        for (var tier in areaKeywords) {
-            for (var i = 0; i < areaKeywords[tier].length; i++) {
-                if (lower.indexOf(areaKeywords[tier][i].toLowerCase()) > -1) { return tier; }
-            }
-        }
-        return 'tier1';
-    }
     async function saveNewOrder() {
         var name = document.getElementById('orderRecipientName').value.trim();
         var phone = document.getElementById('orderRecipientPhone').value.trim();
@@ -627,15 +585,13 @@
         hideAddOrderForm();
         document.getElementById('addOrderFormContainer').style.display = 'none';
         document.getElementById('ordersTable').style.display = 'block';
-        await loadOrders(); 
-        showToast('訂單已創建，運費HK$' + deliveryFee);
-
+        await loadOrders();
         if (email) {
             var emailHtml = '<h1>訂單確認</h1><p>訂單編號：' + data.order_code + '</p><p>收件人：' + name + '</p><p>總金額：HK$' + data.total_amount + '</p>';
             try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, subject: '訂單確認 - ' + data.order_code, html: emailHtml }) }); } catch (e) {}
         }
     }
-     async function openOrderDetail(id) {
+    async function openOrderDetail(id) {
         for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } }
         if (!currentOrderDetail) return;
         var o = currentOrderDetail;
@@ -669,6 +625,7 @@
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div><div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div></div>';
         v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
     }
+    function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
     async function saveOrderDetail() {
         var id = document.getElementById('orderDetailId').value;
         var data = {
@@ -687,7 +644,6 @@
         showToast('訂單已保存');
         closeOrderDetail();
     }
-    function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
     function downloadOrderPDFById(id) { for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } } downloadOrderPDF(); }
     async function downloadOrderPDF() {
         if (!currentOrderDetail) return;
@@ -723,25 +679,39 @@
         var o = null;
         for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { o = allOrders[i]; break; } }
         if (!o) return;
-        var text = '訂單編號：' + o.order_code + '\n';
-        text += '送貨日期：' + (o.delivery_date || '-') + '\n';
-        text += '收件人：' + o.recipient_name + '\n';
-        text += '電話：' + o.recipient_phone + '\n';
+        var text = '訂單編號：' + o.order_code + '\n送貨日期：' + (o.delivery_date || '-') + '\n收件人：' + o.recipient_name + '\n電話：' + o.recipient_phone + '\n';
         if (o.customer_email) { text += 'Email：' + o.customer_email + '\n'; }
-        text += '地址：' + o.recipient_address + '\n';
-        text += '總金額：HK$' + o.total_amount + '\n';
-        text += '狀態：' + o.status;
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function() { showToast('訂單詳情已複製'); });
-        } else {
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            showToast('訂單詳情已複製');
-        }
+        text += '地址：' + o.recipient_address + '\n總金額：HK$' + o.total_amount + '\n狀態：' + o.status;
+        if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('訂單詳情已複製'); }); }
+        else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('訂單詳情已複製'); }
+    }
+    async function createStripePayment(orderId) {
+        var order = null;
+        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
+        if (!order) return;
+        try {
+            var res = await fetch('/stripe-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create_payment', orderId: order.id, amount: order.total_amount, orderCode: order.order_code }) });
+            var data = await res.json();
+            if (data.url) { window.open(data.url, '_blank'); showToast('支付連結已生成'); } else { showToast('生成失敗：' + (data.error || '未知錯誤')); }
+        } catch (e) { showToast('網絡錯誤'); }
+    }
+    function showRefundForm(orderId) {
+        var order = null;
+        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
+        if (!order) return;
+        var amount = prompt('退款金額 (HKD)：\n全額退款請輸入 ' + order.total_amount + '\n部分退款請輸入金額', order.total_amount);
+        if (!amount) return;
+        var refundAmount = parseFloat(amount);
+        if (refundAmount <= 0) { showToast('請輸入有效金額'); return; }
+        if (refundAmount > order.total_amount) { showToast('退款金額不能超過訂單總額'); return; }
+        processRefund(order, refundAmount);
+    }
+    async function processRefund(order, refundAmount) {
+        try {
+            var res = await fetch('/stripe-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'refund', paymentIntentId: order.stripe_payment_intent_id, refundAmount: refundAmount }) });
+            var data = await res.json();
+            if (data.success) { await supabaseClient.from('orders').update({ refund_status: 'refunded', status: 'cancelled' }).eq('id', order.id); showToast('退款成功'); loadOrders(); } else { showToast('退款失敗：' + (data.error || '未知錯誤')); }
+        } catch (e) { showToast('網絡錯誤'); }
     }
     function exportOrdersCSV() { if (!allOrders.length) return; var rows = ['order_code,created_at,delivery_date,recipient_name,recipient_phone,customer_email,recipient_address,total_amount,status']; for (var i = 0; i < allOrders.length; i++) { var o = allOrders[i]; rows.push([o.order_code, (o.created_at || '').slice(0,10), o.delivery_date || '', o.recipient_name, o.recipient_phone, o.customer_email || '', o.recipient_address || '', o.total_amount, o.status].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orders.csv'; a.click(); }
         // ==================== 模板預覽 ====================
