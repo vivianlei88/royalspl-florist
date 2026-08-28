@@ -197,41 +197,13 @@
     function renderAnalyticsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">數據分析</h2><a class="btn btn-secondary" href="https://analytics.google.com/analytics/web/#/p8546886826/reports" target="_blank">在 GA4 中打開</a></div>';
         c.innerHTML += '<div class="stat-cards" id="statCards">';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="ga4ActiveUsers">載入中...</div><div class="stat-card-label">活躍用戶</div></div>';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="ga4PageViews">載入中...</div><div class="stat-card-label">頁面瀏覽量</div></div>';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="ga4Sessions">載入中...</div><div class="stat-card-label">工作階段</div></div>';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="ga4BounceRate">載入中...</div><div class="stat-card-label">跳出率</div></div>';
         c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localProducts">載入中...</div><div class="stat-card-label">商品數量</div></div>';
         c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localOrders">載入中...</div><div class="stat-card-label">訂單數量</div></div>';
         c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localSales">載入中...</div><div class="stat-card-label">銷售金額</div></div>';
         c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localViews">載入中...</div><div class="stat-card-label">瀏覽量</div></div>';
         c.innerHTML += '</div>';
         c.innerHTML += '<iframe class="ga4-iframe" src="https://analytics.google.com/analytics/web/#/p8546886826/reports" loading="lazy"></iframe>';
-        loadGA4Data();
         loadLocalStats();
-    }
-    async function loadGA4Data() {
-        try {
-            var res = await fetch('/ga4-report');
-            var data = await res.json();
-            if (data && data.rows && data.rows.length > 0) {
-                var metrics = data.rows[0].metricValues;
-                if (metrics[0]) { document.getElementById('ga4ActiveUsers').textContent = metrics[0].value; }
-                if (metrics[1]) { document.getElementById('ga4PageViews').textContent = metrics[1].value; }
-                if (metrics[2]) { document.getElementById('ga4Sessions').textContent = metrics[2].value; }
-                if (metrics[3]) { document.getElementById('ga4BounceRate').textContent = parseFloat(metrics[3].value).toFixed(1) + '%'; }
-            } else {
-                document.getElementById('ga4ActiveUsers').textContent = 'N/A';
-                document.getElementById('ga4PageViews').textContent = 'N/A';
-                document.getElementById('ga4Sessions').textContent = 'N/A';
-                document.getElementById('ga4BounceRate').textContent = 'N/A';
-            }
-        } catch (e) {
-            document.getElementById('ga4ActiveUsers').textContent = '錯誤';
-            document.getElementById('ga4PageViews').textContent = '錯誤';
-            document.getElementById('ga4Sessions').textContent = '錯誤';
-            document.getElementById('ga4BounceRate').textContent = '錯誤';
-        }
     }
     async function loadLocalStats() {
         try {
@@ -524,7 +496,7 @@
     async function bulkCategoryDelete() { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').delete().in('id', ids); showToast('完成'); loadCategories(); }
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
 
-    // ==================== 訂單管理（含郵件+PDF） ====================
+    // ==================== 訂單管理（含Email+PDF+複製轉發） ====================
     function renderOrdersPage(c) { c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>'; loadOrders(); }
     async function loadOrders() { var c = document.getElementById('ordersTable'); if (!c) return; try { var r = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); allOrders = r.data || []; renderOrdersTable(allOrders); } catch (e) { c.innerHTML = '暫無訂單'; } }
     function renderOrdersTable(orders) {
@@ -536,7 +508,7 @@
             h += '<tr><td class="checkbox-col"><input type="checkbox" class="order-check" value="' + o.id + '"></td>';
             h += '<td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + '</td>';
             h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option></select></td>';
-            h += '<td><button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button></td></tr>';
+            h += '<td><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button><button class="btn btn-secondary btn-small" onclick="downloadOrderPDFById(' + o.id + ')">PDF</button><button class="btn btn-secondary btn-small" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div></td></tr>';
         }
         h += '</tbody></table>';
         c.innerHTML = h;
@@ -550,10 +522,10 @@
         if (status === 'shipped') {
             var order = null;
             for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { order = allOrders[i]; break; } }
-            if (order) {
+            if (order && order.customer_email) {
                 var emailHtml = '<h1>出貨通知</h1><p>訂單編號：' + order.order_code + '</p><p>您的花禮已出貨！</p>';
-                try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: 'customer@example.com', subject: '出貨通知 - ' + order.order_code, html: emailHtml }) }); showToast('出貨通知已發送'); } catch (e) { showToast('狀態已更新'); }
-            }
+                try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: order.customer_email, subject: '出貨通知 - ' + order.order_code, html: emailHtml }) }); showToast('出貨通知已發送'); } catch (e) { showToast('狀態已更新'); }
+            } else { showToast('狀態已更新'); }
         } else { showToast('狀態已更新'); }
     }
     function showAddOrderForm() {
@@ -563,6 +535,7 @@
         var h = '<div class="form-container"><h2>新增訂單</h2><div class="form-group"><label class="form-label">選擇商品</label><div class="addon-checkbox-list">';
         for (var i = 0; i < allProducts.length; i++) { h += '<label class="addon-checkbox-item"><input type="checkbox" value="' + allProducts[i].id + '" onchange="toggleOrderProduct(' + allProducts[i].id + ')">' + (allProducts[i].image_url ? '<img src="' + allProducts[i].image_url + '">' : '') + allProducts[i].name_zh + ' (HK$' + allProducts[i].price + ')</label>'; }
         h += '</div></div><div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="orderRecipientName"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="orderRecipientPhone"></div></div>';
+        h += '<div class="form-group"><label class="form-label">收件人 Email</label><input type="email" class="form-input" id="orderRecipientEmail" placeholder="用於發送訂單郵件"></div>';
         h += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="orderRecipientAddress"></div>';
         h += '<div class="form-row"><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="orderDeliveryDate"></div><div class="form-group"><label class="form-label">送貨時段</label><select class="form-select" id="orderDeliveryTime"><option value="全日派送">全日派送</option><option value="指定時間">指定時間</option><option value="夜晚派送">夜晚派送</option></select></div></div>';
         h += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="orderCardMessage"></textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="orderRemarks"></textarea></div></div>';
@@ -574,15 +547,18 @@
     async function saveNewOrder() {
         var name = document.getElementById('orderRecipientName').value.trim();
         var phone = document.getElementById('orderRecipientPhone').value.trim();
+        var email = document.getElementById('orderRecipientEmail').value.trim();
         var addr = document.getElementById('orderRecipientAddress').value.trim();
         if (!name || !phone || !addr || !selectedOrderProducts.length) { showToast('請填寫完整'); return; }
         var subtotal = 0;
         for (var i = 0; i < selectedOrderProducts.length; i++) { for (var j = 0; j < allProducts.length; j++) { if (allProducts[j].id === selectedOrderProducts[i]) { subtotal += parseFloat(allProducts[j].price); } } }
-        var data = { order_code: 'RS' + Date.now().toString().slice(-8), recipient_name: name, recipient_phone: phone, recipient_address: addr, delivery_date: document.getElementById('orderDeliveryDate').value, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: document.getElementById('orderCardMessage').value.trim(), remarks: document.getElementById('orderRemarks').value.trim(), subtotal: subtotal, delivery_fee: 90, total_amount: subtotal + 90, status: 'unpaid' };
+        var data = { order_code: 'RS' + Date.now().toString().slice(-8), recipient_name: name, recipient_phone: phone, customer_email: email, recipient_address: addr, delivery_date: document.getElementById('orderDeliveryDate').value, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: document.getElementById('orderCardMessage').value.trim(), remarks: document.getElementById('orderRemarks').value.trim(), subtotal: subtotal, delivery_fee: 90, total_amount: subtotal + 90, status: 'unpaid' };
         var result = await supabaseClient.from('orders').insert(data);
         if (result.error) { showToast('保存失敗'); return; }
-        var emailHtml = '<h1>訂單確認</h1><p>訂單編號：' + data.order_code + '</p><p>收件人：' + name + '</p><p>總金額：HK$' + data.total_amount + '</p>';
-        try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: 'customer@example.com', subject: '訂單確認 - ' + data.order_code, html: emailHtml }) }); } catch (e) {}
+        if (email) {
+            var emailHtml = '<h1>訂單確認</h1><p>訂單編號：' + data.order_code + '</p><p>收件人：' + name + '</p><p>總金額：HK$' + data.total_amount + '</p>';
+            try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, subject: '訂單確認 - ' + data.order_code, html: emailHtml }) }); } catch (e) {}
+        }
         showToast('訂單已創建'); hideAddOrderForm(); loadOrders();
     }
     function openOrderDetail(id) {
@@ -592,14 +568,25 @@
         var v = document.getElementById('orderDetailView');
         v.style.display = 'block';
         document.getElementById('ordersTable').style.display = 'none';
-        v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button></div><div class="form-container"><h2>訂單詳情</h2><p><b>訂單編號：</b>' + o.order_code + '</p><p><b>收件人：</b>' + o.recipient_name + '</p><p><b>電話：</b>' + o.recipient_phone + '</p><p><b>地址：</b>' + o.recipient_address + '</p><p><b>送貨日期：</b>' + (o.delivery_date || '-') + '</p><p><b>總金額：</b>HK$' + o.total_amount + '</p><p><b>狀態：</b>' + o.status + '</p></div>';
+        v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button><button class="btn btn-primary" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div><div class="form-container"><h2>訂單詳情</h2><p><b>訂單編號：</b>' + o.order_code + '</p><p><b>收件人：</b>' + o.recipient_name + '</p><p><b>電話：</b>' + o.recipient_phone + '</p><p><b>Email：</b>' + (o.customer_email || '-') + '</p><p><b>地址：</b>' + o.recipient_address + '</p><p><b>送貨日期：</b>' + (o.delivery_date || '-') + '</p><p><b>總金額：</b>HK$' + o.total_amount + '</p><p><b>狀態：</b>' + o.status + '</p></div>';
     }
     function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
-    function downloadOrderPDF() {
+    function downloadOrderPDFById(id) { for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } } downloadOrderPDF(); }
+    async function downloadOrderPDF() {
         if (!currentOrderDetail) return;
         var o = currentOrderDetail;
+        var shopLogo = '';
+        var shopName = 'RoyalSpl Florist';
+        try {
+            var shopResult = await supabaseClient.from('shop_settings').select('*').limit(1);
+            if (shopResult.data && shopResult.data.length > 0) {
+                shopLogo = shopResult.data[0].shop_logo || '';
+                shopName = shopResult.data[0].shop_name || 'RoyalSpl Florist';
+            }
+        } catch (e) {}
         var html = '<div style="font-family:serif;padding:40px;max-width:600px;margin:0 auto;">';
-        html += '<h1 style="text-align:center;border-bottom:3px solid #1E3A5F;padding-bottom:15px;">RoyalSpl Florist</h1>';
+        if (shopLogo) { html += '<div style="text-align:center;margin-bottom:15px;"><img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"></div>'; }
+        html += '<h1 style="text-align:center;border-bottom:3px solid #1E3A5F;padding-bottom:15px;">' + shopName + '</h1>';
         html += '<p style="text-align:center;">訂單確認書</p>';
         html += '<table style="width:100%;margin:20px 0;"><tr><td><b>訂單編號：</b>' + o.order_code + '</td><td><b>送貨日期：</b>' + (o.delivery_date || '-') + '</td></tr>';
         html += '<tr><td><b>收件人：</b>' + (o.recipient_name || '-') + '</td><td><b>電話：</b>' + (o.recipient_phone || '-') + '</td></tr>';
@@ -615,7 +602,31 @@
         w.document.close();
         w.print();
     }
-    function exportOrdersCSV() { if (!allOrders.length) return; var rows = ['order_code,created_at,delivery_date,recipient_name,recipient_phone,recipient_address,total_amount,status']; for (var i = 0; i < allOrders.length; i++) { var o = allOrders[i]; rows.push([o.order_code, (o.created_at || '').slice(0,10), o.delivery_date || '', o.recipient_name, o.recipient_phone, o.recipient_address || '', o.total_amount, o.status].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orders.csv'; a.click(); }
+    function copyOrderDetail(id) {
+        var o = null;
+        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { o = allOrders[i]; break; } }
+        if (!o) return;
+        var text = '訂單編號：' + o.order_code + '\n';
+        text += '送貨日期：' + (o.delivery_date || '-') + '\n';
+        text += '收件人：' + o.recipient_name + '\n';
+        text += '電話：' + o.recipient_phone + '\n';
+        if (o.customer_email) { text += 'Email：' + o.customer_email + '\n'; }
+        text += '地址：' + o.recipient_address + '\n';
+        text += '總金額：HK$' + o.total_amount + '\n';
+        text += '狀態：' + o.status;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() { showToast('訂單詳情已複製'); });
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('訂單詳情已複製');
+        }
+    }
+    function exportOrdersCSV() { if (!allOrders.length) return; var rows = ['order_code,created_at,delivery_date,recipient_name,recipient_phone,customer_email,recipient_address,total_amount,status']; for (var i = 0; i < allOrders.length; i++) { var o = allOrders[i]; rows.push([o.order_code, (o.created_at || '').slice(0,10), o.delivery_date || '', o.recipient_name, o.recipient_phone, o.customer_email || '', o.recipient_address || '', o.total_amount, o.status].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orders.csv'; a.click(); }
         // ==================== 模板預覽 ====================
     function renderTemplatePage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">模板預覽</h2><div class="btn-group"><button class="btn btn-primary" onclick="downloadTemplatePDF()">下載 PDF</button></div></div><div class="form-container" style="max-width:100%;">';
