@@ -580,7 +580,10 @@
             var emailHtml = '<h1>訂單確認</h1><p>訂單編號：' + data.order_code + '</p><p>收件人：' + name + '</p><p>總金額：HK$' + data.total_amount + '</p>';
             try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, subject: '訂單確認 - ' + data.order_code, html: emailHtml }) }); } catch (e) {}
         }
-        showToast('訂單已創建，運費HK$' + deliveryFee); hideAddOrderForm(); loadOrders();
+        showToast('訂單已創建，運費HK$' + deliveryFee); hideAddOrderForm();
+        document.getElementById('addOrderFormContainer').style.display = 'none';
+        await loadOrders();
+        renderOrdersTable(allOrders);
     }
     function openOrderDetail(id) {
         for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } }
