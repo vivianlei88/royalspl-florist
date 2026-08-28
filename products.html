@@ -295,5 +295,14 @@
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
     </script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_name: document.title || '未知頁面' })
+        }).catch(function() {});
+    })();
+    </script>
 </body>
 </html>
