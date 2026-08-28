@@ -544,6 +544,24 @@
     }
     function hideAddOrderForm() { document.getElementById('addOrderFormContainer').style.display = 'none'; }
     function toggleOrderProduct(id) { var idx = selectedOrderProducts.indexOf(id); if (idx > -1) { selectedOrderProducts.splice(idx, 1); } else { selectedOrderProducts.push(id); } }
+        var areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
+    var areaKeywords = {
+        tier5: ['愉景灣','馬灣','離島','機場','迪士尼','大嶼山','長洲','南丫島','坪洲','東涌','梅窩','昂坪','discovery bay','lantau','airport'],
+        tier4: ['山頂','大潭','清水灣','香港科技大學','科大','石澳','the peak','tai tam','clear water bay','hkust'],
+        tier3: ['西貢','半山','南區','淺水灣','赤柱','薄扶林','香港仔','鴨脷洲','sai kung','mid-levels','repulse bay','stanley','pokfulam','aberdeen'],
+        tier2: ['屯門','掃管笏','深井','汀九','黃金海岸','小欖','青龍頭','tuen mun','sham tseng','gold coast'],
+        tier1: ['旺角','尖沙咀','中環','銅鑼灣','灣仔','九龍塘','沙田','荃灣','觀塘','將軍澳','北角','太古','紅磡','深水埗','大埔','元朗','青衣','葵芳','油麻地','黃大仙','九龍灣','藍田','馬鞍山','mong kok','central','causeway bay','sha tin','tsuen wan','kwun tong']
+    };
+    function detectDeliveryArea(address) {
+        if (!address) return 'tier1';
+        var lower = address.toLowerCase();
+        for (var tier in areaKeywords) {
+            for (var i = 0; i < areaKeywords[tier].length; i++) {
+                if (lower.indexOf(areaKeywords[tier][i].toLowerCase()) > -1) { return tier; }
+            }
+        }
+        return 'tier1';
+    }
     async function saveNewOrder() {
         var name = document.getElementById('orderRecipientName').value.trim();
         var phone = document.getElementById('orderRecipientPhone').value.trim();
@@ -552,14 +570,17 @@
         if (!name || !phone || !addr || !selectedOrderProducts.length) { showToast('請填寫完整'); return; }
         var subtotal = 0;
         for (var i = 0; i < selectedOrderProducts.length; i++) { for (var j = 0; j < allProducts.length; j++) { if (allProducts[j].id === selectedOrderProducts[i]) { subtotal += parseFloat(allProducts[j].price); } } }
-        var data = { order_code: 'RS' + Date.now().toString().slice(-8), recipient_name: name, recipient_phone: phone, customer_email: email, recipient_address: addr, delivery_date: document.getElementById('orderDeliveryDate').value, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: document.getElementById('orderCardMessage').value.trim(), remarks: document.getElementById('orderRemarks').value.trim(), subtotal: subtotal, delivery_fee: 90, total_amount: subtotal + 90, status: 'unpaid' };
+        var area = detectDeliveryArea(addr);
+        var deliveryFee = areaFees[area] || 90;
+        if (area === 'tier1' && subtotal >= 500) { deliveryFee = 0; }
+        var data = { order_code: 'RS' + Date.now().toString().slice(-8), recipient_name: name, recipient_phone: phone, customer_email: email, recipient_address: addr, delivery_date: document.getElementById('orderDeliveryDate').value, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: document.getElementById('orderCardMessage').value.trim(), remarks: document.getElementById('orderRemarks').value.trim(), subtotal: subtotal, delivery_fee: deliveryFee, total_amount: subtotal + deliveryFee, delivery_area: area, status: 'unpaid' };
         var result = await supabaseClient.from('orders').insert(data);
-        if (result.error) { showToast('保存失敗'); return; }
+        if (result.error) { showToast('保存失敗：' + result.error.message); return; }
         if (email) {
             var emailHtml = '<h1>訂單確認</h1><p>訂單編號：' + data.order_code + '</p><p>收件人：' + name + '</p><p>總金額：HK$' + data.total_amount + '</p>';
             try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, subject: '訂單確認 - ' + data.order_code, html: emailHtml }) }); } catch (e) {}
         }
-        showToast('訂單已創建'); hideAddOrderForm(); loadOrders();
+        showToast('訂單已創建，運費HK$' + deliveryFee); hideAddOrderForm(); loadOrders();
     }
     function openOrderDetail(id) {
         for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } }
