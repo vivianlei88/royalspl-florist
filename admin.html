@@ -499,7 +499,46 @@
     // ==================== 訂單管理（含Email+PDF+複製轉發） ====================
     function renderOrdersPage(c) { c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>'; loadOrders(); }
     async function loadOrders() { var c = document.getElementById('ordersTable'); if (!c) return; try { var r = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); allOrders = r.data || []; renderOrdersTable(allOrders); } catch (e) { c.innerHTML = '暫無訂單'; } }
-    function renderOrdersTable(orders) {
+      async function createStripePayment(orderId) {
+        var order = null;
+        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
+        if (!order) return;
+        try {
+            var res = await fetch('/stripe-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'create_payment', orderId: order.id, amount: order.total_amount, orderCode: order.order_code })
+            });
+            var data = await res.json();
+            if (data.url) { window.open(data.url, '_blank'); showToast('支付連結已生成'); }
+            else { showToast('生成失敗：' + (data.error || '未知錯誤')); }
+        } catch (e) { showToast('網絡錯誤'); }
+    }
+    function showRefundForm(orderId) {
+        var order = null;
+        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
+        if (!order) return;
+        var amount = prompt('退款金額 (HKD)：\n全額退款請輸入 ' + order.total_amount + '\n部分退款請輸入金額', order.total_amount);
+        if (!amount) return;
+        var refundAmount = parseFloat(amount);
+        if (refundAmount <= 0) { showToast('請輸入有效金額'); return; }
+        if (refundAmount > order.total_amount) { showToast('退款金額不能超過訂單總額'); return; }
+        processRefund(order, refundAmount);
+    }
+    async function processRefund(order, refundAmount) {
+        try {
+            var res = await fetch('/stripe-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'refund', paymentIntentId: order.stripe_payment_intent_id, refundAmount: refundAmount })
+            });
+            var data = await res.json();
+            if (data.success) {
+                await supabaseClient.from('orders').update({ refund_status: 'refunded', status: 'cancelled' }).eq('id', order.id);
+                showToast('退款成功'); loadOrders();
+            } else { showToast('退款失敗：' + (data.error || '未知錯誤')); }
+        } catch (e) { showToast('網絡錯誤'); }
+    }
         var c = document.getElementById('ordersTable');
         if (!orders.length) { c.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; }
         var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
@@ -508,8 +547,16 @@
             h += '<tr><td class="checkbox-col"><input type="checkbox" class="order-check" value="' + o.id + '"></td>';
             h += '<td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + '</td>';
             h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option></select></td>';
-            h += '<td><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button><button class="btn btn-secondary btn-small" onclick="downloadOrderPDFById(' + o.id + ')">PDF</button><button class="btn btn-secondary btn-small" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div></td></tr>';
-        }
+               var actionBtns = '<button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button> ';
+            actionBtns += '<button class="btn btn-secondary btn-small" onclick="downloadOrderPDFById(' + o.id + ')">PDF</button> ';
+            actionBtns += '<button class="btn btn-secondary btn-small" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button> ';
+            if (o.status === 'unpaid') {
+                actionBtns += '<button class="btn btn-primary btn-small" onclick="createStripePayment(' + o.id + ')">收款</button> ';
+            }
+            if (o.status === 'paid' && o.stripe_payment_intent_id) {
+                actionBtns += '<button class="btn btn-danger btn-small" onclick="showRefundForm(' + o.id + ')">退款</button> ';
+            }
+            h += '<td><div class="btn-group">' + actionBtns + '</div></td></tr>';
         h += '</tbody></table>';
         c.innerHTML = h;
     }
