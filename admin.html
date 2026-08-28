@@ -576,14 +576,14 @@
         var data = { order_code: 'RS' + Date.now().toString().slice(-8), recipient_name: name, recipient_phone: phone, customer_email: email, recipient_address: addr, delivery_date: document.getElementById('orderDeliveryDate').value, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: document.getElementById('orderCardMessage').value.trim(), remarks: document.getElementById('orderRemarks').value.trim(), subtotal: subtotal, delivery_fee: deliveryFee, total_amount: subtotal + deliveryFee, delivery_area: area, status: 'unpaid' };
         var result = await supabaseClient.from('orders').insert(data);
         if (result.error) { showToast('保存失敗：' + result.error.message); return; }
+        showToast('訂單已創建，運費HK$' + deliveryFee);
+        hideAddOrderForm();
+        document.getElementById('addOrderFormContainer').style.display = 'none';
+        loadOrders();
         if (email) {
             var emailHtml = '<h1>訂單確認</h1><p>訂單編號：' + data.order_code + '</p><p>收件人：' + name + '</p><p>總金額：HK$' + data.total_amount + '</p>';
             try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, subject: '訂單確認 - ' + data.order_code, html: emailHtml }) }); } catch (e) {}
         }
-        showToast('訂單已創建，運費HK$' + deliveryFee); hideAddOrderForm();
-        document.getElementById('addOrderFormContainer').style.display = 'none';
-        await loadOrders();
-        renderOrdersTable(allOrders);
     }
     function openOrderDetail(id) {
         for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } }
