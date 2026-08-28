@@ -231,5 +231,14 @@
         updateCartBadge();
     });
     </script>
-</body>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_name: document.title || '未知頁面' })
+        }).catch(function() {});
+    })();
+    </script>
+    </body>
 </html>
