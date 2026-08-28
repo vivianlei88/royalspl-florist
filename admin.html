@@ -99,6 +99,8 @@
         .template-preview-content td { padding: 10px; border: 1px solid #ddd; }
         .template-preview-logo { text-align: center; margin-bottom: 15px; }
         .template-preview-logo img { max-width: 80px; max-height: 80px; object-fit: contain; }
+        .order-product-item { display: inline-block; margin: 5px; text-align: center; }
+        .order-product-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; display: block; }
         @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -235,12 +237,7 @@
             document.getElementById('localOrders').textContent = orderCount.count || 0;
             document.getElementById('localSales').textContent = 'HK$' + totalSales;
             document.getElementById('localViews').textContent = viewCount.count || 0;
-        } catch (e) {
-            document.getElementById('localProducts').textContent = '錯誤';
-            document.getElementById('localOrders').textContent = '錯誤';
-            document.getElementById('localSales').textContent = '錯誤';
-            document.getElementById('localViews').textContent = '錯誤';
-        }
+        } catch (e) {}
     }
 
     // ==================== 商品管理 ====================
@@ -513,8 +510,7 @@
     function getCheckedCategoryIds() { var ids = []; document.querySelectorAll('.category-card-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
     async function bulkCategoryDelete() { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').delete().in('id', ids); showToast('完成'); loadCategories(); }
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
-
-    // ==================== 訂單管理（完整版：可編輯詳情+Stripe+產品圖片+店鋪資料） ====================
+        // ==================== 訂單管理（含產品圖片+可編輯詳情+Stripe） ====================
     function renderOrdersPage(c) { c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>'; loadOrders(); }
     async function loadOrders() { var c = document.getElementById('ordersTable'); if (!c) return; try { var r = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); allOrders = r.data || []; renderOrdersTable(allOrders); } catch (e) { c.innerHTML = '暫無訂單'; } }
     function renderOrdersTable(orders) {
@@ -574,11 +570,22 @@
         var addr = document.getElementById('orderRecipientAddress').value.trim();
         if (!name || !phone || !addr || !selectedOrderProducts.length) { showToast('請填寫完整'); return; }
         var subtotal = 0;
-        for (var i = 0; i < selectedOrderProducts.length; i++) { for (var j = 0; j < allProducts.length; j++) { if (allProducts[j].id === selectedOrderProducts[i]) { subtotal += parseFloat(allProducts[j].price); } } }
+        var productNames = [];
+        var productImages = [];
+        for (var i = 0; i < selectedOrderProducts.length; i++) {
+            for (var j = 0; j < allProducts.length; j++) {
+                if (allProducts[j].id === selectedOrderProducts[i]) {
+                    subtotal += parseFloat(allProducts[j].price);
+                    productNames.push(allProducts[j].name_zh);
+                    productImages.push(allProducts[j].image_url || '');
+                    break;
+                }
+            }
+        }
         var area = detectDeliveryArea(addr);
         var deliveryFee = areaFees[area] || 90;
         if (area === 'tier1' && subtotal >= 500) { deliveryFee = 0; }
-        var data = { order_code: 'RS' + Date.now().toString().slice(-8), recipient_name: name, recipient_phone: phone, customer_email: email, recipient_address: addr, delivery_date: document.getElementById('orderDeliveryDate').value, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: document.getElementById('orderCardMessage').value.trim(), remarks: document.getElementById('orderRemarks').value.trim(), subtotal: subtotal, delivery_fee: deliveryFee, total_amount: subtotal + deliveryFee, delivery_area: area, status: 'unpaid' };
+        var data = { order_code: 'RS' + Date.now().toString().slice(-8), recipient_name: name, recipient_phone: phone, customer_email: email, recipient_address: addr, delivery_date: document.getElementById('orderDeliveryDate').value, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: document.getElementById('orderCardMessage').value.trim(), remarks: document.getElementById('orderRemarks').value.trim(), subtotal: subtotal, delivery_fee: deliveryFee, total_amount: subtotal + deliveryFee, delivery_area: area, product_names: productNames.join('|'), product_images: productImages.join('|'), status: 'unpaid' };
         var result = await supabaseClient.from('orders').insert(data);
         if (result.error) { showToast('保存失敗：' + result.error.message); return; }
         showToast('訂單已創建，運費HK$' + deliveryFee);
@@ -608,6 +615,14 @@
                 shopAddress = shopResult.data[0].shop_address || '';
             }
         } catch (e) {}
+        var names = (o.product_names || '').split('|').filter(Boolean);
+        var images = (o.product_images || '').split('|').filter(Boolean);
+        var productHtml = '';
+        for (var pi = 0; pi < names.length; pi++) {
+            productHtml += '<div class="order-product-item">';
+            if (images[pi]) { productHtml += '<img src="' + images[pi] + '">'; }
+            productHtml += '<span style="font-size:12px;">' + names[pi] + '</span></div>';
+        }
         var v = document.getElementById('orderDetailView');
         v.style.display = 'block';
         document.getElementById('ordersTable').style.display = 'none';
@@ -621,6 +636,7 @@
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="detailRecipientName" value="' + (o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="detailRecipientPhone" value="' + (o.recipient_phone || '') + '"></div></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">收件人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="detailRecipientAddress" value="' + (o.recipient_address || '') + '"></div>';
+        v.innerHTML += '<div class="form-group"><label class="form-label">產品</label><div>' + (productHtml || '無產品') + '</div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="detailCardMessage">' + (o.card_message || '') + '</textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="detailRemarks">' + (o.remarks || '') + '</textarea></div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div><div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div></div>';
         v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
@@ -657,6 +673,8 @@
                 shopName = shopResult.data[0].shop_name || 'RoyalSpl Florist';
             }
         } catch (e) {}
+        var names = (o.product_names || '').split('|').filter(Boolean);
+        var images = (o.product_images || '').split('|').filter(Boolean);
         var html = '<div style="font-family:serif;padding:40px;max-width:600px;margin:0 auto;">';
         if (shopLogo) { html += '<div style="text-align:center;margin-bottom:15px;"><img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"></div>'; }
         html += '<h1 style="text-align:center;border-bottom:3px solid #1E3A5F;padding-bottom:15px;">' + shopName + '</h1>';
@@ -664,8 +682,16 @@
         html += '<table style="width:100%;margin:20px 0;"><tr><td><b>訂單編號：</b>' + o.order_code + '</td><td><b>送貨日期：</b>' + (o.delivery_date || '-') + '</td></tr>';
         html += '<tr><td><b>收件人：</b>' + (o.recipient_name || '-') + '</td><td><b>電話：</b>' + (o.recipient_phone || '-') + '</td></tr>';
         html += '<tr><td colspan="2"><b>地址：</b>' + (o.recipient_address || '-') + '</td></tr></table>';
-        html += '<table style="width:100%;border-collapse:collapse;"><tr style="background:#1E3A5F;color:white;"><th style="padding:10px;">商品</th><th style="padding:10px;">數量</th><th style="padding:10px;">單價</th><th style="padding:10px;">小計</th></tr>';
-        html += '<tr><td style="padding:10px;border:1px solid #ddd;">花禮商品</td><td style="padding:10px;text-align:center;">1</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td></tr></table>';
+        html += '<table style="width:100%;border-collapse:collapse;"><tr style="background:#1E3A5F;color:white;"><th style="padding:10px;">圖片</th><th style="padding:10px;">商品</th><th style="padding:10px;">數量</th><th style="padding:10px;">單價</th><th style="padding:10px;">小計</th></tr>';
+        if (names.length > 0) {
+            for (var pi = 0; pi < names.length; pi++) {
+                html += '<tr><td style="padding:10px;border:1px solid #ddd;">' + (images[pi] ? '<img src="' + images[pi] + '" style="width:50px;height:50px;object-fit:cover;border-radius:5px;">' : '') + '</td>';
+                html += '<td style="padding:10px;border:1px solid #ddd;">' + names[pi] + '</td><td style="padding:10px;text-align:center;">1</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td></tr>';
+            }
+        } else {
+            html += '<tr><td style="padding:10px;border:1px solid #ddd;">無圖</td><td style="padding:10px;border:1px solid #ddd;">花禮商品</td><td style="padding:10px;text-align:center;">1</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td></tr>';
+        }
+        html += '</table>';
         html += '<table style="width:50%;margin-left:auto;margin-top:15px;"><tr><td>運費：</td><td style="text-align:right;">HK$' + (o.delivery_fee || 0) + '</td></tr>';
         html += '<tr style="font-size:20px;font-weight:bold;"><td>總計：</td><td style="text-align:right;">HK$' + (o.total_amount || 0) + '</td></tr></table>';
         if (o.card_message) { html += '<div style="background:#FFF8E1;padding:15px;border-left:4px solid #FFC107;margin:20px 0;"><b>心意卡：</b>' + o.card_message + '</div>'; }
@@ -681,7 +707,7 @@
         if (!o) return;
         var text = '訂單編號：' + o.order_code + '\n送貨日期：' + (o.delivery_date || '-') + '\n收件人：' + o.recipient_name + '\n電話：' + o.recipient_phone + '\n';
         if (o.customer_email) { text += 'Email：' + o.customer_email + '\n'; }
-        text += '地址：' + o.recipient_address + '\n總金額：HK$' + o.total_amount + '\n狀態：' + o.status;
+        text += '地址：' + o.recipient_address + '\n產品：' + (o.product_names || '') + '\n總金額：HK$' + o.total_amount + '\n狀態：' + o.status;
         if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('訂單詳情已複製'); }); }
         else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('訂單詳情已複製'); }
     }
