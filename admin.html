@@ -635,14 +635,57 @@
             try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, subject: '訂單確認 - ' + data.order_code, html: emailHtml }) }); } catch (e) {}
         }
     }
-    function openOrderDetail(id) {
+     async function openOrderDetail(id) {
         for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } }
         if (!currentOrderDetail) return;
         var o = currentOrderDetail;
+        var shopName = 'RoyalSpl Florist';
+        var shopLogo = '';
+        var shopPhone = '';
+        var shopAddress = '';
+        try {
+            var shopResult = await supabaseClient.from('shop_settings').select('*').limit(1);
+            if (shopResult.data && shopResult.data.length > 0) {
+                shopName = shopResult.data[0].shop_name || 'RoyalSpl Florist';
+                shopLogo = shopResult.data[0].shop_logo || '';
+                shopPhone = shopResult.data[0].shop_phone || '';
+                shopAddress = shopResult.data[0].shop_address || '';
+            }
+        } catch (e) {}
         var v = document.getElementById('orderDetailView');
         v.style.display = 'block';
         document.getElementById('ordersTable').style.display = 'none';
-        v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button><button class="btn btn-primary" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div><div class="form-container"><h2>訂單詳情</h2><p><b>訂單編號：</b>' + o.order_code + '</p><p><b>收件人：</b>' + o.recipient_name + '</p><p><b>電話：</b>' + o.recipient_phone + '</p><p><b>Email：</b>' + (o.customer_email || '-') + '</p><p><b>地址：</b>' + o.recipient_address + '</p><p><b>送貨日期：</b>' + (o.delivery_date || '-') + '</p><p><b>總金額：</b>HK$' + o.total_amount + '</p><p><b>狀態：</b>' + o.status + '</p></div>';
+        v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button><button class="btn btn-primary" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div>';
+        v.innerHTML += '<div class="form-container" style="max-width:100%;"><input type="hidden" id="orderDetailId" value="' + o.id + '">';
+        v.innerHTML += '<div style="text-align:center;margin-bottom:20px;">';
+        if (shopLogo) { v.innerHTML += '<img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"><br>'; }
+        v.innerHTML += '<h2 style="font-size:22px;font-weight:600;">' + shopName + '</h2>';
+        v.innerHTML += '<p style="font-size:14px;color:#383431;">' + shopPhone + ' | ' + shopAddress + '</p></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂單編號</label><input class="form-input" id="detailOrderCode" value="' + o.order_code + '"></div><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="detailRecipientName" value="' + (o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="detailRecipientPhone" value="' + (o.recipient_phone || '') + '"></div></div>';
+        v.innerHTML += '<div class="form-group"><label class="form-label">收件人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
+        v.innerHTML += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="detailRecipientAddress" value="' + (o.recipient_address || '') + '"></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="detailCardMessage">' + (o.card_message || '') + '</textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="detailRemarks">' + (o.remarks || '') + '</textarea></div></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div><div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div></div>';
+        v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
+    }
+    async function saveOrderDetail() {
+        var id = document.getElementById('orderDetailId').value;
+        var data = {
+            order_code: document.getElementById('detailOrderCode').value.trim(),
+            delivery_date: document.getElementById('detailDeliveryDate').value,
+            recipient_name: document.getElementById('detailRecipientName').value.trim(),
+            recipient_phone: document.getElementById('detailRecipientPhone').value.trim(),
+            customer_email: document.getElementById('detailCustomerEmail').value.trim(),
+            recipient_address: document.getElementById('detailRecipientAddress').value.trim(),
+            card_message: document.getElementById('detailCardMessage').value.trim(),
+            remarks: document.getElementById('detailRemarks').value.trim(),
+            delivery_fee: parseFloat(document.getElementById('detailDeliveryFee').value) || 0,
+            total_amount: parseFloat(document.getElementById('detailTotalAmount').value) || 0
+        };
+        await supabaseClient.from('orders').update(data).eq('id', id);
+        showToast('訂單已保存');
+        closeOrderDetail();
     }
     function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
     function downloadOrderPDFById(id) { for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } } downloadOrderPDF(); }
