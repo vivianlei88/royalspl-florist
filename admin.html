@@ -183,11 +183,65 @@
     }
 
     // ==================== 數據分析 ====================
-    function renderAnalyticsPage(c) {
+        function renderAnalyticsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">數據分析</h2><a class="btn btn-secondary" href="https://analytics.google.com/analytics/web/#/p8546886826/reports" target="_blank">在 GA4 中打開</a></div>';
-        c.innerHTML += '<div class="stat-cards" id="statCards"><div class="stat-card"><div class="stat-card-value">載入中...</div><div class="stat-card-label">商品數量</div></div><div class="stat-card"><div class="stat-card-value">載入中...</div><div class="stat-card-label">訂單數量</div></div><div class="stat-card"><div class="stat-card-value">載入中...</div><div class="stat-card-label">銷售金額</div></div><div class="stat-card"><div class="stat-card-value">載入中...</div><div class="stat-card-label">瀏覽量</div></div></div>';
+        c.innerHTML += '<div class="stat-cards" id="statCards">';
+        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="ga4ActiveUsers">載入中...</div><div class="stat-card-label">活躍用戶</div></div>';
+        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="ga4PageViews">載入中...</div><div class="stat-card-label">頁面瀏覽量</div></div>';
+        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="ga4Sessions">載入中...</div><div class="stat-card-label">工作階段</div></div>';
+        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="ga4BounceRate">載入中...</div><div class="stat-card-label">跳出率</div></div>';
+        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localProducts">載入中...</div><div class="stat-card-label">商品數量</div></div>';
+        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localOrders">載入中...</div><div class="stat-card-label">訂單數量</div></div>';
+        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localSales">載入中...</div><div class="stat-card-label">銷售金額</div></div>';
+        c.innerHTML += '</div>';
         c.innerHTML += '<iframe class="ga4-iframe" src="https://analytics.google.com/analytics/web/#/p8546886826/reports" loading="lazy"></iframe>';
-        loadStats();
+        loadGA4Data();
+        loadLocalStats();
+    }
+
+    async function loadGA4Data() {
+        try {
+            var res = await fetch('/ga4-report');
+            var data = await res.json();
+            if (data && data.rows && data.rows.length > 0) {
+                var metrics = data.rows[0].metricValues;
+                if (metrics[0]) { document.getElementById('ga4ActiveUsers').textContent = metrics[0].value; }
+                if (metrics[1]) { document.getElementById('ga4PageViews').textContent = metrics[1].value; }
+                if (metrics[2]) { document.getElementById('ga4Sessions').textContent = metrics[2].value; }
+                if (metrics[3]) { document.getElementById('ga4BounceRate').textContent = parseFloat(metrics[3].value).toFixed(1) + '%'; }
+            } else {
+                document.getElementById('ga4ActiveUsers').textContent = 'N/A';
+                document.getElementById('ga4PageViews').textContent = 'N/A';
+                document.getElementById('ga4Sessions').textContent = 'N/A';
+                document.getElementById('ga4BounceRate').textContent = 'N/A';
+            }
+        } catch (e) {
+            document.getElementById('ga4ActiveUsers').textContent = '錯誤';
+            document.getElementById('ga4PageViews').textContent = '錯誤';
+            document.getElementById('ga4Sessions').textContent = '錯誤';
+            document.getElementById('ga4BounceRate').textContent = '錯誤';
+        }
+    }
+
+    async function loadLocalStats() {
+        try {
+            var productCount = await supabaseClient.from('products').select('id', { count: 'exact', head: true });
+            var orderCount = await supabaseClient.from('orders').select('id', { count: 'exact', head: true });
+            var salesResult = await supabaseClient.from('orders').select('total_amount');
+            var totalSales = 0;
+            if (salesResult.data) {
+                for (var i = 0; i < salesResult.data.length; i++) {
+                    totalSales += parseFloat(salesResult.data[i].total_amount) || 0;
+                }
+            }
+            document.getElementById('localProducts').textContent = productCount.count || 0;
+            document.getElementById('localOrders').textContent = orderCount.count || 0;
+            document.getElementById('localSales').textContent = 'HK$' + totalSales;
+        } catch (e) {
+            document.getElementById('localProducts').textContent = '錯誤';
+            document.getElementById('localOrders').textContent = '錯誤';
+            document.getElementById('localSales').textContent = '錯誤';
+        }
     }
     async function loadStats() {
         try {
