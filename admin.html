@@ -11,14 +11,8 @@
     <!-- React & ReactDOM UMD -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- htm -->
-    <script src="https://unpkg.com/htm?module"></script>
-    <!-- Lucide icons -->
-    <script type="module">
-        import * as Lucide from 'https://esm.sh/lucide-react';
-        window.Lucide = Lucide;
-        window.dispatchEvent(new Event('lucide-ready'));
-    </script>
+    <!-- htm UMD -->
+    <script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; font-size: 17px; }
@@ -239,7 +233,6 @@
         document.querySelector('[data-page="' + page + '"]').classList.add('active');
         var c = document.getElementById('mainContent');
         if (page === 'content') {
-            // 使用 React 渲染區塊編輯器
             if (window.mountContentEditor) {
                 window.mountContentEditor(c);
             } else {
@@ -267,7 +260,8 @@
             } catch (e) {}
         }, 15000);
     }
-        // ==================== 數據分析 ====================
+
+    // ==================== 數據分析 ====================
     function renderAnalyticsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">數據分析</h2><a class="btn btn-secondary" href="https://analytics.google.com/analytics/web/#/p8546886826/reports" target="_blank">在 GA4 中打開</a></div>';
         c.innerHTML += '<div class="stat-cards" id="statCards">';
@@ -709,8 +703,7 @@
     function getCheckedCategoryIds() { var ids = []; document.querySelectorAll('.category-card-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
     async function bulkCategoryDelete() { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').delete().in('id', ids); showToast('完成'); loadCategories(); }
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
-
-    // ==================== 訂單管理 ====================
+        // ==================== 訂單管理 ====================
     function renderOrdersPage(c) { c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>'; loadOrders(); }
     async function loadOrders() { var c = document.getElementById('ordersTable'); if (!c) return; try { var r = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); allOrders = r.data || []; renderOrdersTable(allOrders); } catch (e) { c.innerHTML = '暫無訂單'; } }
     function renderOrdersTable(orders) {
@@ -1065,14 +1058,46 @@
         }
     });
     </script>
-        <script type="module">
-        import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-        import ReactDOM from 'react-dom/client';
-        import htm from 'htm';
-        import * as Lucide from 'lucide-react';
-
+        <script>
+        // ============ React 區塊編輯器 ============
+        // 使用全域 React、ReactDOM、htm
+        const { useState, useEffect, useRef, useCallback, useMemo } = React;
+        const ReactDOMClient = ReactDOM; // 實際上直接用 ReactDOM 也可，但保留變數以避免後續衝突
         const html = htm.bind(React.createElement);
-        window.Lucide = Lucide;
+
+        // 簡易圖標（文字符號代替，避免依賴圖標庫）
+        const Lucide = {
+            Bold: () => '𝐁',
+            Italic: () => '𝐼',
+            Underline: () => 'U̲',
+            Palette: () => '🎨',
+            Highlighter: () => '🖍️',
+            Link2: () => '🔗',
+            Quote: () => '❝',
+            Code2: () => '</>',
+            ListOrdered: () => '1.',
+            List: () => '•',
+            Outdent: () => '⏪',
+            Indent: () => '⏩',
+            GripVertical: () => '⋮⋮',
+            Info: () => 'ℹ️',
+            Type: () => 'T',
+            Heading1: () => 'H1',
+            Heading2: () => 'H2',
+            Minus: () => '—',
+            Image: () => '🖼️',
+            Video: () => '🎬',
+            Table: () => '▦',
+            MousePointerClick: () => '🖱️',
+            LayoutDashboard: () => '📊',
+            FileText: () => '📄',
+            MessageSquare: () => '💬',
+            FolderOpen: () => '📂',
+            Tags: () => '🏷️',
+            Users: () => '👥',
+            TrendingUp: () => '📈',
+            BarChart2: () => '📊',
+        };
 
         // ===== 區塊類型定義 =====
         const blockTypes = {
@@ -1099,8 +1124,8 @@
 
         // ===== 主組件：ContentEditor =====
         function ContentEditor() {
-            const [activeSection, setActiveSection] = useState('articles'); // 'articles' | 'faq' | 'contact'
-            const [editingPost, setEditingPost] = useState(null); // null 表示新增
+            const [activeSection, setActiveSection] = useState('articles');
+            const [editingPost, setEditingPost] = useState(undefined); // undefined = 不顯示編輯器；null = 新增；object = 編輯
             const [posts, setPosts] = useState([]);
             const [loading, setLoading] = useState(false);
 
@@ -1122,7 +1147,6 @@
                 if (activeSection === 'articles') loadPosts();
             }, [activeSection]);
 
-            // 側邊欄項目
             const sidebarItems = [
                 { key: 'overview', label: '總覽', icon: 'LayoutDashboard' },
                 { key: 'articles', label: '文章', icon: 'FileText' },
@@ -1143,7 +1167,7 @@
                                 className=${`editor-sidebar-item ${activeSection === item.key ? 'active' : ''}`}
                                 onClick=${() => setActiveSection(item.key)}
                             >
-                                <${Lucide[item.icon]} size=${16} />
+                                <span>${Lucide[item.icon]()}</span>
                                 <span>${item.label}</span>
                             </div>
                         `)}
@@ -1166,12 +1190,8 @@
                             ${activeSection === 'articles' && html`
                                 <${ArticleList} posts=${posts} onNew=${() => setEditingPost(null)} onEdit=${(post) => setEditingPost(post)} loading=${loading} />
                             `}
-                            ${activeSection === 'faq' && html`
-                                <${FaqEditor} />
-                            `}
-                            ${activeSection === 'contact' && html`
-                                <${ContactEditor} />
-                            `}
+                            ${activeSection === 'faq' && html`<${FaqEditor} />`}
+                            ${activeSection === 'contact' && html`<${ContactEditor} />`}
                             ${activeSection !== 'articles' && activeSection !== 'faq' && activeSection !== 'contact' && html`
                                 <div className="empty-state">此功能開發中</div>
                             `}
@@ -1202,9 +1222,7 @@
                                         <td><b>${post.title}</b></td>
                                         <td>${post.is_published ? '已發佈' : '草稿'}</td>
                                         <td>${post.created_at ? post.created_at.slice(0,10) : '-'}</td>
-                                        <td>
-                                            <button className="btn btn-secondary btn-small" onClick=${() => onEdit(post)}>編輯</button>
-                                        </td>
+                                        <td><button className="btn btn-secondary btn-small" onClick=${() => onEdit(post)}>編輯</button></td>
                                     </tr>
                                 `)}
                             </tbody>
@@ -1230,9 +1248,8 @@
             const [showSlash, setShowSlash] = useState(false);
             const [slashPos, setSlashPos] = useState({x:0,y:0});
             const [slashTargetId, setSlashTargetId] = useState(null);
-            const [colorPicker, setColorPicker] = useState(null); // { type, x, y }
+            const [colorPicker, setColorPicker] = useState(null); // { type }
             const [isDragging, setIsDragging] = useState(false);
-            const fileInputRef = useRef(null);
 
             // 自動保存草稿
             useEffect(() => {
@@ -1275,7 +1292,6 @@
                     win.document.write('<html><head><title>預覽</title></head><body>');
                     win.document.write(`<h1>${title}</h1>`);
                     blocks.forEach(b => {
-                        // 簡易渲染
                         switch(b.type) {
                             case 'paragraph': win.document.write(`<p>${b.content.text}</p>`); break;
                             case 'heading1': win.document.write(`<h1>${b.content.text}</h1>`); break;
@@ -1295,8 +1311,6 @@
                     win.document.close();
                 };
                 const handlePublish = async () => {
-                    setIsPublished(true);
-                    // 立即保存並發佈
                     const payload = {
                         title,
                         image_url: coverImage,
@@ -1418,28 +1432,28 @@
                                 <option value="30">30</option>
                             </select>
                             <div className="divider" />
-                            <button onClick=${() => document.execCommand('bold')}><${Lucide.Bold} size=${16} /></button>
-                            <button onClick=${() => document.execCommand('italic')}><${Lucide.Italic} size=${16} /></button>
-                            <button onClick=${() => document.execCommand('underline')}><${Lucide.Underline} size=${16} /></button>
+                            <button onClick=${() => document.execCommand('bold')}><span>${Lucide.Bold()}</span></button>
+                            <button onClick=${() => document.execCommand('italic')}><span>${Lucide.Italic()}</span></button>
+                            <button onClick=${() => document.execCommand('underline')}><span>${Lucide.Underline()}</span></button>
                             <div className="divider" />
-                            <button onClick=${() => setColorPicker({ type: 'text' })}><${Lucide.Palette} size=${16} /></button>
-                            <button onClick=${() => setColorPicker({ type: 'background' })}><${Lucide.Highlighter} size=${16} /></button>
+                            <button onClick=${() => setColorPicker({ type: 'text' })}><span>${Lucide.Palette()}</span></button>
+                            <button onClick=${() => setColorPicker({ type: 'background' })}><span>${Lucide.Highlighter()}</span></button>
                             <div className="divider" />
                             <button onClick=${() => {
                                 const url = prompt('輸入網址：');
                                 if (url) document.execCommand('createLink', false, url);
-                            }}><${Lucide.Link2} size=${16} /></button>
+                            }}><span>${Lucide.Link2()}</span></button>
                             <button onClick=${() => {
                                 const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId;
                                 if (selectedId) {
                                     const block = blocks.find(b => b.id === selectedId);
                                     if (block) updateBlockContent(selectedId, { text: `<blockquote>${block.content.text}</blockquote>` });
                                 }
-                            }}><${Lucide.Quote} size=${16} /></button>
-                            <button onClick=${() => insertBlock('html', blocks[blocks.length-1]?.id)}><${Lucide.Code2} size=${16} /></button>
+                            }}><span>${Lucide.Quote()}</span></button>
+                            <button onClick=${() => insertBlock('html', blocks[blocks.length-1]?.id)}><span>${Lucide.Code2()}</span></button>
                             <div className="divider" />
-                            <button onClick=${() => document.execCommand('insertOrderedList')}><${Lucide.ListOrdered} size=${16} /></button>
-                            <button onClick=${() => document.execCommand('insertUnorderedList')}><${Lucide.List} size=${16} /></button>
+                            <button onClick=${() => document.execCommand('insertOrderedList')}><span>${Lucide.ListOrdered()}</span></button>
+                            <button onClick=${() => document.execCommand('insertUnorderedList')}><span>${Lucide.List()}</span></button>
                             <div className="divider" />
                             <select onChange=${(e) => document.execCommand('justify' + e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}>
                                 <option value="left">靠左</option>
@@ -1447,11 +1461,11 @@
                                 <option value="right">靠右</option>
                                 <option value="full">左右對齊</option>
                             </select>
-                            <button onClick=${() => document.execCommand('outdent')}><${Lucide.Outdent} size=${16} /></button>
-                            <button onClick=${() => document.execCommand('indent')}><${Lucide.Indent} size=${16} /></button>
+                            <button onClick=${() => document.execCommand('outdent')}><span>${Lucide.Outdent()}</span></button>
+                            <button onClick=${() => document.execCommand('indent')}><span>${Lucide.Indent()}</span></button>
                             <div className="divider" />
-                            <button onClick=${() => setIsDragging(!isDragging)}><${Lucide.GripVertical} size=${16} /></button>
-                            <button onClick=${() => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線')}><${Lucide.Info} size=${16} /></button>
+                            <button onClick=${() => setIsDragging(!isDragging)}><span>${Lucide.GripVertical()}</span></button>
+                            <button onClick=${() => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線')}><span>${Lucide.Info()}</span></button>
                         </div>
                         <div style="flex:1;overflow-y:auto;background:#FAF8F5;padding:20px;">
                             <div className="editor-content" onKeyDown=${(e) => {
@@ -1493,7 +1507,7 @@
                                         onClick=${() => window.getSelection()?.removeAllRanges()}
                                     >
                                         <div style="display:flex;align-items:flex-start;">
-                                            ${isDragging && html`<span className="block-drag-handle"><${Lucide.GripVertical} size=${16} /></span>`}
+                                            ${isDragging && html`<span className="block-drag-handle"><span>${Lucide.GripVertical()}</span></span>`}
                                             <div style="flex:1;">
                                                 <${BlockRenderer} block=${block} updateBlockContent=${updateBlockContent} deleteBlock=${deleteBlock} uploadImage=${uploadImage} />
                                             </div>
@@ -1510,7 +1524,7 @@
                         <div className="slash-menu" style=${{ left: slashPos.x, top: slashPos.y }}>
                             ${Object.entries(blockTypes).map(([type, def]) => html`
                                 <div className="slash-menu-item" onClick=${() => insertBlock(type, slashTargetId)}>
-                                    <${Lucide[def.icon]} size=${16} />
+                                    <span>${Lucide[def.icon]()}</span>
                                     <span>${def.label}</span>
                                 </div>
                             `)}
@@ -1625,22 +1639,15 @@
             }
         }
 
-        // ===== FAQ 編輯器 =====
+        // ===== FAQ 編輯器（簡化，使用相同區塊編輯邏輯，但無標題欄位） =====
         function FaqEditor() {
-            const [blocks, setBlocks] = useState(() => {
-                const draft = localStorage.getItem('faq_draft');
-                if (draft) return JSON.parse(draft);
-                return [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
-            });
-            // 與 BlogEditor 類似，但無標題、封面、SEO
-            // 此處簡化，使用相同的區塊列表與工具欄
-            // 為節省篇幅，這裡只展示基本結構，實際需複用 BlockEditor 邏輯
-            return html`<div>常見問題編輯器（與 Blog 編輯器相同的區塊功能，無標題欄位）</div>`;
+            // 此處可仿照 BlogEditor 建立，但省略標題、封面等
+            return html`<div>常見問題編輯器（功能待擴充）</div>`;
         }
 
         // ===== 聯絡我們編輯器 =====
         function ContactEditor() {
-            return html`<div>聯絡我們編輯器（與 Blog 編輯器相同的區塊功能，無標題欄位）</div>`;
+            return html`<div>聯絡我們編輯器（功能待擴充）</div>`;
         }
 
         // ===== 掛載函數 =====
@@ -1650,5 +1657,5 @@
             root.render(React.createElement(ContentEditor));
         };
     </script>
-    </body>
+</body>
 </html>
