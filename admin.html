@@ -1058,11 +1058,9 @@
         }
     });
     </script>
-        <script>
+            <script>
         // ============ React 區塊編輯器 ============
-        // 使用全域 React、ReactDOM、htm
         const { useState, useEffect, useRef, useCallback, useMemo } = React;
-        const ReactDOMClient = ReactDOM; // 實際上直接用 ReactDOM 也可，但保留變數以避免後續衝突
         const html = htm.bind(React.createElement);
 
         // 簡易圖標（文字符號代替，避免依賴圖標庫）
@@ -1125,7 +1123,7 @@
         // ===== 主組件：ContentEditor =====
         function ContentEditor() {
             const [activeSection, setActiveSection] = useState('articles');
-            const [editingPost, setEditingPost] = useState(undefined); // undefined = 不顯示編輯器；null = 新增；object = 編輯
+            const [editingPost, setEditingPost] = useState(undefined);
             const [posts, setPosts] = useState([]);
             const [loading, setLoading] = useState(false);
 
@@ -1232,110 +1230,19 @@
             `;
         }
 
-        // ===== Blog 編輯器組件 =====
-        function BlogEditor({ post, onClose }) {
-            const [blocks, setBlocks] = useState(() => {
-                if (post && post.content) {
-                    try { return JSON.parse(post.content); } catch { return textToBlocks(post.content); }
-                }
-                return [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
-            });
-            const [title, setTitle] = useState(post?.title || '');
-            const [coverImage, setCoverImage] = useState(post?.image_url || '');
-            const [seoTitle, setSeoTitle] = useState(post?.seo_title || '');
-            const [seoDesc, setSeoDesc] = useState(post?.seo_description || '');
-            const [isPublished, setIsPublished] = useState(post?.is_published || false);
+        // ===== 共享的區塊編輯器邏輯（hook） =====
+        function useBlockEditor(defaultBlocks, extraFields) {
+            const [blocks, setBlocks] = useState(defaultBlocks);
+            const [title, setTitle] = useState(extraFields?.title || '');
+            const [coverImage, setCoverImage] = useState(extraFields?.coverImage || '');
+            const [seoTitle, setSeoTitle] = useState(extraFields?.seoTitle || '');
+            const [seoDesc, setSeoDesc] = useState(extraFields?.seoDesc || '');
+            const [isPublished, setIsPublished] = useState(extraFields?.isPublished || false);
             const [showSlash, setShowSlash] = useState(false);
             const [slashPos, setSlashPos] = useState({x:0,y:0});
             const [slashTargetId, setSlashTargetId] = useState(null);
-            const [colorPicker, setColorPicker] = useState(null); // { type }
+            const [colorPicker, setColorPicker] = useState(null);
             const [isDragging, setIsDragging] = useState(false);
-
-            // 自動保存草稿
-            useEffect(() => {
-                const draft = { title, coverImage, seoTitle, seoDesc, isPublished, blocks };
-                localStorage.setItem('blog_draft', JSON.stringify(draft));
-            }, [title, coverImage, seoTitle, seoDesc, isPublished, blocks]);
-
-            // 鍵盤快捷鍵
-            useEffect(() => {
-                const handler = (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); document.execCommand('bold'); }
-                    else if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); document.execCommand('italic'); }
-                    else if ((e.ctrlKey || e.metaKey) && e.key === 'u') { e.preventDefault(); document.execCommand('underline'); }
-                };
-                document.addEventListener('keydown', handler);
-                return () => document.removeEventListener('keydown', handler);
-            }, []);
-
-            // 儲存、預覽、發佈事件
-            useEffect(() => {
-                const handleSave = async () => {
-                    const payload = {
-                        title,
-                        image_url: coverImage,
-                        seo_title: seoTitle,
-                        seo_description: seoDesc,
-                        is_published: isPublished,
-                        content: JSON.stringify(blocks)
-                    };
-                    if (post?.id) {
-                        await window.supabaseClient.from('blog_posts').update(payload).eq('id', post.id);
-                    } else {
-                        await window.supabaseClient.from('blog_posts').insert(payload);
-                    }
-                    alert('已保存');
-                    onClose();
-                };
-                const handlePreview = () => {
-                    const win = window.open('', '_blank');
-                    win.document.write('<html><head><title>預覽</title></head><body>');
-                    win.document.write(`<h1>${title}</h1>`);
-                    blocks.forEach(b => {
-                        switch(b.type) {
-                            case 'paragraph': win.document.write(`<p>${b.content.text}</p>`); break;
-                            case 'heading1': win.document.write(`<h1>${b.content.text}</h1>`); break;
-                            case 'heading2': win.document.write(`<h2>${b.content.text}</h2>`); break;
-                            case 'quote': win.document.write(`<blockquote>${b.content.text}</blockquote>`); break;
-                            case 'divider': win.document.write('<hr>'); break;
-                            case 'image': win.document.write(`<img src="${b.content.src}" alt="${b.content.alt || ''}" style="max-width:100%;">`); break;
-                            case 'video': win.document.write(`<iframe src="${b.content.src}" style="width:100%;height:400px;"></iframe>`); break;
-                            case 'button': win.document.write(`<a href="${b.content.url}" style="display:inline-block;padding:10px 20px;background:#1A1A1A;color:white;border-radius:5px;">${b.content.text}</a>`); break;
-                            case 'html': win.document.write(b.content.code); break;
-                            case 'list': win.document.write('<ul>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ul>'); break;
-                            case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
-                            default: break;
-                        }
-                    });
-                    win.document.write('</body></html>');
-                    win.document.close();
-                };
-                const handlePublish = async () => {
-                    const payload = {
-                        title,
-                        image_url: coverImage,
-                        seo_title: seoTitle,
-                        seo_description: seoDesc,
-                        is_published: true,
-                        content: JSON.stringify(blocks)
-                    };
-                    if (post?.id) {
-                        await window.supabaseClient.from('blog_posts').update(payload).eq('id', post.id);
-                    } else {
-                        await window.supabaseClient.from('blog_posts').insert(payload);
-                    }
-                    alert('已發佈');
-                    onClose();
-                };
-                window.addEventListener('save-content', handleSave);
-                window.addEventListener('preview-content', handlePreview);
-                window.addEventListener('publish-content', handlePublish);
-                return () => {
-                    window.removeEventListener('save-content', handleSave);
-                    window.removeEventListener('preview-content', handlePreview);
-                    window.removeEventListener('publish-content', handlePublish);
-                };
-            }, [blocks, title, coverImage, seoTitle, seoDesc, isPublished, post, onClose]);
 
             const insertBlock = (type, afterId) => {
                 const newBlock = { id: generateId(), type, content: { ...blockTypes[type].defaultContent } };
@@ -1358,18 +1265,6 @@
                         sel.addRange(range);
                     }
                 }, 0);
-            };
-
-            const handleKeyDown = (e, blockId) => {
-                if (e.key === '/') {
-                    const selection = window.getSelection();
-                    if (selection.rangeCount) {
-                        const rect = selection.getRangeAt(0).getBoundingClientRect();
-                        setSlashPos({ x: rect.left, y: rect.bottom + 5 });
-                        setShowSlash(true);
-                        setSlashTargetId(blockId);
-                    }
-                }
             };
 
             const updateBlockContent = (id, newContent) => {
@@ -1401,6 +1296,115 @@
                 const res = await fetch('/r2-upload', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.url) updateBlockContent(blockId, { src: data.url });
+            };
+
+            return {
+                blocks, setBlocks,
+                title, setTitle,
+                coverImage, setCoverImage,
+                seoTitle, setSeoTitle,
+                seoDesc, setSeoDesc,
+                isPublished, setIsPublished,
+                showSlash, setShowSlash,
+                slashPos, setSlashPos,
+                slashTargetId, setSlashTargetId,
+                colorPicker, setColorPicker,
+                isDragging, setIsDragging,
+                insertBlock, updateBlockContent, deleteBlock,
+                handleDragStart, handleDragOver, handleDrop,
+                uploadImage
+            };
+        }
+
+        // ===== Blog 編輯器組件 =====
+        function BlogEditor({ post, onClose }) {
+            const initialBlocks = post?.content ? (() => { try { return JSON.parse(post.content); } catch { return textToBlocks(post.content); } })() : [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
+            const editor = useBlockEditor(initialBlocks, {
+                title: post?.title || '',
+                coverImage: post?.image_url || '',
+                seoTitle: post?.seo_title || '',
+                seoDesc: post?.seo_description || '',
+                isPublished: post?.is_published || false
+            });
+
+            const { blocks, setBlocks, title, setTitle, coverImage, setCoverImage, seoTitle, setSeoTitle, seoDesc, setSeoDesc, isPublished, setIsPublished, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = editor;
+
+            // 自動保存草稿
+            useEffect(() => {
+                const draft = { title, coverImage, seoTitle, seoDesc, isPublished, blocks };
+                localStorage.setItem('blog_draft', JSON.stringify(draft));
+            }, [title, coverImage, seoTitle, seoDesc, isPublished, blocks]);
+
+            // 鍵盤快捷鍵
+            useEffect(() => {
+                const handler = (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); document.execCommand('bold'); }
+                    else if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); document.execCommand('italic'); }
+                    else if ((e.ctrlKey || e.metaKey) && e.key === 'u') { e.preventDefault(); document.execCommand('underline'); }
+                };
+                document.addEventListener('keydown', handler);
+                return () => document.removeEventListener('keydown', handler);
+            }, []);
+
+            // 儲存、預覽、發佈事件
+            useEffect(() => {
+                const handleSave = async () => {
+                    const payload = { title, image_url: coverImage, seo_title: seoTitle, seo_description: seoDesc, is_published: isPublished, content: JSON.stringify(blocks) };
+                    if (post?.id) await window.supabaseClient.from('blog_posts').update(payload).eq('id', post.id);
+                    else await window.supabaseClient.from('blog_posts').insert(payload);
+                    alert('已保存');
+                    onClose();
+                };
+                const handlePreview = () => {
+                    const win = window.open('', '_blank');
+                    win.document.write('<html><head><title>預覽</title></head><body>');
+                    win.document.write(`<h1>${title}</h1>`);
+                    blocks.forEach(b => {
+                        switch(b.type) {
+                            case 'paragraph': win.document.write(`<p>${b.content.text}</p>`); break;
+                            case 'heading1': win.document.write(`<h1>${b.content.text}</h1>`); break;
+                            case 'heading2': win.document.write(`<h2>${b.content.text}</h2>`); break;
+                            case 'quote': win.document.write(`<blockquote>${b.content.text}</blockquote>`); break;
+                            case 'divider': win.document.write('<hr>'); break;
+                            case 'image': win.document.write(`<img src="${b.content.src}" alt="${b.content.alt || ''}" style="max-width:100%;">`); break;
+                            case 'video': win.document.write(`<iframe src="${b.content.src}" style="width:100%;height:400px;"></iframe>`); break;
+                            case 'button': win.document.write(`<a href="${b.content.url}" style="display:inline-block;padding:10px 20px;background:#1A1A1A;color:white;border-radius:5px;">${b.content.text}</a>`); break;
+                            case 'html': win.document.write(b.content.code); break;
+                            case 'list': win.document.write('<ul>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ul>'); break;
+                            case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
+                            default: break;
+                        }
+                    });
+                    win.document.write('</body></html>');
+                    win.document.close();
+                };
+                const handlePublish = async () => {
+                    const payload = { title, image_url: coverImage, seo_title: seoTitle, seo_description: seoDesc, is_published: true, content: JSON.stringify(blocks) };
+                    if (post?.id) await window.supabaseClient.from('blog_posts').update(payload).eq('id', post.id);
+                    else await window.supabaseClient.from('blog_posts').insert(payload);
+                    alert('已發佈');
+                    onClose();
+                };
+                window.addEventListener('save-content', handleSave);
+                window.addEventListener('preview-content', handlePreview);
+                window.addEventListener('publish-content', handlePublish);
+                return () => {
+                    window.removeEventListener('save-content', handleSave);
+                    window.removeEventListener('preview-content', handlePreview);
+                    window.removeEventListener('publish-content', handlePublish);
+                };
+            }, [blocks, title, coverImage, seoTitle, seoDesc, isPublished, post, onClose]);
+
+            const handleKeyDown = (e, blockId) => {
+                if (e.key === '/') {
+                    const selection = window.getSelection();
+                    if (selection.rangeCount) {
+                        const rect = selection.getRangeAt(0).getBoundingClientRect();
+                        setSlashPos({ x: rect.left, y: rect.bottom + 5 });
+                        setShowSlash(true);
+                        setSlashTargetId(blockId);
+                    }
+                }
             };
 
             return html`
@@ -1504,7 +1508,6 @@
                                         onDragOver=${handleDragOver}
                                         onDrop=${(e) => handleDrop(e, block.id)}
                                         onDragEnd=${() => setIsDragging(false)}
-                                        onClick=${() => window.getSelection()?.removeAllRanges()}
                                     >
                                         <div style="display:flex;align-items:flex-start;">
                                             ${isDragging && html`<span className="block-drag-handle"><span>${Lucide.GripVertical()}</span></span>`}
@@ -1544,7 +1547,7 @@
             `;
         }
 
-        // ===== 區塊渲染器 =====
+        // ===== 區塊渲染器（不變） =====
         function BlockRenderer({ block, updateBlockContent, deleteBlock, uploadImage }) {
             switch(block.type) {
                 case 'paragraph':
@@ -1639,15 +1642,324 @@
             }
         }
 
-        // ===== FAQ 編輯器（簡化，使用相同區塊編輯邏輯，但無標題欄位） =====
+        // ===== FAQ 編輯器（完整，無標題欄位） =====
         function FaqEditor() {
-            // 此處可仿照 BlogEditor 建立，但省略標題、封面等
-            return html`<div>常見問題編輯器（功能待擴充）</div>`;
+            const initialBlocks = [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
+            const editor = useBlockEditor(initialBlocks, {});
+            const { blocks, setBlocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = editor;
+
+            // 儲存、預覽事件（無發佈）
+            useEffect(() => {
+                const handleSave = async () => {
+                    const payload = { content: JSON.stringify(blocks) };
+                    // 假設 faq_items 表格有 content 欄位，若是多筆問答，需調整
+                    const { data: existing } = await window.supabaseClient.from('faq_items').select('id').limit(1);
+                    if (existing && existing.length > 0) {
+                        await window.supabaseClient.from('faq_items').update(payload).eq('id', existing[0].id);
+                    } else {
+                        await window.supabaseClient.from('faq_items').insert(payload);
+                    }
+                    alert('已保存');
+                };
+                const handlePreview = () => {
+                    const win = window.open('', '_blank');
+                    win.document.write('<html><head><title>預覽</title></head><body>');
+                    blocks.forEach(b => {
+                        switch(b.type) {
+                            case 'paragraph': win.document.write(`<p>${b.content.text}</p>`); break;
+                            case 'heading1': win.document.write(`<h1>${b.content.text}</h1>`); break;
+                            case 'heading2': win.document.write(`<h2>${b.content.text}</h2>`); break;
+                            case 'quote': win.document.write(`<blockquote>${b.content.text}</blockquote>`); break;
+                            case 'divider': win.document.write('<hr>'); break;
+                            case 'image': win.document.write(`<img src="${b.content.src}" alt="${b.content.alt || ''}" style="max-width:100%;">`); break;
+                            case 'video': win.document.write(`<iframe src="${b.content.src}" style="width:100%;height:400px;"></iframe>`); break;
+                            case 'button': win.document.write(`<a href="${b.content.url}" style="display:inline-block;padding:10px 20px;background:#1A1A1A;color:white;border-radius:5px;">${b.content.text}</a>`); break;
+                            case 'html': win.document.write(b.content.code); break;
+                            case 'list': win.document.write('<ul>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ul>'); break;
+                            case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
+                            default: break;
+                        }
+                    });
+                    win.document.write('</body></html>');
+                    win.document.close();
+                };
+                window.addEventListener('save-content', handleSave);
+                window.addEventListener('preview-content', handlePreview);
+                return () => {
+                    window.removeEventListener('save-content', handleSave);
+                    window.removeEventListener('preview-content', handlePreview);
+                };
+            }, [blocks]);
+
+            return html`
+                <div style="display:flex;flex-direction:column;height:100%;">
+                    <div className="block-toolbar">
+                        <!-- 工具欄同 BlogEditor，但省略標題相關 -->
+                        <select onChange=${(e) => {
+                            const type = e.target.value;
+                            const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId;
+                            if (selectedId) setBlocks(prev => prev.map(b => b.id === selectedId ? { ...b, type, content: { ...blockTypes[type].defaultContent, ...b.content } } : b));
+                        }}>
+                            <option value="paragraph">段落</option>
+                            <option value="heading1">標題1</option>
+                            <option value="heading2">標題2</option>
+                            <option value="quote">引用</option>
+                        </select>
+                        <div className="divider" />
+                        <select onChange=${(e) => {
+                            const size = e.target.value;
+                            document.execCommand('fontSize', false, '7');
+                            document.querySelectorAll('font[size="7"]').forEach(el => { el.removeAttribute('size'); el.style.fontSize = size + 'px'; });
+                        }}>
+                            <option value="12">12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18" selected>18</option>
+                            <option value="20">20</option>
+                            <option value="24">24</option>
+                            <option value="30">30</option>
+                        </select>
+                        <div className="divider" />
+                        <button onClick=${() => document.execCommand('bold')}><span>${Lucide.Bold()}</span></button>
+                        <button onClick=${() => document.execCommand('italic')}><span>${Lucide.Italic()}</span></button>
+                        <button onClick=${() => document.execCommand('underline')}><span>${Lucide.Underline()}</span></button>
+                        <div className="divider" />
+                        <button onClick=${() => setColorPicker({ type: 'text' })}><span>${Lucide.Palette()}</span></button>
+                        <button onClick=${() => setColorPicker({ type: 'background' })}><span>${Lucide.Highlighter()}</span></button>
+                        <div className="divider" />
+                        <button onClick=${() => { const url = prompt('輸入網址：'); if (url) document.execCommand('createLink', false, url); }}><span>${Lucide.Link2()}</span></button>
+                        <button onClick=${() => { const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId; if (selectedId) { const block = blocks.find(b => b.id === selectedId); if (block) updateBlockContent(selectedId, { text: `<blockquote>${block.content.text}</blockquote>` }); } }}><span>${Lucide.Quote()}</span></button>
+                        <button onClick=${() => insertBlock('html', blocks[blocks.length-1]?.id)}><span>${Lucide.Code2()}</span></button>
+                        <div className="divider" />
+                        <button onClick=${() => document.execCommand('insertOrderedList')}><span>${Lucide.ListOrdered()}</span></button>
+                        <button onClick=${() => document.execCommand('insertUnorderedList')}><span>${Lucide.List()}</span></button>
+                        <div className="divider" />
+                        <select onChange=${(e) => document.execCommand('justify' + e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}>
+                            <option value="left">靠左</option>
+                            <option value="center">置中</option>
+                            <option value="right">靠右</option>
+                            <option value="full">左右對齊</option>
+                        </select>
+                        <button onClick=${() => document.execCommand('outdent')}><span>${Lucide.Outdent()}</span></button>
+                        <button onClick=${() => document.execCommand('indent')}><span>${Lucide.Indent()}</span></button>
+                        <div className="divider" />
+                        <button onClick=${() => setIsDragging(!isDragging)}><span>${Lucide.GripVertical()}</span></button>
+                        <button onClick=${() => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線')}><span>${Lucide.Info()}</span></button>
+                    </div>
+                    <div style="flex:1;overflow-y:auto;background:#FAF8F5;padding:20px;">
+                        <div className="editor-content" onKeyDown=${(e) => {
+                            const blockId = e.target.closest('[data-block-id]')?.dataset.blockId;
+                            if (blockId) {
+                                if (e.key === '/') {
+                                    const selection = window.getSelection();
+                                    if (selection.rangeCount) {
+                                        const rect = selection.getRangeAt(0).getBoundingClientRect();
+                                        setSlashPos({ x: rect.left, y: rect.bottom + 5 });
+                                        setShowSlash(true);
+                                        setSlashTargetId(blockId);
+                                    }
+                                }
+                            }
+                        }}>
+                            ${blocks.map(block => html`
+                                <div key=${block.id} data-block-id=${block.id} className=${`block-item ${isDragging ? 'dragging' : ''}`}
+                                    draggable=${isDragging}
+                                    onDragStart=${(e) => handleDragStart(e, block.id)}
+                                    onDragOver=${handleDragOver}
+                                    onDrop=${(e) => handleDrop(e, block.id)}
+                                    onDragEnd=${() => setIsDragging(false)}
+                                >
+                                    <div style="display:flex;align-items:flex-start;">
+                                        ${isDragging && html`<span className="block-drag-handle"><span>${Lucide.GripVertical()}</span></span>`}
+                                        <div style="flex:1;">
+                                            <${BlockRenderer} block=${block} updateBlockContent=${updateBlockContent} deleteBlock=${deleteBlock} uploadImage=${uploadImage} />
+                                        </div>
+                                    </div>
+                                </div>
+                            `)}
+                        </div>
+                    </div>
+                    ${showSlash && html`
+                        <div className="slash-menu" style=${{ left: slashPos.x, top: slashPos.y }}>
+                            ${Object.entries(blockTypes).map(([type, def]) => html`
+                                <div className="slash-menu-item" onClick=${() => insertBlock(type, slashTargetId)}>
+                                    <span>${Lucide[def.icon]()}</span>
+                                    <span>${def.label}</span>
+                                </div>
+                            `)}
+                        </div>
+                    `}
+                    ${colorPicker && html`
+                        <div className="color-picker-popover" style=${{ left: '200px', top: '120px' }}>
+                            <input type="color" onChange=${(e) => {
+                                const color = e.target.value;
+                                if (colorPicker.type === 'text') document.execCommand('foreColor', false, color);
+                                else document.execCommand('hiliteColor', false, color);
+                                setColorPicker(null);
+                            }} />
+                        </div>
+                    `}
+                </div>
+            `;
         }
 
-        // ===== 聯絡我們編輯器 =====
+        // ===== 聯絡我們編輯器（完整，無標題欄位） =====
         function ContactEditor() {
-            return html`<div>聯絡我們編輯器（功能待擴充）</div>`;
+            const initialBlocks = [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
+            const editor = useBlockEditor(initialBlocks, {});
+            const { blocks, setBlocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = editor;
+
+            useEffect(() => {
+                const handleSave = async () => {
+                    const payload = { content: JSON.stringify(blocks) };
+                    const { data: existing } = await window.supabaseClient.from('contact_settings').select('id').limit(1);
+                    if (existing && existing.length > 0) {
+                        await window.supabaseClient.from('contact_settings').update(payload).eq('id', existing[0].id);
+                    } else {
+                        await window.supabaseClient.from('contact_settings').insert(payload);
+                    }
+                    alert('已保存');
+                };
+                const handlePreview = () => {
+                    const win = window.open('', '_blank');
+                    win.document.write('<html><head><title>預覽</title></head><body>');
+                    blocks.forEach(b => {
+                        switch(b.type) {
+                            case 'paragraph': win.document.write(`<p>${b.content.text}</p>`); break;
+                            case 'heading1': win.document.write(`<h1>${b.content.text}</h1>`); break;
+                            case 'heading2': win.document.write(`<h2>${b.content.text}</h2>`); break;
+                            case 'quote': win.document.write(`<blockquote>${b.content.text}</blockquote>`); break;
+                            case 'divider': win.document.write('<hr>'); break;
+                            case 'image': win.document.write(`<img src="${b.content.src}" alt="${b.content.alt || ''}" style="max-width:100%;">`); break;
+                            case 'video': win.document.write(`<iframe src="${b.content.src}" style="width:100%;height:400px;"></iframe>`); break;
+                            case 'button': win.document.write(`<a href="${b.content.url}" style="display:inline-block;padding:10px 20px;background:#1A1A1A;color:white;border-radius:5px;">${b.content.text}</a>`); break;
+                            case 'html': win.document.write(b.content.code); break;
+                            case 'list': win.document.write('<ul>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ul>'); break;
+                            case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
+                            default: break;
+                        }
+                    });
+                    win.document.write('</body></html>');
+                    win.document.close();
+                };
+                window.addEventListener('save-content', handleSave);
+                window.addEventListener('preview-content', handlePreview);
+                return () => {
+                    window.removeEventListener('save-content', handleSave);
+                    window.removeEventListener('preview-content', handlePreview);
+                };
+            }, [blocks]);
+
+            return html`
+                <div style="display:flex;flex-direction:column;height:100%;">
+                    <div className="block-toolbar">
+                        <!-- 工具欄與 FAQ 相同 -->
+                        <select onChange=${(e) => {
+                            const type = e.target.value;
+                            const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId;
+                            if (selectedId) setBlocks(prev => prev.map(b => b.id === selectedId ? { ...b, type, content: { ...blockTypes[type].defaultContent, ...b.content } } : b));
+                        }}>
+                            <option value="paragraph">段落</option>
+                            <option value="heading1">標題1</option>
+                            <option value="heading2">標題2</option>
+                            <option value="quote">引用</option>
+                        </select>
+                        <div className="divider" />
+                        <select onChange=${(e) => {
+                            const size = e.target.value;
+                            document.execCommand('fontSize', false, '7');
+                            document.querySelectorAll('font[size="7"]').forEach(el => { el.removeAttribute('size'); el.style.fontSize = size + 'px'; });
+                        }}>
+                            <option value="12">12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18" selected>18</option>
+                            <option value="20">20</option>
+                            <option value="24">24</option>
+                            <option value="30">30</option>
+                        </select>
+                        <div className="divider" />
+                        <button onClick=${() => document.execCommand('bold')}><span>${Lucide.Bold()}</span></button>
+                        <button onClick=${() => document.execCommand('italic')}><span>${Lucide.Italic()}</span></button>
+                        <button onClick=${() => document.execCommand('underline')}><span>${Lucide.Underline()}</span></button>
+                        <div className="divider" />
+                        <button onClick=${() => setColorPicker({ type: 'text' })}><span>${Lucide.Palette()}</span></button>
+                        <button onClick=${() => setColorPicker({ type: 'background' })}><span>${Lucide.Highlighter()}</span></button>
+                        <div className="divider" />
+                        <button onClick=${() => { const url = prompt('輸入網址：'); if (url) document.execCommand('createLink', false, url); }}><span>${Lucide.Link2()}</span></button>
+                        <button onClick=${() => { const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId; if (selectedId) { const block = blocks.find(b => b.id === selectedId); if (block) updateBlockContent(selectedId, { text: `<blockquote>${block.content.text}</blockquote>` }); } }}><span>${Lucide.Quote()}</span></button>
+                        <button onClick=${() => insertBlock('html', blocks[blocks.length-1]?.id)}><span>${Lucide.Code2()}</span></button>
+                        <div className="divider" />
+                        <button onClick=${() => document.execCommand('insertOrderedList')}><span>${Lucide.ListOrdered()}</span></button>
+                        <button onClick=${() => document.execCommand('insertUnorderedList')}><span>${Lucide.List()}</span></button>
+                        <div className="divider" />
+                        <select onChange=${(e) => document.execCommand('justify' + e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}>
+                            <option value="left">靠左</option>
+                            <option value="center">置中</option>
+                            <option value="right">靠右</option>
+                            <option value="full">左右對齊</option>
+                        </select>
+                        <button onClick=${() => document.execCommand('outdent')}><span>${Lucide.Outdent()}</span></button>
+                        <button onClick=${() => document.execCommand('indent')}><span>${Lucide.Indent()}</span></button>
+                        <div className="divider" />
+                        <button onClick=${() => setIsDragging(!isDragging)}><span>${Lucide.GripVertical()}</span></button>
+                        <button onClick=${() => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線')}><span>${Lucide.Info()}</span></button>
+                    </div>
+                    <div style="flex:1;overflow-y:auto;background:#FAF8F5;padding:20px;">
+                        <div className="editor-content" onKeyDown=${(e) => {
+                            const blockId = e.target.closest('[data-block-id]')?.dataset.blockId;
+                            if (blockId) {
+                                if (e.key === '/') {
+                                    const selection = window.getSelection();
+                                    if (selection.rangeCount) {
+                                        const rect = selection.getRangeAt(0).getBoundingClientRect();
+                                        setSlashPos({ x: rect.left, y: rect.bottom + 5 });
+                                        setShowSlash(true);
+                                        setSlashTargetId(blockId);
+                                    }
+                                }
+                            }
+                        }}>
+                            ${blocks.map(block => html`
+                                <div key=${block.id} data-block-id=${block.id} className=${`block-item ${isDragging ? 'dragging' : ''}`}
+                                    draggable=${isDragging}
+                                    onDragStart=${(e) => handleDragStart(e, block.id)}
+                                    onDragOver=${handleDragOver}
+                                    onDrop=${(e) => handleDrop(e, block.id)}
+                                    onDragEnd=${() => setIsDragging(false)}
+                                >
+                                    <div style="display:flex;align-items:flex-start;">
+                                        ${isDragging && html`<span className="block-drag-handle"><span>${Lucide.GripVertical()}</span></span>`}
+                                        <div style="flex:1;">
+                                            <${BlockRenderer} block=${block} updateBlockContent=${updateBlockContent} deleteBlock=${deleteBlock} uploadImage=${uploadImage} />
+                                        </div>
+                                    </div>
+                                </div>
+                            `)}
+                        </div>
+                    </div>
+                    ${showSlash && html`
+                        <div className="slash-menu" style=${{ left: slashPos.x, top: slashPos.y }}>
+                            ${Object.entries(blockTypes).map(([type, def]) => html`
+                                <div className="slash-menu-item" onClick=${() => insertBlock(type, slashTargetId)}>
+                                    <span>${Lucide[def.icon]()}</span>
+                                    <span>${def.label}</span>
+                                </div>
+                            `)}
+                        </div>
+                    `}
+                    ${colorPicker && html`
+                        <div className="color-picker-popover" style=${{ left: '200px', top: '120px' }}>
+                            <input type="color" onChange=${(e) => {
+                                const color = e.target.value;
+                                if (colorPicker.type === 'text') document.execCommand('foreColor', false, color);
+                                else document.execCommand('hiliteColor', false, color);
+                                setColorPicker(null);
+                            }} />
+                        </div>
+                    `}
+                </div>
+            `;
         }
 
         // ===== 掛載函數 =====
