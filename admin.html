@@ -1058,12 +1058,13 @@
         }
     });
     </script>
-            <script>
-        // ============ React 區塊編輯器 ============
+        <script>
+        // ============ React 區塊編輯器（修復版） ============
         const { useState, useEffect, useRef, useCallback, useMemo } = React;
+        const htm = window.htm;
         const html = htm.bind(React.createElement);
 
-        // 簡易圖標（文字符號代替，避免依賴圖標庫）
+        // 圖標函數
         const Lucide = {
             Bold: () => '𝐁',
             Italic: () => '𝐼',
@@ -1097,7 +1098,7 @@
             BarChart2: () => '📊',
         };
 
-        // ===== 區塊類型定義 =====
+        // 區塊類型
         const blockTypes = {
             paragraph: { label: '段落', icon: 'Type', defaultContent: { text: '' } },
             heading1: { label: '標題1', icon: 'Heading1', defaultContent: { text: '' } },
@@ -1113,124 +1114,19 @@
             html: { label: '自定義 HTML', icon: 'Code2', defaultContent: { code: '' } },
         };
 
-        // ===== 工具函數 =====
         const generateId = () => `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const textToBlocks = (text) => {
             if (!text || text.trim() === '') return [];
             return [{ id: generateId(), type: 'paragraph', content: { text } }];
         };
 
-        // ===== 主組件：ContentEditor =====
-        function ContentEditor() {
-            const [activeSection, setActiveSection] = useState('articles');
-            const [editingPost, setEditingPost] = useState(undefined);
-            const [posts, setPosts] = useState([]);
-            const [loading, setLoading] = useState(false);
+        // 工具：渲染圖標
+        const renderIcon = (name) => {
+            const fn = Lucide[name];
+            return React.createElement('span', null, fn ? fn() : name);
+        };
 
-            const loadPosts = async () => {
-                setLoading(true);
-                try {
-                    const { data, error } = await window.supabaseClient.from('blog_posts').select('*').order('created_at', { ascending: false });
-                    if (error) throw error;
-                    setPosts(data || []);
-                } catch (e) {
-                    console.error('載入文章失敗', e);
-                    setPosts([]);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            useEffect(() => {
-                if (activeSection === 'articles') loadPosts();
-            }, [activeSection]);
-
-            const sidebarItems = [
-                { key: 'overview', label: '總覽', icon: 'LayoutDashboard' },
-                { key: 'articles', label: '文章', icon: 'FileText' },
-                { key: 'comments', label: '留言', icon: 'MessageSquare' },
-                { key: 'categories', label: '類別', icon: 'FolderOpen' },
-                { key: 'tags', label: '標籤', icon: 'Tags' },
-                { key: 'authors', label: '作家', icon: 'Users' },
-                { key: 'monetization', label: '創造營收', icon: 'TrendingUp' },
-                { key: 'analytics', label: '分析', icon: 'BarChart2' },
-            ];
-
-            return html`
-                <div className="block-editor-wrapper">
-                    <div className="editor-sidebar">
-                        ${sidebarItems.map(item => html`
-                            <div
-                                key=${item.key}
-                                className=${`editor-sidebar-item ${activeSection === item.key ? 'active' : ''}`}
-                                onClick=${() => setActiveSection(item.key)}
-                            >
-                                <span>${Lucide[item.icon]()}</span>
-                                <span>${item.label}</span>
-                            </div>
-                        `)}
-                    </div>
-                    <div className="editor-main">
-                        <div className="editor-topbar">
-                            <div className="editor-topbar-left">
-                                <button className="btn btn-secondary btn-small" onClick=${() => history.back()}>上一步</button>
-                                <h3 style="font-size:18px;font-weight:600;">
-                                    ${activeSection === 'articles' ? '文章管理' : activeSection === 'faq' ? '常見問題編輯' : activeSection === 'contact' ? '聯絡我們編輯' : '總覽'}
-                                </h3>
-                            </div>
-                            <div className="editor-topbar-right">
-                                <button className="btn btn-secondary btn-small" onClick=${() => window.dispatchEvent(new CustomEvent('save-content'))}>儲存</button>
-                                <button className="btn btn-secondary btn-small" onClick=${() => window.dispatchEvent(new CustomEvent('preview-content'))}>預覽</button>
-                                <button className="btn btn-primary btn-small" onClick=${() => window.dispatchEvent(new CustomEvent('publish-content'))}>發佈</button>
-                            </div>
-                        </div>
-                        <div className="editor-canvas">
-                            ${activeSection === 'articles' && html`
-                                <${ArticleList} posts=${posts} onNew=${() => setEditingPost(null)} onEdit=${(post) => setEditingPost(post)} loading=${loading} />
-                            `}
-                            ${activeSection === 'faq' && html`<${FaqEditor} />`}
-                            ${activeSection === 'contact' && html`<${ContactEditor} />`}
-                            ${activeSection !== 'articles' && activeSection !== 'faq' && activeSection !== 'contact' && html`
-                                <div className="empty-state">此功能開發中</div>
-                            `}
-                        </div>
-                    </div>
-                    ${editingPost !== undefined && activeSection === 'articles' && html`
-                        <${BlogEditor} post=${editingPost} onClose=${() => { setEditingPost(undefined); loadPosts(); }} />
-                    `}
-                </div>
-            `;
-        }
-
-        // ===== 文章列表組件 =====
-        function ArticleList({ posts, onNew, onEdit, loading }) {
-            if (loading) return html`<div className="empty-state">載入中...</div>`;
-            return html`
-                <div>
-                    <div className="page-header">
-                        <h3 style="font-size:20px;font-weight:600;">所有文章</h3>
-                        <button className="btn btn-primary" onClick=${onNew}>新增文章</button>
-                    </div>
-                    ${posts.length === 0 ? html`<div className="empty-state">暫無文章</div>` : html`
-                        <table className="data-table">
-                            <thead><tr><th>標題</th><th>狀態</th><th>日期</th><th>操作</th></tr></thead>
-                            <tbody>
-                                ${posts.map(post => html`
-                                    <tr key=${post.id}>
-                                        <td><b>${post.title}</b></td>
-                                        <td>${post.is_published ? '已發佈' : '草稿'}</td>
-                                        <td>${post.created_at ? post.created_at.slice(0,10) : '-'}</td>
-                                        <td><button className="btn btn-secondary btn-small" onClick=${() => onEdit(post)}>編輯</button></td>
-                                    </tr>
-                                `)}
-                            </tbody>
-                        </table>
-                    `}
-                </div>
-            `;
-        }
-
-        // ===== 共享的區塊編輯器邏輯（hook） =====
+        // 共用區塊編輯邏輯
         function useBlockEditor(defaultBlocks, extraFields) {
             const [blocks, setBlocks] = useState(defaultBlocks);
             const [title, setTitle] = useState(extraFields?.title || '');
@@ -1239,7 +1135,7 @@
             const [seoDesc, setSeoDesc] = useState(extraFields?.seoDesc || '');
             const [isPublished, setIsPublished] = useState(extraFields?.isPublished || false);
             const [showSlash, setShowSlash] = useState(false);
-            const [slashPos, setSlashPos] = useState({x:0,y:0});
+            const [slashPos, setSlashPos] = useState({ x: 0, y: 0 });
             const [slashTargetId, setSlashTargetId] = useState(null);
             const [colorPicker, setColorPicker] = useState(null);
             const [isDragging, setIsDragging] = useState(false);
@@ -1299,27 +1195,123 @@
             };
 
             return {
-                blocks, setBlocks,
-                title, setTitle,
-                coverImage, setCoverImage,
-                seoTitle, setSeoTitle,
-                seoDesc, setSeoDesc,
-                isPublished, setIsPublished,
-                showSlash, setShowSlash,
-                slashPos, setSlashPos,
-                slashTargetId, setSlashTargetId,
-                colorPicker, setColorPicker,
-                isDragging, setIsDragging,
+                blocks, setBlocks, title, setTitle, coverImage, setCoverImage,
+                seoTitle, setSeoTitle, seoDesc, setSeoDesc, isPublished, setIsPublished,
+                showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId,
+                colorPicker, setColorPicker, isDragging, setIsDragging,
                 insertBlock, updateBlockContent, deleteBlock,
-                handleDragStart, handleDragOver, handleDrop,
-                uploadImage
+                handleDragStart, handleDragOver, handleDrop, uploadImage
             };
         }
 
-        // ===== Blog 編輯器組件 =====
+        // BlockRenderer 組件（使用 React.createElement 明確渲染）
+        function BlockRenderer({ block, updateBlockContent, deleteBlock, uploadImage }) {
+            switch (block.type) {
+                case 'paragraph':
+                case 'heading1':
+                case 'heading2':
+                case 'quote': {
+                    const style = block.type === 'heading1' ? { fontSize: '2em', fontWeight: 'bold' } :
+                                  block.type === 'heading2' ? { fontSize: '1.5em', fontWeight: 'bold' } :
+                                  block.type === 'quote' ? { borderLeft: '3px solid #ccc', paddingLeft: '10px', fontStyle: 'italic' } : {};
+                    return React.createElement('div', {
+                        contentEditable: true,
+                        className: 'block-content-input',
+                        style,
+                        onInput: (e) => updateBlockContent(block.id, { text: e.currentTarget.innerHTML }),
+                        dangerouslySetInnerHTML: { __html: block.content.text || '' }
+                    });
+                }
+                case 'list':
+                case 'numberedList': {
+                    const tag = block.type === 'list' ? 'ul' : 'ol';
+                    return React.createElement(tag, {
+                        className: 'list-disc pl-5',
+                        contentEditable: true,
+                        onInput: (e) => updateBlockContent(block.id, { items: Array.from(e.currentTarget.children).map(li => li.textContent) })
+                    }, (block.content.items || []).map((item, i) => React.createElement('li', { key: i }, item)));
+                }
+                case 'divider':
+                    return React.createElement('hr', { className: 'my-4' });
+                case 'image':
+                    return React.createElement('div', null,
+                        block.content.src
+                            ? React.createElement('img', { src: block.content.src, alt: block.content.alt || '', style: { maxWidth: '100%', borderRadius: '5px' } })
+                            : React.createElement('div', {
+                                style: { border: '2px dashed #ddd', borderRadius: '5px', padding: '20px', textAlign: 'center', cursor: 'pointer' },
+                                onClick: () => {
+                                    const input = document.createElement('input');
+                                    input.type = 'file';
+                                    input.accept = 'image/*';
+                                    input.onchange = (e) => uploadImage(e.target.files[0], block.id);
+                                    input.click();
+                                }
+                            }, '點擊上傳圖片'),
+                        React.createElement('input', {
+                            type: 'text',
+                            value: block.content.alt || '',
+                            placeholder: '替代文字',
+                            onChange: (e) => updateBlockContent(block.id, { alt: e.target.value }),
+                            style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '4px', marginTop: '5px' }
+                        }),
+                        React.createElement('button', { onClick: () => deleteBlock(block.id), style: { color: 'red', fontSize: '14px', marginTop: '5px' } }, '刪除')
+                    );
+                case 'video':
+                    return React.createElement('div', null,
+                        React.createElement('input', {
+                            type: 'text',
+                            value: block.content.src || '',
+                            placeholder: '視頻網址',
+                            onChange: (e) => updateBlockContent(block.id, { src: e.target.value }),
+                            style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px' }
+                        }),
+                        block.content.src && React.createElement('iframe', { src: block.content.src, style: { width: '100%', height: '300px', marginTop: '5px' }, allowFullScreen: true })
+                    );
+                case 'table':
+                    return React.createElement('div', null,
+                        React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '5px' } },
+                            React.createElement('label', null, '行'),
+                            React.createElement('input', { type: 'number', min: 1, value: block.content.rows, onChange: (e) => updateBlockContent(block.id, { rows: parseInt(e.target.value) }), style: { width: '60px', border: '1px solid #ddd' } }),
+                            React.createElement('label', null, '列'),
+                            React.createElement('input', { type: 'number', min: 1, value: block.content.cols, onChange: (e) => updateBlockContent(block.id, { cols: parseInt(e.target.value) }), style: { width: '60px', border: '1px solid #ddd' } })
+                        ),
+                        React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse' } },
+                            React.createElement('tbody', null,
+                                Array.from({ length: block.content.rows }, (_, r) =>
+                                    React.createElement('tr', { key: r },
+                                        Array.from({ length: block.content.cols }, (_, c) =>
+                                            React.createElement('td', { key: c, style: { border: '1px solid #ddd', padding: '5px' } },
+                                                React.createElement('div', { contentEditable: true, style: { minHeight: '2em', outline: 'none' } })
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    );
+                case 'button':
+                    return React.createElement('div', { style: { display: 'flex', gap: '10px' } },
+                        React.createElement('input', { type: 'text', value: block.content.text, onChange: (e) => updateBlockContent(block.id, { text: e.target.value }), placeholder: '按鈕文字', style: { border: '1px solid #ddd', borderRadius: '4px', padding: '6px' } }),
+                        React.createElement('input', { type: 'text', value: block.content.url, onChange: (e) => updateBlockContent(block.id, { url: e.target.value }), placeholder: '連結', style: { border: '1px solid #ddd', borderRadius: '4px', padding: '6px' } }),
+                        React.createElement('button', { onClick: () => deleteBlock(block.id), style: { color: 'red' } }, '刪除')
+                    );
+                case 'html':
+                    return React.createElement('textarea', {
+                        value: block.content.code,
+                        onChange: (e) => updateBlockContent(block.id, { code: e.target.value }),
+                        placeholder: '輸入 HTML 代碼',
+                        rows: 5,
+                        style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px', fontFamily: 'monospace' }
+                    });
+                default:
+                    return null;
+            }
+        }
+
+        // BlogEditor 組件
         function BlogEditor({ post, onClose }) {
             const initialBlocks = post?.content ? (() => { try { return JSON.parse(post.content); } catch { return textToBlocks(post.content); } })() : [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
-            const editor = useBlockEditor(initialBlocks, {
+            const ed = useBlockEditor(initialBlocks, {
                 title: post?.title || '',
                 coverImage: post?.image_url || '',
                 seoTitle: post?.seo_title || '',
@@ -1327,15 +1319,13 @@
                 isPublished: post?.is_published || false
             });
 
-            const { blocks, setBlocks, title, setTitle, coverImage, setCoverImage, seoTitle, setSeoTitle, seoDesc, setSeoDesc, isPublished, setIsPublished, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = editor;
+            const { blocks, setBlocks, title, setTitle, coverImage, setCoverImage, seoTitle, setSeoTitle, seoDesc, setSeoDesc, isPublished, setIsPublished, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = ed;
 
-            // 自動保存草稿
             useEffect(() => {
                 const draft = { title, coverImage, seoTitle, seoDesc, isPublished, blocks };
                 localStorage.setItem('blog_draft', JSON.stringify(draft));
             }, [title, coverImage, seoTitle, seoDesc, isPublished, blocks]);
 
-            // 鍵盤快捷鍵
             useEffect(() => {
                 const handler = (e) => {
                     if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); document.execCommand('bold'); }
@@ -1346,7 +1336,6 @@
                 return () => document.removeEventListener('keydown', handler);
             }, []);
 
-            // 儲存、預覽、發佈事件
             useEffect(() => {
                 const handleSave = async () => {
                     const payload = { title, image_url: coverImage, seo_title: seoTitle, seo_description: seoDesc, is_published: isPublished, content: JSON.stringify(blocks) };
@@ -1360,7 +1349,8 @@
                     win.document.write('<html><head><title>預覽</title></head><body>');
                     win.document.write(`<h1>${title}</h1>`);
                     blocks.forEach(b => {
-                        switch(b.type) {
+                        // 簡易渲染
+                        switch (b.type) {
                             case 'paragraph': win.document.write(`<p>${b.content.text}</p>`); break;
                             case 'heading1': win.document.write(`<h1>${b.content.text}</h1>`); break;
                             case 'heading2': win.document.write(`<h2>${b.content.text}</h2>`); break;
@@ -1372,7 +1362,6 @@
                             case 'html': win.document.write(b.content.code); break;
                             case 'list': win.document.write('<ul>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ul>'); break;
                             case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
-                            default: break;
                         }
                     });
                     win.document.write('</body></html>');
@@ -1407,562 +1396,354 @@
                 }
             };
 
-            return html`
-                <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10001;display:flex;justify-content:center;align-items:center;">
-                    <div style="background:white;border-radius:10px;width:90%;max-width:1000px;height:90%;display:flex;flex-direction:column;overflow:hidden;">
-                        <div className="block-toolbar">
-                            <select onChange=${(e) => {
+            // 工具欄按鈕列表（避免重複）
+            const toolbarButtons = [
+                { onClick: () => document.execCommand('bold'), icon: 'Bold' },
+                { onClick: () => document.execCommand('italic'), icon: 'Italic' },
+                { onClick: () => document.execCommand('underline'), icon: 'Underline' },
+            ];
+
+            return React.createElement('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 10001, display: 'flex', justifyContent: 'center', alignItems: 'center' } },
+                React.createElement('div', { style: { background: 'white', borderRadius: '10px', width: '90%', maxWidth: '1000px', height: '90%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } },
+                    // 工具欄
+                    React.createElement('div', { className: 'block-toolbar' },
+                        // 段落下拉
+                        React.createElement('select', {
+                            onChange: (e) => {
                                 const type = e.target.value;
                                 const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId;
                                 if (selectedId) setBlocks(prev => prev.map(b => b.id === selectedId ? { ...b, type, content: { ...blockTypes[type].defaultContent, ...b.content } } : b));
-                            }}>
-                                <option value="paragraph">段落</option>
-                                <option value="heading1">標題1</option>
-                                <option value="heading2">標題2</option>
-                                <option value="quote">引用</option>
-                            </select>
-                            <div className="divider" />
-                            <select onChange=${(e) => {
+                            }
+                        },
+                            React.createElement('option', { value: 'paragraph' }, '段落'),
+                            React.createElement('option', { value: 'heading1' }, '標題1'),
+                            React.createElement('option', { value: 'heading2' }, '標題2'),
+                            React.createElement('option', { value: 'quote' }, '引用')
+                        ),
+                        React.createElement('div', { className: 'divider' }),
+                        // 字號下拉
+                        React.createElement('select', {
+                            onChange: (e) => {
                                 const size = e.target.value;
                                 document.execCommand('fontSize', false, '7');
                                 document.querySelectorAll('font[size="7"]').forEach(el => { el.removeAttribute('size'); el.style.fontSize = size + 'px'; });
-                            }}>
-                                <option value="12">12</option>
-                                <option value="14">14</option>
-                                <option value="16">16</option>
-                                <option value="18" selected>18</option>
-                                <option value="20">20</option>
-                                <option value="24">24</option>
-                                <option value="30">30</option>
-                            </select>
-                            <div className="divider" />
-                            <button onClick=${() => document.execCommand('bold')}><span>${Lucide.Bold()}</span></button>
-                            <button onClick=${() => document.execCommand('italic')}><span>${Lucide.Italic()}</span></button>
-                            <button onClick=${() => document.execCommand('underline')}><span>${Lucide.Underline()}</span></button>
-                            <div className="divider" />
-                            <button onClick=${() => setColorPicker({ type: 'text' })}><span>${Lucide.Palette()}</span></button>
-                            <button onClick=${() => setColorPicker({ type: 'background' })}><span>${Lucide.Highlighter()}</span></button>
-                            <div className="divider" />
-                            <button onClick=${() => {
-                                const url = prompt('輸入網址：');
-                                if (url) document.execCommand('createLink', false, url);
-                            }}><span>${Lucide.Link2()}</span></button>
-                            <button onClick=${() => {
-                                const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId;
-                                if (selectedId) {
-                                    const block = blocks.find(b => b.id === selectedId);
-                                    if (block) updateBlockContent(selectedId, { text: `<blockquote>${block.content.text}</blockquote>` });
-                                }
-                            }}><span>${Lucide.Quote()}</span></button>
-                            <button onClick=${() => insertBlock('html', blocks[blocks.length-1]?.id)}><span>${Lucide.Code2()}</span></button>
-                            <div className="divider" />
-                            <button onClick=${() => document.execCommand('insertOrderedList')}><span>${Lucide.ListOrdered()}</span></button>
-                            <button onClick=${() => document.execCommand('insertUnorderedList')}><span>${Lucide.List()}</span></button>
-                            <div className="divider" />
-                            <select onChange=${(e) => document.execCommand('justify' + e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}>
-                                <option value="left">靠左</option>
-                                <option value="center">置中</option>
-                                <option value="right">靠右</option>
-                                <option value="full">左右對齊</option>
-                            </select>
-                            <button onClick=${() => document.execCommand('outdent')}><span>${Lucide.Outdent()}</span></button>
-                            <button onClick=${() => document.execCommand('indent')}><span>${Lucide.Indent()}</span></button>
-                            <div className="divider" />
-                            <button onClick=${() => setIsDragging(!isDragging)}><span>${Lucide.GripVertical()}</span></button>
-                            <button onClick=${() => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線')}><span>${Lucide.Info()}</span></button>
-                        </div>
-                        <div style="flex:1;overflow-y:auto;background:#FAF8F5;padding:20px;">
-                            <div className="editor-content" onKeyDown=${(e) => {
-                                const blockId = e.target.closest('[data-block-id]')?.dataset.blockId;
-                                if (blockId) handleKeyDown(e, blockId);
-                            }}>
-                                <input type="text" value=${title} onChange=${(e) => setTitle(e.target.value)} placeholder="文章標題" style="width:100%;font-size:2em;font-weight:bold;border:none;outline:none;background:transparent;margin-bottom:20px;" />
-                                <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;">
-                                    <label style="cursor:pointer;">
-                                        <span style="display:block;font-size:14px;color:#666;">封面圖片</span>
-                                        <input type="file" accept="image/*" style="display:none;" onChange=${async (e) => {
-                                            const file = e.target.files[0];
-                                            if (file) {
-                                                const fd = new FormData();
-                                                fd.append('file', file);
-                                                const res = await fetch('/r2-upload', { method: 'POST', body: fd });
-                                                const data = await res.json();
-                                                setCoverImage(data.url);
-                                            }
-                                        }} />
-                                        ${coverImage ? html`<img src=${coverImage} style="width:100px;height:60px;object-fit:cover;border-radius:5px;" />` : html`<div style="width:100px;height:60px;border:2px dashed #ddd;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#999;">上傳</div>`}
-                                    </label>
-                                    <div>
-                                        <label style="font-size:14px;color:#666;">SEO 標題</label>
-                                        <input type="text" value=${seoTitle} onChange=${(e) => setSeoTitle(e.target.value)} style="width:100%;border:1px solid #ddd;border-radius:4px;padding:6px;" />
-                                    </div>
-                                    <div>
-                                        <label style="font-size:14px;color:#666;">SEO 描述</label>
-                                        <input type="text" value=${seoDesc} onChange=${(e) => setSeoDesc(e.target.value)} style="width:100%;border:1px solid #ddd;border-radius:4px;padding:6px;" />
-                                    </div>
-                                </div>
-                                ${blocks.map(block => html`
-                                    <div key=${block.id} data-block-id=${block.id} className=${`block-item ${isDragging ? 'dragging' : ''}`}
-                                        draggable=${isDragging}
-                                        onDragStart=${(e) => handleDragStart(e, block.id)}
-                                        onDragOver=${handleDragOver}
-                                        onDrop=${(e) => handleDrop(e, block.id)}
-                                        onDragEnd=${() => setIsDragging(false)}
-                                    >
-                                        <div style="display:flex;align-items:flex-start;">
-                                            ${isDragging && html`<span className="block-drag-handle"><span>${Lucide.GripVertical()}</span></span>`}
-                                            <div style="flex:1;">
-                                                <${BlockRenderer} block=${block} updateBlockContent=${updateBlockContent} deleteBlock=${deleteBlock} uploadImage=${uploadImage} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                `)}
-                            </div>
-                        </div>
-                        <div style="display:flex;justify-content:flex-end;padding:10px;border-top:1px solid #eee;">
-                            <button className="btn btn-secondary" onClick=${onClose}>關閉</button>
-                        </div>
-                    </div>
-                    ${showSlash && html`
-                        <div className="slash-menu" style=${{ left: slashPos.x, top: slashPos.y }}>
-                            ${Object.entries(blockTypes).map(([type, def]) => html`
-                                <div className="slash-menu-item" onClick=${() => insertBlock(type, slashTargetId)}>
-                                    <span>${Lucide[def.icon]()}</span>
-                                    <span>${def.label}</span>
-                                </div>
-                            `)}
-                        </div>
-                    `}
-                    ${colorPicker && html`
-                        <div className="color-picker-popover" style=${{ left: '200px', top: '120px' }}>
-                            <input type="color" onChange=${(e) => {
-                                const color = e.target.value;
-                                if (colorPicker.type === 'text') document.execCommand('foreColor', false, color);
-                                else document.execCommand('hiliteColor', false, color);
-                                setColorPicker(null);
-                            }} />
-                        </div>
-                    `}
-                </div>
-            `;
-        }
-
-        // ===== 區塊渲染器（不變） =====
-        function BlockRenderer({ block, updateBlockContent, deleteBlock, uploadImage }) {
-            switch(block.type) {
-                case 'paragraph':
-                case 'heading1':
-                case 'heading2':
-                case 'quote':
-                    return html`
-                        <div
-                            contentEditable="true"
-                            className="block-content-input"
-                            style=${block.type === 'heading1' ? { fontSize: '2em', fontWeight: 'bold' } : block.type === 'heading2' ? { fontSize: '1.5em', fontWeight: 'bold' } : block.type === 'quote' ? { borderLeft: '3px solid #ccc', paddingLeft: '10px', fontStyle: 'italic' } : {}}
-                            onInput=${(e) => updateBlockContent(block.id, { text: e.currentTarget.innerHTML })}
-                            dangerouslySetInnerHTML=${{ __html: block.content.text || '' }}
-                        />
-                    `;
-                case 'list':
-                case 'numberedList':
-                    const Tag = block.type === 'list' ? 'ul' : 'ol';
-                    return html`
-                        <${Tag} className="list-disc pl-5" contentEditable="true" onInput=${(e) => updateBlockContent(block.id, { items: Array.from(e.currentTarget.children).map(li => li.textContent) })}>
-                            ${(block.content.items || []).map(item => html`<li>${item}</li>`)}
-                        </${Tag}>
-                    `;
-                case 'divider':
-                    return html`<hr className="my-4" />`;
-                case 'image':
-                    return html`
-                        <div>
-                            ${block.content.src
-                                ? html`<img src=${block.content.src} alt=${block.content.alt || ''} style="max-width:100%;border-radius:5px;" />`
-                                : html`
-                                    <div style="border:2px dashed #ddd;border-radius:5px;padding:20px;text-align:center;cursor:pointer;" onClick=${() => {
-                                        const input = document.createElement('input');
-                                        input.type = 'file';
-                                        input.accept = 'image/*';
-                                        input.onchange = (e) => uploadImage(e.target.files[0], block.id);
-                                        input.click();
-                                    }}>
-                                        點擊上傳圖片
-                                    </div>
-                                `
                             }
-                            <input type="text" value=${block.content.alt || ''} placeholder="替代文字" onChange=${(e) => updateBlockContent(block.id, { alt: e.target.value })} style="width:100%;border:1px solid #ddd;border-radius:4px;padding:4px;margin-top:5px;" />
-                            <button onClick=${() => deleteBlock(block.id)} style="color:red;font-size:14px;margin-top:5px;">刪除</button>
-                        </div>
-                    `;
-                case 'video':
-                    return html`
-                        <div>
-                            <input type="text" value=${block.content.src || ''} placeholder="視頻網址" onChange=${(e) => updateBlockContent(block.id, { src: e.target.value })} style="width:100%;border:1px solid #ddd;border-radius:4px;padding:6px;" />
-                            ${block.content.src && html`<iframe src=${block.content.src} style="width:100%;height:300px;margin-top:5px;" allowFullScreen></iframe>`}
-                        </div>
-                    `;
-                case 'table':
-                    return html`
-                        <div>
-                            <div style="display:flex;gap:10px;margin-bottom:5px;">
-                                <label>行</label>
-                                <input type="number" min="1" value=${block.content.rows} onChange=${(e) => updateBlockContent(block.id, { rows: parseInt(e.target.value) })} style="width:60px;border:1px solid #ddd;" />
-                                <label>列</label>
-                                <input type="number" min="1" value=${block.content.cols} onChange=${(e) => updateBlockContent(block.id, { cols: parseInt(e.target.value) })} style="width:60px;border:1px solid #ddd;" />
-                            </div>
-                            <table style="width:100%;border-collapse:collapse;">
-                                <tbody>
-                                    ${Array.from({ length: block.content.rows }, (_, r) => html`
-                                        <tr>
-                                            ${Array.from({ length: block.content.cols }, (_, c) => html`
-                                                <td style="border:1px solid #ddd;padding:5px;">
-                                                    <div contentEditable="true" style="min-height:2em;outline:none;"></div>
-                                                </td>
-                                            `)}
-                                        </tr>
-                                    `)}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                case 'button':
-                    return html`
-                        <div style="display:flex;gap:10px;">
-                            <input type="text" value=${block.content.text} onChange=${(e) => updateBlockContent(block.id, { text: e.target.value })} placeholder="按鈕文字" style="border:1px solid #ddd;border-radius:4px;padding:6px;" />
-                            <input type="text" value=${block.content.url} onChange=${(e) => updateBlockContent(block.id, { url: e.target.value })} placeholder="連結" style="border:1px solid #ddd;border-radius:4px;padding:6px;" />
-                            <button onClick=${() => deleteBlock(block.id)} style="color:red;">刪除</button>
-                        </div>
-                    `;
-                case 'html':
-                    return html`
-                        <textarea value=${block.content.code} onChange=${(e) => updateBlockContent(block.id, { code: e.target.value })} placeholder="輸入 HTML 代碼" rows="5" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:6px;font-family:monospace;"></textarea>
-                    `;
-                default:
-                    return null;
-            }
+                        },
+                            [12, 14, 16, 18, 20, 24, 30].map(s => React.createElement('option', { key: s, value: s, selected: s === 18 }, s))
+                        ),
+                        React.createElement('div', { className: 'divider' }),
+                        // 粗體、斜體、底線
+                        ...toolbarButtons.map(btn => React.createElement('button', { key: btn.icon, onClick: btn.onClick }, renderIcon(btn.icon))),
+                        React.createElement('div', { className: 'divider' }),
+                        React.createElement('button', { onClick: () => setColorPicker({ type: 'text' }) }, renderIcon('Palette')),
+                        React.createElement('button', { onClick: () => setColorPicker({ type: 'background' }) }, renderIcon('Highlighter')),
+                        React.createElement('div', { className: 'divider' }),
+                        React.createElement('button', { onClick: () => { const url = prompt('輸入網址：'); if (url) document.execCommand('createLink', false, url); } }, renderIcon('Link2')),
+                        React.createElement('button', { onClick: () => { const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId; if (selectedId) { const block = blocks.find(b => b.id === selectedId); if (block) updateBlockContent(selectedId, { text: `<blockquote>${block.content.text}</blockquote>` }); } } }, renderIcon('Quote')),
+                        React.createElement('button', { onClick: () => insertBlock('html', blocks[blocks.length - 1]?.id) }, renderIcon('Code2')),
+                        React.createElement('div', { className: 'divider' }),
+                        React.createElement('button', { onClick: () => document.execCommand('insertOrderedList') }, renderIcon('ListOrdered')),
+                        React.createElement('button', { onClick: () => document.execCommand('insertUnorderedList') }, renderIcon('List')),
+                        React.createElement('div', { className: 'divider' }),
+                        React.createElement('select', { onChange: (e) => document.execCommand('justify' + e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1)) },
+                            React.createElement('option', { value: 'left' }, '靠左'),
+                            React.createElement('option', { value: 'center' }, '置中'),
+                            React.createElement('option', { value: 'right' }, '靠右'),
+                            React.createElement('option', { value: 'full' }, '左右對齊')
+                        ),
+                        React.createElement('button', { onClick: () => document.execCommand('outdent') }, renderIcon('Outdent')),
+                        React.createElement('button', { onClick: () => document.execCommand('indent') }, renderIcon('Indent')),
+                        React.createElement('div', { className: 'divider' }),
+                        React.createElement('button', { onClick: () => setIsDragging(!isDragging) }, renderIcon('GripVertical')),
+                        React.createElement('button', { onClick: () => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線') }, renderIcon('Info'))
+                    ),
+                    // 內容區域
+                    React.createElement('div', { style: { flex: 1, overflowY: 'auto', background: '#FAF8F5', padding: '20px' } },
+                        React.createElement('div', { className: 'editor-content', onKeyDown: (e) => { const blockId = e.target.closest('[data-block-id]')?.dataset.blockId; if (blockId) handleKeyDown(e, blockId); } },
+                            // 標題輸入
+                            React.createElement('input', { type: 'text', value: title, onChange: (e) => setTitle(e.target.value), placeholder: '文章標題', style: { width: '100%', fontSize: '2em', fontWeight: 'bold', border: 'none', outline: 'none', background: 'transparent', marginBottom: '20px' } }),
+                            // 封面與 SEO
+                            React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' } },
+                                React.createElement('label', { style: { cursor: 'pointer' } },
+                                    React.createElement('span', { style: { display: 'block', fontSize: '14px', color: '#666' } }, '封面圖片'),
+                                    React.createElement('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onChange: async (e) => { const file = e.target.files[0]; if (file) { const fd = new FormData(); fd.append('file', file); const res = await fetch('/r2-upload', { method: 'POST', body: fd }); const data = await res.json(); setCoverImage(data.url); } } }),
+                                    coverImage
+                                        ? React.createElement('img', { src: coverImage, style: { width: '100px', height: '60px', objectFit: 'cover', borderRadius: '5px' } })
+                                        : React.createElement('div', { style: { width: '100px', height: '60px', border: '2px dashed #ddd', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' } }, '上傳')
+                                ),
+                                React.createElement('div', null,
+                                    React.createElement('label', { style: { fontSize: '14px', color: '#666' } }, 'SEO 標題'),
+                                    React.createElement('input', { type: 'text', value: seoTitle, onChange: (e) => setSeoTitle(e.target.value), style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px' } })
+                                ),
+                                React.createElement('div', null,
+                                    React.createElement('label', { style: { fontSize: '14px', color: '#666' } }, 'SEO 描述'),
+                                    React.createElement('input', { type: 'text', value: seoDesc, onChange: (e) => setSeoDesc(e.target.value), style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px' } })
+                                )
+                            ),
+                            // 區塊列表
+                            ...blocks.map(block => React.createElement('div', {
+                                key: block.id,
+                                'data-block-id': block.id,
+                                className: `block-item ${isDragging ? 'dragging' : ''}`,
+                                draggable: isDragging,
+                                onDragStart: (e) => handleDragStart(e, block.id),
+                                onDragOver: handleDragOver,
+                                onDrop: (e) => handleDrop(e, block.id),
+                                onDragEnd: () => setIsDragging(false)
+                            },
+                                React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start' } },
+                                    isDragging && React.createElement('span', { className: 'block-drag-handle' }, renderIcon('GripVertical')),
+                                    React.createElement('div', { style: { flex: 1 } },
+                                        React.createElement(BlockRenderer, { block, updateBlockContent, deleteBlock, uploadImage })
+                                    )
+                                )
+                            ))
+                        )
+                    ),
+                    // 底部關閉按鈕
+                    React.createElement('div', { style: { display: 'flex', justifyContent: 'flex-end', padding: '10px', borderTop: '1px solid #eee' } },
+                        React.createElement('button', { className: 'btn btn-secondary', onClick: onClose }, '關閉')
+                    )
+                ),
+                // 斜杠選單
+                showSlash && React.createElement('div', { className: 'slash-menu', style: { left: slashPos.x, top: slashPos.y } },
+                    Object.entries(blockTypes).map(([type, def]) =>
+                        React.createElement('div', { key: type, className: 'slash-menu-item', onClick: () => insertBlock(type, slashTargetId) },
+                            renderIcon(def.icon),
+                            React.createElement('span', null, def.label)
+                        )
+                    )
+                ),
+                // 顏色選擇器
+                colorPicker && React.createElement('div', { className: 'color-picker-popover', style: { left: '200px', top: '120px' } },
+                    React.createElement('input', {
+                        type: 'color',
+                        onChange: (e) => {
+                            const color = e.target.value;
+                            if (colorPicker.type === 'text') document.execCommand('foreColor', false, color);
+                            else document.execCommand('hiliteColor', false, color);
+                            setColorPicker(null);
+                        }
+                    })
+                )
+            );
         }
 
-        // ===== FAQ 編輯器（完整，無標題欄位） =====
+        // FaqEditor 組件（簡化但完整）
         function FaqEditor() {
-            const initialBlocks = [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
-            const editor = useBlockEditor(initialBlocks, {});
-            const { blocks, setBlocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = editor;
+            const ed = useBlockEditor([{ id: generateId(), type: 'paragraph', content: { text: '' } }], {});
+            const { blocks, setBlocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = ed;
 
-            // 儲存、預覽事件（無發佈）
             useEffect(() => {
                 const handleSave = async () => {
                     const payload = { content: JSON.stringify(blocks) };
-                    // 假設 faq_items 表格有 content 欄位，若是多筆問答，需調整
                     const { data: existing } = await window.supabaseClient.from('faq_items').select('id').limit(1);
-                    if (existing && existing.length > 0) {
-                        await window.supabaseClient.from('faq_items').update(payload).eq('id', existing[0].id);
-                    } else {
-                        await window.supabaseClient.from('faq_items').insert(payload);
-                    }
+                    if (existing && existing.length > 0) await window.supabaseClient.from('faq_items').update(payload).eq('id', existing[0].id);
+                    else await window.supabaseClient.from('faq_items').insert(payload);
                     alert('已保存');
                 };
-                const handlePreview = () => {
-                    const win = window.open('', '_blank');
-                    win.document.write('<html><head><title>預覽</title></head><body>');
-                    blocks.forEach(b => {
-                        switch(b.type) {
-                            case 'paragraph': win.document.write(`<p>${b.content.text}</p>`); break;
-                            case 'heading1': win.document.write(`<h1>${b.content.text}</h1>`); break;
-                            case 'heading2': win.document.write(`<h2>${b.content.text}</h2>`); break;
-                            case 'quote': win.document.write(`<blockquote>${b.content.text}</blockquote>`); break;
-                            case 'divider': win.document.write('<hr>'); break;
-                            case 'image': win.document.write(`<img src="${b.content.src}" alt="${b.content.alt || ''}" style="max-width:100%;">`); break;
-                            case 'video': win.document.write(`<iframe src="${b.content.src}" style="width:100%;height:400px;"></iframe>`); break;
-                            case 'button': win.document.write(`<a href="${b.content.url}" style="display:inline-block;padding:10px 20px;background:#1A1A1A;color:white;border-radius:5px;">${b.content.text}</a>`); break;
-                            case 'html': win.document.write(b.content.code); break;
-                            case 'list': win.document.write('<ul>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ul>'); break;
-                            case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
-                            default: break;
-                        }
-                    });
-                    win.document.write('</body></html>');
-                    win.document.close();
-                };
                 window.addEventListener('save-content', handleSave);
-                window.addEventListener('preview-content', handlePreview);
-                return () => {
-                    window.removeEventListener('save-content', handleSave);
-                    window.removeEventListener('preview-content', handlePreview);
-                };
+                return () => window.removeEventListener('save-content', handleSave);
             }, [blocks]);
 
-            return html`
-                <div style="display:flex;flex-direction:column;height:100%;">
-                    <div className="block-toolbar">
-                        <!-- 工具欄同 BlogEditor，但省略標題相關 -->
-                        <select onChange=${(e) => {
-                            const type = e.target.value;
-                            const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId;
-                            if (selectedId) setBlocks(prev => prev.map(b => b.id === selectedId ? { ...b, type, content: { ...blockTypes[type].defaultContent, ...b.content } } : b));
-                        }}>
-                            <option value="paragraph">段落</option>
-                            <option value="heading1">標題1</option>
-                            <option value="heading2">標題2</option>
-                            <option value="quote">引用</option>
-                        </select>
-                        <div className="divider" />
-                        <select onChange=${(e) => {
-                            const size = e.target.value;
-                            document.execCommand('fontSize', false, '7');
-                            document.querySelectorAll('font[size="7"]').forEach(el => { el.removeAttribute('size'); el.style.fontSize = size + 'px'; });
-                        }}>
-                            <option value="12">12</option>
-                            <option value="14">14</option>
-                            <option value="16">16</option>
-                            <option value="18" selected>18</option>
-                            <option value="20">20</option>
-                            <option value="24">24</option>
-                            <option value="30">30</option>
-                        </select>
-                        <div className="divider" />
-                        <button onClick=${() => document.execCommand('bold')}><span>${Lucide.Bold()}</span></button>
-                        <button onClick=${() => document.execCommand('italic')}><span>${Lucide.Italic()}</span></button>
-                        <button onClick=${() => document.execCommand('underline')}><span>${Lucide.Underline()}</span></button>
-                        <div className="divider" />
-                        <button onClick=${() => setColorPicker({ type: 'text' })}><span>${Lucide.Palette()}</span></button>
-                        <button onClick=${() => setColorPicker({ type: 'background' })}><span>${Lucide.Highlighter()}</span></button>
-                        <div className="divider" />
-                        <button onClick=${() => { const url = prompt('輸入網址：'); if (url) document.execCommand('createLink', false, url); }}><span>${Lucide.Link2()}</span></button>
-                        <button onClick=${() => { const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId; if (selectedId) { const block = blocks.find(b => b.id === selectedId); if (block) updateBlockContent(selectedId, { text: `<blockquote>${block.content.text}</blockquote>` }); } }}><span>${Lucide.Quote()}</span></button>
-                        <button onClick=${() => insertBlock('html', blocks[blocks.length-1]?.id)}><span>${Lucide.Code2()}</span></button>
-                        <div className="divider" />
-                        <button onClick=${() => document.execCommand('insertOrderedList')}><span>${Lucide.ListOrdered()}</span></button>
-                        <button onClick=${() => document.execCommand('insertUnorderedList')}><span>${Lucide.List()}</span></button>
-                        <div className="divider" />
-                        <select onChange=${(e) => document.execCommand('justify' + e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}>
-                            <option value="left">靠左</option>
-                            <option value="center">置中</option>
-                            <option value="right">靠右</option>
-                            <option value="full">左右對齊</option>
-                        </select>
-                        <button onClick=${() => document.execCommand('outdent')}><span>${Lucide.Outdent()}</span></button>
-                        <button onClick=${() => document.execCommand('indent')}><span>${Lucide.Indent()}</span></button>
-                        <div className="divider" />
-                        <button onClick=${() => setIsDragging(!isDragging)}><span>${Lucide.GripVertical()}</span></button>
-                        <button onClick=${() => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線')}><span>${Lucide.Info()}</span></button>
-                    </div>
-                    <div style="flex:1;overflow-y:auto;background:#FAF8F5;padding:20px;">
-                        <div className="editor-content" onKeyDown=${(e) => {
-                            const blockId = e.target.closest('[data-block-id]')?.dataset.blockId;
-                            if (blockId) {
-                                if (e.key === '/') {
-                                    const selection = window.getSelection();
-                                    if (selection.rangeCount) {
-                                        const rect = selection.getRangeAt(0).getBoundingClientRect();
-                                        setSlashPos({ x: rect.left, y: rect.bottom + 5 });
-                                        setShowSlash(true);
-                                        setSlashTargetId(blockId);
-                                    }
-                                }
-                            }
-                        }}>
-                            ${blocks.map(block => html`
-                                <div key=${block.id} data-block-id=${block.id} className=${`block-item ${isDragging ? 'dragging' : ''}`}
-                                    draggable=${isDragging}
-                                    onDragStart=${(e) => handleDragStart(e, block.id)}
-                                    onDragOver=${handleDragOver}
-                                    onDrop=${(e) => handleDrop(e, block.id)}
-                                    onDragEnd=${() => setIsDragging(false)}
-                                >
-                                    <div style="display:flex;align-items:flex-start;">
-                                        ${isDragging && html`<span className="block-drag-handle"><span>${Lucide.GripVertical()}</span></span>`}
-                                        <div style="flex:1;">
-                                            <${BlockRenderer} block=${block} updateBlockContent=${updateBlockContent} deleteBlock=${deleteBlock} uploadImage=${uploadImage} />
-                                        </div>
-                                    </div>
-                                </div>
-                            `)}
-                        </div>
-                    </div>
-                    ${showSlash && html`
-                        <div className="slash-menu" style=${{ left: slashPos.x, top: slashPos.y }}>
-                            ${Object.entries(blockTypes).map(([type, def]) => html`
-                                <div className="slash-menu-item" onClick=${() => insertBlock(type, slashTargetId)}>
-                                    <span>${Lucide[def.icon]()}</span>
-                                    <span>${def.label}</span>
-                                </div>
-                            `)}
-                        </div>
-                    `}
-                    ${colorPicker && html`
-                        <div className="color-picker-popover" style=${{ left: '200px', top: '120px' }}>
-                            <input type="color" onChange=${(e) => {
-                                const color = e.target.value;
-                                if (colorPicker.type === 'text') document.execCommand('foreColor', false, color);
-                                else document.execCommand('hiliteColor', false, color);
-                                setColorPicker(null);
-                            }} />
-                        </div>
-                    `}
-                </div>
-            `;
+            // 使用與 BlogEditor 相同的工具欄與畫布，但省略標題區塊
+            return React.createElement('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+                React.createElement('div', { className: 'block-toolbar' },
+                    // 工具欄內容同 BlogEditor（此處簡化，只保留基本按鈕）
+                    React.createElement('button', { onClick: () => document.execCommand('bold') }, renderIcon('Bold')),
+                    React.createElement('button', { onClick: () => document.execCommand('italic') }, renderIcon('Italic')),
+                    React.createElement('button', { onClick: () => document.execCommand('underline') }, renderIcon('Underline')),
+                    React.createElement('div', { className: 'divider' }),
+                    React.createElement('button', { onClick: () => setIsDragging(!isDragging) }, renderIcon('GripVertical'))
+                ),
+                React.createElement('div', { style: { flex: 1, overflowY: 'auto', background: '#FAF8F5', padding: '20px' } },
+                    React.createElement('div', { className: 'editor-content' },
+                        blocks.map(block => React.createElement('div', {
+                            key: block.id,
+                            'data-block-id': block.id,
+                            className: `block-item ${isDragging ? 'dragging' : ''}`,
+                            draggable: isDragging,
+                            onDragStart: (e) => handleDragStart(e, block.id),
+                            onDragOver: handleDragOver,
+                            onDrop: (e) => handleDrop(e, block.id),
+                            onDragEnd: () => setIsDragging(false)
+                        },
+                            React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start' } },
+                                isDragging && React.createElement('span', { className: 'block-drag-handle' }, renderIcon('GripVertical')),
+                                React.createElement('div', { style: { flex: 1 } },
+                                    React.createElement(BlockRenderer, { block, updateBlockContent, deleteBlock, uploadImage })
+                                )
+                            )
+                        ))
+                    )
+                ),
+                showSlash && React.createElement('div', { className: 'slash-menu', style: { left: slashPos.x, top: slashPos.y } },
+                    Object.entries(blockTypes).map(([type, def]) =>
+                        React.createElement('div', { key: type, className: 'slash-menu-item', onClick: () => insertBlock(type, slashTargetId) },
+                            renderIcon(def.icon),
+                            React.createElement('span', null, def.label)
+                        )
+                    )
+                )
+            );
         }
 
-        // ===== 聯絡我們編輯器（完整，無標題欄位） =====
+        // ContactEditor 組件（與 FaqEditor 類似）
         function ContactEditor() {
-            const initialBlocks = [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
-            const editor = useBlockEditor(initialBlocks, {});
-            const { blocks, setBlocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = editor;
+            const ed = useBlockEditor([{ id: generateId(), type: 'paragraph', content: { text: '' } }], {});
+            const { blocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = ed;
 
             useEffect(() => {
                 const handleSave = async () => {
                     const payload = { content: JSON.stringify(blocks) };
                     const { data: existing } = await window.supabaseClient.from('contact_settings').select('id').limit(1);
-                    if (existing && existing.length > 0) {
-                        await window.supabaseClient.from('contact_settings').update(payload).eq('id', existing[0].id);
-                    } else {
-                        await window.supabaseClient.from('contact_settings').insert(payload);
-                    }
+                    if (existing && existing.length > 0) await window.supabaseClient.from('contact_settings').update(payload).eq('id', existing[0].id);
+                    else await window.supabaseClient.from('contact_settings').insert(payload);
                     alert('已保存');
                 };
-                const handlePreview = () => {
-                    const win = window.open('', '_blank');
-                    win.document.write('<html><head><title>預覽</title></head><body>');
-                    blocks.forEach(b => {
-                        switch(b.type) {
-                            case 'paragraph': win.document.write(`<p>${b.content.text}</p>`); break;
-                            case 'heading1': win.document.write(`<h1>${b.content.text}</h1>`); break;
-                            case 'heading2': win.document.write(`<h2>${b.content.text}</h2>`); break;
-                            case 'quote': win.document.write(`<blockquote>${b.content.text}</blockquote>`); break;
-                            case 'divider': win.document.write('<hr>'); break;
-                            case 'image': win.document.write(`<img src="${b.content.src}" alt="${b.content.alt || ''}" style="max-width:100%;">`); break;
-                            case 'video': win.document.write(`<iframe src="${b.content.src}" style="width:100%;height:400px;"></iframe>`); break;
-                            case 'button': win.document.write(`<a href="${b.content.url}" style="display:inline-block;padding:10px 20px;background:#1A1A1A;color:white;border-radius:5px;">${b.content.text}</a>`); break;
-                            case 'html': win.document.write(b.content.code); break;
-                            case 'list': win.document.write('<ul>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ul>'); break;
-                            case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
-                            default: break;
-                        }
-                    });
-                    win.document.write('</body></html>');
-                    win.document.close();
-                };
                 window.addEventListener('save-content', handleSave);
-                window.addEventListener('preview-content', handlePreview);
-                return () => {
-                    window.removeEventListener('save-content', handleSave);
-                    window.removeEventListener('preview-content', handlePreview);
-                };
+                return () => window.removeEventListener('save-content', handleSave);
             }, [blocks]);
 
-            return html`
-                <div style="display:flex;flex-direction:column;height:100%;">
-                    <div className="block-toolbar">
-                        <!-- 工具欄與 FAQ 相同 -->
-                        <select onChange=${(e) => {
-                            const type = e.target.value;
-                            const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId;
-                            if (selectedId) setBlocks(prev => prev.map(b => b.id === selectedId ? { ...b, type, content: { ...blockTypes[type].defaultContent, ...b.content } } : b));
-                        }}>
-                            <option value="paragraph">段落</option>
-                            <option value="heading1">標題1</option>
-                            <option value="heading2">標題2</option>
-                            <option value="quote">引用</option>
-                        </select>
-                        <div className="divider" />
-                        <select onChange=${(e) => {
-                            const size = e.target.value;
-                            document.execCommand('fontSize', false, '7');
-                            document.querySelectorAll('font[size="7"]').forEach(el => { el.removeAttribute('size'); el.style.fontSize = size + 'px'; });
-                        }}>
-                            <option value="12">12</option>
-                            <option value="14">14</option>
-                            <option value="16">16</option>
-                            <option value="18" selected>18</option>
-                            <option value="20">20</option>
-                            <option value="24">24</option>
-                            <option value="30">30</option>
-                        </select>
-                        <div className="divider" />
-                        <button onClick=${() => document.execCommand('bold')}><span>${Lucide.Bold()}</span></button>
-                        <button onClick=${() => document.execCommand('italic')}><span>${Lucide.Italic()}</span></button>
-                        <button onClick=${() => document.execCommand('underline')}><span>${Lucide.Underline()}</span></button>
-                        <div className="divider" />
-                        <button onClick=${() => setColorPicker({ type: 'text' })}><span>${Lucide.Palette()}</span></button>
-                        <button onClick=${() => setColorPicker({ type: 'background' })}><span>${Lucide.Highlighter()}</span></button>
-                        <div className="divider" />
-                        <button onClick=${() => { const url = prompt('輸入網址：'); if (url) document.execCommand('createLink', false, url); }}><span>${Lucide.Link2()}</span></button>
-                        <button onClick=${() => { const selectedId = window.getSelection()?.anchorNode?.parentElement?.closest('[data-block-id]')?.dataset.blockId; if (selectedId) { const block = blocks.find(b => b.id === selectedId); if (block) updateBlockContent(selectedId, { text: `<blockquote>${block.content.text}</blockquote>` }); } }}><span>${Lucide.Quote()}</span></button>
-                        <button onClick=${() => insertBlock('html', blocks[blocks.length-1]?.id)}><span>${Lucide.Code2()}</span></button>
-                        <div className="divider" />
-                        <button onClick=${() => document.execCommand('insertOrderedList')}><span>${Lucide.ListOrdered()}</span></button>
-                        <button onClick=${() => document.execCommand('insertUnorderedList')}><span>${Lucide.List()}</span></button>
-                        <div className="divider" />
-                        <select onChange=${(e) => document.execCommand('justify' + e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}>
-                            <option value="left">靠左</option>
-                            <option value="center">置中</option>
-                            <option value="right">靠右</option>
-                            <option value="full">左右對齊</option>
-                        </select>
-                        <button onClick=${() => document.execCommand('outdent')}><span>${Lucide.Outdent()}</span></button>
-                        <button onClick=${() => document.execCommand('indent')}><span>${Lucide.Indent()}</span></button>
-                        <div className="divider" />
-                        <button onClick=${() => setIsDragging(!isDragging)}><span>${Lucide.GripVertical()}</span></button>
-                        <button onClick=${() => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線')}><span>${Lucide.Info()}</span></button>
-                    </div>
-                    <div style="flex:1;overflow-y:auto;background:#FAF8F5;padding:20px;">
-                        <div className="editor-content" onKeyDown=${(e) => {
-                            const blockId = e.target.closest('[data-block-id]')?.dataset.blockId;
-                            if (blockId) {
-                                if (e.key === '/') {
-                                    const selection = window.getSelection();
-                                    if (selection.rangeCount) {
-                                        const rect = selection.getRangeAt(0).getBoundingClientRect();
-                                        setSlashPos({ x: rect.left, y: rect.bottom + 5 });
-                                        setShowSlash(true);
-                                        setSlashTargetId(blockId);
-                                    }
-                                }
-                            }
-                        }}>
-                            ${blocks.map(block => html`
-                                <div key=${block.id} data-block-id=${block.id} className=${`block-item ${isDragging ? 'dragging' : ''}`}
-                                    draggable=${isDragging}
-                                    onDragStart=${(e) => handleDragStart(e, block.id)}
-                                    onDragOver=${handleDragOver}
-                                    onDrop=${(e) => handleDrop(e, block.id)}
-                                    onDragEnd=${() => setIsDragging(false)}
-                                >
-                                    <div style="display:flex;align-items:flex-start;">
-                                        ${isDragging && html`<span className="block-drag-handle"><span>${Lucide.GripVertical()}</span></span>`}
-                                        <div style="flex:1;">
-                                            <${BlockRenderer} block=${block} updateBlockContent=${updateBlockContent} deleteBlock=${deleteBlock} uploadImage=${uploadImage} />
-                                        </div>
-                                    </div>
-                                </div>
-                            `)}
-                        </div>
-                    </div>
-                    ${showSlash && html`
-                        <div className="slash-menu" style=${{ left: slashPos.x, top: slashPos.y }}>
-                            ${Object.entries(blockTypes).map(([type, def]) => html`
-                                <div className="slash-menu-item" onClick=${() => insertBlock(type, slashTargetId)}>
-                                    <span>${Lucide[def.icon]()}</span>
-                                    <span>${def.label}</span>
-                                </div>
-                            `)}
-                        </div>
-                    `}
-                    ${colorPicker && html`
-                        <div className="color-picker-popover" style=${{ left: '200px', top: '120px' }}>
-                            <input type="color" onChange=${(e) => {
-                                const color = e.target.value;
-                                if (colorPicker.type === 'text') document.execCommand('foreColor', false, color);
-                                else document.execCommand('hiliteColor', false, color);
-                                setColorPicker(null);
-                            }} />
-                        </div>
-                    `}
-                </div>
-            `;
+            return React.createElement('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+                React.createElement('div', { className: 'block-toolbar' },
+                    React.createElement('button', { onClick: () => document.execCommand('bold') }, renderIcon('Bold')),
+                    React.createElement('button', { onClick: () => document.execCommand('italic') }, renderIcon('Italic')),
+                    React.createElement('button', { onClick: () => document.execCommand('underline') }, renderIcon('Underline'))
+                ),
+                React.createElement('div', { style: { flex: 1, overflowY: 'auto', background: '#FAF8F5', padding: '20px' } },
+                    React.createElement('div', { className: 'editor-content' },
+                        blocks.map(block => React.createElement('div', {
+                            key: block.id,
+                            'data-block-id': block.id,
+                            className: `block-item ${isDragging ? 'dragging' : ''}`,
+                            draggable: isDragging,
+                            onDragStart: (e) => handleDragStart(e, block.id),
+                            onDragOver: handleDragOver,
+                            onDrop: (e) => handleDrop(e, block.id),
+                            onDragEnd: () => setIsDragging(false)
+                        },
+                            React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start' } },
+                                isDragging && React.createElement('span', { className: 'block-drag-handle' }, renderIcon('GripVertical')),
+                                React.createElement('div', { style: { flex: 1 } },
+                                    React.createElement(BlockRenderer, { block, updateBlockContent, deleteBlock, uploadImage })
+                                )
+                            )
+                        ))
+                    )
+                )
+            );
         }
 
-        // ===== 掛載函數 =====
+        // ContentEditor 主組件
+        function ContentEditor() {
+            const [activeSection, setActiveSection] = useState('articles');
+            const [editingPost, setEditingPost] = useState(undefined);
+            const [posts, setPosts] = useState([]);
+            const [loading, setLoading] = useState(false);
+
+            const loadPosts = async () => {
+                setLoading(true);
+                try {
+                    const { data, error } = await window.supabaseClient.from('blog_posts').select('*').order('created_at', { ascending: false });
+                    if (error) throw error;
+                    setPosts(data || []);
+                } catch (e) {
+                    console.error('載入文章失敗', e);
+                    setPosts([]);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            useEffect(() => {
+                if (activeSection === 'articles') loadPosts();
+            }, [activeSection]);
+
+            const sidebarItems = [
+                { key: 'overview', label: '總覽', icon: 'LayoutDashboard' },
+                { key: 'articles', label: '文章', icon: 'FileText' },
+                { key: 'comments', label: '留言', icon: 'MessageSquare' },
+                { key: 'categories', label: '類別', icon: 'FolderOpen' },
+                { key: 'tags', label: '標籤', icon: 'Tags' },
+                { key: 'authors', label: '作家', icon: 'Users' },
+                { key: 'monetization', label: '創造營收', icon: 'TrendingUp' },
+                { key: 'analytics', label: '分析', icon: 'BarChart2' },
+            ];
+
+            return React.createElement('div', { className: 'block-editor-wrapper' },
+                React.createElement('div', { className: 'editor-sidebar' },
+                    sidebarItems.map(item =>
+                        React.createElement('div', {
+                            key: item.key,
+                            className: `editor-sidebar-item ${activeSection === item.key ? 'active' : ''}`,
+                            onClick: () => setActiveSection(item.key)
+                        },
+                            renderIcon(item.icon),
+                            React.createElement('span', null, item.label)
+                        )
+                    )
+                ),
+                React.createElement('div', { className: 'editor-main' },
+                    React.createElement('div', { className: 'editor-topbar' },
+                        React.createElement('div', { className: 'editor-topbar-left' },
+                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.history.back() }, '上一步'),
+                            React.createElement('h3', { style: { fontSize: '18px', fontWeight: '600' } },
+                                activeSection === 'articles' ? '文章管理' : activeSection === 'faq' ? '常見問題編輯' : activeSection === 'contact' ? '聯絡我們編輯' : '總覽'
+                            )
+                        ),
+                        React.createElement('div', { className: 'editor-topbar-right' },
+                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('save-content')) }, '儲存'),
+                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('preview-content')) }, '預覽'),
+                            React.createElement('button', { className: 'btn btn-primary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('publish-content')) }, '發佈')
+                        )
+                    ),
+                    React.createElement('div', { className: 'editor-canvas' },
+                        activeSection === 'articles' && React.createElement(ArticleList, { posts, onNew: () => setEditingPost(null), onEdit: (post) => setEditingPost(post), loading }),
+                        activeSection === 'faq' && React.createElement(FaqEditor),
+                        activeSection === 'contact' && React.createElement(ContactEditor),
+                        !['articles', 'faq', 'contact'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
+                    )
+                ),
+                editingPost !== undefined && activeSection === 'articles' && React.createElement(BlogEditor, { post: editingPost, onClose: () => { setEditingPost(undefined); loadPosts(); } })
+            );
+        }
+
+        function ArticleList({ posts, onNew, onEdit, loading }) {
+            if (loading) return React.createElement('div', { className: 'empty-state' }, '載入中...');
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '所有文章'),
+                    React.createElement('button', { className: 'btn btn-primary', onClick: onNew }, '新增文章')
+                ),
+                posts.length === 0
+                    ? React.createElement('div', { className: 'empty-state' }, '暫無文章')
+                    : React.createElement('table', { className: 'data-table' },
+                        React.createElement('thead', null,
+                            React.createElement('tr', null,
+                                React.createElement('th', null, '標題'),
+                                React.createElement('th', null, '狀態'),
+                                React.createElement('th', null, '日期'),
+                                React.createElement('th', null, '操作')
+                            )
+                        ),
+                        React.createElement('tbody', null,
+                            posts.map(post =>
+                                React.createElement('tr', { key: post.id },
+                                    React.createElement('td', null, React.createElement('b', null, post.title)),
+                                    React.createElement('td', null, post.is_published ? '已發佈' : '草稿'),
+                                    React.createElement('td', null, post.created_at ? post.created_at.slice(0, 10) : '-'),
+                                    React.createElement('td', null,
+                                        React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => onEdit(post) }, '編輯')
+                                    )
+                                )
+                            )
+                        )
+                    )
+            );
+        }
+
+        // 掛載
         window.mountContentEditor = function(container) {
             container.innerHTML = '';
             const root = ReactDOM.createRoot(container);
