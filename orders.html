@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歷史訂單 | RoyalSpl Florist</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin: 20px 0 0 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .order-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+        .order-status { color: #1A1A1A; font-weight: 600; }
+        .back-link { display: inline-block; margin-top: 10px; color: #1A1A1A; }
+    </style>
+</head>
+<body>
+    <a href="account.html" class="back-btn">←</a>
+    <div class="container">
+        <h1 style="text-align:center;">歷史訂單</h1>
+        <div id="ordersList"></div>
+        <p style="text-align:center;margin-top:20px;"><a href="account.html" class="back-link">返回會員中心</a></p>
+    </div>
+
+    <script>
+        var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadOrders() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) { window.location.href = 'account.html'; return; }
+            const { data: orders, error } = await supabaseClient.from('orders').select('*').eq('customer_email', user.email).order('created_at', { ascending: false });
+            if (error) { document.getElementById('ordersList').innerHTML = '<p>載入失敗</p>'; return; }
+            renderOrders(orders || []);
+        }
+
+        function renderOrders(orders) {
+            const container = document.getElementById('ordersList');
+            if (!orders.length) { container.innerHTML = '<p style="text-align:center;">尚無訂單</p>'; return; }
+            let html = '';
+            orders.forEach(order => {
+                const statusMap = { unpaid: '未付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
+                html += `<div class="order-card">
+                    <div class="order-header">
+                        <span>訂單編號：${order.order_code}</span>
+                        <span class="order-status">${statusMap[order.status] || order.status}</span>
+                    </div>
+                    <div><strong>送貨日期：</strong>${order.delivery_date || '-'}</div>
+                    <div><strong>總金額：</strong>HK$${order.total_amount}</div>
+                    <div style="margin-top:10px;">
+                        <a href="order-detail.html?id=${order.id}" style="color:#1A1A1A;">查看詳情 →</a>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+</body>
+</html>

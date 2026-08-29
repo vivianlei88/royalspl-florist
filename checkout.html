@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
         .user-icon svg { display: block; }
@@ -216,6 +217,11 @@
     </footer>
 
     <script>
+    // ========== Supabase 初始化 ==========
+    var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
     let selectedTimeSlot = 'full_day';
     let selectedTimeFee = 90;
@@ -350,6 +356,13 @@
         btn.disabled = true;
         btn.textContent = '正在連接支付...';
 
+        // 取得目前登入的使用者 email，若已登入則一併送出
+        let customerEmail = '';
+        try {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) customerEmail = user.email || '';
+        } catch (e) { /* 忽略 */ }
+
         const orderData = {
             items: cart.map(item => ({
                 productId: item.productId,
@@ -367,7 +380,8 @@
             deliveryArea: getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
-            totalAmount: getTotal()
+            totalAmount: getTotal(),
+            customerEmail: customerEmail
         };
 
         try {
@@ -410,6 +424,28 @@
         if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; }
     }
 
+    // ========== 會員自動填寫預設地址 ==========
+    async function fillDefaultAddressIfLoggedIn() {
+        try {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
+            const { data: defaultAddr, error } = await supabaseClient
+                .from('user_addresses')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('is_default', true)
+                .maybeSingle();
+            if (error || !defaultAddr) return;
+            document.getElementById('recipientName').value = defaultAddr.recipient_name || '';
+            document.getElementById('recipientPhone').value = defaultAddr.phone || '';
+            document.getElementById('recipientAddress').value = defaultAddr.address || '';
+            // 觸發區域偵測
+            autoDetectArea(defaultAddr.address || '');
+        } catch (e) {
+            // 忽略錯誤，不影響結帳
+        }
+    }
+
     const menuBtn = document.getElementById('menuBtn');
     const navCloseBtn = document.getElementById('navCloseBtn');
     const navDrawer = document.getElementById('navDrawer');
@@ -420,6 +456,7 @@
         updateCartBadge();
         renderSummary();
         setupDatePicker();
+        fillDefaultAddressIfLoggedIn();
     });
     </script>
     <script>
@@ -431,5 +468,5 @@
         }).catch(function() {});
     })();
     </script>
-    </body>
+</body>
 </html>
