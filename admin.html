@@ -1058,8 +1058,8 @@
         }
     });
     </script>
-            <script>
-        // ============ React 區塊編輯器（含 CSV 匯入/匯出、詳情頁保存按鈕） ============
+        <script>
+        // ============ React 區塊編輯器（含分類、標籤、CSV） ============
         const { useState, useEffect, useRef, useCallback, useMemo } = React;
         const html = htm.bind(React.createElement);
 
@@ -1097,6 +1097,9 @@
             BarChart2: () => '📊',
             Download: () => '⬇️',
             Upload: () => '⬆️',
+            Plus: () => '➕',
+            Trash: () => '🗑️',
+            Edit: () => '✏️'
         };
 
         // 區塊類型
@@ -1308,7 +1311,153 @@
             }
         }
 
-        // ===== BlogEditor =====
+        // ===== 分類管理組件 =====
+        function CategoryManager() {
+            const [categories, setCategories] = useState([]);
+            const [nameZh, setNameZh] = useState('');
+            const [nameEn, setNameEn] = useState('');
+            const [editingId, setEditingId] = useState(null);
+
+            const loadCategories = async () => {
+                const { data } = await window.supabaseClient.from('blog_categories').select('*').order('id', { ascending: true });
+                setCategories(data || []);
+            };
+
+            useEffect(() => { loadCategories(); }, []);
+
+            const handleAddOrUpdate = async () => {
+                if (!nameZh.trim()) return alert('請輸入中文名稱');
+                const payload = { name_zh: nameZh.trim(), name_en: nameEn.trim() };
+                if (editingId) {
+                    await window.supabaseClient.from('blog_categories').update(payload).eq('id', editingId);
+                    setEditingId(null);
+                } else {
+                    await window.supabaseClient.from('blog_categories').insert(payload);
+                }
+                setNameZh('');
+                setNameEn('');
+                loadCategories();
+            };
+
+            const handleEdit = (cat) => {
+                setEditingId(cat.id);
+                setNameZh(cat.name_zh);
+                setNameEn(cat.name_en || '');
+            };
+
+            const handleDelete = async (id) => {
+                if (!confirm('刪除該分類？')) return;
+                await window.supabaseClient.from('blog_categories').delete().eq('id', id);
+                loadCategories();
+            };
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '文章分類管理')
+                ),
+                React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '20px' } },
+                    React.createElement('input', { type: 'text', placeholder: '中文名稱', value: nameZh, onChange: (e) => setNameZh(e.target.value), className: 'form-input', style: { flex: 1 } }),
+                    React.createElement('input', { type: 'text', placeholder: '英文名稱 (可選)', value: nameEn, onChange: (e) => setNameEn(e.target.value), className: 'form-input', style: { flex: 1 } }),
+                    React.createElement('button', { className: 'btn btn-primary', onClick: handleAddOrUpdate }, editingId ? '更新' : '新增')
+                ),
+                React.createElement('table', { className: 'data-table' },
+                    React.createElement('thead', null,
+                        React.createElement('tr', null,
+                            React.createElement('th', null, 'ID'),
+                            React.createElement('th', null, '中文名稱'),
+                            React.createElement('th', null, '英文名稱'),
+                            React.createElement('th', null, '操作')
+                        )
+                    ),
+                    React.createElement('tbody', null,
+                        categories.map(cat => React.createElement('tr', { key: cat.id },
+                            React.createElement('td', null, cat.id),
+                            React.createElement('td', null, cat.name_zh),
+                            React.createElement('td', null, cat.name_en || '-'),
+                            React.createElement('td', null,
+                                React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => handleEdit(cat), style: { marginRight: '5px' } }, renderIcon('Edit'), ' 編輯'),
+                                React.createElement('button', { className: 'btn btn-danger btn-small', onClick: () => handleDelete(cat.id) }, renderIcon('Trash'), ' 刪除')
+                            )
+                        ))
+                    )
+                )
+            );
+        }
+
+        // ===== 標籤管理組件 =====
+        function TagManager() {
+            const [tags, setTags] = useState([]);
+            const [nameZh, setNameZh] = useState('');
+            const [nameEn, setNameEn] = useState('');
+            const [editingId, setEditingId] = useState(null);
+
+            const loadTags = async () => {
+                const { data } = await window.supabaseClient.from('blog_tags').select('*').order('id', { ascending: true });
+                setTags(data || []);
+            };
+
+            useEffect(() => { loadTags(); }, []);
+
+            const handleAddOrUpdate = async () => {
+                if (!nameZh.trim()) return alert('請輸入中文名稱');
+                const payload = { name_zh: nameZh.trim(), name_en: nameEn.trim() };
+                if (editingId) {
+                    await window.supabaseClient.from('blog_tags').update(payload).eq('id', editingId);
+                    setEditingId(null);
+                } else {
+                    await window.supabaseClient.from('blog_tags').insert(payload);
+                }
+                setNameZh('');
+                setNameEn('');
+                loadTags();
+            };
+
+            const handleEdit = (tag) => {
+                setEditingId(tag.id);
+                setNameZh(tag.name_zh);
+                setNameEn(tag.name_en || '');
+            };
+
+            const handleDelete = async (id) => {
+                if (!confirm('刪除該標籤？')) return;
+                await window.supabaseClient.from('blog_tags').delete().eq('id', id);
+                loadTags();
+            };
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '文章標籤管理')
+                ),
+                React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '20px' } },
+                    React.createElement('input', { type: 'text', placeholder: '中文名稱', value: nameZh, onChange: (e) => setNameZh(e.target.value), className: 'form-input', style: { flex: 1 } }),
+                    React.createElement('input', { type: 'text', placeholder: '英文名稱 (可選)', value: nameEn, onChange: (e) => setNameEn(e.target.value), className: 'form-input', style: { flex: 1 } }),
+                    React.createElement('button', { className: 'btn btn-primary', onClick: handleAddOrUpdate }, editingId ? '更新' : '新增')
+                ),
+                React.createElement('table', { className: 'data-table' },
+                    React.createElement('thead', null,
+                        React.createElement('tr', null,
+                            React.createElement('th', null, 'ID'),
+                            React.createElement('th', null, '中文名稱'),
+                            React.createElement('th', null, '英文名稱'),
+                            React.createElement('th', null, '操作')
+                        )
+                    ),
+                    React.createElement('tbody', null,
+                        tags.map(tag => React.createElement('tr', { key: tag.id },
+                            React.createElement('td', null, tag.id),
+                            React.createElement('td', null, tag.name_zh),
+                            React.createElement('td', null, tag.name_en || '-'),
+                            React.createElement('td', null,
+                                React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => handleEdit(tag), style: { marginRight: '5px' } }, renderIcon('Edit'), ' 編輯'),
+                                React.createElement('button', { className: 'btn btn-danger btn-small', onClick: () => handleDelete(tag.id) }, renderIcon('Trash'), ' 刪除')
+                            )
+                        ))
+                    )
+                )
+            );
+        }
+
+        // ===== BlogEditor（增加分類和標籤選擇） =====
         function BlogEditor({ post, onClose }) {
             const initialBlocks = post?.content ? (() => { try { return JSON.parse(post.content); } catch { return textToBlocks(post.content); } })() : [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
             const ed = useBlockEditor(initialBlocks, {
@@ -1321,10 +1470,37 @@
 
             const { blocks, setBlocks, title, setTitle, coverImage, setCoverImage, seoTitle, setSeoTitle, seoDesc, setSeoDesc, isPublished, setIsPublished, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = ed;
 
+            // 分類與標籤狀態
+            const [categories, setCategories] = useState([]);
+            const [tags, setTags] = useState([]);
+            const [selectedCategory, setSelectedCategory] = useState(post?.category_id || '');
+            const [selectedTagIds, setSelectedTagIds] = useState(() => {
+                if (post?.id) {
+                    // 初始載入時先設為空，稍後從關聯表讀取
+                    return [];
+                }
+                return [];
+            });
+
+            // 載入分類與標籤
             useEffect(() => {
-                const draft = { title, coverImage, seoTitle, seoDesc, isPublished, blocks };
+                const loadData = async () => {
+                    const { data: cats } = await window.supabaseClient.from('blog_categories').select('*').order('name_zh');
+                    const { data: tagsData } = await window.supabaseClient.from('blog_tags').select('*').order('name_zh');
+                    setCategories(cats || []);
+                    setTags(tagsData || []);
+                    if (post?.id) {
+                        const { data: postTags } = await window.supabaseClient.from('blog_post_tags').select('tag_id').eq('post_id', post.id);
+                        setSelectedTagIds((postTags || []).map(pt => pt.tag_id));
+                    }
+                };
+                loadData();
+            }, [post]);
+
+            useEffect(() => {
+                const draft = { title, coverImage, seoTitle, seoDesc, isPublished, blocks, selectedCategory, selectedTagIds };
                 localStorage.setItem('blog_draft', JSON.stringify(draft));
-            }, [title, coverImage, seoTitle, seoDesc, isPublished, blocks]);
+            }, [title, coverImage, seoTitle, seoDesc, isPublished, blocks, selectedCategory, selectedTagIds]);
 
             useEffect(() => {
                 const handler = (e) => {
@@ -1338,9 +1514,30 @@
 
             useEffect(() => {
                 const handleSave = async () => {
-                    const payload = { title, image_url: coverImage, seo_title: seoTitle, seo_description: seoDesc, is_published: isPublished, content: JSON.stringify(blocks) };
-                    if (post?.id) await window.supabaseClient.from('blog_posts').update(payload).eq('id', post.id);
-                    else await window.supabaseClient.from('blog_posts').insert(payload);
+                    const payload = {
+                        title,
+                        image_url: coverImage,
+                        seo_title: seoTitle,
+                        seo_description: seoDesc,
+                        is_published: isPublished,
+                        content: JSON.stringify(blocks),
+                        category_id: selectedCategory || null
+                    };
+                    let postId = post?.id;
+                    if (postId) {
+                        await window.supabaseClient.from('blog_posts').update(payload).eq('id', postId);
+                    } else {
+                        const { data, error } = await window.supabaseClient.from('blog_posts').insert(payload).select('id').single();
+                        if (data) postId = data.id;
+                        else if (error) { alert('保存失敗'); return; }
+                    }
+                    // 更新標籤關聯
+                    if (postId) {
+                        await window.supabaseClient.from('blog_post_tags').delete().eq('post_id', postId);
+                        for (const tagId of selectedTagIds) {
+                            await window.supabaseClient.from('blog_post_tags').insert({ post_id: postId, tag_id: tagId });
+                        }
+                    }
                     alert('已保存');
                     onClose();
                 };
@@ -1367,11 +1564,10 @@
                     win.document.close();
                 };
                 const handlePublish = async () => {
-                    const payload = { title, image_url: coverImage, seo_title: seoTitle, seo_description: seoDesc, is_published: true, content: JSON.stringify(blocks) };
-                    if (post?.id) await window.supabaseClient.from('blog_posts').update(payload).eq('id', post.id);
-                    else await window.supabaseClient.from('blog_posts').insert(payload);
-                    alert('已發佈');
-                    onClose();
+                    // 發佈時同時保存
+                    setIsPublished(true);
+                    // 延遲一下確保狀態更新後再保存
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('save-content')), 0);
                 };
                 window.addEventListener('save-content', handleSave);
                 window.addEventListener('preview-content', handlePreview);
@@ -1381,7 +1577,7 @@
                     window.removeEventListener('preview-content', handlePreview);
                     window.removeEventListener('publish-content', handlePublish);
                 };
-            }, [blocks, title, coverImage, seoTitle, seoDesc, isPublished, post, onClose]);
+            }, [blocks, title, coverImage, seoTitle, seoDesc, isPublished, selectedCategory, selectedTagIds, post, onClose]);
 
             const handleKeyDown = (e, blockId) => {
                 if (e.key === '/') {
@@ -1393,6 +1589,10 @@
                         setSlashTargetId(blockId);
                     }
                 }
+            };
+
+            const toggleTag = (tagId) => {
+                setSelectedTagIds(prev => prev.includes(tagId) ? prev.filter(x => x !== tagId) : [...prev, tagId]);
             };
 
             const toolbarButtons = [
@@ -1471,6 +1671,29 @@
                                     React.createElement('input', { type: 'text', value: seoDesc, onChange: (e) => setSeoDesc(e.target.value), style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px' } })
                                 )
                             ),
+                            // 分類與標籤選擇
+                            React.createElement('div', { style: { display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' } },
+                                React.createElement('div', { style: { flex: '1 1 200px' } },
+                                    React.createElement('label', { style: { fontSize: '14px', color: '#666', display: 'block' } }, '分類'),
+                                    React.createElement('select', {
+                                        value: selectedCategory,
+                                        onChange: (e) => setSelectedCategory(e.target.value),
+                                        style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px' }
+                                    },
+                                        React.createElement('option', { value: '' }, '無分類'),
+                                        categories.map(cat => React.createElement('option', { key: cat.id, value: cat.id }, cat.name_zh))
+                                    )
+                                ),
+                                React.createElement('div', { style: { flex: '1 1 300px' } },
+                                    React.createElement('label', { style: { fontSize: '14px', color: '#666', display: 'block' } }, '標籤'),
+                                    React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '5px' } },
+                                        tags.map(tag => React.createElement('label', { key: tag.id, style: { display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 8px', border: '1px solid #ddd', borderRadius: '15px', cursor: 'pointer', background: selectedTagIds.includes(tag.id) ? '#1A1A1A' : 'transparent', color: selectedTagIds.includes(tag.id) ? 'white' : 'inherit' } },
+                                            React.createElement('input', { type: 'checkbox', checked: selectedTagIds.includes(tag.id), onChange: () => toggleTag(tag.id), style: { display: 'none' } }),
+                                            tag.name_zh
+                                        ))
+                                    )
+                                )
+                            ),
                             ...blocks.map(block => React.createElement('div', {
                                 key: block.id,
                                 'data-block-id': block.id,
@@ -1517,7 +1740,7 @@
             );
         }
 
-        // ===== FaqEditor / ContactEditor 簡化 =====
+        // ===== FaqEditor / ContactEditor 保留 =====
         function FaqEditor() {
             const ed = useBlockEditor([{ id: generateId(), type: 'paragraph', content: { text: '' } }], {});
             const { blocks, setBlocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = ed;
@@ -1620,7 +1843,7 @@
             );
         }
 
-        // ===== ContentEditor（含 CSV 功能） =====
+        // ===== ContentEditor（含分類、標籤、留言占位） =====
         function ContentEditor() {
             const [activeSection, setActiveSection] = useState('articles');
             const [editingPost, setEditingPost] = useState(undefined);
@@ -1665,7 +1888,7 @@
                     alert('請先勾選要匯出的文章');
                     return;
                 }
-                const headers = ['id', 'title', 'content', 'image_url', 'seo_title', 'seo_description', 'is_published', 'created_at'];
+                const headers = ['id', 'title', 'content', 'image_url', 'seo_title', 'seo_description', 'is_published', 'created_at', 'category_id'];
                 const csvRows = [headers.join(',')];
                 selectedPosts.forEach(post => {
                     const row = [
@@ -1676,7 +1899,8 @@
                         csvEscape(post.seo_title || ''),
                         csvEscape(post.seo_description || ''),
                         post.is_published ? 'true' : 'false',
-                        csvEscape(post.created_at || '')
+                        csvEscape(post.created_at || ''),
+                        post.category_id || ''
                     ];
                     csvRows.push(row.join(','));
                 });
@@ -1716,6 +1940,8 @@
                         obj.is_published = obj.is_published === 'true' || obj.is_published === 'TRUE' || obj.is_published === '1';
                         const id = obj.id ? parseInt(obj.id) : null;
                         delete obj.id;
+                        // 轉換 category_id 為數字或 null
+                        obj.category_id = obj.category_id ? parseInt(obj.category_id) : null;
                         try {
                             if (id) {
                                 const { error } = await window.supabaseClient.from('blog_posts').update(obj).eq('id', id);
@@ -1814,7 +2040,13 @@
                         React.createElement('div', { className: 'editor-topbar-left' },
                             React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.history.back() }, '上一步'),
                             React.createElement('h3', { style: { fontSize: '18px', fontWeight: '600' } },
-                                activeSection === 'articles' ? '文章管理' : activeSection === 'faq' ? '常見問題編輯' : activeSection === 'contact' ? '聯絡我們編輯' : '總覽'
+                                activeSection === 'articles' ? '文章管理' :
+                                activeSection === 'faq' ? '常見問題編輯' :
+                                activeSection === 'contact' ? '聯絡我們編輯' :
+                                activeSection === 'categories' ? '文章分類管理' :
+                                activeSection === 'tags' ? '文章標籤管理' :
+                                activeSection === 'comments' ? '留言管理' :
+                                '總覽'
                             )
                         ),
                         React.createElement('div', { className: 'editor-topbar-right' },
@@ -1878,9 +2110,12 @@
                                         )
                                     )
                         ),
+                        activeSection === 'categories' && React.createElement(CategoryManager),
+                        activeSection === 'tags' && React.createElement(TagManager),
+                        activeSection === 'comments' && React.createElement('div', { className: 'empty-state' }, '留言管理開發中'),
                         activeSection === 'faq' && React.createElement(FaqEditor),
                         activeSection === 'contact' && React.createElement(ContactEditor),
-                        !['articles', 'faq', 'contact'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
+                        !['articles', 'categories', 'tags', 'comments', 'faq', 'contact'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
                     )
                 ),
                 editingPost !== undefined && activeSection === 'articles' && React.createElement(BlogEditor, { post: editingPost, onClose: () => { setEditingPost(undefined); loadPosts(); } })
