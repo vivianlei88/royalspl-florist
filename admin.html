@@ -192,7 +192,7 @@
     var tagCategories = {
         tagOccasion: ['情人節','母親節','中秋節','清明節','畢業季','端午','聖誕節','生日','週年','婚禮','彌月','探病','帛事','開張','喬遷','商務送禮','企業周年'],
         tagFlower: ['玫瑰','鬱金香','芍藥','荷花','百合','康乃馨','向日葵','滿天星','蘭花','牡丹','進口鮮花'],
-        tagStyle: ['經典風','韓式','日式極簡','法式田園','永生花'],
+        tagStyle: [],
         tagPrice: ['HK$300內','HK$300-600','HK$800+','HK$1200+']
     };
     var areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
@@ -452,7 +452,7 @@
         f.innerHTML += '<div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>';
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = []; variants = []; selectedAddons = []; selectedTags = [];
-        toggleDeliveryDays(); initTagPills(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea();
+        toggleDeliveryDays(); loadStyleTags(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea();
     }
     function showProductsList() { document.getElementById('productsListView').style.display = 'block'; document.getElementById('productFormView').style.display = 'none'; loadProducts(); }
     function showEditFormById(id) { for (var i = 0; i < allProducts.length; i++) { if (allProducts[i].id === id) { showEditForm(allProducts[i]); return; } } }
@@ -477,7 +477,7 @@
         uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
         selectedAddons = p.linked_addons || [];
         selectedTags = p.tags || [];
-        toggleDeliveryDays(); initTagPills(); renderUploadedImages(); renderAddonsCheckbox(); loadVariants(p.id); initUploadArea();
+        toggleDeliveryDays(); loadStyleTags(); renderUploadedImages(); renderAddonsCheckbox(); loadVariants(p.id); initUploadArea();
     }
     function initUploadArea() { var ua = document.getElementById('uploadArea'); var fi = document.getElementById('fileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleUploadFiles(this.files); }; ua.addEventListener('dragover', function(e) { e.preventDefault(); }); ua.addEventListener('drop', function(e) { e.preventDefault(); handleUploadFiles(e.dataTransfer.files); }); } }
     async function handleUploadFiles(files) { for (var i = 0; i < files.length; i++) { var fd = new FormData(); fd.append('file', files[i]); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { uploadedImages.push(data.url); renderUploadedImages(); } } catch (err) {} } }
@@ -490,6 +490,15 @@
     function renderAddonsCheckbox() { var c = document.getElementById('addonsCheckboxList'); if (!c) return; var h = ''; for (var i = 0; i < allAddons.length; i++) { var a = allAddons[i]; var checked = selectedAddons.indexOf(a.id) > -1 ? 'checked' : ''; h += '<label class="addon-checkbox-item"><input type="checkbox" value="' + a.id + '" ' + checked + ' onchange="toggleAddon(' + a.id + ')">' + (a.image_url ? '<img src="' + a.image_url + '">' : '') + a.name_zh + ' (HK$' + a.price + ')</label>'; } c.innerHTML = h || '<p>暫無配件</p>'; }
     function toggleAddon(id) { var idx = selectedAddons.indexOf(id); if (idx > -1) { selectedAddons.splice(idx, 1); } else { selectedAddons.push(id); } }
     function initTagPills() { for (var g in tagCategories) { var c = document.getElementById(g); if (!c) continue; var h = ''; for (var i = 0; i < tagCategories[g].length; i++) { h += '<button type="button" class="tag-pill' + (selectedTags.indexOf(tagCategories[g][i]) > -1 ? ' active' : '') + '" data-tag="' + tagCategories[g][i] + '" onclick="toggleTag(this)">' + tagCategories[g][i] + '</button>'; } c.innerHTML = h; } }
+    async function loadStyleTags() {
+        try {
+            var r = await supabaseClient.from('categories').select('name_zh').eq('is_active', true).order('sort_order', { ascending: true });
+            if (r.data) {
+                tagCategories.tagStyle = r.data.map(function(c) { return c.name_zh; });
+                initTagPills();
+            }
+        } catch (e) { console.error('載入設計風格標籤失敗:', e); }
+    }
     function toggleTag(btn) { var tag = btn.getAttribute('data-tag'); var idx = selectedTags.indexOf(tag); if (idx > -1) { selectedTags.splice(idx, 1); btn.classList.remove('active'); } else { selectedTags.push(tag); btn.classList.add('active'); } }
     function toggleDeliveryDays() { var el = document.getElementById('deliveryDaysGroup'); if (el) el.style.display = document.getElementById('stock').value === '預訂' ? 'block' : 'none'; }
     async function loadVariants(productId) { variants = []; try { var r = await supabaseClient.from('product_variants').select('*').eq('product_id', productId); if (r.data) { for (var i = 0; i < r.data.length; i++) { variants.push({ name: r.data[i].variant_name, price: r.data[i].variant_price }); } } } catch (e) {} renderVariants(); }
