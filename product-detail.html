@@ -246,31 +246,92 @@
     }
 
     var pageEnterTime = Date.now();
+    var pageEnterTime = Date.now();
+    var userBehavior = JSON.parse(localStorage.getItem('royalspl_behavior') || '{"views":{},"cart":[],"purchases":[]}');
+
+    function recordView(productId) {
+        if (!userBehavior.views[productId]) {
+            userBehavior.views[productId] = { count: 0, totalTime: 0, lastView: 0 };
+        }
+        userBehavior.views[productId].count += 1;
+        userBehavior.views[productId].lastView = Date.now();
+        localStorage.setItem('royalspl_behavior', JSON.stringify(userBehavior));
+    }
+
+    function recordStayTime(productId) {
+        var stayTime = (Date.now() - pageEnterTime) / 1000;
+        if (userBehavior.views[productId]) {
+            userBehavior.views[productId].totalTime += stayTime;
+        }
+        localStorage.setItem('royalspl_behavior', JSON.stringify(userBehavior));
+    }
+
+    window.addEventListener('beforeunload', function() {
+        if (currentProduct) recordStayTime(currentProduct.id);
+    });
+
     async function loadRecommendProducts(currentProduct) {
+        recordView(currentProduct.id);
         var recommendSection = document.createElement('div');
         recommendSection.className = 'recommend-section';
         recommendSection.innerHTML = '<div class="recommend-title">你可能也喜歡</div><div class="recommend-grid" id="recommendGrid"><div style="grid-column:1/-1;text-align:center;padding:20px;">載入中...</div></div>';
         container.parentNode.appendChild(recommendSection);
 
         try {
-            var result = await supabaseClient.from('products').select('*').eq('is_active', true).not('id', 'eq', currentProduct.id).limit(20);
+            var result = await supabaseClient.from('products').select('*').eq('is_active', true).not('id', 'eq', currentProduct.id).limit(30);
             if (result.error) throw result.error;
             var allProducts = result.data || [];
 
-            var browseHistory = JSON.parse(localStorage.getItem('royalspl_browse_history') || '{}');
-            browseHistory[currentProduct.id] = { time: Date.now(), duration: 0 };
-            localStorage.setItem('royalspl_browse_history', JSON.stringify(browseHistory));
+            var currentPrice = parseFloat(currentProduct.price) || 0;
+            var viewedIds = Object.keys(userBehavior.views).map(function(id) { return parseInt(id); });
+            var cartItems = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+            var cartIds = cartItems.map(function(item) { return item.productId; });
 
             var scored = allProducts.map(function(p) {
                 var score = 0;
-                if (p.category && currentProduct.category && p.category === currentProduct.category) score += 3;
+                var reasons = [];
+
+                if (p.category && currentProduct.category && p.category === currentProduct.category) {
+                    score += 4; reasons.push('同分类');
+                }
                 if (p.tags && currentProduct.tags) {
                     var commonTags = p.tags.filter(function(t) { return currentProduct.tags.indexOf(t) > -1; });
                     score += commonTags.length * 2;
+                    if (commonTags.length > 0) reasons.push(commonTags.length + '个共同标签');
                 }
-                if (browseHistory[p.id]) score += 1;
+
+                var pPrice = parseFloat(p.price) || 0;
+                if (currentPrice > 0 && pPrice > 0) {
+                    var priceDiff = Math.abs(pPrice - currentPrice) / currentPrice;
+                    if (priceDiff <= 0.2) { score += 3; reasons.push('价格相近'); }
+                    else if (priceDiff <= 0.4) { score += 1.5; reasons.push('价格接近'); }
+                }
+
+                if (userBehavior.views[p.id]) {
+                    var viewData = userBehavior.views[p.id];
+                    score += Math.min(viewData.count * 0.5, 3);
+                    if (viewData.count > 1) reasons.push('浏览过' + viewData.count + '次');
+                    if (viewData.totalTime > 60) { score += 2; reasons.push('停留时间长'); }
+                    else if (viewData.totalTime > 30) { score += 1; reasons.push('停留较久'); }
+                }
+
+                if (cartIds.indexOf(p.id) > -1) {
+                    score += 2; reasons.push('曾加入购物车');
+                }
+
+                var relatedToViewed = viewedIds.some(function(vid) {
+                    var viewedProduct = allProducts.find(function(x) { return x.id === vid; });
+                    if (!viewedProduct) return false;
+                    if (p.category && viewedProduct.category && p.category === viewedProduct.category) return true;
+                    if (p.tags && viewedProduct.tags) {
+                        return p.tags.some(function(t) { return viewedProduct.tags.indexOf(t) > -1; });
+                    }
+                    return false;
+                });
+                if (relatedToViewed) { score += 1.5; reasons.push('与浏览历史相关'); }
+
                 score += Math.random() * 0.5;
-                return { product: p, score: score };
+                return { product: p, score: score, reasons: reasons };
             });
 
             scored.sort(function(a, b) { return b.score - a.score; });
