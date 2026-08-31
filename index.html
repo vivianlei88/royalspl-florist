@@ -193,6 +193,11 @@
             if (settings.hero_cta_link) {
                 var l = document.getElementById('heroCta');
                 if (l) l.href = settings.hero_cta_link;
+                var heroSec = document.getElementById('heroSection');
+                if (heroSec) {
+                    heroSec.style.cursor = 'pointer';
+                    heroSec.onclick = function() { window.location.href = settings.hero_cta_link; };
+                }
             }
             
             if (settings.hero_image) {
