@@ -159,19 +159,59 @@
             if (result.error) throw result.error;
             var settings = result.data && result.data[0];
             if (!settings) return;
-            if (settings.hero_title) { var t = document.getElementById('heroTitle'); if (t) t.textContent = settings.hero_title; }
-            if (settings.hero_subtitle) { var s = document.getElementById('heroSubtitle'); if (s) s.textContent = settings.hero_subtitle; }
-            if (settings.hero_cta_text) { var c = document.getElementById('heroCta'); if (c) c.textContent = settings.hero_cta_text; }
-            if (settings.hero_cta_link) { var l = document.getElementById('heroCta'); if (l) l.href = settings.hero_cta_link; }
+            
+            var heroContent = document.querySelector('.hero-content');
+            var hasAnyText = false;
+            
+            if (settings.hero_title && settings.hero_title.trim()) {
+                var t = document.getElementById('heroTitle');
+                if (t) { t.textContent = settings.hero_title; t.style.display = ''; }
+                hasAnyText = true;
+            } else {
+                var t = document.getElementById('heroTitle');
+                if (t) t.style.display = 'none';
+            }
+            
+            if (settings.hero_subtitle && settings.hero_subtitle.trim()) {
+                var s = document.getElementById('heroSubtitle');
+                if (s) { s.textContent = settings.hero_subtitle; s.style.display = ''; }
+                hasAnyText = true;
+            } else {
+                var s = document.getElementById('heroSubtitle');
+                if (s) s.style.display = 'none';
+            }
+            
+            if (settings.hero_cta_text && settings.hero_cta_text.trim()) {
+                var c = document.getElementById('heroCta');
+                if (c) { c.textContent = settings.hero_cta_text; c.style.display = ''; }
+                hasAnyText = true;
+            } else {
+                var c = document.getElementById('heroCta');
+                if (c) c.style.display = 'none';
+            }
+            
+            if (settings.hero_cta_link) {
+                var l = document.getElementById('heroCta');
+                if (l) l.href = settings.hero_cta_link;
+            }
+            
             if (settings.hero_image) {
                 var heroSec = document.getElementById('heroSection');
                 if (heroSec) {
-                    heroSec.style.backgroundImage = 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(' + settings.hero_image + ')';
+                    heroSec.style.backgroundImage = 'url(' + settings.hero_image + ')';
                     heroSec.style.backgroundSize = 'cover';
                     heroSec.style.backgroundPosition = 'center';
                 }
             }
-            if (settings.about_text) { var a = document.getElementById('aboutText'); if (a) a.innerHTML = settings.about_text; }
+            
+            if (!hasAnyText && heroContent) {
+                heroContent.style.display = 'none';
+            }
+            
+            if (settings.about_text) {
+                var a = document.getElementById('aboutText');
+                if (a) a.innerHTML = settings.about_text;
+            }
         } catch (e) {
             console.error('載入首頁設置失敗:', e);
         }
