@@ -623,7 +623,7 @@
                 h += '<div class="category-card" data-id="' + cat.id + '" onclick="openCategoryDetail(' + cat.id + ')">';
                 h += '<input type="checkbox" class="category-card-check" onclick="event.stopPropagation()" value="' + cat.id + '">';
                 h += cat.image_url ? '<img class="category-card-img" src="' + cat.image_url + '">' : '<div style="height:180px;background:#F3EFEA;display:flex;align-items:center;justify-content:center;">無圖</div>';
-                h += '<div class="category-card-body"><p class="category-card-name">' + cat.name_zh + '</p><p style="font-size:13px;color:#383431;">' + (cat.name_en || '') + '</p><p style="font-size:13px;margin-top:5px;">' + count + ' 個商品</p></div></div>';
+                h += '<div class="category-card-body"><p class="category-card-name">' + cat.name_zh + '</p><p style="font-size:13px;color:#383431;">' + (cat.name_en || '') + '</p><p style="font-size:13px;margin-top:5px;">' + count + ' 個商品</p><a href="products.html?category=' + encodeURIComponent(cat.name_zh) + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;margin-top:8px;" onclick="event.stopPropagation()">查看前台</a></div></div>';
             }
             c.innerHTML = h;
         } catch (e) { c.innerHTML = '請先創建 categories 表'; }
