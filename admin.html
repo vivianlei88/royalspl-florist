@@ -6,12 +6,9 @@
     <title>後台管理 | RoyalSpl Florist</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM UMD -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- htm UMD -->
     <script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -111,7 +108,6 @@
         .collection-card-edit { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 15px; }
         .collection-card-edit img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
         @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } }
-        /* 區塊編輯器額外樣式 */
         .block-editor-wrapper { display: flex; height: calc(100vh - 180px); min-height: 600px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .editor-sidebar { width: 200px; background: #1E1E2D; color: #ccc; display: flex; flex-direction: column; padding: 20px 0; }
         .editor-sidebar-item { padding: 12px 20px; cursor: pointer; font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
@@ -261,7 +257,6 @@
         }, 15000);
     }
 
-    // ==================== 數據分析 ====================
     function renderAnalyticsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">數據分析</h2><a class="btn btn-secondary" href="https://analytics.google.com/analytics/web/#/p8546886826/reports" target="_blank">在 GA4 中打開</a></div>';
         c.innerHTML += '<div class="stat-cards" id="statCards">';
@@ -288,7 +283,6 @@
         } catch (e) {}
     }
 
-    // ==================== 首頁管理 ====================
     function renderHomepagePage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">首頁管理</h2><button class="btn btn-primary" onclick="saveHomepageSettings()">保存全部</button></div>';
         c.innerHTML += '<div class="form-container" style="max-width:100%;">';
@@ -703,406 +697,25 @@
     function getCheckedCategoryIds() { var ids = []; document.querySelectorAll('.category-card-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
     async function bulkCategoryDelete() { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').delete().in('id', ids); showToast('完成'); loadCategories(); }
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
-        // ==================== 訂單管理 ====================
-    function renderOrdersPage(c) { c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>'; loadOrders(); }
-    async function loadOrders() { var c = document.getElementById('ordersTable'); if (!c) return; try { var r = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }); allOrders = r.data || []; renderOrdersTable(allOrders); } catch (e) { c.innerHTML = '暫無訂單'; } }
-    function renderOrdersTable(orders) {
-        var c = document.getElementById('ordersTable');
-        if (!orders.length) { c.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; }
-        var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
-        for (var i = 0; i < orders.length; i++) {
-            var o = orders[i];
-            h += '<tr><td class="checkbox-col"><input type="checkbox" class="order-check" value="' + o.id + '"></td>';
-            h += '<td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + '</td>';
-            h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option></select></td>';
-            var actionBtns = '<button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button> ';
-            actionBtns += '<button class="btn btn-secondary btn-small" onclick="downloadOrderPDFById(' + o.id + ')">PDF</button> ';
-            actionBtns += '<button class="btn btn-secondary btn-small" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button> ';
-            if (o.status === 'unpaid') { actionBtns += '<button class="btn btn-primary btn-small" onclick="createStripePayment(' + o.id + ')">收款</button> '; }
-            if (o.status === 'paid' && o.stripe_payment_intent_id) { actionBtns += '<button class="btn btn-danger btn-small" onclick="showRefundForm(' + o.id + ')">退款</button> '; }
-            h += '<td><div class="btn-group">' + actionBtns + '</div></td></tr>';
-        }
-        h += '</tbody></table>';
-        c.innerHTML = h;
-    }
-    function filterOrdersByStatus() { var f = document.getElementById('orderStatusFilter').value; if (f === 'all') { renderOrdersTable(allOrders); } else { renderOrdersTable(allOrders.filter(function(o) { return o.status === f; })); } }
-    function toggleCheckAllOrders() { var c = document.getElementById('checkAllOrders'); document.querySelectorAll('.order-check').forEach(function(cb) { cb.checked = c.checked; }); }
-    function getCheckedOrderIds() { var ids = []; document.querySelectorAll('.order-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
-    async function bulkDeleteOrders() { var ids = getCheckedOrderIds(); if (!ids.length) { showToast('請先勾選'); return; } if (!confirm('刪除？')) return; await supabaseClient.from('orders').delete().in('id', ids); showToast('完成'); loadOrders(); }
-    async function updateOrderStatus(id, status) {
-        await supabaseClient.from('orders').update({ status: status }).eq('id', id);
-        if (status === 'shipped') {
-            var order = null;
-            for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { order = allOrders[i]; break; } }
-            if (order && order.customer_email) {
-                var emailHtml = '<h1>出貨通知</h1><p>訂單編號：' + order.order_code + '</p><p>您的花禮已出貨！</p>';
-                try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: order.customer_email, subject: '出貨通知 - ' + order.order_code, html: emailHtml }) }); showToast('出貨通知已發送'); } catch (e) { showToast('狀態已更新'); }
-            } else { showToast('狀態已更新'); }
-        } else { showToast('狀態已更新'); }
-    }
-    function showAddOrderForm() {
-        var c = document.getElementById('addOrderFormContainer');
-        c.style.display = 'block';
-        selectedOrderProducts = [];
-        var h = '<div class="form-container"><h2>新增訂單</h2><div class="form-group"><label class="form-label">選擇商品</label><div class="addon-checkbox-list">';
-        for (var i = 0; i < allProducts.length; i++) { h += '<label class="addon-checkbox-item"><input type="checkbox" value="' + allProducts[i].id + '" onchange="toggleOrderProduct(' + allProducts[i].id + ')">' + (allProducts[i].image_url ? '<img src="' + allProducts[i].image_url + '">' : '') + allProducts[i].name_zh + ' (HK$' + allProducts[i].price + ')</label>'; }
-        h += '</div></div><div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="orderRecipientName"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="orderRecipientPhone"></div></div>';
-        h += '<div class="form-group"><label class="form-label">收件人 Email</label><input type="email" class="form-input" id="orderRecipientEmail" placeholder="用於發送訂單郵件"></div>';
-        h += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="orderRecipientAddress"></div>';
-        h += '<div class="form-row"><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="orderDeliveryDate"></div><div class="form-group"><label class="form-label">送貨時段</label><select class="form-select" id="orderDeliveryTime"><option value="全日派送">全日派送</option><option value="指定時間">指定時間</option><option value="夜晚派送">夜晚派送</option></select></div></div>';
-        h += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="orderCardMessage"></textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="orderRemarks"></textarea></div></div>';
-        h += '<div class="form-actions"><button class="btn btn-primary" onclick="saveNewOrder()">保存訂單</button><button class="btn btn-secondary" onclick="hideAddOrderForm()">取消</button></div></div>';
-        c.innerHTML = h;
-    }
-    function hideAddOrderForm() { document.getElementById('addOrderFormContainer').style.display = 'none'; }
-    function toggleOrderProduct(id) { var idx = selectedOrderProducts.indexOf(id); if (idx > -1) { selectedOrderProducts.splice(idx, 1); } else { selectedOrderProducts.push(id); } }
-    async function saveNewOrder() {
-        var name = document.getElementById('orderRecipientName').value.trim();
-        var phone = document.getElementById('orderRecipientPhone').value.trim();
-        var email = document.getElementById('orderRecipientEmail').value.trim();
-        var addr = document.getElementById('orderRecipientAddress').value.trim();
-        if (!name || !phone || !addr || !selectedOrderProducts.length) { showToast('請填寫完整'); return; }
-        var subtotal = 0;
-        var productNames = [];
-        var productImages = [];
-        for (var i = 0; i < selectedOrderProducts.length; i++) {
-            for (var j = 0; j < allProducts.length; j++) {
-                if (allProducts[j].id === selectedOrderProducts[i]) {
-                    subtotal += parseFloat(allProducts[j].price);
-                    productNames.push(allProducts[j].name_zh);
-                    productImages.push(allProducts[j].image_url || '');
-                    break;
-                }
-            }
-        }
-        var area = detectDeliveryArea(addr);
-        var deliveryFee = areaFees[area] || 90;
-        if (area === 'tier1' && subtotal >= 500) { deliveryFee = 0; }
-        var data = { order_code: 'RS' + Date.now().toString().slice(-8), recipient_name: name, recipient_phone: phone, customer_email: email, recipient_address: addr, delivery_date: document.getElementById('orderDeliveryDate').value, delivery_time_slot: document.getElementById('orderDeliveryTime').value, card_message: document.getElementById('orderCardMessage').value.trim(), remarks: document.getElementById('orderRemarks').value.trim(), subtotal: subtotal, delivery_fee: deliveryFee, total_amount: subtotal + deliveryFee, delivery_area: area, product_names: productNames.join('|'), product_images: productImages.join('|'), status: 'unpaid' };
-        var result = await supabaseClient.from('orders').insert(data);
-        if (result.error) { showToast('保存失敗：' + result.error.message); return; }
-        showToast('訂單已創建，運費HK$' + deliveryFee);
-        hideAddOrderForm();
-        document.getElementById('addOrderFormContainer').style.display = 'none';
-        document.getElementById('ordersTable').style.display = 'block';
-        await loadOrders();
-        if (email) {
-            var emailHtml = '<h1>訂單確認</h1><p>訂單編號：' + data.order_code + '</p><p>收件人：' + name + '</p><p>總金額：HK$' + data.total_amount + '</p>';
-            try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, subject: '訂單確認 - ' + data.order_code, html: emailHtml }) }); } catch (e) {}
-        }
-    }
-    async function openOrderDetail(id) {
-        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } }
-        if (!currentOrderDetail) return;
-        var o = currentOrderDetail;
-        var shopName = 'RoyalSpl Florist';
-        var shopLogo = '';
-        var shopPhone = '';
-        var shopAddress = '';
-        try {
-            var shopResult = await supabaseClient.from('shop_settings').select('*').limit(1);
-            if (shopResult.data && shopResult.data.length > 0) {
-                shopName = shopResult.data[0].shop_name || 'RoyalSpl Florist';
-                shopLogo = shopResult.data[0].shop_logo || '';
-                shopPhone = shopResult.data[0].shop_phone || '';
-                shopAddress = shopResult.data[0].shop_address || '';
-            }
-        } catch (e) {}
-        var names = (o.product_names || '').split('|').filter(Boolean);
-        var images = (o.product_images || '').split('|').filter(Boolean);
-        var productHtml = '';
-        for (var pi = 0; pi < names.length; pi++) {
-            productHtml += '<div class="order-product-item">';
-            if (images[pi]) { productHtml += '<img src="' + images[pi] + '">'; }
-            productHtml += '<span style="font-size:12px;">' + names[pi] + '</span></div>';
-        }
-        var v = document.getElementById('orderDetailView');
-        v.style.display = 'block';
-        document.getElementById('ordersTable').style.display = 'none';
-        v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button><button class="btn btn-primary" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div>';
-        v.innerHTML += '<div class="form-container" style="max-width:100%;"><input type="hidden" id="orderDetailId" value="' + o.id + '">';
-        v.innerHTML += '<div style="text-align:center;margin-bottom:20px;">';
-        if (shopLogo) { v.innerHTML += '<img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"><br>'; }
-        v.innerHTML += '<h2 style="font-size:22px;font-weight:600;">' + shopName + '</h2>';
-        v.innerHTML += '<p style="font-size:14px;color:#383431;">' + shopPhone + ' | ' + shopAddress + '</p></div>';
-        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂單編號</label><input class="form-input" id="detailOrderCode" value="' + o.order_code + '"></div><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div></div>';
-        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="detailRecipientName" value="' + (o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="detailRecipientPhone" value="' + (o.recipient_phone || '') + '"></div></div>';
-        v.innerHTML += '<div class="form-group"><label class="form-label">收件人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
-        v.innerHTML += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="detailRecipientAddress" value="' + (o.recipient_address || '') + '"></div>';
-        v.innerHTML += '<div class="form-group"><label class="form-label">產品</label><div>' + (productHtml || '無產品') + '</div></div>';
-        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="detailCardMessage">' + (o.card_message || '') + '</textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="detailRemarks">' + (o.remarks || '') + '</textarea></div></div>';
-        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div><div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div></div>';
-        v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
-    }
-    function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
-    async function saveOrderDetail() {
-        var id = document.getElementById('orderDetailId').value;
-        var data = {
-            order_code: document.getElementById('detailOrderCode').value.trim(),
-            delivery_date: document.getElementById('detailDeliveryDate').value,
-            recipient_name: document.getElementById('detailRecipientName').value.trim(),
-            recipient_phone: document.getElementById('detailRecipientPhone').value.trim(),
-            customer_email: document.getElementById('detailCustomerEmail').value.trim(),
-            recipient_address: document.getElementById('detailRecipientAddress').value.trim(),
-            card_message: document.getElementById('detailCardMessage').value.trim(),
-            remarks: document.getElementById('detailRemarks').value.trim(),
-            delivery_fee: parseFloat(document.getElementById('detailDeliveryFee').value) || 0,
-            total_amount: parseFloat(document.getElementById('detailTotalAmount').value) || 0
-        };
-        await supabaseClient.from('orders').update(data).eq('id', id);
-        showToast('訂單已保存');
-        closeOrderDetail();
-    }
-    function downloadOrderPDFById(id) { for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { currentOrderDetail = allOrders[i]; break; } } downloadOrderPDF(); }
-    async function downloadOrderPDF() {
-        if (!currentOrderDetail) return;
-        var o = currentOrderDetail;
-        var shopLogo = '';
-        var shopName = 'RoyalSpl Florist';
-        try {
-            var shopResult = await supabaseClient.from('shop_settings').select('*').limit(1);
-            if (shopResult.data && shopResult.data.length > 0) {
-                shopLogo = shopResult.data[0].shop_logo || '';
-                shopName = shopResult.data[0].shop_name || 'RoyalSpl Florist';
-            }
-        } catch (e) {}
-        var names = (o.product_names || '').split('|').filter(Boolean);
-        var images = (o.product_images || '').split('|').filter(Boolean);
-        var html = '<div style="font-family:serif;padding:40px;max-width:600px;margin:0 auto;">';
-        if (shopLogo) { html += '<div style="text-align:center;margin-bottom:15px;"><img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"></div>'; }
-        html += '<h1 style="text-align:center;border-bottom:3px solid #1E3A5F;padding-bottom:15px;">' + shopName + '</h1>';
-        html += '<p style="text-align:center;">訂單確認書</p>';
-        html += '<table style="width:100%;margin:20px 0;"><tr><td><b>訂單編號：</b>' + o.order_code + '</td><td><b>送貨日期：</b>' + (o.delivery_date || '-') + '</td></tr>';
-        html += '<tr><td><b>收件人：</b>' + (o.recipient_name || '-') + '</td><td><b>電話：</b>' + (o.recipient_phone || '-') + '</td></tr>';
-        html += '<tr><td colspan="2"><b>地址：</b>' + (o.recipient_address || '-') + '</td></tr></table>';
-        html += '<table style="width:100%;border-collapse:collapse;"><tr style="background:#1E3A5F;color:white;"><th style="padding:10px;">圖片</th><th style="padding:10px;">商品</th><th style="padding:10px;">數量</th><th style="padding:10px;">單價</th><th style="padding:10px;">小計</th></tr>';
-        if (names.length > 0) {
-            for (var pi = 0; pi < names.length; pi++) {
-                html += '<tr><td style="padding:10px;border:1px solid #ddd;">' + (images[pi] ? '<img src="' + images[pi] + '" style="width:50px;height:50px;object-fit:cover;border-radius:5px;">' : '') + '</td>';
-                html += '<td style="padding:10px;border:1px solid #ddd;">' + names[pi] + '</td><td style="padding:10px;text-align:center;">1</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td></tr>';
-            }
-        } else {
-            html += '<tr><td style="padding:10px;border:1px solid #ddd;">無圖</td><td style="padding:10px;border:1px solid #ddd;">花禮商品</td><td style="padding:10px;text-align:center;">1</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td><td style="padding:10px;text-align:right;">HK$' + (o.subtotal || 0) + '</td></tr>';
-        }
-        html += '</table>';
-        html += '<table style="width:50%;margin-left:auto;margin-top:15px;"><tr><td>運費：</td><td style="text-align:right;">HK$' + (o.delivery_fee || 0) + '</td></tr>';
-        html += '<tr style="font-size:20px;font-weight:bold;"><td>總計：</td><td style="text-align:right;">HK$' + (o.total_amount || 0) + '</td></tr></table>';
-        if (o.card_message) { html += '<div style="background:#FFF8E1;padding:15px;border-left:4px solid #FFC107;margin:20px 0;"><b>心意卡：</b>' + o.card_message + '</div>'; }
-        html += '<p style="text-align:center;margin-top:30px;color:#666;">感謝您的訂購！</p></div>';
-        var w = window.open('', '_blank');
-        w.document.write(html);
-        w.document.close();
-        w.print();
-    }
-    function copyOrderDetail(id) {
-        var o = null;
-        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { o = allOrders[i]; break; } }
-        if (!o) return;
-        var text = '訂單編號：' + o.order_code + '\n送貨日期：' + (o.delivery_date || '-') + '\n收件人：' + o.recipient_name + '\n電話：' + o.recipient_phone + '\n';
-        if (o.customer_email) { text += 'Email：' + o.customer_email + '\n'; }
-        text += '地址：' + o.recipient_address + '\n產品：' + (o.product_names || '') + '\n總金額：HK$' + o.total_amount + '\n狀態：' + o.status;
-        if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('訂單詳情已複製'); }); }
-        else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('訂單詳情已複製'); }
-    }
-    async function createStripePayment(orderId) {
-        var order = null;
-        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
-        if (!order) return;
-        try {
-            var res = await fetch('/stripe-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create_payment', orderId: order.id, amount: order.total_amount, orderCode: order.order_code }) });
-            var data = await res.json();
-            if (data.url) { window.open(data.url, '_blank'); showToast('支付連結已生成'); } else { showToast('生成失敗：' + (data.error || '未知錯誤')); }
-        } catch (e) { showToast('網絡錯誤'); }
-    }
-    function showRefundForm(orderId) {
-        var order = null;
-        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
-        if (!order) return;
-        var amount = prompt('退款金額 (HKD)：\n全額退款請輸入 ' + order.total_amount + '\n部分退款請輸入金額', order.total_amount);
-        if (!amount) return;
-        var refundAmount = parseFloat(amount);
-        if (refundAmount <= 0) { showToast('請輸入有效金額'); return; }
-        if (refundAmount > order.total_amount) { showToast('退款金額不能超過訂單總額'); return; }
-        processRefund(order, refundAmount);
-    }
-    async function processRefund(order, refundAmount) {
-        try {
-            var res = await fetch('/stripe-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'refund', paymentIntentId: order.stripe_payment_intent_id, refundAmount: refundAmount }) });
-            var data = await res.json();
-            if (data.success) { await supabaseClient.from('orders').update({ refund_status: 'refunded', status: 'cancelled' }).eq('id', order.id); showToast('退款成功'); loadOrders(); } else { showToast('退款失敗：' + (data.error || '未知錯誤')); }
-        } catch (e) { showToast('網絡錯誤'); }
-    }
-    function exportOrdersCSV() { if (!allOrders.length) return; var rows = ['order_code,created_at,delivery_date,recipient_name,recipient_phone,customer_email,recipient_address,total_amount,status']; for (var i = 0; i < allOrders.length; i++) { var o = allOrders[i]; rows.push([o.order_code, (o.created_at || '').slice(0,10), o.delivery_date || '', o.recipient_name, o.recipient_phone, o.customer_email || '', o.recipient_address || '', o.total_amount, o.status].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orders.csv'; a.click(); }
-
-    // ==================== 模板預覽 ====================
-    function renderTemplatePage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">模板預覽</h2><div class="btn-group"><button class="btn btn-primary" onclick="downloadTemplatePDF()">下載 PDF</button></div></div><div class="form-container" style="max-width:100%;">';
-        c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">店鋪資料</h3>';
-        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">店鋪名稱</label><input class="form-input" id="tplShopName" oninput="renderTemplatePreview()"></div><div class="form-group"><label class="form-label">聯絡電話</label><input class="form-input" id="tplShopPhone" oninput="renderTemplatePreview()"></div></div>';
-        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">店鋪地址</label><input class="form-input" id="tplShopAddress" oninput="renderTemplatePreview()"></div><div class="form-group"><label class="form-label">Email</label><input class="form-input" id="tplShopEmail" oninput="renderTemplatePreview()"></div></div>';
-        c.innerHTML += '<div class="form-group"><label class="form-label">LOGO 網址</label><input class="form-input" id="tplShopLogo" oninput="renderTemplatePreview()"></div>';
-        c.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveShopSettings()">保存店鋪資料</button></div>';
-        c.innerHTML += '<hr style="margin:25px 0;border-top:1px solid #ddd;">';
-        c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">訂單資料</h3>';
-        c.innerHTML += '<div class="form-group"><label class="form-label">選擇商品</label><select class="form-select" id="tplProductSelect" onchange="selectTemplateProduct()"><option value="">請選擇商品</option></select></div>';
-        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂單編號</label><input class="form-input" id="tplOrderCode" oninput="renderTemplatePreview()"></div><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="tplDeliveryDate" oninput="renderTemplatePreview()"></div></div>';
-        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂購人姓名</label><input class="form-input" id="tplCustomerName" oninput="renderTemplatePreview()"></div><div class="form-group"><label class="form-label">電話</label><input class="form-input" id="tplCustomerPhone" oninput="renderTemplatePreview()"></div></div>';
-        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="tplRecipientName" oninput="renderTemplatePreview()"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="tplRecipientPhone" oninput="renderTemplatePreview()"></div></div>';
-        c.innerHTML += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="tplRecipientAddress" oninput="renderTemplatePreview()"></div>';
-        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡</label><textarea class="form-textarea" id="tplCardMessage" oninput="renderTemplatePreview()"></textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="tplRemarks" oninput="renderTemplatePreview()"></textarea></div></div>';
-        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">數量</label><input type="number" class="form-input" id="tplQuantity" value="1" oninput="renderTemplatePreview()"></div><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="tplDeliveryFee" value="90" oninput="renderTemplatePreview()"></div></div>';
-        c.innerHTML += '</div><div style="background:#f5f5f5;padding:30px;border-radius:10px;margin-top:20px;"><h3 style="text-align:center;">模板效果預覽</h3><div id="templatePreview" style="background:white;padding:40px;border-radius:10px;max-width:650px;margin:0 auto;"></div></div>';
-        loadShopSettings();
-        loadTemplateProductOptions();
-    }
-    async function loadShopSettings() {
-        try {
-            var r = await supabaseClient.from('shop_settings').select('*').limit(1);
-            if (r.data && r.data.length > 0) {
-                var s = r.data[0];
-                document.getElementById('tplShopName').value = s.shop_name || '';
-                document.getElementById('tplShopPhone').value = s.shop_phone || '';
-                document.getElementById('tplShopAddress').value = s.shop_address || '';
-                document.getElementById('tplShopEmail').value = s.shop_email || '';
-                document.getElementById('tplShopLogo').value = s.shop_logo || '';
-            }
-        } catch (e) {}
-        renderTemplatePreview();
-    }
-    async function saveShopSettings() {
-        var data = {
-            shop_name: document.getElementById('tplShopName').value.trim(),
-            shop_phone: document.getElementById('tplShopPhone').value.trim(),
-            shop_address: document.getElementById('tplShopAddress').value.trim(),
-            shop_email: document.getElementById('tplShopEmail').value.trim(),
-            shop_logo: document.getElementById('tplShopLogo').value.trim()
-        };
-        try {
-            var r = await supabaseClient.from('shop_settings').select('id').limit(1);
-            if (r.data && r.data.length > 0) { await supabaseClient.from('shop_settings').update(data).eq('id', r.data[0].id); }
-            else { await supabaseClient.from('shop_settings').insert(data); }
-            showToast('店鋪資料已保存');
-        } catch (e) { showToast('保存失敗，請先創建 shop_settings 表'); }
-    }
-    function loadTemplateProductOptions() {
-        var sel = document.getElementById('tplProductSelect');
-        if (!sel) return;
-        var h = '<option value="">請選擇商品</option>';
-        for (var i = 0; i < allProducts.length; i++) {
-            h += '<option value="' + allProducts[i].id + '">' + allProducts[i].name_zh + ' (HK$' + allProducts[i].price + ')</option>';
-        }
-        sel.innerHTML = h;
-    }
-    function selectTemplateProduct() {
-        var id = parseInt(document.getElementById('tplProductSelect').value);
-        selectedTemplateProduct = null;
-        for (var i = 0; i < allProducts.length; i++) { if (allProducts[i].id === id) { selectedTemplateProduct = allProducts[i]; break; } }
-        renderTemplatePreview();
-    }
-    function renderTemplatePreview() {
-        var preview = document.getElementById('templatePreview');
-        if (!preview) return;
-        var qty = parseInt(document.getElementById('tplQuantity').value) || 1;
-        var deliveryFee = parseFloat(document.getElementById('tplDeliveryFee').value) || 0;
-        var unitPrice = selectedTemplateProduct ? parseFloat(selectedTemplateProduct.price) : 0;
-        var subtotal = unitPrice * qty;
-        var total = subtotal + deliveryFee;
-        var productImg = selectedTemplateProduct && selectedTemplateProduct.image_url ? selectedTemplateProduct.image_url : '';
-        var productName = selectedTemplateProduct ? selectedTemplateProduct.name_zh : '';
-        var html = '<div class="template-preview-content">';
-        var logo = document.getElementById('tplShopLogo').value;
-        if (logo) { html += '<div class="template-preview-logo"><img src="' + logo + '"></div>'; }
-        html += '<h1>' + (document.getElementById('tplShopName').value || 'RoyalSpl Florist') + '</h1>';
-        html += '<p style="text-align:center;">訂單確認書</p>';
-        html += '<table><tr><td><b>訂單編號：</b>' + (document.getElementById('tplOrderCode').value || '') + '</td><td><b>送貨日期：</b>' + (document.getElementById('tplDeliveryDate').value || '') + '</td></tr>';
-        html += '<tr><td><b>訂購人：</b>' + (document.getElementById('tplCustomerName').value || '') + '</td><td><b>電話：</b>' + (document.getElementById('tplCustomerPhone').value || '') + '</td></tr>';
-        html += '<tr><td><b>收件人：</b>' + (document.getElementById('tplRecipientName').value || '') + '</td><td><b>收件人電話：</b>' + (document.getElementById('tplRecipientPhone').value || '') + '</td></tr>';
-        html += '<tr><td colspan="2"><b>收件地址：</b>' + (document.getElementById('tplRecipientAddress').value || '') + '</td></tr></table>';
-        html += '<table><tr style="background:#1E3A5F;color:white;"><th>商品圖片</th><th>商品</th><th>數量</th><th>單價</th><th>小計</th></tr>';
-        html += '<tr><td>' + (productImg ? '<img src="' + productImg + '" style="width:60px;height:60px;object-fit:cover;border-radius:5px;">' : '無圖') + '</td>';
-        html += '<td>' + productName + '</td><td style="text-align:center;">' + qty + '</td><td style="text-align:right;">HK$' + unitPrice + '</td><td style="text-align:right;">HK$' + subtotal + '</td></tr></table>';
-        html += '<table style="width:50%;margin-left:auto;"><tr><td>運費：</td><td style="text-align:right;">HK$' + deliveryFee + '</td></tr>';
-        html += '<tr style="font-size:20px;font-weight:bold;"><td>總計：</td><td style="text-align:right;">HK$' + total + '</td></tr></table>';
-        var cardMsg = document.getElementById('tplCardMessage').value;
-        if (cardMsg) { html += '<div style="background:#FFF8E1;padding:15px;border-left:4px solid #FFC107;margin:20px 0;"><b>心意卡：</b>' + cardMsg + '</div>'; }
-        var remarks = document.getElementById('tplRemarks').value;
-        if (remarks) { html += '<div style="background:#F5F5F5;padding:15px;margin:20px 0;"><b>特別事項：</b>' + remarks + '</div>'; }
-        html += '<p style="text-align:center;margin-top:30px;color:#666;">' + (document.getElementById('tplShopName').value || '') + ' | ' + (document.getElementById('tplShopPhone').value || '') + '</p>';
-        html += '<p style="text-align:center;color:#666;">' + (document.getElementById('tplShopAddress').value || '') + '</p>';
-        html += '</div>';
-        preview.innerHTML = html;
-    }
-    function downloadTemplatePDF() {
-        renderTemplatePreview();
-        var w = window.open('', '_blank');
-        w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '</body></html>');
-        w.document.close();
-        w.print();
-    }
-
-    function showToast(msg) {
-        var toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = msg;
-        document.body.appendChild(toast);
-        setTimeout(function() { toast.classList.add('show'); }, 10);
-        setTimeout(function() { toast.classList.remove('show'); setTimeout(function() { toast.remove(); }, 300); }, 2500);
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        if (localStorage.getItem('royalspl_admin') === 'true') {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('adminPage').style.display = 'block';
-            switchPage('analytics');
-            checkVisitorNotifications();
-        }
-    });
-    </script>
         <script>
-        // ============ React 區塊編輯器（含分類、標籤、CSV） ============
         const { useState, useEffect, useRef, useCallback, useMemo } = React;
         const html = htm.bind(React.createElement);
 
-        // 圖標函數
         const Lucide = {
-            Bold: () => '𝐁',
-            Italic: () => '𝐼',
-            Underline: () => 'U̲',
-            Palette: () => '🎨',
-            Highlighter: () => '🖍️',
-            Link2: () => '🔗',
-            Quote: () => '❝',
-            Code2: () => '</>',
-            ListOrdered: () => '1.',
-            List: () => '•',
-            Outdent: () => '⏪',
-            Indent: () => '⏩',
-            GripVertical: () => '⋮⋮',
-            Info: () => 'ℹ️',
-            Type: () => 'T',
-            Heading1: () => 'H1',
-            Heading2: () => 'H2',
-            Minus: () => '—',
-            Image: () => '🖼️',
-            Video: () => '🎬',
-            Table: () => '▦',
-            MousePointerClick: () => '🖱️',
-            LayoutDashboard: () => '📊',
-            FileText: () => '📄',
-            MessageSquare: () => '💬',
-            FolderOpen: () => '📂',
-            Tags: () => '🏷️',
-            Users: () => '👥',
-            TrendingUp: () => '📈',
-            BarChart2: () => '📊',
-            Download: () => '⬇️',
-            Upload: () => '⬆️',
-            Plus: () => '➕',
-            Trash: () => '🗑️',
-            Edit: () => '✏️'
+            Bold: () => '𝐁', Italic: () => '𝐼', Underline: () => 'U̲',
+            Palette: () => '🎨', Highlighter: () => '🖍️', Link2: () => '🔗',
+            Quote: () => '❝', Code2: () => '</>', ListOrdered: () => '1.',
+            List: () => '•', Outdent: () => '⏪', Indent: () => '⏩',
+            GripVertical: () => '⋮⋮', Info: () => 'ℹ️', Type: () => 'T',
+            Heading1: () => 'H1', Heading2: () => 'H2', Minus: () => '—',
+            Image: () => '🖼️', Video: () => '🎬', Table: () => '▦',
+            MousePointerClick: () => '🖱️', LayoutDashboard: () => '📊',
+            FileText: () => '📄', MessageSquare: () => '💬', FolderOpen: () => '📂',
+            Tags: () => '🏷️', Users: () => '👥', TrendingUp: () => '📈',
+            BarChart2: () => '📊', Download: () => '⬇️', Upload: () => '⬆️',
+            Plus: () => '➕', Trash: () => '🗑️', Edit: () => '✏️'
         };
 
-        // 區塊類型
         const blockTypes = {
             paragraph: { label: '段落', icon: 'Type', defaultContent: { text: '' } },
             heading1: { label: '標題1', icon: 'Heading1', defaultContent: { text: '' } },
@@ -1115,7 +728,7 @@
             video: { label: '視頻', icon: 'Video', defaultContent: { src: '' } },
             table: { label: '表格', icon: 'Table', defaultContent: { rows: 2, cols: 2 } },
             button: { label: '按鈕', icon: 'MousePointerClick', defaultContent: { text: '按鈕', url: '#' } },
-            html: { label: '自定義 HTML', icon: 'Code2', defaultContent: { code: '' } },
+            html: { label: '自定義 HTML', icon: 'Code2', defaultContent: { code: '' } }
         };
 
         const generateId = () => `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -1123,13 +736,11 @@
             if (!text || text.trim() === '') return [];
             return [{ id: generateId(), type: 'paragraph', content: { text } }];
         };
-
         const renderIcon = (name) => {
             const fn = Lucide[name];
             return React.createElement('span', null, fn ? fn() : name);
         };
 
-        // ===== 共用區塊編輯邏輯 =====
         function useBlockEditor(defaultBlocks, extraFields) {
             const [blocks, setBlocks] = useState(defaultBlocks);
             const [title, setTitle] = useState(extraFields?.title || '');
@@ -1169,9 +780,7 @@
             const updateBlockContent = (id, newContent) => {
                 setBlocks(prev => prev.map(b => b.id === id ? { ...b, content: { ...b.content, ...newContent } } : b));
             };
-
             const deleteBlock = (id) => setBlocks(prev => prev.filter(b => b.id !== id));
-
             const handleDragStart = (e, id) => { e.dataTransfer.setData('text/plain', id); setIsDragging(true); };
             const handleDragOver = (e) => { e.preventDefault(); };
             const handleDrop = (e, targetId) => {
@@ -1188,7 +797,6 @@
                 });
                 setIsDragging(false);
             };
-
             const uploadImage = async (file, blockId) => {
                 const fd = new FormData();
                 fd.append('file', file);
@@ -1207,7 +815,6 @@
             };
         }
 
-        // ===== BlockRenderer =====
         function BlockRenderer({ block, updateBlockContent, deleteBlock, uploadImage }) {
             switch (block.type) {
                 case 'paragraph':
@@ -1251,9 +858,7 @@
                                 }
                             }, '點擊上傳圖片'),
                         React.createElement('input', {
-                            type: 'text',
-                            value: block.content.alt || '',
-                            placeholder: '替代文字',
+                            type: 'text', value: block.content.alt || '', placeholder: '替代文字',
                             onChange: (e) => updateBlockContent(block.id, { alt: e.target.value }),
                             style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '4px', marginTop: '5px' }
                         }),
@@ -1262,9 +867,7 @@
                 case 'video':
                     return React.createElement('div', null,
                         React.createElement('input', {
-                            type: 'text',
-                            value: block.content.src || '',
-                            placeholder: '視頻網址',
+                            type: 'text', value: block.content.src || '', placeholder: '視頻網址',
                             onChange: (e) => updateBlockContent(block.id, { src: e.target.value }),
                             style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px' }
                         }),
@@ -1302,8 +905,7 @@
                     return React.createElement('textarea', {
                         value: block.content.code,
                         onChange: (e) => updateBlockContent(block.id, { code: e.target.value }),
-                        placeholder: '輸入 HTML 代碼',
-                        rows: 5,
+                        placeholder: '輸入 HTML 代碼', rows: 5,
                         style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px', fontFamily: 'monospace' }
                     });
                 default:
@@ -1311,7 +913,6 @@
             }
         }
 
-        // ===== 分類管理組件 =====
         function CategoryManager() {
             const [categories, setCategories] = useState([]);
             const [nameZh, setNameZh] = useState('');
@@ -1322,7 +923,6 @@
                 const { data } = await window.supabaseClient.from('blog_categories').select('*').order('id', { ascending: true });
                 setCategories(data || []);
             };
-
             useEffect(() => { loadCategories(); }, []);
 
             const handleAddOrUpdate = async () => {
@@ -1334,22 +934,11 @@
                 } else {
                     await window.supabaseClient.from('blog_categories').insert(payload);
                 }
-                setNameZh('');
-                setNameEn('');
+                setNameZh(''); setNameEn('');
                 loadCategories();
             };
-
-            const handleEdit = (cat) => {
-                setEditingId(cat.id);
-                setNameZh(cat.name_zh);
-                setNameEn(cat.name_en || '');
-            };
-
-            const handleDelete = async (id) => {
-                if (!confirm('刪除該分類？')) return;
-                await window.supabaseClient.from('blog_categories').delete().eq('id', id);
-                loadCategories();
-            };
+            const handleEdit = (cat) => { setEditingId(cat.id); setNameZh(cat.name_zh); setNameEn(cat.name_en || ''); };
+            const handleDelete = async (id) => { if (!confirm('刪除該分類？')) return; await window.supabaseClient.from('blog_categories').delete().eq('id', id); loadCategories(); };
 
             return React.createElement('div', null,
                 React.createElement('div', { className: 'page-header' },
@@ -1384,7 +973,6 @@
             );
         }
 
-        // ===== 標籤管理組件 =====
         function TagManager() {
             const [tags, setTags] = useState([]);
             const [nameZh, setNameZh] = useState('');
@@ -1395,7 +983,6 @@
                 const { data } = await window.supabaseClient.from('blog_tags').select('*').order('id', { ascending: true });
                 setTags(data || []);
             };
-
             useEffect(() => { loadTags(); }, []);
 
             const handleAddOrUpdate = async () => {
@@ -1407,22 +994,11 @@
                 } else {
                     await window.supabaseClient.from('blog_tags').insert(payload);
                 }
-                setNameZh('');
-                setNameEn('');
+                setNameZh(''); setNameEn('');
                 loadTags();
             };
-
-            const handleEdit = (tag) => {
-                setEditingId(tag.id);
-                setNameZh(tag.name_zh);
-                setNameEn(tag.name_en || '');
-            };
-
-            const handleDelete = async (id) => {
-                if (!confirm('刪除該標籤？')) return;
-                await window.supabaseClient.from('blog_tags').delete().eq('id', id);
-                loadTags();
-            };
+            const handleEdit = (tag) => { setEditingId(tag.id); setNameZh(tag.name_zh); setNameEn(tag.name_en || ''); };
+            const handleDelete = async (id) => { if (!confirm('刪除該標籤？')) return; await window.supabaseClient.from('blog_tags').delete().eq('id', id); loadTags(); };
 
             return React.createElement('div', null,
                 React.createElement('div', { className: 'page-header' },
@@ -1456,9 +1032,7 @@
                 )
             );
         }
-
-        // ===== BlogEditor（增加分類和標籤選擇） =====
-        function BlogEditor({ post, onClose }) {
+                function BlogEditor({ post, onClose }) {
             const initialBlocks = post?.content ? (() => { try { return JSON.parse(post.content); } catch { return textToBlocks(post.content); } })() : [{ id: generateId(), type: 'paragraph', content: { text: '' } }];
             const ed = useBlockEditor(initialBlocks, {
                 title: post?.title || '',
@@ -1467,22 +1041,13 @@
                 seoDesc: post?.seo_description || '',
                 isPublished: post?.is_published || false
             });
-
             const { blocks, setBlocks, title, setTitle, coverImage, setCoverImage, seoTitle, setSeoTitle, seoDesc, setSeoDesc, isPublished, setIsPublished, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = ed;
 
-            // 分類與標籤狀態
             const [categories, setCategories] = useState([]);
             const [tags, setTags] = useState([]);
             const [selectedCategory, setSelectedCategory] = useState(post?.category_id || '');
-            const [selectedTagIds, setSelectedTagIds] = useState(() => {
-                if (post?.id) {
-                    // 初始載入時先設為空，稍後從關聯表讀取
-                    return [];
-                }
-                return [];
-            });
+            const [selectedTagIds, setSelectedTagIds] = useState([]);
 
-            // 載入分類與標籤
             useEffect(() => {
                 const loadData = async () => {
                     const { data: cats } = await window.supabaseClient.from('blog_categories').select('*').order('name_zh');
@@ -1531,7 +1096,6 @@
                         if (data) postId = data.id;
                         else if (error) { alert('保存失敗'); return; }
                     }
-                    // 更新標籤關聯
                     if (postId) {
                         await window.supabaseClient.from('blog_post_tags').delete().eq('post_id', postId);
                         for (const tagId of selectedTagIds) {
@@ -1564,10 +1128,31 @@
                     win.document.close();
                 };
                 const handlePublish = async () => {
-                    // 發佈時同時保存
-                    setIsPublished(true);
-                    // 延遲一下確保狀態更新後再保存
-                    setTimeout(() => window.dispatchEvent(new CustomEvent('save-content')), 0);
+                    const payload = {
+                        title,
+                        image_url: coverImage,
+                        seo_title: seoTitle,
+                        seo_description: seoDesc,
+                        is_published: true,
+                        content: JSON.stringify(blocks),
+                        category_id: selectedCategory || null
+                    };
+                    let postId = post?.id;
+                    if (postId) {
+                        await window.supabaseClient.from('blog_posts').update(payload).eq('id', postId);
+                    } else {
+                        const { data, error } = await window.supabaseClient.from('blog_posts').insert(payload).select('id').single();
+                        if (data) postId = data.id;
+                        else if (error) { alert('發佈失敗'); return; }
+                    }
+                    if (postId) {
+                        await window.supabaseClient.from('blog_post_tags').delete().eq('post_id', postId);
+                        for (const tagId of selectedTagIds) {
+                            await window.supabaseClient.from('blog_post_tags').insert({ post_id: postId, tag_id: tagId });
+                        }
+                    }
+                    alert('已發佈');
+                    onClose();
                 };
                 window.addEventListener('save-content', handleSave);
                 window.addEventListener('preview-content', handlePreview);
@@ -1590,7 +1175,6 @@
                     }
                 }
             };
-
             const toggleTag = (tagId) => {
                 setSelectedTagIds(prev => prev.includes(tagId) ? prev.filter(x => x !== tagId) : [...prev, tagId]);
             };
@@ -1598,7 +1182,7 @@
             const toolbarButtons = [
                 { onClick: () => document.execCommand('bold'), icon: 'Bold' },
                 { onClick: () => document.execCommand('italic'), icon: 'Italic' },
-                { onClick: () => document.execCommand('underline'), icon: 'Underline' },
+                { onClick: () => document.execCommand('underline'), icon: 'Underline' }
             ];
 
             return React.createElement('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 10001, display: 'flex', justifyContent: 'center', alignItems: 'center' } },
@@ -1671,7 +1255,6 @@
                                     React.createElement('input', { type: 'text', value: seoDesc, onChange: (e) => setSeoDesc(e.target.value), style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '6px' } })
                                 )
                             ),
-                            // 分類與標籤選擇
                             React.createElement('div', { style: { display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' } },
                                 React.createElement('div', { style: { flex: '1 1 200px' } },
                                     React.createElement('label', { style: { fontSize: '14px', color: '#666', display: 'block' } }, '分類'),
@@ -1740,110 +1323,145 @@
             );
         }
 
-        // ===== FaqEditor / ContactEditor 保留 =====
         function FaqEditor() {
-            const ed = useBlockEditor([{ id: generateId(), type: 'paragraph', content: { text: '' } }], {});
-            const { blocks, setBlocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = ed;
+            const [faqs, setFaqs] = useState([]);
+            const [question, setQuestion] = useState('');
+            const [answer, setAnswer] = useState('');
+            const [editingId, setEditingId] = useState(null);
 
-            useEffect(() => {
-                const handleSave = async () => {
-                    const payload = { content: JSON.stringify(blocks) };
-                    const { data: existing } = await window.supabaseClient.from('faq_items').select('id').limit(1);
-                    if (existing && existing.length > 0) await window.supabaseClient.from('faq_items').update(payload).eq('id', existing[0].id);
-                    else await window.supabaseClient.from('faq_items').insert(payload);
-                    alert('已保存');
-                };
-                window.addEventListener('save-content', handleSave);
-                return () => window.removeEventListener('save-content', handleSave);
-            }, [blocks]);
+            const loadFaqs = async () => {
+                const { data } = await window.supabaseClient.from('faq_items').select('*').order('sort_order', { ascending: true });
+                setFaqs(data || []);
+            };
+            useEffect(() => { loadFaqs(); }, []);
 
-            return React.createElement('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-                React.createElement('div', { className: 'block-toolbar' },
-                    React.createElement('button', { onClick: () => document.execCommand('bold') }, renderIcon('Bold')),
-                    React.createElement('button', { onClick: () => document.execCommand('italic') }, renderIcon('Italic')),
-                    React.createElement('button', { onClick: () => document.execCommand('underline') }, renderIcon('Underline')),
-                    React.createElement('div', { className: 'divider' }),
-                    React.createElement('button', { onClick: () => setIsDragging(!isDragging) }, renderIcon('GripVertical'))
+            const handleSubmit = async () => {
+                if (!question.trim() || !answer.trim()) return alert('請填寫問題與答案');
+                const payload = { question: question.trim(), answer: answer.trim() };
+                if (editingId) {
+                    await window.supabaseClient.from('faq_items').update(payload).eq('id', editingId);
+                    setEditingId(null);
+                } else {
+                    await window.supabaseClient.from('faq_items').insert(payload);
+                }
+                setQuestion(''); setAnswer('');
+                loadFaqs();
+            };
+            const handleEdit = (faq) => { setEditingId(faq.id); setQuestion(faq.question); setAnswer(faq.answer); };
+            const handleDelete = async (id) => { if (!confirm('確定刪除？')) return; await window.supabaseClient.from('faq_items').delete().eq('id', id); loadFaqs(); };
+            const togglePublish = async (id, current) => { await window.supabaseClient.from('faq_items').update({ is_published: !current }).eq('id', id); loadFaqs(); };
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '常見問題管理')
                 ),
-                React.createElement('div', { style: { flex: 1, overflowY: 'auto', background: '#FAF8F5', padding: '20px' } },
-                    React.createElement('div', { className: 'editor-content' },
-                        blocks.map(block => React.createElement('div', {
-                            key: block.id,
-                            'data-block-id': block.id,
-                            className: `block-item ${isDragging ? 'dragging' : ''}`,
-                            draggable: isDragging,
-                            onDragStart: (e) => handleDragStart(e, block.id),
-                            onDragOver: handleDragOver,
-                            onDrop: (e) => handleDrop(e, block.id),
-                            onDragEnd: () => setIsDragging(false)
-                        },
-                            React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start' } },
-                                isDragging && React.createElement('span', { className: 'block-drag-handle' }, renderIcon('GripVertical')),
-                                React.createElement('div', { style: { flex: 1 } },
-                                    React.createElement(BlockRenderer, { block, updateBlockContent, deleteBlock, uploadImage })
-                                )
+                React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '20px' } },
+                    React.createElement('input', { type: 'text', placeholder: '問題', value: question, onChange: (e) => setQuestion(e.target.value), className: 'form-input', style: { flex: 1 } }),
+                    React.createElement('textarea', { placeholder: '答案', value: answer, onChange: (e) => setAnswer(e.target.value), className: 'form-textarea', style: { flex: 1, minHeight: '60px' } }),
+                    React.createElement('button', { className: 'btn btn-primary', onClick: handleSubmit }, editingId ? '更新' : '新增')
+                ),
+                React.createElement('table', { className: 'data-table' },
+                    React.createElement('thead', null,
+                        React.createElement('tr', null,
+                            React.createElement('th', null, '問題'),
+                            React.createElement('th', null, '答案'),
+                            React.createElement('th', null, '狀態'),
+                            React.createElement('th', null, '操作')
+                        )
+                    ),
+                    React.createElement('tbody', null,
+                        faqs.map(faq => React.createElement('tr', { key: faq.id },
+                            React.createElement('td', null, faq.question),
+                            React.createElement('td', null, faq.answer),
+                            React.createElement('td', null, faq.is_published ? '已發佈' : '草稿'),
+                            React.createElement('td', null,
+                                React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => handleEdit(faq), style: { marginRight: '5px' } }, '編輯'),
+                                React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => togglePublish(faq.id, faq.is_published), style: { marginRight: '5px' } }, faq.is_published ? '取消發佈' : '發佈'),
+                                React.createElement('button', { className: 'btn btn-danger btn-small', onClick: () => handleDelete(faq.id) }, '刪除')
                             )
                         ))
-                    )
-                ),
-                showSlash && React.createElement('div', { className: 'slash-menu', style: { left: slashPos.x, top: slashPos.y } },
-                    Object.entries(blockTypes).map(([type, def]) =>
-                        React.createElement('div', { key: type, className: 'slash-menu-item', onClick: () => insertBlock(type, slashTargetId) },
-                            renderIcon(def.icon),
-                            React.createElement('span', null, def.label)
-                        )
                     )
                 )
             );
         }
 
         function ContactEditor() {
-            const ed = useBlockEditor([{ id: generateId(), type: 'paragraph', content: { text: '' } }], {});
-            const { blocks, showSlash, setShowSlash, slashPos, setSlashPos, slashTargetId, setSlashTargetId, colorPicker, setColorPicker, isDragging, setIsDragging, insertBlock, updateBlockContent, deleteBlock, handleDragStart, handleDragOver, handleDrop, uploadImage } = ed;
+            const [shopLogo, setShopLogo] = useState('');
+            const [shopPhone, setShopPhone] = useState('');
+            const [shopEmail, setShopEmail] = useState('');
+            const [shopAddress, setShopAddress] = useState('');
+            const [mapUrl, setMapUrl] = useState('');
+            const [isPublished, setIsPublished] = useState(false);
 
             useEffect(() => {
-                const handleSave = async () => {
-                    const payload = { content: JSON.stringify(blocks) };
-                    const { data: existing } = await window.supabaseClient.from('contact_settings').select('id').limit(1);
-                    if (existing && existing.length > 0) await window.supabaseClient.from('contact_settings').update(payload).eq('id', existing[0].id);
-                    else await window.supabaseClient.from('contact_settings').insert(payload);
-                    alert('已保存');
+                const loadData = async () => {
+                    const { data } = await window.supabaseClient.from('contact_settings').select('*').limit(1).maybeSingle();
+                    if (data) {
+                        setShopLogo(data.shop_logo || '');
+                        setShopPhone(data.shop_phone || '');
+                        setShopEmail(data.shop_email || '');
+                        setShopAddress(data.shop_address || '');
+                        setMapUrl(data.map_url || '');
+                        setIsPublished(data.is_published || false);
+                    }
                 };
-                window.addEventListener('save-content', handleSave);
-                return () => window.removeEventListener('save-content', handleSave);
-            }, [blocks]);
+                loadData();
+            }, []);
 
-            return React.createElement('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-                React.createElement('div', { className: 'block-toolbar' },
-                    React.createElement('button', { onClick: () => document.execCommand('bold') }, renderIcon('Bold')),
-                    React.createElement('button', { onClick: () => document.execCommand('italic') }, renderIcon('Italic')),
-                    React.createElement('button', { onClick: () => document.execCommand('underline') }, renderIcon('Underline'))
+            const handleSave = async () => {
+                const payload = {
+                    shop_logo: shopLogo,
+                    shop_phone: shopPhone,
+                    shop_email: shopEmail,
+                    shop_address: shopAddress,
+                    map_url: mapUrl,
+                    is_published: isPublished
+                };
+                const { data: existing } = await window.supabaseClient.from('contact_settings').select('id').limit(1);
+                if (existing && existing.length > 0) {
+                    await window.supabaseClient.from('contact_settings').update(payload).eq('id', existing[0].id);
+                } else {
+                    await window.supabaseClient.from('contact_settings').insert(payload);
+                }
+                alert('已保存');
+            };
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '聯絡我們設定')
                 ),
-                React.createElement('div', { style: { flex: 1, overflowY: 'auto', background: '#FAF8F5', padding: '20px' } },
-                    React.createElement('div', { className: 'editor-content' },
-                        blocks.map(block => React.createElement('div', {
-                            key: block.id,
-                            'data-block-id': block.id,
-                            className: `block-item ${isDragging ? 'dragging' : ''}`,
-                            draggable: isDragging,
-                            onDragStart: (e) => handleDragStart(e, block.id),
-                            onDragOver: handleDragOver,
-                            onDrop: (e) => handleDrop(e, block.id),
-                            onDragEnd: () => setIsDragging(false)
-                        },
-                            React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start' } },
-                                isDragging && React.createElement('span', { className: 'block-drag-handle' }, renderIcon('GripVertical')),
-                                React.createElement('div', { style: { flex: 1 } },
-                                    React.createElement(BlockRenderer, { block, updateBlockContent, deleteBlock, uploadImage })
-                                )
-                            )
-                        ))
-                    )
+                React.createElement('div', { className: 'form-container', style: { maxWidth: '600px' } },
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, '店鋪 Logo URL'),
+                        React.createElement('input', { type: 'text', className: 'form-input', value: shopLogo, onChange: (e) => setShopLogo(e.target.value), placeholder: '圖片網址' })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, '電話'),
+                        React.createElement('input', { type: 'text', className: 'form-input', value: shopPhone, onChange: (e) => setShopPhone(e.target.value) })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, 'Email'),
+                        React.createElement('input', { type: 'email', className: 'form-input', value: shopEmail, onChange: (e) => setShopEmail(e.target.value) })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, '地址'),
+                        React.createElement('textarea', { className: 'form-textarea', value: shopAddress, onChange: (e) => setShopAddress(e.target.value) })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, 'Google Maps 嵌入網址'),
+                        React.createElement('input', { type: 'text', className: 'form-input', value: mapUrl, onChange: (e) => setMapUrl(e.target.value) })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                            React.createElement('input', { type: 'checkbox', checked: isPublished, onChange: (e) => setIsPublished(e.target.checked) }),
+                            '發佈'
+                        )
+                    ),
+                    React.createElement('button', { className: 'btn btn-primary', onClick: handleSave }, '保存')
                 )
             );
         }
 
-        // ===== ContentEditor（含分類、標籤、留言占位） =====
         function ContentEditor() {
             const [activeSection, setActiveSection] = useState('articles');
             const [editingPost, setEditingPost] = useState(undefined);
@@ -1871,23 +1489,19 @@
             }, [activeSection]);
 
             const handleSelectAll = (e) => {
-                if (e.target.checked) {
-                    setSelectedPostIds(posts.map(p => p.id));
-                } else {
-                    setSelectedPostIds([]);
-                }
+                if (e.target.checked) { setSelectedPostIds(posts.map(p => p.id)); } else { setSelectedPostIds([]); }
             };
-
             const toggleSelect = (id) => {
                 setSelectedPostIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+            };
+            const togglePublish = async (postId, currentStatus) => {
+                await window.supabaseClient.from('blog_posts').update({ is_published: !currentStatus }).eq('id', postId);
+                loadPosts();
             };
 
             const exportCSV = () => {
                 const selectedPosts = posts.filter(p => selectedPostIds.includes(p.id));
-                if (selectedPosts.length === 0) {
-                    alert('請先勾選要匯出的文章');
-                    return;
-                }
+                if (selectedPosts.length === 0) { alert('請先勾選要匯出的文章'); return; }
                 const headers = ['id', 'title', 'content', 'image_url', 'seo_title', 'seo_description', 'is_published', 'created_at', 'category_id'];
                 const csvRows = [headers.join(',')];
                 selectedPosts.forEach(post => {
@@ -1919,28 +1533,19 @@
                 reader.onload = async (e) => {
                     const text = e.target.result;
                     const rows = parseCSV(text);
-                    if (rows.length < 2) {
-                        alert('CSV 格式不正確');
-                        return;
-                    }
+                    if (rows.length < 2) { alert('CSV 格式不正確'); return; }
                     const headers = rows[0].map(h => h.trim());
                     const requiredFields = ['title', 'content'];
-                    if (!requiredFields.every(f => headers.includes(f))) {
-                        alert('CSV 缺少必要欄位：title, content');
-                        return;
-                    }
+                    if (!requiredFields.every(f => headers.includes(f))) { alert('CSV 缺少必要欄位：title, content'); return; }
                     let successCount = 0;
                     for (let i = 1; i < rows.length; i++) {
                         const row = rows[i];
                         if (row.length === 0) continue;
                         const obj = {};
-                        headers.forEach((h, idx) => {
-                            obj[h] = row[idx] !== undefined ? row[idx] : '';
-                        });
+                        headers.forEach((h, idx) => { obj[h] = row[idx] !== undefined ? row[idx] : ''; });
                         obj.is_published = obj.is_published === 'true' || obj.is_published === 'TRUE' || obj.is_published === '1';
                         const id = obj.id ? parseInt(obj.id) : null;
                         delete obj.id;
-                        // 轉換 category_id 為數字或 null
                         obj.category_id = obj.category_id ? parseInt(obj.category_id) : null;
                         try {
                             if (id) {
@@ -1950,9 +1555,7 @@
                                 const { error } = await window.supabaseClient.from('blog_posts').insert(obj);
                                 if (!error) successCount++;
                             }
-                        } catch (err) {
-                            console.error('匯入失敗', err);
-                        }
+                        } catch (err) { console.error('匯入失敗', err); }
                     }
                     alert(`匯入完成，成功 ${successCount} 筆`);
                     loadPosts();
@@ -1968,7 +1571,6 @@
                 }
                 return str;
             };
-
             const parseCSV = (text) => {
                 const rows = [];
                 let row = [];
@@ -1978,36 +1580,21 @@
                     const c = text[i];
                     if (inQuotes) {
                         if (c === '"') {
-                            if (text[i+1] === '"') {
-                                field += '"';
-                                i++;
-                            } else {
-                                inQuotes = false;
-                            }
-                        } else {
-                            field += c;
-                        }
+                            if (text[i+1] === '"') { field += '"'; i++; } else { inQuotes = false; }
+                        } else { field += c; }
                     } else {
-                        if (c === '"') {
-                            inQuotes = true;
-                        } else if (c === ',') {
-                            row.push(field);
-                            field = '';
-                        } else if (c === '\n' || c === '\r') {
+                        if (c === '"') { inQuotes = true; }
+                        else if (c === ',') { row.push(field); field = ''; }
+                        else if (c === '\n' || c === '\r') {
                             if (c === '\r' && text[i+1] === '\n') i++;
                             row.push(field);
                             rows.push(row);
                             row = [];
                             field = '';
-                        } else {
-                            field += c;
-                        }
+                        } else { field += c; }
                     }
                 }
-                if (field || row.length) {
-                    row.push(field);
-                    rows.push(row);
-                }
+                if (field || row.length) { row.push(field); rows.push(row); }
                 return rows;
             };
 
@@ -2019,7 +1606,7 @@
                 { key: 'tags', label: '標籤', icon: 'Tags' },
                 { key: 'authors', label: '作家', icon: 'Users' },
                 { key: 'monetization', label: '創造營收', icon: 'TrendingUp' },
-                { key: 'analytics', label: '分析', icon: 'BarChart2' },
+                { key: 'analytics', label: '分析', icon: 'BarChart2' }
             ];
 
             return React.createElement('div', { className: 'block-editor-wrapper' },
@@ -2041,8 +1628,8 @@
                             React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.history.back() }, '上一步'),
                             React.createElement('h3', { style: { fontSize: '18px', fontWeight: '600' } },
                                 activeSection === 'articles' ? '文章管理' :
-                                activeSection === 'faq' ? '常見問題編輯' :
-                                activeSection === 'contact' ? '聯絡我們編輯' :
+                                activeSection === 'faq' ? '常見問題管理' :
+                                activeSection === 'contact' ? '聯絡我們設定' :
                                 activeSection === 'categories' ? '文章分類管理' :
                                 activeSection === 'tags' ? '文章標籤管理' :
                                 activeSection === 'comments' ? '留言管理' :
@@ -2063,12 +1650,7 @@
                                     React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: exportCSV }, renderIcon('Download'), ' 匯出選中 CSV'),
                                     React.createElement('label', { className: 'btn btn-secondary btn-small', style: { cursor: 'pointer' } },
                                         renderIcon('Upload'), ' 匯入 CSV',
-                                        React.createElement('input', {
-                                            type: 'file',
-                                            accept: '.csv',
-                                            style: { display: 'none' },
-                                            onChange: (e) => { if (e.target.files[0]) importCSV(e.target.files[0]); }
-                                        })
+                                        React.createElement('input', { type: 'file', accept: '.csv', style: { display: 'none' }, onChange: (e) => { if (e.target.files[0]) importCSV(e.target.files[0]); } })
                                     ),
                                     React.createElement('button', { className: 'btn btn-primary', onClick: () => setEditingPost(null) }, '新增文章')
                                 )
@@ -2093,17 +1675,18 @@
                                             posts.map(post =>
                                                 React.createElement('tr', { key: post.id },
                                                     React.createElement('td', null,
-                                                        React.createElement('input', {
-                                                            type: 'checkbox',
-                                                            checked: selectedPostIds.includes(post.id),
-                                                            onChange: () => toggleSelect(post.id)
-                                                        })
+                                                        React.createElement('input', { type: 'checkbox', checked: selectedPostIds.includes(post.id), onChange: () => toggleSelect(post.id) })
                                                     ),
                                                     React.createElement('td', null, React.createElement('b', null, post.title)),
                                                     React.createElement('td', null, post.is_published ? '已發佈' : '草稿'),
                                                     React.createElement('td', null, post.created_at ? post.created_at.slice(0, 10) : '-'),
                                                     React.createElement('td', null,
-                                                        React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => setEditingPost(post) }, '編輯')
+                                                        React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => setEditingPost(post) }, '編輯'),
+                                                        React.createElement('button', {
+                                                            className: 'btn btn-small ' + (post.is_published ? 'btn-danger' : 'btn-primary'),
+                                                            style: { marginLeft: '5px' },
+                                                            onClick: () => togglePublish(post.id, post.is_published)
+                                                        }, post.is_published ? '取消發佈' : '發佈')
                                                     )
                                                 )
                                             )
@@ -2112,20 +1695,21 @@
                         ),
                         activeSection === 'categories' && React.createElement(CategoryManager),
                         activeSection === 'tags' && React.createElement(TagManager),
-                        activeSection === 'comments' && React.createElement('div', { className: 'empty-state' }, '留言管理開發中'),
                         activeSection === 'faq' && React.createElement(FaqEditor),
                         activeSection === 'contact' && React.createElement(ContactEditor),
-                        !['articles', 'categories', 'tags', 'comments', 'faq', 'contact'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
+                        activeSection === 'comments' && React.createElement('div', { className: 'empty-state' }, '留言管理開發中'),
+                        !['articles', 'categories', 'tags', 'faq', 'contact', 'comments'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
                     )
                 ),
                 editingPost !== undefined && activeSection === 'articles' && React.createElement(BlogEditor, { post: editingPost, onClose: () => { setEditingPost(undefined); loadPosts(); } })
             );
         }
 
-        // ===== 掛載 =====
         window.mountContentEditor = function(container) {
             container.innerHTML = '';
             const root = ReactDOM.createRoot(container);
             root.render(React.createElement(ContentEditor));
         };
     </script>
+</body>
+</html>
