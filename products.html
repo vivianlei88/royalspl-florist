@@ -285,11 +285,16 @@
             var tags = p.tags || [];
             var stockClass = p.stock === '現貨' ? 'in-stock' : 'pre-order';
             var stockText = p.stock === '現貨' ? '[現貨]' : '[預訂]';
+            var productImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
             html += '<a href="product-detail.html?id=' + p.id + '" class="product-card">';
-            html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            if (productImg) {
+                html += '<div class="product-card-img"><img src="' + productImg + '" alt="' + p.name_zh + '"><\/div>';
+            } else {
+                html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            }
             html += '<div class="product-status ' + stockClass + '">' + stockText + '<\/div>';
+            html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
-            html += '<p class="product-name-en">' + p.name_en + '<\/p>';
             html += '<p class="product-price">HK$' + p.price + '<\/p>';
             html += '<div class="product-tags">';
             for (var j = 0; j < Math.min(tags.length, 4); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }

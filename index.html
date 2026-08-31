@@ -29,6 +29,8 @@
         .product-card { background-color: #FAF8F5; border-radius: 8px; padding: 30px; text-align: center; transition: all 0.3s; display: block; }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
         .product-emoji { font-size: 70px; margin-bottom: 20px; }
+        .product-card-img { aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 8px; overflow: hidden; margin-bottom: 15px; }
+        .product-card-img img { width: 100%; height: 100%; object-fit: cover; }
         .product-name { font-size: 18px; font-weight: 600; margin-bottom: 3px; color: #1A1A1A; }
         .product-name-en { font-family: 'Cormorant Garamond', serif; font-size: 13px; color: #383431; margin-bottom: 10px; }
         .product-price { font-size: 22px; font-weight: 700; margin-bottom: 15px; color: #1A1A1A; }
@@ -198,10 +200,15 @@
         for (var i = 0; i < featuredProductsData.length; i++) {
             var p = featuredProductsData[i];
             var tags = p.tags || [];
+            var cardImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
             html += '<a href="product-detail.html?id=' + p.id + '" class="product-card">';
-            html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            if (cardImg) {
+                html += '<div class="product-card-img"><img src="' + cardImg + '" alt="' + p.name_zh + '"><\/div>';
+            } else {
+                html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            }
+            html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
-            html += '<p class="product-name-en">' + p.name_en + '<\/p>';
             html += '<p class="product-price">HK$' + p.price + '<\/p>';
             html += '<div class="product-tags">';
             for (var j = 0; j < Math.min(tags.length, 3); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }
