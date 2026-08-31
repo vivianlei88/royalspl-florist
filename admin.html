@@ -674,7 +674,8 @@
         await supabaseClient.from('categories').update(categoryData).eq('id', categoryId);
         var existing = await supabaseClient.from('products').select('id').eq('category_id', categoryId);
         if (existing.data) { for (var i = 0; i < existing.data.length; i++) { await supabaseClient.from('products').update({ category_id: null }).eq('id', existing.data[i].id); } }
-        for (var j = 0; j < categoryDetailProducts.length; j++) { await supabaseClient.from('products').update({ category_id: categoryId, sort_order_in_category: j + 1 }).eq('id', categoryDetailProducts[j].id); }
+        var categoryName = document.getElementById('categoryDetailNameZh').value.trim();
+        for (var j = 0; j < categoryDetailProducts.length; j++) { await supabaseClient.from('products').update({ category_id: categoryId, category: categoryName, sort_order_in_category: j + 1 }).eq('id', categoryDetailProducts[j].id); }
         showToast('所有更改已保存'); showCategoryList();
     }
     async function openProductSelectForCategory() {

@@ -156,6 +156,7 @@
     var allProducts = [];
     var selectedTags = [];
     var selectedCategory = '';
+    var categoryIdMap = {};
     var searchKeyword = '';
     var currentSort = 'default';
 
@@ -194,9 +195,11 @@
             var result = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
             if (result.error) throw result.error;
             var categories = result.data || [];
+            categoryIdMap = {};
             var html = '';
             for (var i = 0; i < categories.length; i++) {
                 var cat = categories[i];
+                categoryIdMap[cat.name_zh] = cat.id;
                 html += '<button class="filter-pill" data-category="' + cat.name_zh + '" onclick="toggleCategory(\'' + cat.name_zh + '\')">' + cat.name_zh + '<\/button>';
             }
             container.innerHTML = html;
@@ -246,8 +249,11 @@
             });
         }
         if (selectedCategory) {
+            var targetCategoryId = categoryIdMap[selectedCategory];
             filtered = filtered.filter(function(p) {
-                return p.category === selectedCategory || p.category_id === parseInt(selectedCategory);
+                if (targetCategoryId && p.category_id === targetCategoryId) return true;
+                if (p.category === selectedCategory) return true;
+                return false;
             });
         }
         if (searchKeyword) {
