@@ -1833,6 +1833,61 @@
             );
         }
 
+        function PrivacyPolicyEditor() {
+            const [content, setContent] = useState('');
+            const [isPublished, setIsPublished] = useState(false);
+            const [saving, setSaving] = useState(false);
+
+            useEffect(() => {
+                const loadData = async () => {
+                    const { data } = await window.supabaseClient.from('privacy_policy').select('*').limit(1).maybeSingle();
+                    if (data) {
+                        setContent(data.content || '');
+                        setIsPublished(data.is_published || false);
+                    }
+                };
+                loadData();
+            }, []);
+
+            const handleSave = async () => {
+                setSaving(true);
+                const payload = { content, is_published: isPublished, updated_at: new Date().toISOString() };
+                const { data: existing } = await window.supabaseClient.from('privacy_policy').select('id').limit(1);
+                if (existing && existing.length > 0) {
+                    await window.supabaseClient.from('privacy_policy').update(payload).eq('id', existing[0].id);
+                } else {
+                    await window.supabaseClient.from('privacy_policy').insert(payload);
+                }
+                setSaving(false);
+                alert('已保存');
+            };
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '私隱政策 Privacy Policy')
+                ),
+                React.createElement('div', { className: 'form-container' },
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, '私隱政策內容（支援 HTML）'),
+                        React.createElement('textarea', {
+                            className: 'form-textarea',
+                            style: { minHeight: '400px', fontFamily: 'monospace', fontSize: '14px' },
+                            value: content,
+                            onChange: (e) => setContent(e.target.value),
+                            placeholder: '輸入私隱政策內容...'
+                        })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                            React.createElement('input', { type: 'checkbox', checked: isPublished, onChange: (e) => setIsPublished(e.target.checked) }),
+                            '發佈到前台'
+                        )
+                    ),
+                    React.createElement('button', { className: 'btn btn-primary', onClick: handleSave, disabled: saving }, saving ? '保存中...' : '保存')
+                )
+            );
+        }
+
         function ContentEditor() {
             const [activeSection, setActiveSection] = useState('articles');
             const [editingPost, setEditingPost] = useState(undefined);
@@ -1974,6 +2029,7 @@
                 { key: 'articles', label: '文章', icon: 'FileText' },
                 { key: 'faq', label: '常見問題', icon: 'HelpCircle' },
                 { key: 'contact', label: '聯絡我們', icon: 'Mail' },
+                { key: 'privacy', label: '私隱政策', icon: 'Shield' },
                 { key: 'comments', label: '留言', icon: 'MessageSquare' },
                 { key: 'categories', label: '類別', icon: 'FolderOpen' },
                 { key: 'tags', label: '標籤', icon: 'Tags' },
@@ -2003,6 +2059,7 @@
                                 activeSection === 'articles' ? '文章管理' :
                                 activeSection === 'faq' ? '常見問題管理' :
                                 activeSection === 'contact' ? '聯絡我們設定' :
+                                activeSection === 'privacy' ? '私隱政策管理' :
                                 activeSection === 'categories' ? '文章分類管理' :
                                 activeSection === 'tags' ? '文章標籤管理' :
                                 activeSection === 'comments' ? '留言管理' :
@@ -2070,6 +2127,7 @@
                         activeSection === 'tags' && React.createElement(TagManager),
                         activeSection === 'faq' && React.createElement(FaqEditor),
                         activeSection === 'contact' && React.createElement(ContactEditor),
+                        activeSection === 'privacy' && React.createElement(PrivacyPolicyEditor),
                         activeSection === 'comments' && React.createElement('div', { className: 'empty-state' }, '留言管理開發中'),
                         !['articles', 'categories', 'tags', 'faq', 'contact', 'comments'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
                     )

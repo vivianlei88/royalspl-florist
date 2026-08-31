@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私隱政策 Privacy Policy | RoyalSpl Florist</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .content-card { background: white; border-radius: 8px; padding: 35px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); line-height: 1.8; color: #383431; }
+        .content-card h1, .content-card h2, .content-card h3 { color: #1A1A1A; }
+        .content-card p { margin-bottom: 15px; }
+        .empty-state { text-align: center; color: #888; padding: 40px; }
+        .page-title { text-align: center; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">←</a>
+        <h1 class="page-title">私隱政策 Privacy Policy</h1>
+        <div id="privacyContent" class="content-card"></div>
+    </div>
+    <script>
+        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadPrivacy() {
+            const { data, error } = await supabaseClient
+                .from('privacy_policy')
+                .select('content')
+                .eq('is_published', true)
+                .limit(1)
+                .maybeSingle();
+
+            const container = document.getElementById('privacyContent');
+
+            if (error) {
+                console.error('載入私隱政策失敗:', error);
+                container.innerHTML = '<div class="empty-state">載入失敗，請稍後再試</div>';
+                return;
+            }
+
+            if (!data || !data.content) {
+                container.innerHTML = '<div class="empty-state">尚無私隱政策內容</div>';
+                return;
+            }
+
+            container.innerHTML = data.content;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPrivacy);
+    </script>
+</body>
+</html>
