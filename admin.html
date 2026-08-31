@@ -540,7 +540,7 @@
             var img = p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '無圖';
             var sku = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
             var eye = p.is_active !== false ? '顯示' : '隱藏';
-            h += '<tr><td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td><td>HK$' + p.price + '</td><td>' + (p.category || '-') + '</td><td>' + p.stock + '</td><td><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
+            h += '<tr><td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td><td>HK$' + p.price + '</td><td>' + (p.category || '-') + '</td><td>' + p.stock + '</td><td><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
         }
         h += '</tbody></table>';
         c.innerHTML = h;
