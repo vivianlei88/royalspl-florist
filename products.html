@@ -172,7 +172,6 @@
         var dimensions = [
             { id: 'filterOccasion', tags: tagDimensions['場景用途'] },
             { id: 'filterFlower', tags: tagDimensions['核心花材'] },
-            { id: 'filterStyle', tags: tagDimensions['設計風格'] },
             { id: 'filterPrice', tags: tagDimensions['價格區間'] }
         ];
         dimensions.forEach(function(dim) {
@@ -185,6 +184,32 @@
                 container.innerHTML = html;
             }
         });
+        loadStyleCategories();
+    }
+
+    async function loadStyleCategories() {
+        var container = document.getElementById('filterStyle');
+        if (!container) return;
+        try {
+            var result = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            if (result.error) throw result.error;
+            var categories = result.data || [];
+            var html = '';
+            for (var i = 0; i < categories.length; i++) {
+                var cat = categories[i];
+                html += '<button class="filter-pill" data-category="' + cat.name_zh + '" onclick="toggleCategory(\'' + cat.name_zh + '\')">' + cat.name_zh + '<\/button>';
+            }
+            container.innerHTML = html;
+            if (selectedCategory) { updateFilterUI(); }
+        } catch (err) {
+            console.error('載入分類失敗:', err);
+        }
+    }
+
+    function toggleCategory(categoryName) {
+        if (selectedCategory === categoryName) { selectedCategory = ''; }
+        else { selectedCategory = categoryName; }
+        updateFilterUI(); renderProducts();
     }
 
     function toggleTag(tag) {
@@ -196,12 +221,18 @@
     function updateFilterUI() {
         document.querySelectorAll('.filter-pill').forEach(function(pill) {
             var tag = pill.getAttribute('data-tag');
-            if (selectedTags.indexOf(tag) > -1) { pill.classList.add('active'); } else { pill.classList.remove('active'); }
+            var cat = pill.getAttribute('data-category');
+            if (tag) {
+                if (selectedTags.indexOf(tag) > -1) { pill.classList.add('active'); } else { pill.classList.remove('active'); }
+            }
+            if (cat) {
+                if (selectedCategory === cat) { pill.classList.add('active'); } else { pill.classList.remove('active'); }
+            }
         });
     }
 
     function clearAllFilters() {
-        selectedTags = []; searchKeyword = '';
+        selectedTags = []; selectedCategory = ''; searchKeyword = '';
         var searchInput = document.getElementById('searchInput');
         if (searchInput) searchInput.value = '';
         updateFilterUI(); renderProducts();
