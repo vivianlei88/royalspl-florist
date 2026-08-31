@@ -102,9 +102,9 @@
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="hero-title">RoyalSpl Florist</h1>
-            <p class="hero-subtitle">Crimson Peony Collection</p>
-            <a href="products.html?tag=芍藥" class="hero-cta">緋芍集</a>
+            <h1 class="hero-title" id="heroTitle">RoyalSpl Florist</h1>
+            <p class="hero-subtitle" id="heroSubtitle">Crimson Peony Collection</p>
+            <a href="products.html" class="hero-cta" id="heroCta">探索花藝</a>
         </div>
     </section>
 
@@ -132,7 +132,7 @@
         <div class="about-content">
             <span class="section-subtitle-en">ABOUT US</span>
             <h2 class="section-title-zh">關於我們</h2>
-            <p class="about-text">RoyalSpl Florist 致力於為香港帶來最優質的花藝體驗。<br>每一束花都是藝術品，每一個細節都體現匠心。</p>
+            <p class="about-text" id="aboutText">RoyalSpl Florist 致力於為香港帶來最優質的花藝體驗。</p>
             <a href="#" class="about-link">了解更多 →</a>
         </div>
     </section>
@@ -152,6 +152,30 @@
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var featuredProductsData = [];
+
+    async function loadHomepageSettings() {
+        try {
+            var result = await supabaseClient.from('homepage_settings').select('*').order('id', { ascending: true }).limit(1);
+            if (result.error) throw result.error;
+            var settings = result.data && result.data[0];
+            if (!settings) return;
+            if (settings.hero_title) { var t = document.getElementById('heroTitle'); if (t) t.textContent = settings.hero_title; }
+            if (settings.hero_subtitle) { var s = document.getElementById('heroSubtitle'); if (s) s.textContent = settings.hero_subtitle; }
+            if (settings.hero_cta_text) { var c = document.getElementById('heroCta'); if (c) c.textContent = settings.hero_cta_text; }
+            if (settings.hero_cta_link) { var l = document.getElementById('heroCta'); if (l) l.href = settings.hero_cta_link; }
+            if (settings.hero_image) {
+                var heroSec = document.getElementById('heroSection');
+                if (heroSec) {
+                    heroSec.style.backgroundImage = 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(' + settings.hero_image + ')';
+                    heroSec.style.backgroundSize = 'cover';
+                    heroSec.style.backgroundPosition = 'center';
+                }
+            }
+            if (settings.about_text) { var a = document.getElementById('aboutText'); if (a) a.innerHTML = settings.about_text; }
+        } catch (e) {
+            console.error('載入首頁設置失敗:', e);
+        }
+    }
 
     async function loadCollectionCards() {
         var container = document.getElementById('collectionsGrid');
@@ -256,6 +280,7 @@
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
     document.addEventListener('DOMContentLoaded', function() {
+        loadHomepageSettings();
         loadCollectionCards();
         loadFeaturedProducts();
         updateCartBadge();
