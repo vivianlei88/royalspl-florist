@@ -16,9 +16,19 @@
         
         .detail-page { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px; }
         .detail-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 30px; }
-        .detail-image-area { background-color: #F3EFEA; border-radius: 10px; display: flex; align-items: center; justify-content: center; min-height: 500px; }
-        .detail-emoji { font-size: 200px; }
-        .detail-info-area { padding: 20px 0; }
+        .detail-image-area { background-color: #F3EFEA; border-radius: 10px; display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; overflow: hidden; }
+        .detail-image-area img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+        .detail-tags-below { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+        .detail-tag { padding: 6px 14px; border: 1px solid #1A1A1A; border-radius: 15px; font-size: 13px; }
+        .recommend-section { margin-top: 120px; padding-top: 40px; border-top: 1px solid rgba(26,26,26,0.1); }
+        .recommend-title { text-align: center; font-size: 24px; font-weight: 500; margin-bottom: 30px; letter-spacing: 2px; }
+        .recommend-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .recommend-card { text-decoration: none; color: inherit; }
+        .recommend-card-img { aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+        .recommend-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .recommend-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .recommend-card-price { font-size: 14px; color: #383431; }
+        @media (max-width: 768px) { .detail-container { grid-template-columns: 1fr; gap: 30px; } .detail-emoji { font-size: 120px; } .detail-title-zh { font-size: 30px; } .recommend-grid { grid-template-columns: repeat(2, 1fr); } }
         .detail-subtitle-en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; color: #383431; }
         .detail-title-zh { font-size: 40px; font-weight: 500; font-style: italic; margin: 10px 0; }
         .detail-price { font-size: 32px; font-weight: 700; margin: 20px 0; }
@@ -156,20 +166,24 @@
         
         var html = '';
         var productImage = (product.images && product.images.length > 0) ? product.images[0] : (product.image_url || '');
+        html += '<div class="detail-left-col">';
         if (productImage) {
-            html += '<div class="detail-image-area"><img src="' + productImage + '" alt="' + product.name_zh + '" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"></div>';
+            html += '<div class="detail-image-area"><img src="' + productImage + '" alt="' + product.name_zh + '"></div>';
         } else {
             html += '<div class="detail-image-area"><span class="detail-emoji">' + (product.emoji || '🌸') + '<\/span><\/div>';
         }
+        if (tags.length > 0) {
+            html += '<div class="detail-tags-below">';
+            for (var ti = 0; ti < tags.length; ti++) { html += '<span class="detail-tag">' + tags[ti] + '<\/span>'; }
+            html += '<\/div>';
+        }
+        html += '<\/div>';
         html += '<div class="detail-info-area">';
         html += '<p class="detail-subtitle-en">' + (product.name_en || '').toUpperCase() + '<\/p>';
         html += '<h1 class="detail-title-zh">' + product.name_zh + '<\/h1>';
         html += '<div class="detail-status ' + stockClass + '">' + stockText + '<\/div>';
         html += '<p class="detail-price">HK$' + product.price + '<\/p>';
         html += '<p class="detail-description">' + (product.description || '') + '<\/p>';
-        html += '<div class="detail-tags">';
-        for (var i = 0; i < tags.length; i++) { html += '<span class="detail-tag">' + tags[i] + '<\/span>'; }
-        html += '<\/div>';
         
         if (scentNotes.length > 0) {
             html += '<div class="scent-notes"><p class="scent-label">SCENT NOTES 香氣筆記<\/p><div class="scent-pills">';
@@ -202,6 +216,59 @@
         html += '<\/div>';
         
         container.innerHTML = html;
+        loadRecommendProducts(product);
+    }
+
+    var pageEnterTime = Date.now();
+    async function loadRecommendProducts(currentProduct) {
+        var recommendSection = document.createElement('div');
+        recommendSection.className = 'recommend-section';
+        recommendSection.innerHTML = '<div class="recommend-title">你可能也喜歡</div><div class="recommend-grid" id="recommendGrid"><div style="grid-column:1/-1;text-align:center;padding:20px;">載入中...</div></div>';
+        container.parentNode.appendChild(recommendSection);
+
+        try {
+            var result = await supabaseClient.from('products').select('*').eq('is_active', true).not('id', 'eq', currentProduct.id).limit(20);
+            if (result.error) throw result.error;
+            var allProducts = result.data || [];
+
+            var browseHistory = JSON.parse(localStorage.getItem('royalspl_browse_history') || '{}');
+            browseHistory[currentProduct.id] = { time: Date.now(), duration: 0 };
+            localStorage.setItem('royalspl_browse_history', JSON.stringify(browseHistory));
+
+            var scored = allProducts.map(function(p) {
+                var score = 0;
+                if (p.category && currentProduct.category && p.category === currentProduct.category) score += 3;
+                if (p.tags && currentProduct.tags) {
+                    var commonTags = p.tags.filter(function(t) { return currentProduct.tags.indexOf(t) > -1; });
+                    score += commonTags.length * 2;
+                }
+                if (browseHistory[p.id]) score += 1;
+                score += Math.random() * 0.5;
+                return { product: p, score: score };
+            });
+
+            scored.sort(function(a, b) { return b.score - a.score; });
+            var recommended = scored.slice(0, 4).map(function(s) { return s.product; });
+
+            var grid = document.getElementById('recommendGrid');
+            if (!recommended.length) { grid.innerHTML = ''; return; }
+
+            var html = '';
+            for (var i = 0; i < recommended.length; i++) {
+                var p = recommended[i];
+                var img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
+                html += '<a href="product-detail.html?id=' + p.id + '" class="recommend-card">';
+                html += '<div class="recommend-card-img">' + (img ? '<img src="' + img + '" alt="' + p.name_zh + '">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;">🌸</div>') + '</div>';
+                html += '<div class="recommend-card-name">' + p.name_zh + '</div>';
+                html += '<div class="recommend-card-price">HK$' + p.price + '</div>';
+                html += '</a>';
+            }
+            grid.innerHTML = html;
+        } catch (err) {
+            console.error('推薦商品載入失敗:', err);
+            var grid = document.getElementById('recommendGrid');
+            if (grid) grid.innerHTML = '';
+        }
     }
 
     function changeQuantity(delta) {
