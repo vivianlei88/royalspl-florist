@@ -198,10 +198,7 @@
         html += '<div class="spec-row"><span class="spec-label">規格<\/span><span class="spec-value">' + (specs.size || 'N/A') + '<\/span><\/div>';
         html += '<\/div>';
         
-        html += '<div class="addon-section"><p class="addon-label">精選加購配件<\/p>';
-        html += '<label class="addon-item"><input type="checkbox" id="addonVase" value="180" onchange="updateTotal()"><span class="addon-emoji">🏺<\/span><div class="addon-info"><p class="addon-name">經典極簡玻璃花瓶<\/p><p class="addon-price">+HK$180<\/p><\/div><\/label>';
-        html += '<label class="addon-item"><input type="checkbox" id="addonPreservative" value="30" onchange="updateTotal()"><span class="addon-emoji">💧<\/span><div class="addon-info"><p class="addon-name">荷蘭進口植物保鮮劑<\/p><p class="addon-price">+HK$30<\/p><\/div><\/label>';
-        html += '<\/div>';
+        html += '<div class="addon-section"><p class="addon-label">精選加購配件<\/p><div id="addonList"><\/div><\/div>';
         
         html += '<div class="quantity-selector">';
         html += '<button class="qty-btn" onclick="changeQuantity(-1)">−<\/button>';
@@ -217,7 +214,34 @@
         html += '<\/div>';
         
         container.innerHTML = html;
+        loadLinkedAddons(product);
         loadRecommendProducts(product);
+    }
+
+    var allAddons = [];
+    var selectedAddonIds = [];
+
+    async function loadLinkedAddons(product) {
+        var addonList = document.getElementById('addonList');
+        if (!addonList) return;
+        var linkedIds = product.linked_addons || [];
+        if (!linkedIds.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
+        try {
+            var result = await supabaseClient.from('addons').select('*').in('id', linkedIds).eq('is_active', true);
+            if (result.error) throw result.error;
+            allAddons = result.data || [];
+            if (!allAddons.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
+            var html = '';
+            for (var i = 0; i < allAddons.length; i++) {
+                var a = allAddons[i];
+                var img = a.image_url ? '<img src="' + a.image_url + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji">🎁<\/span>';
+                html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()"><\/span>' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><\/label>';
+            }
+            addonList.innerHTML = html;
+        } catch (err) {
+            console.error('載入加購配件失敗:', err);
+            addonList.innerHTML = '';
+        }
     }
 
     var pageEnterTime = Date.now();
@@ -281,19 +305,28 @@
 
     function updateTotal() {
         if (!currentProduct) return;
-        var vase = document.getElementById('addonVase') && document.getElementById('addonVase').checked ? 180 : 0;
-        var preservative = document.getElementById('addonPreservative') && document.getElementById('addonPreservative').checked ? 30 : 0;
-        var total = (parseFloat(currentProduct.price) + vase + preservative) * quantity;
+        var addonTotal = 0;
+        selectedAddonIds = [];
+        document.querySelectorAll('.addon-checkbox').forEach(function(cb) {
+            if (cb.checked) {
+                addonTotal += parseFloat(cb.getAttribute('data-price')) || 0;
+                selectedAddonIds.push(parseInt(cb.getAttribute('data-id')));
+            }
+        });
+        var total = (parseFloat(currentProduct.price) + addonTotal) * quantity;
         document.getElementById('totalDisplay').textContent = '總計：HK$' + total;
     }
 
     function handleAddToCart() {
         if (!currentProduct) return;
-        var vase = document.getElementById('addonVase') && document.getElementById('addonVase').checked;
-        var preservative = document.getElementById('addonPreservative') && document.getElementById('addonPreservative').checked;
         var addons = [];
-        if (vase) addons.push({ name: '經典極簡玻璃花瓶', price: 180 });
-        if (preservative) addons.push({ name: '荷蘭進口植物保鮮劑', price: 30 });
+        document.querySelectorAll('.addon-checkbox').forEach(function(cb) {
+            if (cb.checked) {
+                var addonId = parseInt(cb.getAttribute('data-id'));
+                var addon = allAddons.find(function(a) { return a.id === addonId; });
+                if (addon) addons.push({ id: addon.id, name: addon.name_zh, price: addon.price });
+            }
+        });
         
         var cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
         cart.push({
