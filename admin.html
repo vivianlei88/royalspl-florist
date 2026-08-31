@@ -190,11 +190,22 @@
     var currentOrderDetail = null;
     var selectedTemplateProduct = null;
     var tagCategories = {
-        tagOccasion: ['情人節','母親節','中秋節','清明節','畢業季','端午','聖誕節','生日','週年','婚禮','彌月','探病','帛事','開張','喬遷','商務送禮','企業周年'],
-        tagFlower: ['玫瑰','鬱金香','芍藥','荷花','百合','康乃馨','向日葵','滿天星','蘭花','牡丹','進口鮮花'],
+        tagOccasion: [],
+        tagFlower: [],
         tagStyle: [],
-        tagPrice: ['HK$300內','HK$300-600','HK$800+','HK$1200+']
+        tagPrice: []
     };
+
+    async function loadTagSettings() {
+        try {
+            var r = await supabaseClient.from('tag_settings').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            if (r.data) {
+                tagCategories.tagOccasion = r.data.filter(function(t) { return t.tag_type === 'occasion'; }).map(function(t) { return t.tag_name; });
+                tagCategories.tagFlower = r.data.filter(function(t) { return t.tag_type === 'flower'; }).map(function(t) { return t.tag_name; });
+                tagCategories.tagPrice = r.data.filter(function(t) { return t.tag_type === 'price'; }).map(function(t) { return t.tag_name; });
+            }
+        } catch (e) { console.error('載入標籤設置失敗:', e); }
+    }
     var areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
     var areaKeywords = {
         tier5: ['愉景灣','馬灣','離島','機場','迪士尼','大嶼山','長洲','南丫島','坪洲','東涌','梅窩','昂坪','discovery bay','lantau','airport'],

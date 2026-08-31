@@ -161,15 +161,29 @@
     var currentSort = 'default';
 
     var tagDimensions = {
-        '場景用途': ['戀愛','生日','情人節','母親節','中秋節','畢業季','聖誕節','婚禮','紀念日','探病','開張','喬遷','商務送禮','企業周年'],
-        '核心花材': ['玫瑰','鬱金香','芍藥','荷花','百合','康乃馨','向日葵','滿天星','蘭花','牡丹','進口鮮花'],
-        '設計風格': ['經典風','韓式','日式極簡','法式田園','永生花'],
-        '價格區間': ['HK$300內','HK$300-600','HK$800+','HK$1200+']
+        '場景用途': [],
+        '核心花材': [],
+        '設計風格': [],
+        '價格區間': []
     };
+
+    async function loadTagSettings() {
+        try {
+            var result = await supabaseClient.from('tag_settings').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            if (result.error) throw result.error;
+            var tags = result.data || [];
+            tagDimensions['場景用途'] = tags.filter(function(t) { return t.tag_type === 'occasion'; }).map(function(t) { return t.tag_name; });
+            tagDimensions['核心花材'] = tags.filter(function(t) { return t.tag_type === 'flower'; }).map(function(t) { return t.tag_name; });
+            tagDimensions['價格區間'] = tags.filter(function(t) { return t.tag_type === 'price'; }).map(function(t) { return t.tag_name; });
+        } catch (e) {
+            console.error('載入標籤設置失敗:', e);
+        }
+    }
 
     function getUrlParam(param) { return new URLSearchParams(window.location.search).get(param); }
 
-    function initFilterPills() {
+    async function initFilterPills() {
+        await loadTagSettings();
         var dimensions = [
             { id: 'filterOccasion', tags: tagDimensions['場景用途'] },
             { id: 'filterFlower', tags: tagDimensions['核心花材'] },
