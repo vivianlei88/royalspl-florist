@@ -102,13 +102,46 @@
         <div class="footer-bottom"><a href="privacy.html" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
+    const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
     let cardType = 'none';
     let cardMessage = '';
 
     function saveCart() { localStorage.setItem('royalspl_cart', JSON.stringify(cart)); updateCartBadge(); }
     function updateCartBadge() { const badge = document.getElementById('cartBadge'); if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; } }
+    async function syncCartWithDatabase() {
+        if (!cart.length) { renderCart(); return; }
+        const productIds = cart.map(item => item.productId).filter(Boolean);
+        if (!productIds.length) { renderCart(); return; }
+        try {
+            const { data, error } = await supabaseClient.from('products').select('*').in('id', productIds);
+            if (error) throw error;
+            const products = data || [];
+            cart = cart.map(item => {
+                const product = products.find(p => p.id === item.productId);
+                if (product) {
+                    return {
+                        ...item,
+                        name: product.name_zh,
+                        nameEn: product.name_en || '',
+                        price: product.price,
+                        emoji: product.emoji || '🌸',
+                        image: (product.images && product.images[0]) || product.image_url || ''
+                    };
+                }
+                return item;
+            });
+            saveCart();
+        } catch (e) {
+            console.error('同步購物車失敗:', e);
+        }
+        renderCart();
+    }
+
     function renderCart() {
         const container = document.getElementById('cartContent');
         if (!container) return;
@@ -224,7 +257,7 @@
     const navDrawer = document.getElementById('navDrawer');
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
-    document.addEventListener('DOMContentLoaded', function() { updateCartBadge(); renderCart(); });
+    document.addEventListener('DOMContentLoaded', function() { updateCartBadge(); syncCartWithDatabase(); });
     </script>
     <script>
     (function() {

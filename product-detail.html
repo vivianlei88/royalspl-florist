@@ -114,10 +114,7 @@
         <div class="detail-container" id="detailContainer">
             <div style="text-align:center;padding:60px;">🌸 正在載入...</div>
         </div>
-        <div class="detail-seo-section">
-            <div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">🌿 花材護理知識 <span>+</span></div><div class="seo-content">鮮花護理建議：<br>1. 每日更換清水<br>2. 斜剪花腳45度<br>3. 避免陽光直射<br>4. 定期清除枯萎花瓣</div></div>
-            <div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">🔒 香港隱私條例 <span>+</span></div><div class="seo-content">根據香港《個人資料(私隱)條例》，我們承諾保護您的個人資料。</div></div>
-        </div>
+
     </main>
 
     <footer class="footer">
@@ -178,6 +175,10 @@
             for (var ti = 0; ti < tags.length; ti++) { html += '<span class="detail-tag">' + tags[ti] + '<\/span>'; }
             html += '<\/div>';
         }
+        html += '<div class="detail-seo-section" style="margin-top:30px;">';
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">花材護理知識 <span>+<\/span><\/div><div class="seo-content">鮮花護理建議：<br>1. 每日更換清水<br>2. 斜剪花腳45度<br>3. 避免陽光直射<br>4. 定期清除枯萎花瓣<\/div><\/div>';
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">香港隱私條例 <span>+<\/span><\/div><div class="seo-content">根據香港《個人資料(私隱)條例》，我們承諾保護您的個人資料。<\/div><\/div>';
+        html += '<\/div>';
         html += '<\/div>';
         html += '<div class="detail-info-area">';
         html += '<p class="detail-subtitle-en">' + (product.name_en || '').toUpperCase() + '<\/p>';

@@ -251,6 +251,34 @@
 
     function getEffectiveArea() { return detectedArea || manualArea; }
     function getEffectiveAreaFee() { const area = getEffectiveArea(); return area ? areaFees[area] : 0; }
+    async function syncCartWithDatabase() {
+        if (!cart.length) { renderSummary(); return; }
+        const productIds = cart.map(item => item.productId).filter(Boolean);
+        if (!productIds.length) { renderSummary(); return; }
+        try {
+            const { data, error } = await supabaseClient.from('products').select('*').in('id', productIds);
+            if (error) throw error;
+            const products = data || [];
+            cart = cart.map(item => {
+                const product = products.find(p => p.id === item.productId);
+                if (product) {
+                    return {
+                        ...item,
+                        name: product.name_zh,
+                        nameEn: product.name_en || '',
+                        price: product.price,
+                        emoji: product.emoji || '🌸'
+                    };
+                }
+                return item;
+            });
+            localStorage.setItem('royalspl_cart', JSON.stringify(cart));
+        } catch (e) {
+            console.error('同步購物車失敗:', e);
+        }
+        renderSummary();
+    }
+
     function getSubtotal() { return cart.reduce((sum, item) => { const addonsTotal = item.addons.reduce((a, addon) => a + addon.price, 0); return sum + (item.price + addonsTotal) * item.quantity; }, 0); }
     function getDeliveryFee() { const subtotal = getSubtotal(); const area = getEffectiveArea(); const areaFee = getEffectiveAreaFee(); let fee = Math.max(areaFee, selectedTimeFee); if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 500) { fee = 0; } return fee; }
     function getTotal() { return getSubtotal() + getDeliveryFee(); }
@@ -458,7 +486,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         updateCartBadge();
-        renderSummary();
+        syncCartWithDatabase();
         setupDatePicker();
         fillDefaultAddressIfLoggedIn();
     });
