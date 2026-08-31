@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部落格 | RoyalSpl Florist</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 900px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .post-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .post-cover { width: 100%; height: 250px; object-fit: cover; }
+        .post-body { padding: 20px; }
+        .post-title { font-size: 24px; font-weight: 600; margin-bottom: 10px; }
+        .post-title a { text-decoration: none; color: #1A1A1A; }
+        .post-summary { color: #383431; margin-bottom: 10px; }
+        .post-date { color: #888; font-size: 14px; }
+        .load-more-btn { display: block; width: 100%; padding: 15px; background: #1A1A1A; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .load-more-btn:hover { background: #383431; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">←</a>
+        <h1 style="text-align:center;">部落格</h1>
+        <div id="postsList"></div>
+        <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">載入更多</button>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const PAGE_SIZE = 10;
+        let totalLoaded = 0;
+
+        async function loadPosts(reset = false) {
+            if (reset) {
+                totalLoaded = 0;
+                document.getElementById('postsList').innerHTML = '';
+            }
+            const { data, error } = await supabaseClient
+                .from('blog_posts')
+                .select('id, title, content, image_url, created_at')
+                .eq('is_published', true)
+                .order('created_at', { ascending: false })
+                .range(totalLoaded, totalLoaded + PAGE_SIZE - 1);
+
+            if (error) {
+                console.error('載入文章失敗:', error);
+                return;
+            }
+            if (!data || data.length === 0) {
+                document.getElementById('loadMoreBtn').style.display = 'none';
+                return;
+            }
+            totalLoaded += data.length;
+            renderPosts(data);
+            if (data.length < PAGE_SIZE) {
+                document.getElementById('loadMoreBtn').style.display = 'none';
+            }
+        }
+
+        function renderPosts(posts) {
+            const container = document.getElementById('postsList');
+            posts.forEach(post => {
+                const summary = extractSummary(post.content);
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
+                    ${post.image_url ? `<img src="${post.image_url}" class="post-cover">` : ''}
+                    <div class="post-body">
+                        <h2 class="post-title"><a href="blog-detail.html?id=${post.id}">${post.title}</a></h2>
+                        <p class="post-summary">${summary}</p>
+                        <p class="post-date">${new Date(post.created_at).toLocaleDateString('zh-HK')}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function extractSummary(jsonContent) {
+            try {
+                const blocks = JSON.parse(jsonContent);
+                const paragraph = blocks.find(b => b.type === 'paragraph');
+                if (paragraph && paragraph.content.text) {
+                    const text = paragraph.content.text.replace(/<[^>]+>/g, '');
+                    return text.length > 100 ? text.slice(0, 100) + '…' : text;
+                }
+                return '';
+            } catch {
+                return '';
+            }
+        }
+
+        function loadMore() {
+            loadPosts(false);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => loadPosts(true));
+    </script>
+</body>
+</html>

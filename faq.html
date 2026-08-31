@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常見問題 | RoyalSpl Florist</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 700px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .faq-item { background: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .question { font-weight: 600; margin-bottom: 8px; color: #1A1A1A; }
+        .answer { color: #383431; line-height: 1.6; }
+        .empty-state { text-align: center; color: #888; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">←</a>
+        <h1 style="text-align:center;">常見問題</h1>
+        <div id="faqList"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadFaqs() {
+            const { data, error } = await supabaseClient
+                .from('faq_items')
+                .select('question, answer')
+                .eq('is_published', true)
+                .order('sort_order', { ascending: true });
+
+            const container = document.getElementById('faqList');
+            if (error) {
+                console.error('載入常見問題失敗:', error);
+                container.innerHTML = '<div class="empty-state">載入失敗，請稍後再試</div>';
+                return;
+            }
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="empty-state">尚無常見問題</div>';
+                return;
+            }
+
+            data.forEach(faq => {
+                const div = document.createElement('div');
+                div.className = 'faq-item';
+                div.innerHTML = `
+                    <div class="question">${faq.question}</div>
+                    <div class="answer">${faq.answer}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFaqs);
+    </script>
+</body>
+</html>
