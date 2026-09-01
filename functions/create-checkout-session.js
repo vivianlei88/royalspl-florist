@@ -28,7 +28,9 @@ export async function onRequestPost(context) {
       deliveryArea,
       deliveryFee,
       subtotal,
-      totalAmount
+      totalAmount,
+      orderId,
+      orderCode
     } = body;
 
     // 構建 Stripe Checkout Session
@@ -52,6 +54,8 @@ export async function onRequestPost(context) {
     formData.append('metadata[delivery_fee]', String(deliveryFee));
     formData.append('metadata[subtotal]', String(subtotal));
     formData.append('metadata[items]', JSON.stringify(items));
+    if (orderId) formData.append('metadata[order_id]', String(orderId));
+    if (orderCode) formData.append('metadata[order_code]', orderCode);
 
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
