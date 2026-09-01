@@ -170,6 +170,7 @@
             <div class="sidebar-item" data-page="categories" onclick="switchPage('categories')">商品分類</div>
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
+            <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
             <div class="sidebar-item" data-page="template" onclick="switchPage('template')">模板預覽</div>
         </div>
         <div class="main-content" id="mainContent"></div>
@@ -269,6 +270,7 @@
         else if (page === 'categories') { renderCategoriesPage(c); }
         else if (page === 'addons') { renderAddonsPage(c); }
         else if (page === 'orders') { renderOrdersPage(c); }
+        else if (page === 'members') { renderMembersPage(c); }
         else if (page === 'template') { renderTemplatePage(c); }
     }
     function checkVisitorNotifications() {
@@ -1053,6 +1055,130 @@
             showToast('店鋪資料已保存');
         } catch (e) { showToast('保存失敗，請先創建 shop_settings 表'); }
     }
+    function renderMembersPage(c) {
+        c.innerHTML = '<div class="page-header"><h3>會員管理</h3><div style="display:flex;gap:10px;align-items:center;"><input type="text" id="memberSearch" placeholder="搜尋名稱或電郵..." style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;"><button class="btn btn-secondary" onclick="exportMembersCSV()">匯出 CSV</button><label class="btn btn-primary" style="cursor:pointer;">匯入 CSV<input type="file" id="memberCSVInput" accept=".csv" style="display:none;" onchange="importMembersCSV(this)"></label></div></div><div id="membersTableContainer" style="overflow-x:auto;"></div>';
+        loadMembersList();
+    }
+
+    var allMembers = [];
+    var selectedMemberIds = [];
+
+    async function loadMembersList() {
+        var container = document.getElementById('membersTableContainer');
+        if (!container) return;
+        container.innerHTML = '<p style="text-align:center;padding:30px;">載入中...</p>';
+        try {
+            var r = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+            allMembers = r.data || [];
+            renderMembersTable();
+        } catch(e) {
+            container.innerHTML = '<p style="text-align:center;padding:30px;color:red;">載入失敗：' + e.message + '</p>';
+        }
+    }
+
+    function renderMembersTable() {
+        var container = document.getElementById('membersTableContainer');
+        if (!container) return;
+        var search = (document.getElementById('memberSearch')?.value || '').toLowerCase();
+        var filtered = allMembers.filter(function(m) {
+            return !search || (m.full_name || '').toLowerCase().includes(search) || (m.email || '').toLowerCase().includes(search);
+        });
+        var html = '<table style="width:100%;border-collapse:collapse;font-size:14px;"><thead><tr style="border-bottom:2px solid #1A1A1A;">';
+        html += '<th style="padding:12px 8px;text-align:left;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
+        html += '<th style="padding:12px 8px;text-align:left;">名稱</th><th style="padding:12px 8px;text-align:left;">電子郵件</th>';
+        html += '<th style="padding:12px 8px;text-align:left;">電話</th><th style="padding:12px 8px;text-align:left;">會員狀態</th>';
+        html += '<th style="padding:12px 8px;text-align:left;">標籤</th><th style="padding:12px 8px;text-align:left;">最近活動</th><th style="padding:12px 8px;text-align:left;">建立日期</th></tr></thead><tbody>';
+        if (filtered.length === 0) {
+            html += '<tr><td colspan="8" style="padding:30px;text-align:center;color:#888;">尚無會員</td></tr>';
+        } else {
+            filtered.forEach(function(m) {
+                var isSelected = selectedMemberIds.includes(m.id);
+                html += '<tr style="border-bottom:1px solid #eee;">';
+                html += '<td style="padding:12px 8px;"><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="toggleMember('' + m.id + '')"></td>';
+                html += '<td style="padding:12px 8px;">' + (m.full_name || '-') + '</td>';
+                html += '<td style="padding:12px 8px;">' + (m.email || '-') + '</td>';
+                html += '<td style="padding:12px 8px;">' + (m.phone || '-') + '</td>';
+                var statusColor = m.member_status === 'active' ? '#e8f5e9' : '#f5f5f5';
+                var statusTextColor = m.member_status === 'active' ? '#27ae60' : '#999';
+                html += '<td style="padding:12px 8px;"><span style="padding:3px 10px;border-radius:12px;font-size:12px;background:' + statusColor + ';color:' + statusTextColor + ';">' + (m.member_status || 'active') + '</span></td>';
+                html += '<td style="padding:12px 8px;">' + (m.tags || '-') + '</td>';
+                html += '<td style="padding:12px 8px;color:#888;">' + (m.last_active || '').slice(0, 10) + '</td>';
+                html += '<td style="padding:12px 8px;color:#888;">' + (m.created_at || '').slice(0, 10) + '</td>';
+                html += '</tr>';
+            });
+        }
+        html += '</tbody></table>';
+        html += '<p style="margin-top:15px;color:#888;font-size:13px;">共 ' + filtered.length + ' 位會員' + (selectedMemberIds.length > 0 ? '，已選 ' + selectedMemberIds.length + ' 位' : '') + '</p>';
+        container.innerHTML = html;
+        var selectAll = document.getElementById('selectAllMembers');
+        if (selectAll) selectAll.checked = selectedMemberIds.length === filtered.length && filtered.length > 0;
+    }
+
+    function toggleMember(id) {
+        if (selectedMemberIds.includes(id)) selectedMemberIds = selectedMemberIds.filter(function(i) { return i !== id; });
+        else selectedMemberIds.push(id);
+        renderMembersTable();
+    }
+
+    function toggleAllMembers(checkbox) {
+        if (checkbox.checked) {
+            var search = (document.getElementById('memberSearch')?.value || '').toLowerCase();
+            selectedMemberIds = allMembers.filter(function(m) {
+                return !search || (m.full_name || '').toLowerCase().includes(search) || (m.email || '').toLowerCase().includes(search);
+            }).map(function(m) { return m.id; });
+        } else {
+            selectedMemberIds = [];
+        }
+        renderMembersTable();
+    }
+
+    function exportMembersCSV() {
+        var exportMembers = selectedMemberIds.length > 0 ? allMembers.filter(function(m) { return selectedMemberIds.includes(m.id); }) : allMembers;
+        var headers = ['名稱', '電子郵件', '電話', '會員狀態', '標籤', '最近活動', '建立日期'];
+        var rows = exportMembers.map(function(m) {
+            return [m.full_name || '', m.email || '', m.phone || '', m.member_status || 'active', m.tags || '', m.last_active || '', m.created_at || ''];
+        });
+        var csv = [headers].concat(rows).map(function(r) {
+            return r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
+        }).join('\n');
+        var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'members_' + new Date().toISOString().slice(0, 10) + '.csv';
+        link.click();
+    }
+
+    async function importMembersCSV(input) {
+        var file = input.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = async function(e) {
+            var text = e.target.result;
+            var lines = text.split('\n').filter(function(l) { return l.trim(); });
+            if (lines.length < 2) { alert('CSV 格式錯誤'); return; }
+            var headers = lines[0].split(',').map(function(h) { return h.replace(/"/g, '').trim(); });
+            var imported = 0;
+            for (var i = 1; i < lines.length; i++) {
+                var vals = lines[i].match(/(".*?"|[^,]+)/g) || [];
+                var row = {};
+                headers.forEach(function(h, idx) { row[h] = (vals[idx] || '').replace(/"/g, '').trim(); });
+                try {
+                    await supabaseClient.from('profiles').upsert({
+                        full_name: row['名稱'] || '', email: row['電子郵件'] || '',
+                        phone: row['電話'] || '', member_status: row['會員狀態'] || 'active',
+                        tags: row['標籤'] || '', last_active: row['最近活動'] || new Date().toISOString()
+                    });
+                    imported++;
+                } catch(err) { console.error('导入失败:', err); }
+            }
+            alert('成功匯入 ' + imported + ' 位會員！');
+            loadMembersList();
+        };
+        reader.readAsText(file);
+        input.value = '';
+    }
+
+
     function loadTemplateProductOptions() {
         var sel = document.getElementById('tplProductSelect');
         if (!sel) return;
