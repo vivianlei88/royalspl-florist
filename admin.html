@@ -2500,6 +2500,10 @@ async function saveProduct() {
                     }
                 };
                 loadData();
+            
+                const onSave = () => handleSave();
+                window.addEventListener('save-contact', onSave);
+                return () => window.removeEventListener('save-contact', onSave);
             }, []);
 
             const handleSave = async () => {
@@ -2570,6 +2574,9 @@ async function saveProduct() {
                     }
                 };
                 loadData();
+                const onSave = () => handleSave();
+                window.addEventListener('save-privacy', onSave);
+                return () => window.removeEventListener('save-privacy', onSave);
             }, []);
 
             const handleSave = async () => {
@@ -2625,6 +2632,9 @@ async function saveProduct() {
                     }
                 };
                 loadData();
+                const onSave = () => handleSave();
+                window.addEventListener('save-flowercare', onSave);
+                return () => window.removeEventListener('save-flowercare', onSave);
             }, []);
 
             const handleSave = async () => {
@@ -2990,9 +3000,14 @@ async function saveProduct() {
                             )
                         ),
                         React.createElement('div', { className: 'editor-topbar-right' },
-                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('save-content')) }, '儲存'),
-                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('preview-content')) }, '預覽'),
-                            React.createElement('button', { className: 'btn btn-primary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('publish-content')) }, '發佈')
+                            activeSection === 'articles' || activeSection === 'faq' ? React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('preview-content')) }, '預覽') : null,
+                            activeSection === 'articles' ? React.createElement('button', { className: 'btn btn-primary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('publish-content')) }, '發佈') : null,
+                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => {
+                                if (activeSection === 'contact') { window.dispatchEvent(new CustomEvent('save-contact')); }
+                                else if (activeSection === 'privacy') { window.dispatchEvent(new CustomEvent('save-privacy')); }
+                                else if (activeSection === 'flowercare') { window.dispatchEvent(new CustomEvent('save-flowercare')); }
+                                else { window.dispatchEvent(new CustomEvent('save-content')); }
+                            } }, '儲存')
                         )
                     ),
                     React.createElement('div', { className: 'editor-canvas' },
