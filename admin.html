@@ -151,6 +151,14 @@
         .stat-number { font-size: 24px !important; }
     }
     </style>
+    <style>
+        .sidebar-group { margin-bottom: 5px; }
+        .sidebar-group-header { display: flex; justify-content: space-between; align-items: center; }
+        .settings-arrow { font-size: 10px; transition: transform 0.2s; }
+        .sidebar-submenu { background: rgba(0,0,0,0.1); }
+        .sidebar-subitem { padding-left: 35px !important; font-size: 13px !important; }
+        .sidebar-subitem:hover { background: rgba(255,255,255,0.1); }
+    </style>
 </head>
 <body>
     <div id="loginPage" class="login-container">
@@ -164,15 +172,23 @@
         <div class="topbar"><h1>RoyalSpl 後台管理</h1><div class="topbar-links"><a href="index.html">返回前台</a><a onclick="doLogout()">登出</a></div></div>
         <div class="sidebar">
             <div class="sidebar-item active" data-page="analytics" onclick="switchPage('analytics')">數據分析</div>
-            <div class="sidebar-item" data-page="homepage" onclick="switchPage('homepage')">首頁管理</div>
             <div class="sidebar-item" data-page="content" onclick="switchPage('content')">文案內容</div>
             <div class="sidebar-item" data-page="products" onclick="switchPage('products')">商品管理</div>
             <div class="sidebar-item" data-page="categories" onclick="switchPage('categories')">商品分類</div>
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
             <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
-            <div class="sidebar-item" data-page="template" onclick="switchPage('template')">模板預覽</div>
-            <div class="sidebar-item" data-page="aichat" onclick="switchPage('aichat')">AI客服管理</div>
+            <div class="sidebar-group">
+                <div class="sidebar-item sidebar-group-header" onclick="toggleSettingsMenu()">
+                    <span>⚙️ 設置</span>
+                    <span class="settings-arrow" id="settingsArrow">▶</span>
+                </div>
+                <div class="sidebar-submenu" id="settingsSubmenu" style="display:none;">
+                    <div class="sidebar-item sidebar-subitem" data-page="homepage" onclick="switchPage('homepage')">首頁管理</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="template" onclick="switchPage('template')">模板預覽</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="aichat" onclick="switchPage('aichat')">AI客服管理</div>
+                </div>
+            </div>
         </div>
         <div class="main-content" id="mainContent"></div>
     </div>
@@ -253,6 +269,18 @@
         } else { document.getElementById('loginError').style.display = 'block'; }
     }
     function doLogout() { localStorage.removeItem('royalspl_admin'); location.reload(); }
+    function toggleSettingsMenu() {
+        var submenu = document.getElementById('settingsSubmenu');
+        var arrow = document.getElementById('settingsArrow');
+        if (submenu.style.display === 'none') {
+            submenu.style.display = 'block';
+            arrow.textContent = '▼';
+        } else {
+            submenu.style.display = 'none';
+            arrow.textContent = '▶';
+        }
+    }
+
     function switchPage(page) {
         document.querySelectorAll('.sidebar-item').forEach(function(el) { el.classList.remove('active'); });
         document.querySelector('[data-page="' + page + '"]').classList.add('active');
