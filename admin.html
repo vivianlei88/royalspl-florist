@@ -1767,7 +1767,88 @@ async function saveProduct() {
     function downloadTemplatePDF() {
         renderTemplatePreview();
         var w = window.open('', '_blank');
-        w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '</body></html>');
+        w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '
+<!-- AI 写作助手浮动按钮 -->
+<div id="aiWriterWidget" style="position:fixed;bottom:20px;right:20px;z-index:99999;">
+    <button onclick="toggleAIWriter()" style="width:50px;height:50px;border-radius:50%;background:#6366f1;color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">✍️</button>
+</div>
+
+<!-- AI 写作助手弹窗 -->
+<div id="aiWriterModal" style="display:none;position:fixed;bottom:80px;right:20px;width:400px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:99999;overflow:hidden;">
+    <div style="background:#6366f1;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;">
+        <h4 style="margin:0;font-size:16px;">🤖 AI 寫作助手</h4>
+        <button onclick="toggleAIWriter()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">×</button>
+    </div>
+    <div style="padding:15px;">
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">文案類型</label>
+            <select id="aiWriterType" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;">
+                <option value="blog">Blog 文章</option>
+                <option value="faq">常見問題 FAQ</option>
+                <option value="contact">聯絡我們</option>
+                <option value="privacy">私隱政策</option>
+                <option value="flower_care">花材護理知識</option>
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">主題/問題</label>
+            <input type="text" id="aiWriterTopic" placeholder="例如：玫瑰花語與保養方法" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;">
+        </div>
+        <button onclick="aiWriterGenerate()" style="width:100%;padding:10px;background:#6366f1;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:600;">生成文案</button>
+        <div id="aiWriterResult" style="margin-top:15px;display:none;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">生成結果</label>
+            <textarea id="aiWriterOutput" rows="10" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;font-size:13px;"></textarea>
+            <button onclick="copyAIWriterResult()" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:5px;cursor:pointer;">📋 複製到剪貼簿</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAIWriter() {
+    const modal = document.getElementById('aiWriterModal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+
+async function aiWriterGenerate() {
+    const type = document.getElementById('aiWriterType').value;
+    const topic = document.getElementById('aiWriterTopic').value;
+    const resultDiv = document.getElementById('aiWriterResult');
+    const output = document.getElementById('aiWriterOutput');
+    
+    if (!topic && type !== 'contact' && type !== 'privacy') {
+        alert('請輸入主題');
+        return;
+    }
+    
+    output.value = 'AI 正在生成，請稍候...';
+    resultDiv.style.display = 'block';
+    
+    try {
+        const resp = await fetch('/ai-write', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, topic })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            output.value = data.content;
+        } else {
+            output.value = '生成失敗：' + (data.error || '未知錯誤');
+        }
+    } catch(e) {
+        output.value = '錯誤：' + e.message;
+    }
+}
+
+function copyAIWriterResult() {
+    const output = document.getElementById('aiWriterOutput');
+    output.select();
+    document.execCommand('copy');
+    alert('已複製到剪貼簿，可直接貼到編輯頁面');
+}
+</script>
+
+</body></html>');
         w.document.close();
         w.print();
     }
@@ -2218,7 +2299,88 @@ async function saveProduct() {
                             case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
                         }
                     });
-                    win.document.write('</body></html>');
+                    win.document.write('
+<!-- AI 写作助手浮动按钮 -->
+<div id="aiWriterWidget" style="position:fixed;bottom:20px;right:20px;z-index:99999;">
+    <button onclick="toggleAIWriter()" style="width:50px;height:50px;border-radius:50%;background:#6366f1;color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">✍️</button>
+</div>
+
+<!-- AI 写作助手弹窗 -->
+<div id="aiWriterModal" style="display:none;position:fixed;bottom:80px;right:20px;width:400px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:99999;overflow:hidden;">
+    <div style="background:#6366f1;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;">
+        <h4 style="margin:0;font-size:16px;">🤖 AI 寫作助手</h4>
+        <button onclick="toggleAIWriter()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">×</button>
+    </div>
+    <div style="padding:15px;">
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">文案類型</label>
+            <select id="aiWriterType" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;">
+                <option value="blog">Blog 文章</option>
+                <option value="faq">常見問題 FAQ</option>
+                <option value="contact">聯絡我們</option>
+                <option value="privacy">私隱政策</option>
+                <option value="flower_care">花材護理知識</option>
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">主題/問題</label>
+            <input type="text" id="aiWriterTopic" placeholder="例如：玫瑰花語與保養方法" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;">
+        </div>
+        <button onclick="aiWriterGenerate()" style="width:100%;padding:10px;background:#6366f1;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:600;">生成文案</button>
+        <div id="aiWriterResult" style="margin-top:15px;display:none;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">生成結果</label>
+            <textarea id="aiWriterOutput" rows="10" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;font-size:13px;"></textarea>
+            <button onclick="copyAIWriterResult()" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:5px;cursor:pointer;">📋 複製到剪貼簿</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAIWriter() {
+    const modal = document.getElementById('aiWriterModal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+
+async function aiWriterGenerate() {
+    const type = document.getElementById('aiWriterType').value;
+    const topic = document.getElementById('aiWriterTopic').value;
+    const resultDiv = document.getElementById('aiWriterResult');
+    const output = document.getElementById('aiWriterOutput');
+    
+    if (!topic && type !== 'contact' && type !== 'privacy') {
+        alert('請輸入主題');
+        return;
+    }
+    
+    output.value = 'AI 正在生成，請稍候...';
+    resultDiv.style.display = 'block';
+    
+    try {
+        const resp = await fetch('/ai-write', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, topic })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            output.value = data.content;
+        } else {
+            output.value = '生成失敗：' + (data.error || '未知錯誤');
+        }
+    } catch(e) {
+        output.value = '錯誤：' + e.message;
+    }
+}
+
+function copyAIWriterResult() {
+    const output = document.getElementById('aiWriterOutput');
+    output.select();
+    document.execCommand('copy');
+    alert('已複製到剪貼簿，可直接貼到編輯頁面');
+}
+</script>
+
+</body></html>');
                     win.document.close();
                 };
                 const handlePublish = async () => {
@@ -3067,5 +3229,86 @@ async function saveProduct() {
             root.render(React.createElement(ContentEditor));
         };
     </script>
-    </body>
+    
+<!-- AI 写作助手浮动按钮 -->
+<div id="aiWriterWidget" style="position:fixed;bottom:20px;right:20px;z-index:99999;">
+    <button onclick="toggleAIWriter()" style="width:50px;height:50px;border-radius:50%;background:#6366f1;color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">✍️</button>
+</div>
+
+<!-- AI 写作助手弹窗 -->
+<div id="aiWriterModal" style="display:none;position:fixed;bottom:80px;right:20px;width:400px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:99999;overflow:hidden;">
+    <div style="background:#6366f1;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;">
+        <h4 style="margin:0;font-size:16px;">🤖 AI 寫作助手</h4>
+        <button onclick="toggleAIWriter()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">×</button>
+    </div>
+    <div style="padding:15px;">
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">文案類型</label>
+            <select id="aiWriterType" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;">
+                <option value="blog">Blog 文章</option>
+                <option value="faq">常見問題 FAQ</option>
+                <option value="contact">聯絡我們</option>
+                <option value="privacy">私隱政策</option>
+                <option value="flower_care">花材護理知識</option>
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">主題/問題</label>
+            <input type="text" id="aiWriterTopic" placeholder="例如：玫瑰花語與保養方法" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;">
+        </div>
+        <button onclick="aiWriterGenerate()" style="width:100%;padding:10px;background:#6366f1;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:600;">生成文案</button>
+        <div id="aiWriterResult" style="margin-top:15px;display:none;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">生成結果</label>
+            <textarea id="aiWriterOutput" rows="10" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;font-size:13px;"></textarea>
+            <button onclick="copyAIWriterResult()" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:5px;cursor:pointer;">📋 複製到剪貼簿</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAIWriter() {
+    const modal = document.getElementById('aiWriterModal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+
+async function aiWriterGenerate() {
+    const type = document.getElementById('aiWriterType').value;
+    const topic = document.getElementById('aiWriterTopic').value;
+    const resultDiv = document.getElementById('aiWriterResult');
+    const output = document.getElementById('aiWriterOutput');
+    
+    if (!topic && type !== 'contact' && type !== 'privacy') {
+        alert('請輸入主題');
+        return;
+    }
+    
+    output.value = 'AI 正在生成，請稍候...';
+    resultDiv.style.display = 'block';
+    
+    try {
+        const resp = await fetch('/ai-write', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, topic })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            output.value = data.content;
+        } else {
+            output.value = '生成失敗：' + (data.error || '未知錯誤');
+        }
+    } catch(e) {
+        output.value = '錯誤：' + e.message;
+    }
+}
+
+function copyAIWriterResult() {
+    const output = document.getElementById('aiWriterOutput');
+    output.select();
+    document.execCommand('copy');
+    alert('已複製到剪貼簿，可直接貼到編輯頁面');
+}
+</script>
+
+</body>
 </html>
