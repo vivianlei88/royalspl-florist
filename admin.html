@@ -1357,24 +1357,36 @@
     function showAddMemberForm() {
         var c = document.getElementById('mainContent');
         var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>手動新增會員</h3></div>';
-        html += '<div class="form-container" style="max-width:800px;">';
+        html += '<div class="form-container" style="max-width:100%;">';
+        
+        // 基本資料
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">基本資料</h4>';
         html += '<div class="form-row">';
         html += '<div class="form-group"><label class="form-label">姓名 *</label><input class="form-input" id="am_full_name" placeholder="輸入姓名"></div>';
-        html += '<div class="form-group"><label class="form-label">電子郵件 *</label><input class="form-input" id="am_email" placeholder="輸入電子郵件"></div>';
+        html += '<div class="form-group"><label class="form-label">會員狀態</label><select class="form-input" id="am_member_status"><option value="active">活躍</option><option value="inactive">非活躍</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">會員積分</label><input class="form-input" type="number" id="am_points" value="0"></div>';
         html += '</div>';
+        
+        // 聯絡資訊
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">聯絡資訊</h4>';
         html += '<div class="form-row">';
-        html += '<div class="form-group"><label class="form-label">電話</label><input class="form-input" id="am_phone" placeholder="輸入電話"></div>';
+        html += '<div class="form-group"><label class="form-label">主要電子郵件 *</label><input class="form-input" id="am_email" placeholder="輸入電子郵件"></div>';
+        html += '<div class="form-group"><label class="form-label">主要電話</label><input class="form-input" id="am_phone" placeholder="輸入電話"></div>';
         html += '<div class="form-group"><label class="form-label">備用電話</label><input class="form-input" id="am_phone2" placeholder="輸入備用電話"></div>';
         html += '</div>';
         html += '<div class="form-row">';
         html += '<div class="form-group"><label class="form-label">送貨地址</label><textarea class="form-input" id="am_shipping_address" rows="2"></textarea></div>';
         html += '<div class="form-group"><label class="form-label">賬單地址</label><textarea class="form-input" id="am_billing_address" rows="2"></textarea></div>';
         html += '</div>';
+        
+        // 訂閱狀態
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">訂閱狀態</h4>';
         html += '<div class="form-row">';
-        html += '<div class="form-group"><label class="form-label">會員狀態</label><select class="form-input" id="am_member_status"><option value="active">活躍</option><option value="inactive">非活躍</option></select></div>';
-        html += '<div class="form-group"><label class="form-label">會員積分</label><input class="form-input" type="number" id="am_points" value="0"></div>';
+        html += '<div class="form-group"><label class="form-label">電子郵件訂閱</label><select class="form-input" id="am_email_subscription"><option value="已訂閱">已訂閱</option><option value="未訂閱" selected>未訂閱</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">簡訊訂閱</label><select class="form-input" id="am_sms_subscription"><option value="已訂閱">已訂閱</option><option value="未訂閱" selected>未訂閱</option></select></div>';
         html += '<div class="form-group"><label class="form-label">標籤</label><input class="form-input" id="am_tags" placeholder="逗號分隔"></div>';
         html += '</div>';
+        
         html += '<div style="margin-top:20px;display:flex;gap:10px;">';
         html += '<button class="btn btn-primary" onclick="addNewMember()">建立會員並發送設置密碼郵件</button>';
         html += '<button class="btn btn-secondary" onclick="switchPage(\'members\')">取消</button>';
@@ -1387,45 +1399,41 @@
         var email = document.getElementById('am_email').value.trim();
         if (!fullName || !email) { alert('姓名和電子郵件為必填'); return; }
         
+        var member = {
+            full_name: fullName,
+            email: email,
+            phone: document.getElementById('am_phone').value,
+            phone2: document.getElementById('am_phone2').value,
+            shipping_address: document.getElementById('am_shipping_address').value,
+            billing_address: document.getElementById('am_billing_address').value,
+            member_status: document.getElementById('am_member_status').value,
+            points: parseInt(document.getElementById('am_points').value) || 0,
+            tags: document.getElementById('am_tags').value,
+            source: '手動新增',
+            email_subscription: document.getElementById('am_email_subscription').value,
+            sms_subscription: document.getElementById('am_sms_subscription').value
+        };
+        
         try {
-            // 创建 auth 用户
-            var { data: authData, error: authError } = await supabaseClient.auth.admin.createUser({
-                email: email,
-                password: 'Temp' + Date.now() + '!',
-                email_confirm: true,
-                user_metadata: { full_name: fullName }
+            var resp = await fetch('/import-members', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ members: [member] })
             });
-            if (authError) throw authError;
-            
-            var userId = authData.user.id;
-            // 创建 profile
-            await supabaseClient.from('profiles').insert({
-                id: userId,
-                full_name: fullName,
-                email: email,
-                phone: document.getElementById('am_phone').value,
-                phone2: document.getElementById('am_phone2').value,
-                shipping_address: document.getElementById('am_shipping_address').value,
-                billing_address: document.getElementById('am_billing_address').value,
-                member_status: document.getElementById('am_member_status').value,
-                points: parseInt(document.getElementById('am_points').value) || 0,
-                tags: document.getElementById('am_tags').value,
-                source: '手動新增',
-                email_subscription: '未訂閱',
-                sms_subscription: '未訂閱'
-            });
-            
-            // 发送重置密码邮件
-            await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/account.html' });
-            
-            alert('會員建立成功！已發送設置密碼郵件到 ' + email);
-            switchPage('members');
-            loadMembersList();
+            var result = await resp.json();
+            if (result.error) {
+                alert('建立失敗：' + result.error + '\n\n請確認 Cloudflare Pages 已配置 SUPABASE_SERVICE_ROLE_KEY 環境變量');
+            } else if (result.failed > 0) {
+                alert('建立失敗：' + result.errors[0].error);
+            } else {
+                alert('會員建立成功！已發送設置密碼郵件到 ' + email);
+                switchPage('members');
+                loadMembersList();
+            }
         } catch(e) {
-            alert('建立失敗：' + e.message + '\n\n注意：手動新增會員需要 service_role 權限，如失敗請使用CSV匯入方式');
+            alert('建立失敗：' + e.message + '\n\n如在本地測試，請部署到 Cloudflare Pages 後再使用');
         }
     }
-
     function toggleMember(id) {
         if (selectedMemberIds.includes(id)) selectedMemberIds = selectedMemberIds.filter(function(i) { return i !== id; });
         else selectedMemberIds.push(id);
