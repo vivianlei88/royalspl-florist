@@ -484,7 +484,7 @@
                     customer_name: orderData.recipientName,
                     customer_phone: orderData.recipientPhone,
                     remarks: orderExtra.remarks || '',
-                    card_message: document.getElementById('cardMessage') ? document.getElementById('cardMessage').value : ''
+                    card_message: orderExtra.cardMessage || ''
                 })
                 .select();
             
