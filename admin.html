@@ -1162,11 +1162,15 @@
         // 手動建立訂單
         html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">手動建立訂單</h4>';
         html += '<div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px;">';
+        html += '<div style="margin-bottom:15px;"><button class="btn btn-secondary" onclick="toggleProductSelector()">選擇商品</button><span id="mo_selected_count" style="margin-left:10px;color:#888;">未選擇商品</span></div>';
+        html += '<div id="mo_product_selector" style="display:none;margin-bottom:15px;max-height:300px;overflow-y:auto;border:1px solid #ddd;border-radius:5px;padding:10px;background:#fff;"></div>';
         html += '<div class="form-row">';
-        html += '<div class="form-group"><label class="form-label">訂單金額 (HK$)</label><input class="form-input" type="number" id="mo_amount" placeholder="輸入金額"></div>';
-        html += '<div class="form-group"><label class="form-label">訂單備註</label><input class="form-input" id="mo_remark" placeholder="例如：情人節花束"></div>';
+        html += '<div class="form-group"><label class="form-label">訂單金額 (HK$)</label><input class="form-input" type="number" id="mo_amount" placeholder="自動計算或手動輸入" oninput="updateManualOrderTotal()"></div>';
+        html += '<div class="form-group"><label class="form-label">特別事項</label><input class="form-input" id="mo_remark" placeholder="例如：情人節花束"></div>';
         html += '</div>';
-        html += '<button class="btn btn-primary" onclick="createManualOrder(\'' + memberId + '\')">建立訂單並發送付款鏈接</button>';
+        html += '<div class="form-group" style="margin-top:10px;"><label class="form-label">心意卡內容</label><textarea class="form-input" id="mo_card_message" rows="2" placeholder="輸入心意卡內容"></textarea></div>';
+        html += '<div style="margin-top:15px;font-size:16px;font-weight:600;">總金額：HK$<span id="mo_total_display">0</span></div>';
+        html += '<div style="margin-top:10px;"><button class="btn btn-primary" onclick="createManualOrder(\'' + memberId + '\')">建立訂單並發送付款鏈接</button></div>';
         html += '</div>';
         
         // 保存按钮
@@ -1217,14 +1221,96 @@
         } catch(e) { alert('保存失败：' + e.message); }
     }
     
+    // ========== 手動訂單商品選擇器 ==========
+    var manualOrderProducts = [];
+    
+    function toggleProductSelector() {
+        var selector = document.getElementById('mo_product_selector');
+        if (!selector) return;
+        if (selector.style.display === 'none') {
+            selector.style.display = 'block';
+            loadProductSelector();
+        } else {
+            selector.style.display = 'none';
+        }
+    }
+    
+    async function loadProductSelector() {
+        var selector = document.getElementById('mo_product_selector');
+        if (!selector) return;
+        selector.innerHTML = '<p style="text-align:center;padding:20px;">載入中...</p>';
+        try {
+            var r = await supabaseClient.from('products').select('id,name,name_en,price,images').eq('is_active', true).order('created_at', { ascending: false });
+            var products = r.data || [];
+            if (products.length === 0) {
+                selector.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">尚無商品</p>';
+                return;
+            }
+            var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">';
+            products.forEach(function(p) {
+                var img = '';
+                try {
+                    var imgs = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+                    img = imgs[0] || '';
+                } catch(e) { img = ''; }
+                var isSelected = manualOrderProducts.some(function(mp) { return mp.id === p.id; });
+                html += '<div style="border:1px solid ' + (isSelected ? '#1A1A1A' : '#eee') + ';border-radius:8px;padding:8px;cursor:pointer;background:' + (isSelected ? '#f0f0f0' : '#fff') + ';" onclick="selectManualProduct(\'' + p.id + '\', \'' + (p.name || '').replace(/'/g, "\\'") + '\', ' + (p.price || 0) + ')">';
+                html += '<div style="width:100%;aspect-ratio:1;background:#f5f5f5;border-radius:4px;overflow:hidden;margin-bottom:5px;">';
+                if (img) { html += '<img src="' + img + '" style="width:100%;height:100%;object-fit:cover;">'; }
+                html += '</div>';
+                html += '<div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (p.name || '') + '</div>';
+                html += '<div style="font-size:12px;color:#888;">HK$' + (p.price || 0) + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            selector.innerHTML = html;
+        } catch(e) {
+            selector.innerHTML = '<p style="text-align:center;padding:20px;color:red;">載入失敗：' + e.message + '</p>';
+        }
+    }
+    
+    function selectManualProduct(id, name, price) {
+        var idx = manualOrderProducts.findIndex(function(p) { return p.id === id; });
+        if (idx >= 0) {
+            manualOrderProducts.splice(idx, 1);
+        } else {
+            manualOrderProducts.push({ id: id, name: name, price: parseFloat(price) || 0, quantity: 1 });
+        }
+        updateManualOrderTotal();
+        loadProductSelector(); // 刷新选中状态
+    }
+    
+    function updateManualOrderTotal() {
+        var total = manualOrderProducts.reduce(function(sum, p) { return sum + p.price * p.quantity; }, 0);
+        var manualAmount = parseFloat(document.getElementById('mo_amount')?.value) || 0;
+        var finalTotal = manualAmount > 0 ? manualAmount : total;
+        var display = document.getElementById('mo_total_display');
+        if (display) display.textContent = finalTotal.toFixed(2);
+        var count = document.getElementById('mo_selected_count');
+        if (count) count.textContent = manualOrderProducts.length > 0 ? '已選 ' + manualOrderProducts.length + ' 件商品' : '未選擇商品';
+    }
+
     async function createManualOrder(memberId) {
-        var amount = parseFloat(document.getElementById('mo_amount').value);
-        var remark = document.getElementById('mo_remark').value;
-        if (!amount || amount <= 0) { alert('请输入有效的订单金额'); return; }
+        var manualAmount = parseFloat(document.getElementById('mo_amount')?.value) || 0;
+        var remark = document.getElementById('mo_remark')?.value || '';
+        var cardMessage = document.getElementById('mo_card_message')?.value || '';
+        
+        // 计算总价
+        var productsTotal = manualOrderProducts.reduce(function(sum, p) { return sum + p.price * p.quantity; }, 0);
+        var amount = manualAmount > 0 ? manualAmount : productsTotal;
+        
+        if (!amount || amount <= 0) { alert('请选择商品或输入有效的订单金额'); return; }
         
         try {
             var member = allMembers.find(function(m) { return m.id === memberId; });
             var orderCode = 'RS' + Date.now().toString().slice(-8);
+            
+            // 商品明细
+            var items = manualOrderProducts.map(function(p) {
+                return { product_id: p.id, name: p.name, price: p.price, quantity: p.quantity };
+            });
+            var productNames = manualOrderProducts.map(function(p) { return p.name; }).join(', ') || '手動建立訂單';
+            
             // 创建订单
             var { data: order } = await supabaseClient.from('orders').insert({
                 order_code: orderCode,
@@ -1240,7 +1326,9 @@
                 total_amount: amount,
                 status: 'unpaid',
                 remarks: remark || '手動建立訂單',
-                product_names: remark || '手動建立訂單'
+                card_message: cardMessage,
+                product_names: productNames,
+                items: items
             }).select().single();
             
             // 创建 Stripe Checkout Session
@@ -1258,15 +1346,14 @@
             var result = await resp.json();
             if (result.url) {
                 alert('訂單已建立！付款鏈接：\n' + result.url + '\n\n請複製發送給客人');
-                // 复制到剪贴板
                 if (navigator.clipboard) { navigator.clipboard.writeText(result.url); }
+                // 清空选择
+                manualOrderProducts = [];
             } else {
                 alert('訂單已建立，但付款鏈接生成失敗：' + (result.error || '未知错误'));
             }
         } catch(e) { alert('建立訂單失敗：' + e.message); }
     }
-    
-    // ========== 手動新增會員 ==========
     function showAddMemberForm() {
         var c = document.getElementById('mainContent');
         var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>手動新增會員</h3></div>';
