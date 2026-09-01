@@ -2,7 +2,7 @@ export async function onRequestPost(context) {
     try {
         const { members } = await context.request.json();
         const SUPABASE_URL = context.env.SUPABASE_URL || 'https://gefqlrmozxbgfhxgngtg.supabase.co';
-        const SERVICE_ROLE_KEY = context.env.SUPABASE_SERVICE_ROLE_KEY;
+        const SERVICE_ROLE_KEY = context.env.SUPABASE_SERVICE_ROLE_KEY || context.env.SUPABASE_Secret_keys;
         
         if (!SERVICE_ROLE_KEY) {
             return Response.json({ error: 'SUPABASE_SERVICE_ROLE_KEY 未配置' }, { status: 500 });
