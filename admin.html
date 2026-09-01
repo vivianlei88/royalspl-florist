@@ -1203,8 +1203,8 @@ async function saveProduct() {
     
     async function loadAIChatSettings() {
         try {
-            var r = await supabaseClient.from('ai_chat_settings').select('*').limit(1).maybeSingle();
-            var s = r.data || {};
+            var resp = await fetch('/ai-chat-settings');
+            var s = await resp.json();
             if (document.getElementById('ai_language')) document.getElementById('ai_language').value = s.language || 'zh-Hant';
             if (document.getElementById('ai_welcome')) document.getElementById('ai_welcome').value = s.welcome_message || '';
             if (document.getElementById('ai_system_prompt')) document.getElementById('ai_system_prompt').value = s.system_prompt || '';
