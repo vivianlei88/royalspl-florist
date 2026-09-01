@@ -134,6 +134,11 @@
         .block-content-input { width: 100%; border: none; outline: none; font-size: 18px; line-height: 1.6; background: transparent; min-height: 1.6em; }
         .block-content-input:focus { outline: none; }
         .cover-image-preview { max-width: 150px; max-height: 100px; object-fit: cover; }
+        .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 10px; }
+        .uploaded-img-item { position: relative; cursor: move; user-select: none; transition: transform 0.2s; }
+        .uploaded-img-item:hover { transform: scale(1.03); }
+        .sortable-ghost { opacity: 0.4; transform: scale(0.95); }
+        .sortable-chosen { cursor: grabbing; }
 
     @media (max-width: 768px) {
         .admin-layout { flex-direction: column !important; }
@@ -178,6 +183,7 @@
         }
         .sidebar-subitem:hover { background: #f5f5f5; color: #1a1a1a !important; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
     <div id="loginPage" class="login-container">
@@ -567,7 +573,8 @@
     }
     function initUploadArea() { var ua = document.getElementById('uploadArea'); var fi = document.getElementById('fileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleUploadFiles(this.files); }; ua.addEventListener('dragover', function(e) { e.preventDefault(); }); ua.addEventListener('drop', function(e) { e.preventDefault(); handleUploadFiles(e.dataTransfer.files); }); } }
     async function handleUploadFiles(files) { for (var i = 0; i < files.length; i++) { var fd = new FormData(); fd.append('file', files[i]); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { uploadedImages.push(data.url); renderUploadedImages(); } } catch (err) {} } }
-    function renderUploadedImages() { var c = document.getElementById('uploadedImages'); if (!c) return; var h = ''; for (var i = 0; i < uploadedImages.length; i++) { h += '<div class="uploaded-img-item"><img src="' + uploadedImages[i] + '"><button class="del-btn" onclick="removeImage(' + i + ')">×</button></div>'; } c.innerHTML = h; }
+    function renderUploadedImages() { var c = document.getElementById('uploadedImages'); if (!c) return; var h = ''; for (var i = 0; i < uploadedImages.length; i++) { h += '<div class="uploaded-img-item" data-index="' + i + '"><img src="' + uploadedImages[i] + '"><button class="del-btn" onclick="removeImage(' + i + ')">×</button></div>'; } c.innerHTML = h; initImageSortable(); }
+    function initImageSortable() { var c = document.getElementById('uploadedImages'); if (!c || typeof Sortable === 'undefined') return; if (c._sortable) { c._sortable.destroy(); } c._sortable = Sortable.create(c, { animation: 200, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', onEnd: function(evt) { var oldIndex = evt.oldIndex; var newIndex = evt.newIndex; if (oldIndex !== newIndex) { var item = uploadedImages.splice(oldIndex, 1)[0]; uploadedImages.splice(newIndex, 0, item); renderUploadedImages(); } } }); }
     function removeImage(i) { uploadedImages.splice(i, 1); renderUploadedImages(); }
     function addImageByUrl() { var url = document.getElementById('imageUrlInput').value.trim(); if (url) { uploadedImages.push(url); renderUploadedImages(); document.getElementById('imageUrlInput').value = ''; } }
     function addVariantRow() { variants.push({ name: '', price: '' }); renderVariants(); }
