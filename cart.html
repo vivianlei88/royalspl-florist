@@ -20,6 +20,7 @@
         .cart-items { margin-bottom: 30px; }
         .cart-item { display: flex; align-items: center; gap: 20px; padding: 20px; background-color: #F3EFEA; border-radius: 10px; margin-bottom: 15px; }
         .cart-item-emoji { font-size: 50px; }
+        .cart-item-image { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
         .cart-item-info { flex: 1; }
         .cart-item-name { font-size: 18px; font-weight: 600; margin-bottom: 5px; }
         .cart-item-name-en { font-family: 'Cormorant Garamond', serif; font-size: 13px; color: #383431; margin-bottom: 8px; }
@@ -153,8 +154,9 @@
             const addonsTotal = item.addons.reduce((sum, a) => sum + a.price, 0);
             const itemTotal = (item.price + addonsTotal) * item.quantity;
             const addonsHtml = item.addons.length > 0 ? `<p class="cart-item-addons">+ ${item.addons.map(a => a.name).join(', ')}</p>` : '';
+            const itemImg = item.image ? `<img src="${item.image}" class="cart-item-image">` : `<span class="cart-item-emoji">${item.emoji}</span>`;
             return `<div class="cart-item">
-                <span class="cart-item-emoji">${item.emoji}</span>
+                ${itemImg}
                 <div class="cart-item-info">
                     <p class="cart-item-name">${item.name}</p>
                     <p class="cart-item-name-en">${item.nameEn}</p>

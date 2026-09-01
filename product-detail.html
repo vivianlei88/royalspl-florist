@@ -188,6 +188,7 @@
         var stockClass = product.stock === '現貨' ? 'status-in-stock' : 'status-pre-order';
         var stockText = product.stock === '現貨' ? '[現貨]' : '[預訂] 預計 ' + (product.delivery_days || 3) + ' 天內發貨';
         
+        var html = '';
         var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
         html += '<div class="detail-left-col">';
         if (productImages.length > 0) {
@@ -312,30 +313,6 @@
         });
     }
     var pageEnterTime = Date.now();
-
-    function changeProductImage(direction) {
-        if (!window.currentProductImages || window.currentProductImages.length <= 1) return;
-        window.currentImageIndex += direction;
-        if (window.currentImageIndex < 0) window.currentImageIndex = window.currentProductImages.length - 1;
-        if (window.currentImageIndex >= window.currentProductImages.length) window.currentImageIndex = 0;
-        updateProductImageDisplay();
-    }
-    function selectProductImage(index) {
-        if (!window.currentProductImages || index < 0 || index >= window.currentProductImages.length) return;
-        window.currentImageIndex = index;
-        updateProductImageDisplay();
-    }
-    function updateProductImageDisplay() {
-        var mainImg = document.getElementById('mainProductImage');
-        var counter = document.getElementById('currentImageIndex');
-        var thumbs = document.querySelectorAll('.thumb-item');
-        if (mainImg) mainImg.src = window.currentProductImages[window.currentImageIndex];
-        if (counter) counter.textContent = window.currentImageIndex + 1;
-        thumbs.forEach(function(thumb, i) {
-            if (i === window.currentImageIndex) thumb.classList.add('active');
-            else thumb.classList.remove('active');
-        });
-    }
     var pageEnterTime = Date.now();
     var userBehavior = JSON.parse(localStorage.getItem('royalspl_behavior') || '{"views":{},"cart":[],"purchases":[]}');
 
