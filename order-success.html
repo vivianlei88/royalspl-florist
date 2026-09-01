@@ -82,6 +82,20 @@
                         <div class="order-row"><span class="order-label">總計</span><span class="order-value" style="font-size:18px;font-weight:700;">HK$${order.total}</span></div>
                     `;
                     
+                    // 发送付款完成通知邮件
+                    const userEmail = order.recipient?.email || '';
+                    if (userEmail) {
+                        fetch('/send-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                to: userEmail,
+                                subject: '【RoyalSpl Florist】付款成功通知 ' + order.orderCode,
+                                html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">付款成功</h2><p>親愛的顧客，您的訂單已付款成功！</p><p><strong>訂單號：</strong>' + order.orderCode + '</p><p><strong>付款金額：</strong>HK$' + order.total + '</p><p>我們會盡快安排配送，配送日期：' + (order.recipient?.date || '') + ' ' + (order.recipient?.timeSlot || '') + '</p><p style="color:#888;font-size:12px;margin-top:30px;">如有任何疑問，請聯繫我們。</p></div>'
+                            })
+                        }).catch(e => console.warn('發送付款成功郵件失敗:', e));
+                    }
+                    
                     // 清除待支付订单
                     localStorage.removeItem('pending_order');
                     
