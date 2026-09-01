@@ -801,7 +801,15 @@ async function saveProduct() {
                     seo_title: d['SEO標題'] || '',
                     seo_description: d['SEO描述'] || ''
                 };
-                if (d.id) {
+                // 按SKU判断：已存在则更新，不存在则新增
+                if (pd.sku) {
+                    var { data: existing } = await supabaseClient.from('products').select('id').eq('sku', pd.sku).limit(1);
+                    if (existing && existing.length > 0) {
+                        await supabaseClient.from('products').update(pd).eq('id', existing[0].id);
+                    } else {
+                        await supabaseClient.from('products').insert(pd);
+                    }
+                } else if (d.id) {
                     await supabaseClient.from('products').update(pd).eq('id', d.id);
                 } else {
                     await supabaseClient.from('products').insert(pd);
