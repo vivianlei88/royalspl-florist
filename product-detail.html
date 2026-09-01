@@ -511,13 +511,35 @@
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
     
+
+    // 简单 Markdown 解析
+    function parseMarkdown(text) {
+        if (!text) return '';
+        let html = text;
+        // 标题
+        html = html.replace(/^### (.+)$/gm, '<h4 style="font-size:15px;font-weight:600;margin:15px 0 8px;">$1</h4>');
+        html = html.replace(/^## (.+)$/gm, '<h3 style="font-size:17px;font-weight:600;margin:18px 0 10px;">$1</h3>');
+        html = html.replace(/^# (.+)$/gm, '<h2 style="font-size:19px;font-weight:700;margin:20px 0 12px;">$1</h2>');
+        // 加粗
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // 引用
+        html = html.replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid #ddd;padding-left:12px;color:#666;margin:10px 0;font-style:italic;">$1</blockquote>');
+        // 有序列表
+        html = html.replace(/^\d+\. (.+)$/gm, '<li style="margin:5px 0;">$1</li>');
+        // 换行
+        html = html.replace(/\n/g, '<br>');
+        // 清理多余的br
+        html = html.replace(/(<br>\s*){3,}/g, '<br><br>');
+        return html;
+    }
+
     // 从数据库加载花材護理知識
     async function loadFlowerCareContent() {
         try {
             const { data, error } = await supabaseClient.from('flower_care').select('*').eq('is_published', true).limit(1).maybeSingle();
             if (data && data.content) {
                 const el = document.getElementById('flowerCareContent');
-                if (el) el.innerHTML = data.content;
+                if (el) el.innerHTML = parseMarkdown(data.content);
             }
         } catch(e) { console.log('花材護理知識加载失败:', e); }
     }
@@ -529,7 +551,7 @@
             const el = document.getElementById('privacyContent');
             if (el) {
                 if (data && data.content) {
-                    el.innerHTML = data.content;
+                    el.innerHTML = parseMarkdown(data.content);
                 } else {
                     el.innerHTML = '暫無內容';
                 }
