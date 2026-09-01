@@ -480,9 +480,11 @@
             }
             
             if (newOrder && newOrder[0]) {
-                // 保存订单到 localStorage 供支付页使用
+                const orderId = newOrder[0].id;
+                
+                // 保存待支付订单信息
                 localStorage.setItem('pending_order', JSON.stringify({
-                    id: newOrder[0].id,
+                    id: orderId,
                     orderCode: orderCode,
                     items: cart,
                     subtotal: orderData.subtotal,
@@ -500,8 +502,32 @@
                 // 清空购物车
                 localStorage.removeItem('royalspl_cart');
                 
-                // 跳转到支付页面
-                window.location.href = 'payment.html?order_id=' + newOrder[0].id;
+                // 调用 Stripe Checkout Session
+                try {
+                    const stripeResponse = await fetch('/create-checkout-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ...orderData,
+                            orderId: orderId,
+                            orderCode: orderCode
+                        })
+                    });
+                    
+                    const stripeData = await stripeResponse.json();
+                    
+                    if (stripeData.url) {
+                        // 跳转到 Stripe 支付页
+                        window.location.href = stripeData.url;
+                    } else {
+                        // Stripe 接口不可用时，跳转到本地支付页
+                        window.location.href = 'payment.html?order_id=' + orderId;
+                    }
+                } catch (stripeErr) {
+                    // Stripe 调用失败，使用本地支付页作为后备
+                    console.warn('Stripe 调用失败，使用本地支付页:', stripeErr);
+                    window.location.href = 'payment.html?order_id=' + orderId;
+                }
             }
         } catch (err) {
             console.error('提交订单错误:', err);
