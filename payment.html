@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付 - RoyalSpl Florist</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Serif TC', serif; background-color: #FAF8F5; color: #1A1A1A; }
+        .payment-page { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #888; text-decoration: none; font-size: 14px; }
+        .payment-title { font-size: 28px; font-weight: 500; margin-bottom: 30px; text-align: center; }
+        .order-summary-card { background: white; border-radius: 10px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .order-code { font-size: 14px; color: #888; margin-bottom: 15px; }
+        .order-items { margin-bottom: 20px; }
+        .order-item { display: flex; align-items: center; gap: 15px; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .order-item:last-child { border-bottom: none; }
+        .order-item-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
+        .order-item-emoji { font-size: 36px; }
+        .order-item-info { flex: 1; }
+        .order-item-name { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .order-item-qty { font-size: 13px; color: #888; }
+        .order-item-price { font-size: 16px; font-weight: 600; }
+        .order-total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; }
+        .order-total-row.total { border-top: 2px solid #1A1A1A; margin-top: 10px; padding-top: 15px; font-size: 20px; font-weight: 700; }
+        .delivery-info { background: #F3EFEA; border-radius: 8px; padding: 15px; margin-top: 15px; font-size: 14px; line-height: 1.8; }
+        .payment-methods { margin-bottom: 25px; }
+        .payment-method { display: flex; align-items: center; gap: 15px; padding: 18px; background: white; border: 2px solid #eee; border-radius: 10px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+        .payment-method:hover { border-color: #1A1A1A; }
+        .payment-method.selected { border-color: #1A1A1A; background: #F3EFEA; }
+        .payment-method-icon { font-size: 28px; }
+        .payment-method-info { flex: 1; }
+        .payment-method-name { font-size: 16px; font-weight: 500; }
+        .payment-method-desc { font-size: 13px; color: #888; margin-top: 2px; }
+        .payment-method-check { width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .payment-method.selected .payment-method-check { background: #1A1A1A; border-color: #1A1A1A; }
+        .payment-method.selected .payment-method-check::after { content: '✓'; color: white; font-size: 12px; }
+        .pay-btn { width: 100%; padding: 18px; background: #1A1A1A; color: #FAF8F5; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .pay-btn:hover { background: #333; }
+        .pay-btn:disabled { background: #999; cursor: not-allowed; }
+        .payment-note { text-align: center; font-size: 13px; color: #888; margin-top: 15px; }
+        .success-page { text-align: center; padding: 60px 20px; }
+        .success-icon { font-size: 80px; margin-bottom: 20px; }
+        .success-title { font-size: 28px; font-weight: 500; margin-bottom: 15px; }
+        .success-desc { font-size: 16px; color: #666; margin-bottom: 30px; line-height: 1.8; }
+        .success-actions { display: flex; gap: 15px; justify-content: center; }
+        .btn { padding: 12px 30px; border-radius: 8px; font-size: 15px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #1A1A1A; color: #FAF8F5; border: none; }
+        .btn-outline { background: transparent; color: #1A1A1A; border: 1px solid #1A1A1A; }
+        @media (max-width: 768px) {
+            .payment-page { padding: 20px 15px; }
+            .payment-title { font-size: 22px; }
+            .order-summary-card { padding: 15px; }
+            .order-item-img { width: 50px; height: 50px; }
+        }
+    </style>
+    <link rel="stylesheet" href="css/ai-chat.css">
+</head>
+<body>
+    <div class="payment-page" id="paymentPage">
+        <a href="cart.html" class="back-link">← 返回購物車</a>
+        <h1 class="payment-title">訂單支付</h1>
+        
+        <div class="order-summary-card" id="orderSummary">
+            <p class="order-code" id="orderCode"></p>
+            <div class="order-items" id="orderItems"></div>
+            <div id="orderTotals"></div>
+            <div class="delivery-info" id="deliveryInfo"></div>
+        </div>
+
+        <div class="payment-methods">
+            <div class="payment-method selected" onclick="selectPayment(this, 'fps')">
+                <div class="payment-method-icon">💳</div>
+                <div class="payment-method-info">
+                    <div class="payment-method-name">轉數快 FPS</div>
+                    <div class="payment-method-desc">支持香港銀行即時轉賬</div>
+                </div>
+                <div class="payment-method-check"></div>
+            </div>
+            <div class="payment-method" onclick="selectPayment(this, 'credit_card')">
+                <div class="payment-method-icon">💳</div>
+                <div class="payment-method-info">
+                    <div class="payment-method-name">信用卡 / 借記卡</div>
+                    <div class="payment-method-desc">Visa, Mastercard, 銀聯</div>
+                </div>
+                <div class="payment-method-check"></div>
+            </div>
+            <div class="payment-method" onclick="selectPayment(this, 'payme')">
+                <div class="payment-method-icon">📱</div>
+                <div class="payment-method-info">
+                    <div class="payment-method-name">PayMe</div>
+                    <div class="payment-method-desc">滙豐 PayMe 電子錢包</div>
+                </div>
+                <div class="payment-method-check"></div>
+            </div>
+        </div>
+
+        <button class="pay-btn" id="payBtn" onclick="confirmPayment()">確認支付</button>
+        <p class="payment-note">點擊確認支付後，如未完成支付，訂單將保留為「未付款」狀態，可在會員中心繼續支付</p>
+    </div>
+
+    <div class="success-page" id="successPage" style="display:none;">
+        <div class="success-icon">✅</div>
+        <h2 class="success-title">支付成功</h2>
+        <p class="success-desc">感謝您的訂購！<br>我們會盡快安排配送，訂單詳情已發送至您的電郵。</p>
+        <div class="success-actions">
+            <a href="account.html" class="btn btn-primary">查看訂單</a>
+            <a href="products.html" class="btn btn-outline">繼續選購</a>
+        </div>
+    </div>
+
+    <script>
+        const supabaseClient = supabase.createClient(
+            'https://gefqlrmozxbgfhxgngtg.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y'
+        );
+
+        let currentOrder = null;
+        let selectedMethod = 'fps';
+        let orderId = null;
+
+        function getUrlParam(name) {
+            return new URLSearchParams(window.location.search).get(name);
+        }
+
+        async function loadOrder() {
+            orderId = getUrlParam('order_id');
+            
+            // 先从 localStorage 读取
+            const pending = localStorage.getItem('pending_order');
+            if (pending) {
+                currentOrder = JSON.parse(pending);
+                renderOrder();
+                return;
+            }
+            
+            // 从数据库读取
+            if (orderId) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('orders')
+                        .select('*')
+                        .eq('id', orderId)
+                        .single();
+                    
+                    if (data) {
+                        currentOrder = {
+                            id: data.id,
+                            orderCode: data.order_code,
+                            subtotal: data.subtotal,
+                            deliveryFee: data.delivery_fee,
+                            total: data.total_amount,
+                            recipient: {
+                                name: data.recipient_name,
+                                phone: data.recipient_phone,
+                                address: data.recipient_address,
+                                date: data.delivery_date,
+                                timeSlot: data.delivery_time_slot
+                            }
+                        };
+                        renderOrder();
+                    }
+                } catch (e) {
+                    console.error('加载订单失败:', e);
+                }
+            }
+        }
+
+        function renderOrder() {
+            if (!currentOrder) return;
+            
+            document.getElementById('orderCode').textContent = '訂單號：' + currentOrder.orderCode;
+            
+            // 商品列表
+            const itemsHtml = (currentOrder.items || []).map(item => {
+                const img = item.image 
+                    ? `<img src="${item.image}" class="order-item-img">` 
+                    : `<span class="order-item-emoji">${item.emoji || '🌸'}</span>`;
+                return `<div class="order-item">
+                    ${img}
+                    <div class="order-item-info">
+                        <div class="order-item-name">${item.name}</div>
+                        <div class="order-item-qty">數量：${item.quantity}</div>
+                    </div>
+                    <div class="order-item-price">HK$${item.price * item.quantity}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('orderItems').innerHTML = itemsHtml;
+            
+            // 金额
+            document.getElementById('orderTotals').innerHTML = `
+                <div class="order-total-row"><span>商品小計</span><span>HK$${currentOrder.subtotal}</span></div>
+                <div class="order-total-row"><span>配送費</span><span>${currentOrder.deliveryFee === 0 ? '免費' : 'HK$' + currentOrder.deliveryFee}</span></div>
+                <div class="order-total-row total"><span>總計</span><span>HK$${currentOrder.total}</span></div>
+            `;
+            
+            // 配送信息
+            const r = currentOrder.recipient || {};
+            document.getElementById('deliveryInfo').innerHTML = `
+                <strong>配送信息</strong><br>
+                收貨人：${r.name || ''}<br>
+                聯絡電話：${r.phone || ''}<br>
+                配送地址：${r.address || ''}<br>
+                配送日期：${r.date || ''} ${r.timeSlot || ''}
+            `;
+        }
+
+        function selectPayment(el, method) {
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedMethod = method;
+        }
+
+        async function confirmPayment() {
+            const btn = document.getElementById('payBtn');
+            btn.disabled = true;
+            btn.textContent = '處理中...';
+            
+            try {
+                // 更新订单状态为已付款
+                if (orderId) {
+                    await supabaseClient
+                        .from('orders')
+                        .update({ 
+                            status: 'paid',
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', orderId);
+                }
+                
+                // 清除待支付订单
+                localStorage.removeItem('pending_order');
+                
+                // 显示成功页面
+                document.getElementById('paymentPage').style.display = 'none';
+                document.getElementById('successPage').style.display = 'block';
+                
+            } catch (e) {
+                console.error('支付失败:', e);
+                alert('支付處理失敗，請稍後重試');
+                btn.disabled = false;
+                btn.textContent = '確認支付';
+            }
+        }
+
+        loadOrder();
+    </script>
+    <script src="js/ai-chat.js"></script>
+</body>
+</html>

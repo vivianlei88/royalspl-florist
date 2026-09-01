@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聯絡我們 | RoyalSpl Florist</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 700px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .contact-card { background: white; border-radius: 8px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .shop-logo { max-width: 180px; margin: 0 auto 25px; display: block; }
+        .contact-item { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; }
+        .contact-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .contact-icon { width: 40px; height: 40px; background: #F3EFEA; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .contact-label { font-size: 13px; color: #888; margin-bottom: 4px; }
+        .contact-value { font-size: 17px; color: #1A1A1A; font-weight: 500; word-break: break-all; }
+        .contact-value a { color: #1A1A1A; text-decoration: none; }
+        .contact-value a:hover { text-decoration: underline; }
+        .map-container { border-radius: 8px; overflow: hidden; margin-top: 20px; }
+        .map-container iframe { width: 100%; height: 300px; border: 0; border-radius: 8px; }
+        .empty-state { text-align: center; color: #888; padding: 40px; }
+        .page-title { text-align: center; margin-bottom: 30px; }
+
+    @media (max-width: 768px) {
+        .container { padding: 20px 15px !important; }
+        .page-title { font-size: 28px !important; }
+        .contact-card { padding: 20px !important; }
+        .contact-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
+        .contact-item { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+        .contact-icon { font-size: 24px !important; }
+        .contact-label { font-size: 13px !important; }
+        .contact-value { font-size: 15px !important; }
+        .map-container { height: 250px !important; }
+    }
+    @media (max-width: 480px) {
+        .page-title { font-size: 24px !important; }
+        .contact-card { padding: 15px !important; }
+    }
+    </style>
+    <link rel="stylesheet" href="css/ai-chat.css">
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">←</a>
+        <h1 class="page-title">聯絡我們</h1>
+        <div id="contactContent"></div>
+    </div>
+    <script>
+        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadContact() {
+            const { data, error } = await supabaseClient
+                .from('contact_settings')
+                .select('*')
+                .eq('is_published', true)
+                .limit(1)
+                .maybeSingle();
+
+            const container = document.getElementById('contactContent');
+
+            if (error) {
+                console.error('載入聯絡資料失敗:', error);
+                container.innerHTML = '<div class="empty-state">載入失敗，請稍後再試</div>';
+                return;
+            }
+
+            if (!data) {
+                container.innerHTML = '<div class="empty-state">尚無聯絡資料</div>';
+                return;
+            }
+
+            let html = '<div class="contact-card">';
+
+            if (data.shop_logo) {
+                html += `<img src="${data.shop_logo}" alt="RoyalSpl Florist" class="shop-logo">`;
+            }
+
+            if (data.shop_phone) {
+                html += `
+                    <div class="contact-item">
+                        <div class="contact-icon">📞</div>
+                        <div>
+                            <div class="contact-label">電話</div>
+                            <div class="contact-value"><a href="tel:${data.shop_phone}">${data.shop_phone}</a></div>
+                        </div>
+                    </div>`;
+            }
+
+            if (data.shop_email) {
+                html += `
+                    <div class="contact-item">
+                        <div class="contact-icon">✉️</div>
+                        <div>
+                            <div class="contact-label">電郵</div>
+                            <div class="contact-value"><a href="mailto:${data.shop_email}">${data.shop_email}</a></div>
+                        </div>
+                    </div>`;
+            }
+
+            if (data.shop_address) {
+                html += `
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div>
+                            <div class="contact-label">地址</div>
+                            <div class="contact-value">${data.shop_address}</div>
+                        </div>
+                    </div>`;
+            }
+
+            html += '</div>';
+
+            if (data.map_url) {
+                html += `
+                    <div class="map-container">
+                        <iframe src="${data.map_url}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadContact);
+    </script>
+    <script src="js/ai-chat.js"></script>
+</body>
+</html>

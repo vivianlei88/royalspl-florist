@@ -28,6 +28,9 @@
         .dashboard { display: none; }
         .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .profile-card, .address-card, .points-card, .orders-card { background: white; border-radius: 10px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .profile-address-row { display: flex; gap: 20px; align-items: flex-start; }
+        .profile-address-row .profile-card, .profile-address-row .address-card { flex: 1; margin-bottom: 20px; }
+        @media (max-width: 768px) { .profile-address-row { flex-direction: column; } }
         .card-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; }
         .address-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; }
         .address-item.default { border-color: #1A1A1A; background: #FAFAFA; }
@@ -38,10 +41,31 @@
         .btn-default { background: #e0e0e0; border: none; }
         .points-value { font-size: 32px; font-weight: 700; color: #1A1A1A; }
         .hidden { display: none; }
-    </style>
+    
+        .account-order-item { display: flex; gap: 18px; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .account-order-item:last-child { border-bottom: none; }
+        .account-order-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+        .account-order-img-ph { width: 80px; height: 80px; font-size: 32px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .account-order-info { flex: 1; }
+        .account-order-code { font-size: 17px; font-weight: 600; color: #1A1A1A; margin-bottom: 5px; }
+        .account-order-meta { font-size: 14px; color: #383431; }
+        .account-order-price { font-size: 18px; font-weight: 700; color: #1A1A1A; margin-top: 5px; }
+        .account-order-right { text-align: right; flex-shrink: 0; }
+        .account-order-actions { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+        .account-order-btn { padding: 8px 16px; border-radius: 4px; font-size: 14px; text-decoration: none; cursor: pointer; border: none; font-family: inherit; }
+        .account-order-btn-detail { background: transparent; border: 1px solid #1A1A1A; color: #1A1A1A; }
+        .account-order-btn-pay { background: #1A1A1A; color: #FAF8F5; }
+        .account-order-btn-pay:hover { background: #333; }
+        .account-order-empty { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .status-badge-sm { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .status-unpaid { background: #fdecea; color: #c0392b; }
+        .status-paid { background: #e8f5e9; color: #27ae60; }
+        .status-shipped { background: #e3f2fd; color: #2980b9; }
+        .status-cancelled { background: #f5f5f5; color: #999; }
+</style>
+    <link rel="stylesheet" href="css/ai-chat.css">
 </head>
 <body>
-    <a href="index.html" class="back-btn">←</a>
     <header class="header">
         <div class="header-container">
             <a href="index.html" class="logo">
@@ -105,11 +129,15 @@
         <!-- 已登入：會員中心 Dashboard -->
         <div id="dashboardSection" class="dashboard">
             <div class="dashboard-header">
-                <h2>會員中心</h2>
+                <div style="display:flex;align-items:center;gap:15px;margin-bottom:20px;">
+                    <a href="index.html" class="back-btn" style="margin:0;width:36px;height:36px;font-size:18px;">←</a>
+                    <h2 style="margin:0;">會員中心</h2>
+                </div>
                 <button class="btn-primary" style="width:auto;padding:10px 20px;" onclick="handleLogout()">登出</button>
             </div>
 
-            <!-- 個人資訊 -->
+            <!-- 個人資訊 + 常用收件地址 左右并排 -->
+            <div class="profile-address-row">
             <div class="profile-card">
                 <div class="card-title">個人資訊</div>
                 <div id="profileInfo">
@@ -127,6 +155,7 @@
                 <div id="addressList"></div>
                 <button class="btn-small" onclick="showAddAddressForm()">新增地址</button>
             </div>
+            </div>
 
             <!-- 會員積分 -->
             <div class="points-card">
@@ -134,10 +163,10 @@
                 <div class="points-value" id="pointsValue">0</div>
             </div>
 
-            <!-- 歷史訂單 -->
+            <!-- 所有訂單 -->
             <div class="orders-card">
-                <div class="card-title">歷史訂單</div>
-                <a href="orders.html" class="btn-primary" style="display:inline-block;text-decoration:none;padding:10px 20px;">查看所有訂單</a>
+                <div class="card-title">所有訂單</div>
+                <div id="accountOrdersList"></div>
             </div>
         </div>
     </div>
@@ -209,10 +238,27 @@
             showDashboard();
             await loadProfile();
             await loadAddresses();
+            loadAccountOrders();
             await loadPoints();
         }
 
         async function loadProfile() {
+            // 自动同步用户信息到 profiles 表
+            try {
+                const { data: existing } = await supabaseClient.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
+                if (!existing) {
+                    await supabaseClient.from('profiles').insert({
+                        id: currentUser.id,
+                        full_name: currentUser.user_metadata?.full_name || '',
+                        email: currentUser.email,
+                        member_status: 'active',
+                        last_active: new Date().toISOString()
+                    });
+                } else {
+                    await supabaseClient.from('profiles').update({ last_active: new Date().toISOString() }).eq('id', currentUser.id);
+                }
+            } catch(e) { console.log('同步profile失败:', e); }
+            
             const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
             if (data) {
                 document.getElementById('profileName').textContent = data.full_name || '-';
@@ -298,9 +344,24 @@
         }
 
         async function setDefaultAddress(id) {
-            await supabaseClient.from('user_addresses').update({ is_default: false }).eq('user_id', currentUser.id);
-            await supabaseClient.from('user_addresses').update({ is_default: true }).eq('id', id);
-            await loadAddresses();
+            try {
+                // 先把所有地址设为非默认
+                const { error: err1 } = await supabaseClient.from('user_addresses').update({ is_default: false }).eq('user_id', currentUser.id);
+                if (err1) { console.error('清除默认失败:', err1); alert('設置失敗：' + err1.message); return; }
+                // 再把选中的地址设为默认
+                const { error: err2 } = await supabaseClient.from('user_addresses').update({ is_default: true }).eq('id', id);
+                if (err2) { console.error('设置默认失败:', err2); alert('設置失敗：' + err2.message); return; }
+                await loadAddresses();
+                // 成功提示
+                const toast = document.createElement('div');
+                toast.textContent = '已設為預設地址';
+                toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#FAF8F5;padding:12px 24px;border-radius:5px;z-index:9999;font-size:14px;';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            } catch (e) {
+                console.error('设置默认地址异常:', e);
+                alert('設置失敗，請稍後重試');
+            }
         }
 
         async function deleteAddress(id) {
@@ -326,7 +387,101 @@
             await loadProfile();
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        
+        function getAccountOrderImage(order) {
+            if (order.items && Array.isArray(order.items) && order.items.length > 0 && order.items[0].image) {
+                return order.items[0].image;
+            }
+            try {
+                const parsed = JSON.parse(order.product_images);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+                if (typeof parsed === 'string') return parsed;
+            } catch(e) {}
+            if (order.product_images && typeof order.product_images === 'string' && order.product_images.startsWith('http')) {
+                return order.product_images;
+            }
+            return '';
+        }
+
+        async function loadAccountOrders() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
+            const { data: orders, error } = await supabaseClient.from('orders').select('*').eq('customer_email', user.email).order('created_at', { ascending: false }).limit(5);
+            if (error) { document.getElementById('accountOrdersList').innerHTML = '<div class="account-order-empty">載入失敗</div>'; return; }
+            renderAccountOrders(orders || []);
+        }
+
+        function renderAccountOrders(orders) {
+            const container = document.getElementById('accountOrdersList');
+            if (!container) return;
+            if (!orders.length) { container.innerHTML = '<div class="account-order-empty">尚無訂單</div>'; return; }
+            const statusMap = { unpaid: '未付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
+            let html = '';
+            orders.forEach(order => {
+                const img = getAccountOrderImage(order);
+                const imgHtml = img ? '<img src="' + img + '" class="account-order-img" alt="">' : '<div class="account-order-img-ph">🌸</div>';
+                const createdDate = (order.created_at || '').slice(0, 10);
+                html += '<div class="account-order-item">';
+                html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;">' + imgHtml + '</a>';
+                html += '<div class="account-order-info">';
+                html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;"><div class="account-order-code">' + order.order_code + '</div></a>';
+                html += '<div class="account-order-meta">成立：' + createdDate + ' | 送貨：' + (order.delivery_date || '-') + '</div>';
+                html += '<div class="account-order-price">HK$' + order.total_amount + '</div>';
+                html += '</div>';
+                html += '<div class="account-order-right">';
+                html += '<span class="status-badge-sm status-' + order.status + '">' + (statusMap[order.status] || order.status) + '</span>';
+                html += '<div class="account-order-actions">';
+                html += '<a href="order-detail.html?id=' + order.id + '" class="account-order-btn account-order-btn-detail">詳情</a>';
+                if (order.status === 'unpaid') {
+                    html += '<button class="account-order-btn account-order-btn-pay" onclick="payAccountOrder(' + order.id + ', this)">支付</button>';
+                }
+                html += '</div></div></div>';
+            });
+            container.innerHTML = html;
+        }
+
+        async function payAccountOrder(orderId, btn) {
+            btn.disabled = true;
+            btn.textContent = '處理中...';
+            try {
+                const { data: order, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
+                if (error || !order) throw new Error('訂單不存在');
+                let items = [];
+                if (order.items && Array.isArray(order.items)) {
+                    items = order.items;
+                } else {
+                    const names = (order.product_names || '').split('|').filter(Boolean);
+                    items = names.map(n => ({ name: n, price: 0, quantity: 1 }));
+                }
+                localStorage.setItem('pending_order', JSON.stringify({
+                    id: order.id, orderCode: order.order_code, items: items,
+                    subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount,
+                    recipient: { name: order.recipient_name, phone: order.recipient_phone, address: order.recipient_address, date: order.delivery_date, timeSlot: order.delivery_time_slot, email: order.customer_email }
+                }));
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: items, recipientName: order.recipient_name, recipientPhone: order.recipient_phone,
+                        recipientAddress: order.recipient_address, deliveryDate: order.delivery_date,
+                        deliveryTimeSlot: order.delivery_time_slot, deliveryHour: order.delivery_hour,
+                        deliveryArea: order.delivery_area, deliveryFee: order.delivery_fee,
+                        subtotal: order.subtotal, totalAmount: order.total_amount,
+                        orderId: order.id, orderCode: order.order_code
+                    })
+                });
+                const data = await response.json();
+                if (data.url) { window.location.href = data.url; }
+                else { window.location.href = 'payment.html?order_id=' + orderId; }
+            } catch (e) {
+                console.error('支付失败:', e);
+                alert('支付處理失敗，請稍後重試');
+                btn.disabled = false;
+                btn.textContent = '支付';
+            }
+        }
+
+document.addEventListener('DOMContentLoaded', async () => {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (user) {
                 currentUser = user;
@@ -336,5 +491,6 @@
             }
         });
     </script>
+    <script src="js/ai-chat.js"></script>
 </body>
 </html>

@@ -14,11 +14,35 @@
         .user-icon:hover { opacity: 0.7; }
         .cart-icon { display: flex; align-items: center; justify-content: center; }
         
-        .detail-page { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px; }
+        .detail-page { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px;  padding-bottom: 40px; }
         .detail-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 30px; }
-        .detail-image-area { background-color: #F3EFEA; border-radius: 10px; display: flex; align-items: center; justify-content: center; min-height: 500px; }
-        .detail-emoji { font-size: 200px; }
-        .detail-info-area { padding: 20px 0; }
+        .detail-gallery { width: 100%; }
+        .detail-main-image { position: relative; aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 10px; overflow: hidden; }
+        .detail-main-image img { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-prev, .gallery-next { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .gallery-prev:hover, .gallery-next:hover { background: white; }
+        .gallery-prev { left: 10px; }
+        .gallery-next { right: 10px; }
+        .gallery-counter { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 12px; border-radius: 15px; font-size: 13px; }
+        .detail-thumbs { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        .thumb-item { width: 60px; height: 60px; border-radius: 6px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: 0.6; transition: all 0.2s; }
+        .thumb-item:hover { opacity: 1; }
+        .thumb-item.active { border-color: #1A1A1A; opacity: 1; }
+        .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-image-area { background-color: #F3EFEA; border-radius: 10px; display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; overflow: hidden; }
+        .detail-image-area img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+        .detail-tags-below { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+        .detail-tag { padding: 6px 14px; border: 1px solid #1A1A1A; border-radius: 15px; font-size: 13px; }
+        .recommend-section { margin-top: 180px; padding-top: 50px; border-top: 1px solid rgba(26,26,26,0.1); padding-bottom: 60px; }
+        .recommend-title { text-align: center; font-size: 22px; font-weight: 500; margin-bottom: 40px; letter-spacing: 3px; color: #1A1A1A; }
+        .recommend-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .recommend-card { text-decoration: none; color: inherit; }
+        .recommend-card-img { aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+        .recommend-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .recommend-card-name-en { font-family: 'Cormorant Garamond', serif; font-size: 12px; color: #383431; margin-bottom: 2px; }
+        .recommend-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .recommend-card-price { font-size: 14px; color: #383431; }
+        @media (max-width: 768px) { .detail-container { grid-template-columns: 1fr; gap: 30px; } .detail-emoji { font-size: 120px; } .detail-title-zh { font-size: 30px; } .recommend-grid { grid-template-columns: repeat(2, 1fr); } }
         .detail-subtitle-en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; color: #383431; }
         .detail-title-zh { font-size: 40px; font-weight: 500; font-style: italic; margin: 10px 0; }
         .detail-price { font-size: 32px; font-weight: 700; margin: 20px 0; }
@@ -58,8 +82,22 @@
         .seo-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #F3EFEA; border-radius: 5px; cursor: pointer; font-weight: 600; }
         .seo-content { display: none; padding: 15px; background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 0 0 5px 5px; font-size: 14px; color: #383431; line-height: 1.8; }
         .seo-content.open { display: block; }
-        @media (max-width: 768px) { .detail-container { grid-template-columns: 1fr; gap: 30px; } .detail-image-area { min-height: 300px; } .detail-emoji { font-size: 120px; } .detail-title-zh { font-size: 30px; } }
+        @media (max-width: 768px) { .detail-container { grid-template-columns: 1fr; gap: 30px; } .detail-gallery { width: 100%; }
+        .detail-main-image { position: relative; aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 10px; overflow: hidden; }
+        .detail-main-image img { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-prev, .gallery-next { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .gallery-prev:hover, .gallery-next:hover { background: white; }
+        .gallery-prev { left: 10px; }
+        .gallery-next { right: 10px; }
+        .gallery-counter { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 12px; border-radius: 15px; font-size: 13px; }
+        .detail-thumbs { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        .thumb-item { width: 60px; height: 60px; border-radius: 6px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: 0.6; transition: all 0.2s; }
+        .thumb-item:hover { opacity: 1; }
+        .thumb-item.active { border-color: #1A1A1A; opacity: 1; }
+        .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-image-area { min-height: 300px; } .detail-emoji { font-size: 120px; } .detail-title-zh { font-size: 30px; } }
     </style>
+    <link rel="stylesheet" href="css/ai-chat.css">
 </head>
 <body>
     <header class="header">
@@ -103,15 +141,16 @@
         <div class="detail-container" id="detailContainer">
             <div style="text-align:center;padding:60px;">🌸 正在載入...</div>
         </div>
-        <div class="detail-seo-section">
-            <div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">🌿 花材護理知識 <span>+</span></div><div class="seo-content">鮮花護理建議：<br>1. 每日更換清水<br>2. 斜剪花腳45度<br>3. 避免陽光直射<br>4. 定期清除枯萎花瓣</div></div>
-            <div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">🔒 香港隱私條例 <span>+</span></div><div class="seo-content">根據香港《個人資料(私隱)條例》，我們承諾保護您的個人資料。</div></div>
-        </div>
+
     </main>
 
     <footer class="footer">
         <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
-        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+        <div class="footer-links">
+            <div class="footer-column"><a href="products.html" class="footer-link">所有花藝</a><a href="products.html?tag=情人節" class="footer-link">節慶場合</a><a href="products.html?tag=訂閱" class="footer-link">訂閱花禮</a></div>
+            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">常見問題</a><a href="contact.html" class="footer-link">聯絡我們</a></div>
+        </div>
+        <div class="footer-bottom"><a href="privacy.html" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
     <script>
@@ -151,16 +190,48 @@
         var stockText = product.stock === '現貨' ? '[現貨]' : '[預訂] 預計 ' + (product.delivery_days || 3) + ' 天內發貨';
         
         var html = '';
-        html += '<div class="detail-image-area"><span class="detail-emoji">' + (product.emoji || '🌸') + '<\/span><\/div>';
+        var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
+        html += '<div class="detail-left-col">';
+        if (productImages.length > 0) {
+            html += '<div class="detail-gallery">';
+            html += '<div class="detail-main-image"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + product.name_zh + '">';
+            if (productImages.length > 1) {
+                html += '<button class="gallery-prev" onclick="changeProductImage(-1)">‹</button>';
+                html += '<button class="gallery-next" onclick="changeProductImage(1)">›</button>';
+                html += '<div class="gallery-counter"><span id="currentImageIndex">1</span> / ' + productImages.length + '</div>';
+            }
+            html += '</div>';
+            if (productImages.length > 1) {
+                html += '<div class="detail-thumbs">';
+                for (var ti = 0; ti < productImages.length; ti++) {
+                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')"><img src="' + productImages[ti] + '"></div>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            window.currentProductImages = productImages;
+            window.currentImageIndex = 0;
+        } else {
+            html += '<div class="detail-image-area"><span class="detail-emoji">' + (product.emoji || '🌸') + '<\/span><\/div>';
+        }
+        if (tags.length > 0) {
+            html += '<div class="detail-tags-below">';
+            for (var ti = 0; ti < tags.length; ti++) { html += '<span class="detail-tag">' + tags[ti] + '<\/span>'; }
+            html += '<\/div>';
+        }
+        html += '<div class="detail-seo-section" style="margin-top:30px;">';
+        // 花材護理知識（默认内容，后续异步更新）
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">花材護理知識 <span>+<\/span><\/div><div class="seo-content" id="flowerCareContent">鮮花護理建議：<br>1. 每日更換清水<br>2. 斜剪花腳45度<br>3. 避免陽光直射<br>4. 定期清除枯萎花瓣<\/div><\/div>';
+        // 香港隱私條例（折叠展开）
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">香港隱私條例 <span>+<\/span><\/div><div class="seo-content" id="privacyContent">載入中...<\/div><\/div>';
+        html += '<\/div>';
+        html += '<\/div>';
         html += '<div class="detail-info-area">';
         html += '<p class="detail-subtitle-en">' + (product.name_en || '').toUpperCase() + '<\/p>';
         html += '<h1 class="detail-title-zh">' + product.name_zh + '<\/h1>';
         html += '<div class="detail-status ' + stockClass + '">' + stockText + '<\/div>';
         html += '<p class="detail-price">HK$' + product.price + '<\/p>';
         html += '<p class="detail-description">' + (product.description || '') + '<\/p>';
-        html += '<div class="detail-tags">';
-        for (var i = 0; i < tags.length; i++) { html += '<span class="detail-tag">' + tags[i] + '<\/span>'; }
-        html += '<\/div>';
         
         if (scentNotes.length > 0) {
             html += '<div class="scent-notes"><p class="scent-label">SCENT NOTES 香氣筆記<\/p><div class="scent-pills">';
@@ -174,10 +245,7 @@
         html += '<div class="spec-row"><span class="spec-label">規格<\/span><span class="spec-value">' + (specs.size || 'N/A') + '<\/span><\/div>';
         html += '<\/div>';
         
-        html += '<div class="addon-section"><p class="addon-label">精選加購配件<\/p>';
-        html += '<label class="addon-item"><input type="checkbox" id="addonVase" value="180" onchange="updateTotal()"><span class="addon-emoji">🏺<\/span><div class="addon-info"><p class="addon-name">經典極簡玻璃花瓶<\/p><p class="addon-price">+HK$180<\/p><\/div><\/label>';
-        html += '<label class="addon-item"><input type="checkbox" id="addonPreservative" value="30" onchange="updateTotal()"><span class="addon-emoji">💧<\/span><div class="addon-info"><p class="addon-name">荷蘭進口植物保鮮劑<\/p><p class="addon-price">+HK$30<\/p><\/div><\/label>';
-        html += '<\/div>';
+        html += '<div class="addon-section"><p class="addon-label">精選加購配件<\/p><div id="addonList"><\/div><\/div>';
         
         html += '<div class="quantity-selector">';
         html += '<button class="qty-btn" onclick="changeQuantity(-1)">−<\/button>';
@@ -193,6 +261,173 @@
         html += '<\/div>';
         
         container.innerHTML = html;
+        loadLinkedAddons(product);
+        loadRecommendProducts(product, container);
+    }
+
+    var allAddons = [];
+    var selectedAddonIds = [];
+
+    async function loadLinkedAddons(product) {
+        var addonList = document.getElementById('addonList');
+        if (!addonList) return;
+        var linkedIds = product.linked_addons || [];
+        if (!linkedIds.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
+        try {
+            var result = await supabaseClient.from('addons').select('*').in('id', linkedIds).eq('is_active', true);
+            if (result.error) throw result.error;
+            allAddons = result.data || [];
+            if (!allAddons.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
+            var html = '';
+            for (var i = 0; i < allAddons.length; i++) {
+                var a = allAddons[i];
+                var img = a.image_url ? '<img src="' + a.image_url + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji">🎁<\/span>';
+                html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()"><\/span>' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><\/label>';
+            }
+            addonList.innerHTML = html;
+        } catch (err) {
+            console.error('載入加購配件失敗:', err);
+            addonList.innerHTML = '';
+        }
+    }
+
+
+    function changeProductImage(direction) {
+        if (!window.currentProductImages || window.currentProductImages.length <= 1) return;
+        window.currentImageIndex += direction;
+        if (window.currentImageIndex < 0) window.currentImageIndex = window.currentProductImages.length - 1;
+        if (window.currentImageIndex >= window.currentProductImages.length) window.currentImageIndex = 0;
+        updateProductImageDisplay();
+    }
+    function selectProductImage(index) {
+        if (!window.currentProductImages || index < 0 || index >= window.currentProductImages.length) return;
+        window.currentImageIndex = index;
+        updateProductImageDisplay();
+    }
+    function updateProductImageDisplay() {
+        var mainImg = document.getElementById('mainProductImage');
+        var counter = document.getElementById('currentImageIndex');
+        var thumbs = document.querySelectorAll('.thumb-item');
+        if (mainImg) mainImg.src = window.currentProductImages[window.currentImageIndex];
+        if (counter) counter.textContent = window.currentImageIndex + 1;
+        thumbs.forEach(function(thumb, i) {
+            if (i === window.currentImageIndex) thumb.classList.add('active');
+            else thumb.classList.remove('active');
+        });
+    }
+    var pageEnterTime = Date.now();
+    var pageEnterTime = Date.now();
+    var userBehavior = JSON.parse(localStorage.getItem('royalspl_behavior') || '{"views":{},"cart":[],"purchases":[]}');
+
+    function recordView(productId) {
+        if (!userBehavior.views[productId]) {
+            userBehavior.views[productId] = { count: 0, totalTime: 0, lastView: 0 };
+        }
+        userBehavior.views[productId].count += 1;
+        userBehavior.views[productId].lastView = Date.now();
+        localStorage.setItem('royalspl_behavior', JSON.stringify(userBehavior));
+    }
+
+    function recordStayTime(productId) {
+        var stayTime = (Date.now() - pageEnterTime) / 1000;
+        if (userBehavior.views[productId]) {
+            userBehavior.views[productId].totalTime += stayTime;
+        }
+        localStorage.setItem('royalspl_behavior', JSON.stringify(userBehavior));
+    }
+
+    window.addEventListener('beforeunload', function() {
+        if (currentProduct) recordStayTime(currentProduct.id);
+    });
+
+    async function loadRecommendProducts(currentProduct, container) {
+        recordView(currentProduct.id);
+        var recommendSection = document.createElement('div');
+        recommendSection.className = 'recommend-section';
+        recommendSection.innerHTML = '<div class="recommend-title">你可能也喜歡</div><div class="recommend-grid" id="recommendGrid"><div style="grid-column:1/-1;text-align:center;padding:20px;">載入中...</div></div>';
+        var parentContainer = container ? container.parentNode : document.querySelector('.detail-page');
+        if (parentContainer) parentContainer.appendChild(recommendSection);
+
+        try {
+            var result = await supabaseClient.from('products').select('*').eq('is_active', true).not('id', 'eq', currentProduct.id).limit(30);
+            if (result.error) throw result.error;
+            var allProducts = result.data || [];
+
+            var currentPrice = parseFloat(currentProduct.price) || 0;
+            var viewedIds = Object.keys(userBehavior.views).map(function(id) { return parseInt(id); });
+            var cartItems = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+            var cartIds = cartItems.map(function(item) { return item.productId; });
+
+            var scored = allProducts.map(function(p) {
+                var score = 0;
+                var reasons = [];
+
+                if (p.category && currentProduct.category && p.category === currentProduct.category) {
+                    score += 4; reasons.push('同分类');
+                }
+                if (p.tags && currentProduct.tags) {
+                    var commonTags = p.tags.filter(function(t) { return currentProduct.tags.indexOf(t) > -1; });
+                    score += commonTags.length * 2;
+                    if (commonTags.length > 0) reasons.push(commonTags.length + '个共同标签');
+                }
+
+                var pPrice = parseFloat(p.price) || 0;
+                if (currentPrice > 0 && pPrice > 0) {
+                    var priceDiff = Math.abs(pPrice - currentPrice) / currentPrice;
+                    if (priceDiff <= 0.2) { score += 3; reasons.push('价格相近'); }
+                    else if (priceDiff <= 0.4) { score += 1.5; reasons.push('价格接近'); }
+                }
+
+                if (userBehavior.views[p.id]) {
+                    var viewData = userBehavior.views[p.id];
+                    score += Math.min(viewData.count * 0.5, 3);
+                    if (viewData.count > 1) reasons.push('浏览过' + viewData.count + '次');
+                    if (viewData.totalTime > 60) { score += 2; reasons.push('停留时间长'); }
+                    else if (viewData.totalTime > 30) { score += 1; reasons.push('停留较久'); }
+                }
+
+                if (cartIds.indexOf(p.id) > -1) {
+                    score += 2; reasons.push('曾加入购物车');
+                }
+
+                var relatedToViewed = viewedIds.some(function(vid) {
+                    var viewedProduct = allProducts.find(function(x) { return x.id === vid; });
+                    if (!viewedProduct) return false;
+                    if (p.category && viewedProduct.category && p.category === viewedProduct.category) return true;
+                    if (p.tags && viewedProduct.tags) {
+                        return p.tags.some(function(t) { return viewedProduct.tags.indexOf(t) > -1; });
+                    }
+                    return false;
+                });
+                if (relatedToViewed) { score += 1.5; reasons.push('与浏览历史相关'); }
+
+                score += Math.random() * 0.5;
+                return { product: p, score: score, reasons: reasons };
+            });
+
+            scored.sort(function(a, b) { return b.score - a.score; });
+            var recommended = scored.slice(0, 4).map(function(s) { return s.product; });
+
+            var grid = document.getElementById('recommendGrid');
+            if (!recommended.length) { grid.innerHTML = ''; return; }
+
+            var html = '';
+            for (var i = 0; i < recommended.length; i++) {
+                var p = recommended[i];
+                var img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
+                html += '<a href="product-detail.html?id=' + p.id + '" class="recommend-card">';
+                html += '<div class="recommend-card-img">' + (img ? '<img src="' + img + '" alt="' + p.name_zh + '">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;">🌸</div>') + '</div>';
+                html += '<div class="recommend-card-name-en">' + (p.name_en || '') + '</div>';
+                html += '<div class="recommend-card-name">' + p.name_zh + '</div>';
+                html += '<div class="recommend-card-price">HK$' + p.price + '</div>';
+                html += '</a>';
+            }
+            grid.innerHTML = html;
+        } catch (err) {
+            console.error('推薦商品載入失敗:', err);
+            var grid = document.getElementById('recommendGrid');
+            if (grid) grid.innerHTML = '';
+        }
     }
 
     function changeQuantity(delta) {
@@ -203,19 +438,28 @@
 
     function updateTotal() {
         if (!currentProduct) return;
-        var vase = document.getElementById('addonVase') && document.getElementById('addonVase').checked ? 180 : 0;
-        var preservative = document.getElementById('addonPreservative') && document.getElementById('addonPreservative').checked ? 30 : 0;
-        var total = (parseFloat(currentProduct.price) + vase + preservative) * quantity;
+        var addonTotal = 0;
+        selectedAddonIds = [];
+        document.querySelectorAll('.addon-checkbox').forEach(function(cb) {
+            if (cb.checked) {
+                addonTotal += parseFloat(cb.getAttribute('data-price')) || 0;
+                selectedAddonIds.push(parseInt(cb.getAttribute('data-id')));
+            }
+        });
+        var total = (parseFloat(currentProduct.price) + addonTotal) * quantity;
         document.getElementById('totalDisplay').textContent = '總計：HK$' + total;
     }
 
     function handleAddToCart() {
         if (!currentProduct) return;
-        var vase = document.getElementById('addonVase') && document.getElementById('addonVase').checked;
-        var preservative = document.getElementById('addonPreservative') && document.getElementById('addonPreservative').checked;
         var addons = [];
-        if (vase) addons.push({ name: '經典極簡玻璃花瓶', price: 180 });
-        if (preservative) addons.push({ name: '荷蘭進口植物保鮮劑', price: 30 });
+        document.querySelectorAll('.addon-checkbox').forEach(function(cb) {
+            if (cb.checked) {
+                var addonId = parseInt(cb.getAttribute('data-id'));
+                var addon = allAddons.find(function(a) { return a.id === addonId; });
+                if (addon) addons.push({ id: addon.id, name: addon.name_zh, price: addon.price });
+            }
+        });
         
         var cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
         cart.push({
@@ -266,9 +510,64 @@
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    
+
+    // 简单 Markdown 解析
+    function parseMarkdown(text) {
+        if (!text) return '';
+        let html = text;
+        // 标题
+        html = html.replace(/^### (.+)$/gm, '<h4 style="font-size:15px;font-weight:600;margin:15px 0 8px;">$1</h4>');
+        html = html.replace(/^## (.+)$/gm, '<h3 style="font-size:17px;font-weight:600;margin:18px 0 10px;">$1</h3>');
+        html = html.replace(/^# (.+)$/gm, '<h2 style="font-size:19px;font-weight:700;margin:20px 0 12px;">$1</h2>');
+        // 加粗
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // 引用
+        html = html.replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid #ddd;padding-left:12px;color:#666;margin:10px 0;font-style:italic;">$1</blockquote>');
+        // 有序列表
+        html = html.replace(/^\d+\. (.+)$/gm, '<li style="margin:5px 0;">$1</li>');
+        // 换行
+        html = html.replace(/\n/g, '<br>');
+        // 清理多余的br
+        html = html.replace(/(<br>\s*){3,}/g, '<br><br>');
+        return html;
+    }
+
+    // 从数据库加载花材護理知識
+    async function loadFlowerCareContent() {
+        try {
+            const { data, error } = await supabaseClient.from('flower_care').select('*').eq('is_published', true).limit(1).maybeSingle();
+            if (data && data.content) {
+                const el = document.getElementById('flowerCareContent');
+                if (el) el.innerHTML = parseMarkdown(data.content);
+            }
+        } catch(e) { console.log('花材護理知識加载失败:', e); }
+    }
+
+    // 从数据库加载隐私政策
+    async function loadPrivacyPolicyContent() {
+        try {
+            const { data, error } = await supabaseClient.from('privacy_policy').select('*').eq('is_published', true).limit(1).maybeSingle();
+            const el = document.getElementById('privacyContent');
+            if (el) {
+                if (data && data.content) {
+                    el.innerHTML = parseMarkdown(data.content);
+                } else {
+                    el.innerHTML = '暫無內容';
+                }
+            }
+        } catch(e) { 
+            console.log('隐私政策加载失败:', e); 
+            const el = document.getElementById('privacyContent');
+            if (el) el.innerHTML = '暫無內容';
+        }
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
         loadProduct();
         updateCartBadge();
+        loadFlowerCareContent();
+        loadPrivacyPolicyContent();
     });
     </script>
     <script>
@@ -280,5 +579,6 @@
         }).catch(function() {});
     })();
     </script>
-    </body>
+        <script src="js/ai-chat.js"></script>
+</body>
 </html>

@@ -36,7 +36,24 @@
         .no-results-emoji { font-size: 60px; margin-bottom: 20px; }
         .no-results-text { font-size: 18px; margin-bottom: 25px; color: #383431; }
         .clear-filter-btn { padding: 12px 30px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 15px; cursor: pointer; font-family: inherit; }
+
+    @media (max-width: 768px) {
+        .products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px !important; }
+        .filter-section { padding: 15px !important; }
+        .filter-pills { gap: 6px !important; }
+        .filter-pill { padding: 5px 12px !important; font-size: 12px !important; }
+        .page-title { font-size: 28px !important; }
+        .product-card-name { font-size: 14px !important; }
+        .product-card-price { font-size: 14px !important; }
+    }
+    @media (max-width: 480px) {
+        .products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+        .filter-dimensions { flex-direction: column !important; gap: 15px !important; }
+        .header-container { padding: 0 15px !important; }
+        .logo { font-size: 18px !important; }
+    }
     </style>
+    <link rel="stylesheet" href="css/ai-chat.css">
 </head>
 <body>
     <header class="header">
@@ -141,7 +158,11 @@
 
     <footer class="footer">
         <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
-        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+        <div class="footer-links">
+            <div class="footer-column"><a href="products.html" class="footer-link">所有花藝</a><a href="products.html?tag=情人節" class="footer-link">節慶場合</a><a href="products.html?tag=訂閱" class="footer-link">訂閱花禮</a></div>
+            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">常見問題</a><a href="contact.html" class="footer-link">聯絡我們</a></div>
+        </div>
+        <div class="footer-bottom"><a href="privacy.html" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
     <script>
@@ -151,23 +172,38 @@
 
     var allProducts = [];
     var selectedTags = [];
+    var selectedCategory = '';
+    var categoryIdMap = {};
     var searchKeyword = '';
     var currentSort = 'default';
 
     var tagDimensions = {
-        '場景用途': ['戀愛','生日','情人節','母親節','中秋節','畢業季','聖誕節','婚禮','紀念日','探病','開張','喬遷','商務送禮','企業周年'],
-        '核心花材': ['玫瑰','鬱金香','芍藥','荷花','百合','康乃馨','向日葵','滿天星','蘭花','牡丹','進口鮮花'],
-        '設計風格': ['經典風','韓式','日式極簡','法式田園','永生花'],
-        '價格區間': ['HK$300內','HK$300-600','HK$800+','HK$1200+']
+        '場景用途': [],
+        '核心花材': [],
+        '設計風格': [],
+        '價格區間': []
     };
+
+    async function loadTagSettings() {
+        try {
+            var result = await supabaseClient.from('tag_settings').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            if (result.error) throw result.error;
+            var tags = result.data || [];
+            tagDimensions['場景用途'] = tags.filter(function(t) { return t.tag_type === 'occasion'; }).map(function(t) { return t.tag_name; });
+            tagDimensions['核心花材'] = tags.filter(function(t) { return t.tag_type === 'flower'; }).map(function(t) { return t.tag_name; });
+            tagDimensions['價格區間'] = tags.filter(function(t) { return t.tag_type === 'price'; }).map(function(t) { return t.tag_name; });
+        } catch (e) {
+            console.error('載入標籤設置失敗:', e);
+        }
+    }
 
     function getUrlParam(param) { return new URLSearchParams(window.location.search).get(param); }
 
-    function initFilterPills() {
+    async function initFilterPills() {
+        await loadTagSettings();
         var dimensions = [
             { id: 'filterOccasion', tags: tagDimensions['場景用途'] },
             { id: 'filterFlower', tags: tagDimensions['核心花材'] },
-            { id: 'filterStyle', tags: tagDimensions['設計風格'] },
             { id: 'filterPrice', tags: tagDimensions['價格區間'] }
         ];
         dimensions.forEach(function(dim) {
@@ -180,6 +216,34 @@
                 container.innerHTML = html;
             }
         });
+        loadStyleCategories();
+    }
+
+    async function loadStyleCategories() {
+        var container = document.getElementById('filterStyle');
+        if (!container) return;
+        try {
+            var result = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            if (result.error) throw result.error;
+            var categories = result.data || [];
+            categoryIdMap = {};
+            var html = '';
+            for (var i = 0; i < categories.length; i++) {
+                var cat = categories[i];
+                categoryIdMap[cat.name_zh] = cat.id;
+                html += '<button class="filter-pill" data-category="' + cat.name_zh + '" onclick="toggleCategory(\'' + cat.name_zh + '\')">' + cat.name_zh + '<\/button>';
+            }
+            container.innerHTML = html;
+            if (selectedCategory) { updateFilterUI(); }
+        } catch (err) {
+            console.error('載入分類失敗:', err);
+        }
+    }
+
+    function toggleCategory(categoryName) {
+        if (selectedCategory === categoryName) { selectedCategory = ''; }
+        else { selectedCategory = categoryName; }
+        updateFilterUI(); renderProducts();
     }
 
     function toggleTag(tag) {
@@ -191,12 +255,18 @@
     function updateFilterUI() {
         document.querySelectorAll('.filter-pill').forEach(function(pill) {
             var tag = pill.getAttribute('data-tag');
-            if (selectedTags.indexOf(tag) > -1) { pill.classList.add('active'); } else { pill.classList.remove('active'); }
+            var cat = pill.getAttribute('data-category');
+            if (tag) {
+                if (selectedTags.indexOf(tag) > -1) { pill.classList.add('active'); } else { pill.classList.remove('active'); }
+            }
+            if (cat) {
+                if (selectedCategory === cat) { pill.classList.add('active'); } else { pill.classList.remove('active'); }
+            }
         });
     }
 
     function clearAllFilters() {
-        selectedTags = []; searchKeyword = '';
+        selectedTags = []; selectedCategory = ''; searchKeyword = '';
         var searchInput = document.getElementById('searchInput');
         if (searchInput) searchInput.value = '';
         updateFilterUI(); renderProducts();
@@ -207,6 +277,14 @@
         if (selectedTags.length > 0) {
             filtered = filtered.filter(function(p) {
                 return selectedTags.every(function(tag) { return p.tags && p.tags.indexOf(tag) > -1; });
+            });
+        }
+        if (selectedCategory) {
+            var targetCategoryId = categoryIdMap[selectedCategory];
+            filtered = filtered.filter(function(p) {
+                if (targetCategoryId && p.category_id === targetCategoryId) return true;
+                if (p.category === selectedCategory) return true;
+                return false;
             });
         }
         if (searchKeyword) {
@@ -238,11 +316,16 @@
             var tags = p.tags || [];
             var stockClass = p.stock === '現貨' ? 'in-stock' : 'pre-order';
             var stockText = p.stock === '現貨' ? '[現貨]' : '[預訂]';
+            var productImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
             html += '<a href="product-detail.html?id=' + p.id + '" class="product-card">';
-            html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            if (productImg) {
+                html += '<div class="product-card-img"><img src="' + productImg + '" alt="' + p.name_zh + '"><\/div>';
+            } else {
+                html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            }
             html += '<div class="product-status ' + stockClass + '">' + stockText + '<\/div>';
+            html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
-            html += '<p class="product-name-en">' + p.name_en + '<\/p>';
             html += '<p class="product-price">HK$' + p.price + '<\/p>';
             html += '<div class="product-tags">';
             for (var j = 0; j < Math.min(tags.length, 4); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }
@@ -285,6 +368,8 @@
         if (sortSelect) { sortSelect.addEventListener('change', function() { currentSort = this.value; renderProducts(); }); }
         var urlTag = getUrlParam('tag');
         if (urlTag) { selectedTags.push(urlTag); updateFilterUI(); }
+        var urlCategory = getUrlParam('category');
+        if (urlCategory) { selectedCategory = decodeURIComponent(urlCategory); }
         loadProducts();
         updateCartBadge();
     });
@@ -304,5 +389,6 @@
         }).catch(function() {});
     })();
     </script>
+    <script src="js/ai-chat.js"></script>
 </body>
 </html>

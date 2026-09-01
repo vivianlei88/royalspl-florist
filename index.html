@@ -16,30 +16,38 @@
         .cart-icon { display: flex; align-items: center; justify-content: center; }
         .collections-section { padding-bottom: 80px; }
         .collections-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
-        .collection-card { background-color: #F3EFEA; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: all 0.3s; cursor: pointer; overflow: hidden; padding: 30px 20px; }
-        .collection-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
-        .collection-card-1, .collection-card-2, .collection-card-3 { aspect-ratio: 3/4; }
-        .collection-card-4 { aspect-ratio: 3/4; }
-        .collection-card-5 { aspect-ratio: 4/3; }
-        .collection-card-6 { aspect-ratio: 1/1; }
+        .collection-card { display: block; text-decoration: none; color: inherit; transition: all 0.3s; cursor: pointer; padding: 0; margin: 0; background: transparent; }
+        .collection-card:hover { transform: translateY(-3px); }
+        .collection-card-img-wrap { width: 100%; overflow: hidden; display: block; }
+        .collection-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .collection-card-1 .collection-card-img-wrap, .collection-card-2 .collection-card-img-wrap, .collection-card-3 .collection-card-img-wrap, .collection-card-4 .collection-card-img-wrap { aspect-ratio: 3/4; }
+        .collection-card-5 .collection-card-img-wrap { aspect-ratio: 4/3; }
+        .collection-card-6 .collection-card-img-wrap { aspect-ratio: 1/1; }
+        .collection-card-text { padding: 12px 2px 4px 2px; text-align: left; }
+        .collection-card-text .en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #383431; margin: 0 0 6px 0; }
+        .collection-card-text .zh { font-size: 18px; font-weight: 500; color: #1A1A1A; margin: 0; }
         .collection-emoji { font-size: 70px; margin-bottom: 20px; }
         .collection-title { font-size: 20px; font-weight: 600; margin-bottom: 5px; color: #1A1A1A; }
         .collection-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 13px; letter-spacing: 1px; color: #383431; text-transform: uppercase; }
         .featured-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
-        .product-card { background-color: #FAF8F5; border-radius: 8px; padding: 30px; text-align: center; transition: all 0.3s; display: block; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .product-card { background-color: transparent; border-radius: 0; padding: 0; text-align: center; transition: all 0.3s; display: block; overflow: visible; }
+        .product-card:hover { transform: translateY(-3px); }
         .product-emoji { font-size: 70px; margin-bottom: 20px; }
-        .product-name { font-size: 18px; font-weight: 600; margin-bottom: 3px; color: #1A1A1A; }
-        .product-name-en { font-family: 'Cormorant Garamond', serif; font-size: 13px; color: #383431; margin-bottom: 10px; }
-        .product-price { font-size: 22px; font-weight: 700; margin-bottom: 15px; color: #1A1A1A; }
+        .product-card-img { aspect-ratio: 1 / 1; background-color: transparent; border-radius: 0; overflow: hidden; margin-bottom: 0; }
+        .product-card-info { padding: 12px 2px 4px 2px; text-align: left; }
+        .product-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-name { font-size: 18px; font-weight: 500; margin: 0; color: #1A1A1A; }
+        .product-name-en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #383431; margin: 0 0 6px 0; }
+        .product-price { font-size: 16px; font-weight: 600; margin: 8px 0 0 0; color: #1A1A1A; }
         .product-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 15px; }
         .tag-pill { display: inline-block; padding: 4px 12px; border: 1px solid #1A1A1A; border-radius: 15px; font-size: 12px; color: #1A1A1A; }
         .add-to-cart-btn { display: inline-block; width: 100%; padding: 12px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.3s; }
         .add-to-cart-btn:hover { background-color: #383431; }
-        @media (min-width: 769px) { .collection-card-2 { transform: translateY(40px); } .collection-card-5 { transform: translateY(30px); } .collection-card-2:hover { transform: translateY(35px); } .collection-card-5:hover { transform: translateY(25px); } }
+        @media (min-width: 769px) { .collection-card-2 { transform: translateY(35px); } .collection-card-5 { transform: translateY(25px); } .collection-card-2:hover { transform: translateY(32px); } .collection-card-5:hover { transform: translateY(22px); } }
         @media (max-width: 768px) { .collections-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } .featured-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } .collection-card-1, .collection-card-2, .collection-card-3, .collection-card-4, .collection-card-5, .collection-card-6 { aspect-ratio: auto; min-height: 200px; transform: none !important; } }
-        @media (max-width: 480px) { .collections-grid { grid-template-columns: 1fr; } .featured-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 480px) { .collections-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } .featured-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
     </style>
+    <link rel="stylesheet" href="css/ai-chat.css">
 </head>
 <body>
     <header class="header">
@@ -96,13 +104,13 @@
         </nav>
     </div>
 
-    <section class="hero">
-        <div class="hero-bg"></div>
-        <div class="hero-overlay"></div>
+    <section class="hero" id="heroSection">
+        <div class="hero-bg" style="display:none;"></div>
+        <div class="hero-overlay" style="display:none;"></div>
         <div class="hero-content">
-            <h1 class="hero-title">RoyalSpl Florist</h1>
-            <p class="hero-subtitle">Crimson Peony Collection</p>
-            <a href="products.html?tag=芍藥" class="hero-cta">緋芍集</a>
+            <h1 class="hero-title" id="heroTitle">RoyalSpl Florist</h1>
+            <p class="hero-subtitle" id="heroSubtitle">Crimson Peony Collection</p>
+            <a href="products.html" class="hero-cta" id="heroCta">探索花藝</a>
         </div>
     </section>
 
@@ -111,13 +119,8 @@
             <span class="section-subtitle-en">THE COLLECTIONS</span>
             <h2 class="section-title-zh">臻選系列</h2>
         </div>
-        <div class="collections-grid">
-            <a href="products.html?tag=法式田園" class="collection-card collection-card-1"><div class="collection-emoji">🌿</div><h3 class="collection-title">法式田園風</h3><p class="collection-subtitle">French Provincial</p></a>
-            <a href="products.html?tag=日式極簡" class="collection-card collection-card-2"><div class="collection-emoji">🎋</div><h3 class="collection-title">日式花禮</h3><p class="collection-subtitle">Japanese-Style Gifts</p></a>
-            <a href="products.html?tag=即日配送" class="collection-card collection-card-3"><div class="collection-emoji">🚚</div><h3 class="collection-title">即日送花</h3><p class="collection-subtitle">Same-Day Delivery</p></a>
-            <a href="products.html?tag=生日" class="collection-card collection-card-4"><div class="collection-emoji">🎂</div><h3 class="collection-title">生日派對</h3><p class="collection-subtitle">Birthday Party</p></a>
-            <a href="products.html?tag=探親" class="collection-card collection-card-5"><div class="collection-emoji">🌸</div><h3 class="collection-title">探親訪友</h3><p class="collection-subtitle">Crimson Peony Collection</p></a>
-            <a href="products.html?tag=婚禮" class="collection-card collection-card-6"><div class="collection-emoji">💒</div><h3 class="collection-title">婚禮花禮</h3><p class="collection-subtitle">Wedding Floral Gifts</p></a>
+        <div class="collections-grid" id="collectionsGrid">
+            <div style="text-align:center;padding:40px;grid-column:1/-1;">🌸 正在載入...</div>
         </div>
     </section>
 
@@ -135,7 +138,7 @@
         <div class="about-content">
             <span class="section-subtitle-en">ABOUT US</span>
             <h2 class="section-title-zh">關於我們</h2>
-            <p class="about-text">RoyalSpl Florist 致力於為香港帶來最優質的花藝體驗。<br>每一束花都是藝術品，每一個細節都體現匠心。</p>
+            <p class="about-text" id="aboutText">RoyalSpl Florist 致力於為香港帶來最優質的花藝體驗。</p>
             <a href="#" class="about-link">了解更多 →</a>
         </div>
     </section>
@@ -144,9 +147,9 @@
         <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
         <div class="footer-links">
             <div class="footer-column"><a href="products.html" class="footer-link">所有花藝</a><a href="products.html?tag=情人節" class="footer-link">節慶場合</a><a href="products.html?tag=訂閱" class="footer-link">訂閱花禮</a></div>
-            <div class="footer-column"><a href="#" class="footer-link">Blog</a><a href="#" class="footer-link">常見問題</a><a href="#" class="footer-link">聯絡我們</a></div>
+            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">常見問題</a><a href="contact.html" class="footer-link">聯絡我們</a></div>
         </div>
-        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+        <div class="footer-bottom"><a href="privacy.html" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
     <script>
@@ -155,6 +158,104 @@
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var featuredProductsData = [];
+
+    async function loadHomepageSettings() {
+        try {
+            var result = await supabaseClient.from('homepage_settings').select('*').order('id', { ascending: true }).limit(1);
+            if (result.error) throw result.error;
+            var settings = result.data && result.data[0];
+            if (!settings) return;
+            
+            var heroContent = document.querySelector('.hero-content');
+            var hasAnyText = false;
+            
+            if (settings.hero_title && settings.hero_title.trim()) {
+                var t = document.getElementById('heroTitle');
+                if (t) { t.textContent = settings.hero_title; t.style.display = ''; }
+                hasAnyText = true;
+            } else {
+                var t = document.getElementById('heroTitle');
+                if (t) t.style.display = 'none';
+            }
+            
+            if (settings.hero_subtitle && settings.hero_subtitle.trim()) {
+                var s = document.getElementById('heroSubtitle');
+                if (s) { s.textContent = settings.hero_subtitle; s.style.display = ''; }
+                hasAnyText = true;
+            } else {
+                var s = document.getElementById('heroSubtitle');
+                if (s) s.style.display = 'none';
+            }
+            
+            if (settings.hero_cta_text && settings.hero_cta_text.trim()) {
+                var c = document.getElementById('heroCta');
+                if (c) { c.textContent = settings.hero_cta_text; c.style.display = ''; }
+                hasAnyText = true;
+            } else {
+                var c = document.getElementById('heroCta');
+                if (c) c.style.display = 'none';
+            }
+            
+            if (settings.hero_cta_link) {
+                var l = document.getElementById('heroCta');
+                if (l) l.href = settings.hero_cta_link;
+                var heroSec = document.getElementById('heroSection');
+                if (heroSec) {
+                    heroSec.style.cursor = 'pointer';
+                    heroSec.onclick = function() { window.location.href = settings.hero_cta_link; };
+                }
+            }
+            
+            if (settings.hero_image) {
+                var heroSec = document.getElementById('heroSection');
+                if (heroSec) {
+                    heroSec.style.backgroundImage = 'url(' + settings.hero_image + ')';
+                    heroSec.style.backgroundSize = 'cover';
+                    heroSec.style.backgroundPosition = 'center';
+                }
+            }
+            
+            if (!hasAnyText && heroContent) {
+                heroContent.style.display = 'none';
+            }
+            
+            if (settings.about_text) {
+                var a = document.getElementById('aboutText');
+                if (a) a.innerHTML = settings.about_text;
+            }
+        } catch (e) {
+            console.error('載入首頁設置失敗:', e);
+        }
+    }
+
+    async function loadCollectionCards() {
+        var container = document.getElementById('collectionsGrid');
+        if (!container) return;
+        try {
+            var result = await supabaseClient.from('collection_cards').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            if (result.error) throw result.error;
+            var cards = result.data || [];
+            if (!cards.length) { container.innerHTML = ''; return; }
+            var html = '';
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                var link = card.link_url || '#';
+                var imgHtml = card.image_url 
+                    ? '<div class="collection-card-img-wrap"><img src="' + card.image_url + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+                    : '<div class="collection-card-img-wrap" style="background:#F3EFEA;display:flex;align-items:center;justify-content:center;"><span style="font-size:50px;">🌸</span></div>';
+                html += '<a href="' + link + '" class="collection-card collection-card-' + (i+1) + '">';
+                html += imgHtml;
+                html += '<div class="collection-card-text">';
+                html += '<p class="en">' + (card.title_en || '') + '</p>';
+                html += '<h3 class="zh">' + (card.title_zh || '') + '</h3>';
+                html += '</div></a>';
+            }
+            container.innerHTML = html;
+        } catch (err) {
+            console.error('載入臻選系列失敗:', err);
+            container.innerHTML = '';
+        }
+    }
 
     async function loadFeaturedProducts() {
         var container = document.getElementById('featuredProducts');
@@ -176,15 +277,22 @@
         for (var i = 0; i < featuredProductsData.length; i++) {
             var p = featuredProductsData[i];
             var tags = p.tags || [];
+            var cardImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
             html += '<a href="product-detail.html?id=' + p.id + '" class="product-card">';
-            html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            if (cardImg) {
+                html += '<div class="product-card-img"><img src="' + cardImg + '" alt="' + p.name_zh + '"><\/div>';
+            } else {
+                html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+            }
+            html += '<div class="product-card-info">';
+            html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
-            html += '<p class="product-name-en">' + p.name_en + '<\/p>';
             html += '<p class="product-price">HK$' + p.price + '<\/p>';
             html += '<div class="product-tags">';
             for (var j = 0; j < Math.min(tags.length, 3); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }
             html += '<\/div>';
             html += '<button class="add-to-cart-btn" onclick="event.preventDefault(); event.stopPropagation(); addToCart(' + p.id + ')">加入購物車<\/button>';
+            html += '<\/div>';
             html += '<\/a>';
         }
         container.innerHTML = html;
@@ -227,6 +335,8 @@
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
     document.addEventListener('DOMContentLoaded', function() {
+        loadHomepageSettings();
+        loadCollectionCards();
         loadFeaturedProducts();
         updateCartBadge();
     });
@@ -240,5 +350,6 @@
         }).catch(function() {});
     })();
     </script>
-    </body>
+        <script src="js/ai-chat.js"></script>
+</body>
 </html>

@@ -20,6 +20,7 @@
         .cart-items { margin-bottom: 30px; }
         .cart-item { display: flex; align-items: center; gap: 20px; padding: 20px; background-color: #F3EFEA; border-radius: 10px; margin-bottom: 15px; }
         .cart-item-emoji { font-size: 50px; }
+        .cart-item-image { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
         .cart-item-info { flex: 1; }
         .cart-item-name { font-size: 18px; font-weight: 600; margin-bottom: 5px; }
         .cart-item-name-en { font-family: 'Cormorant Garamond', serif; font-size: 13px; color: #383431; margin-bottom: 8px; }
@@ -50,7 +51,25 @@
         .empty-cart-emoji { font-size: 80px; margin-bottom: 20px; }
         .empty-cart-text { font-size: 18px; color: #383431; margin-bottom: 30px; }
         .continue-shopping-btn { display: inline-block; padding: 15px 40px; background-color: #1A1A1A; color: #FAF8F5; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: inherit; }
+
+    @media (max-width: 768px) {
+        .cart-page { padding: 20px 15px !important; }
+        .cart-item { flex-direction: column !important; align-items: flex-start !important; gap: 15px !important; padding: 15px !important; }
+        .cart-item-image { width: 100% !important; height: 200px !important; }
+        .cart-item-info { width: 100% !important; }
+        .cart-item-quantity { width: 100% !important; justify-content: space-between !important; }
+        .cart-header { flex-direction: column !important; gap: 10px !important; }
+        .cart-title { font-size: 24px !important; }
+        .checkout-btn { width: 100% !important; padding: 15px !important; font-size: 16px !important; }
+        .cart-section { padding: 15px !important; }
+    }
+    @media (max-width: 480px) {
+        .cart-item-image { height: 180px !important; }
+        .cart-item-name { font-size: 16px !important; }
+        .cart-item-price { font-size: 18px !important; }
+    }
     </style>
+    <link rel="stylesheet" href="css/ai-chat.css">
 </head>
 <body>
     <header class="header">
@@ -95,16 +114,57 @@
 
     <footer class="footer">
         <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
-        <div class="footer-bottom"><a href="#" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2024 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+        <div class="footer-links">
+            <div class="footer-column"><a href="products.html" class="footer-link">所有花藝</a><a href="products.html?tag=情人節" class="footer-link">節慶場合</a><a href="products.html?tag=訂閱" class="footer-link">訂閱花禮</a></div>
+            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">常見問題</a><a href="contact.html" class="footer-link">聯絡我們</a></div>
+        </div>
+        <div class="footer-bottom"><a href="privacy.html" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
+    const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
     let cardType = 'none';
     let cardMessage = '';
+    let remarks = '';
+    let contactName = '';
+    let contactPhone = '';
+    let couponCode = '';
 
     function saveCart() { localStorage.setItem('royalspl_cart', JSON.stringify(cart)); updateCartBadge(); }
     function updateCartBadge() { const badge = document.getElementById('cartBadge'); if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; } }
+    async function syncCartWithDatabase() {
+        if (!cart.length) { renderCart(); return; }
+        const productIds = cart.map(item => item.productId).filter(Boolean);
+        if (!productIds.length) { renderCart(); return; }
+        try {
+            const { data, error } = await supabaseClient.from('products').select('*').in('id', productIds);
+            if (error) throw error;
+            const products = data || [];
+            cart = cart.map(item => {
+                const product = products.find(p => p.id === item.productId);
+                if (product) {
+                    return {
+                        ...item,
+                        name: product.name_zh,
+                        nameEn: product.name_en || '',
+                        price: product.price,
+                        emoji: product.emoji || '🌸',
+                        image: (product.images && product.images[0]) || product.image_url || ''
+                    };
+                }
+                return item;
+            });
+            saveCart();
+        } catch (e) {
+            console.error('同步購物車失敗:', e);
+        }
+        renderCart();
+    }
+
     function renderCart() {
         const container = document.getElementById('cartContent');
         if (!container) return;
@@ -116,8 +176,9 @@
             const addonsTotal = item.addons.reduce((sum, a) => sum + a.price, 0);
             const itemTotal = (item.price + addonsTotal) * item.quantity;
             const addonsHtml = item.addons.length > 0 ? `<p class="cart-item-addons">+ ${item.addons.map(a => a.name).join(', ')}</p>` : '';
+            const itemImg = item.image ? `<img src="${item.image}" class="cart-item-image">` : `<span class="cart-item-emoji">${item.emoji}</span>`;
             return `<div class="cart-item">
-                <span class="cart-item-emoji">${item.emoji}</span>
+                ${itemImg}
                 <div class="cart-item-info">
                     <p class="cart-item-name">${item.name}</p>
                     <p class="cart-item-name-en">${item.nameEn}</p>
@@ -149,20 +210,19 @@
                 </div>
             </div>
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">訂購人聯絡方法（選填）<span>+</span></div>
+                <div class="cart-section-title" onclick="toggleSection(this)"><div class="cart-section-title" onclick="toggleSection(this)">訂購人聯絡方法（選填）<span>+</span></div>
                 <div class="cart-section-content">
-                    <input type="text" class="form-input" placeholder="姓名">
-                    <input type="email" class="form-input" placeholder="Email">
-                    <input type="tel" class="form-input" placeholder="電話 / WhatsApp">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <input type="text" class="card-textarea" placeholder="訂購人姓名" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactName = this.value" value="${contactName}">
+                        <input type="tel" class="card-textarea" placeholder="訂購人電話" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactPhone = this.value" value="${contactPhone}">
+                    </div>
                 </div>
-            </div>
-            <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">特別事項（選填）<span>+</span></div>
-                <div class="cart-section-content"><textarea class="card-textarea" placeholder="請輸入特別事項..."></textarea></div>
+                cart-section-title" onclick="toggleSection(this)">特別事項（選填）<span>+</span></div>
+                <div class="cart-section-content"><textarea class="card-textarea" placeholder="請輸入特別事項..." oninput="remarks = this.value">${remarks}</textarea></div>
             </div>
             <div class="cart-section">
                 <div class="cart-section-title" onclick="toggleSection(this)">優惠碼<span>+</span></div>
-                <div class="cart-section-content"><div class="coupon-input"><input type="text" placeholder="輸入優惠碼"><button class="coupon-btn">套用</button></div></div>
+                <div class="cart-section-content"><div class="coupon-input"><input type="text" id="couponInput" placeholder="輸入優惠碼" oninput="couponCode = this.value" value="${couponCode}"><button class="coupon-btn" onclick="applyCoupon()">套用</button></div></div>
             </div>
             <div class="cart-summary">
                 <div class="summary-row"><span>商品小計</span><span>HK$${subtotal}</span></div>
@@ -213,6 +273,14 @@
             document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500);
             return;
         }
+        // 保存额外订单信息到 localStorage
+        localStorage.setItem('order_extra', JSON.stringify({
+            cardMessage: cardMessage,
+            remarks: remarks,
+            contactName: contactName,
+            contactPhone: contactPhone,
+            couponCode: couponCode
+        }));
         window.location.href = 'checkout.html';
     }
     const menuBtn = document.getElementById('menuBtn');
@@ -220,7 +288,7 @@
     const navDrawer = document.getElementById('navDrawer');
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
-    document.addEventListener('DOMContentLoaded', function() { updateCartBadge(); renderCart(); });
+    document.addEventListener('DOMContentLoaded', function() { updateCartBadge(); syncCartWithDatabase(); });
     </script>
     <script>
     (function() {
@@ -231,5 +299,6 @@
         }).catch(function() {});
     })();
     </script>
-    </body>
+        <script src="js/ai-chat.js"></script>
+</body>
 </html>

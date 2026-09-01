@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私隱政策 Privacy Policy | RoyalSpl Florist</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .content-card { background: white; border-radius: 8px; padding: 35px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); line-height: 1.8; color: #383431; }
+        .content-card h1, .content-card h2, .content-card h3 { color: #1A1A1A; }
+        .content-card p { margin-bottom: 15px; }
+        .empty-state { text-align: center; color: #888; padding: 40px; }
+        .page-title { text-align: center; margin-bottom: 30px; }
+
+    @media (max-width: 768px) {
+        .container { padding: 20px 15px !important; }
+        .page-title { font-size: 28px !important; }
+        .content-card { padding: 20px !important; }
+        .content-card h2 { font-size: 20px !important; }
+        .content-card h3 { font-size: 17px !important; }
+        .content-card p, .content-card li { font-size: 14px !important; line-height: 1.8 !important; }
+    }
+    @media (max-width: 480px) {
+        .page-title { font-size: 24px !important; }
+        .content-card { padding: 15px !important; }
+    }
+    </style>
+    <link rel="stylesheet" href="css/ai-chat.css">
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">←</a>
+        <h1 class="page-title">私隱政策 Privacy Policy</h1>
+        <div id="privacyContent" class="content-card"></div>
+    </div>
+    <script>
+        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 简单 Markdown 解析
+        function parseMarkdown(text) {
+            if (!text) return '';
+            let html = text;
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid #ddd;padding-left:12px;color:#666;margin:10px 0;font-style:italic;">$1</blockquote>');
+            html = html.replace(/^\d+\. (.+)$/gm, '<li style="margin:5px 0;">$1</li>');
+            html = html.replace(/\n/g, '<br>');
+            html = html.replace(/(<br>\s*){3,}/g, '<br><br>');
+            return html;
+        }
+
+        async function loadPrivacy() {
+            const { data, error } = await supabaseClient
+                .from('privacy_policy')
+                .select('content')
+                .eq('is_published', true)
+                .limit(1)
+                .maybeSingle();
+
+            const container = document.getElementById('privacyContent');
+
+            if (error) {
+                console.error('載入私隱政策失敗:', error);
+                container.innerHTML = '<div class="empty-state">載入失敗，請稍後再試</div>';
+                return;
+            }
+
+            if (!data || !data.content) {
+                container.innerHTML = '<div class="empty-state">尚無私隱政策內容</div>';
+                return;
+            }
+
+            container.innerHTML = parseMarkdown(data.content);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPrivacy);
+    </script>
+    <script src="js/ai-chat.js"></script>
+</body>
+</html>

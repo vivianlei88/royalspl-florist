@@ -134,11 +134,57 @@
         .block-content-input { width: 100%; border: none; outline: none; font-size: 18px; line-height: 1.6; background: transparent; min-height: 1.6em; }
         .block-content-input:focus { outline: none; }
         .cover-image-preview { max-width: 150px; max-height: 100px; object-fit: cover; }
+<<<<<<< HEAD
         .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 10px; }
         .uploaded-img-item { position: relative; cursor: move; user-select: none; transition: transform 0.2s; }
         .uploaded-img-item:hover { transform: scale(1.03); }
         .sortable-ghost { opacity: 0.4; transform: scale(0.95); }
         .sortable-chosen { cursor: grabbing; }
+=======
+
+    @media (max-width: 768px) {
+        .admin-layout { flex-direction: column !important; }
+        .admin-sidebar { width: 100% !important; position: relative !important; height: auto !important; }
+        .admin-content { padding: 15px !important; }
+        .admin-header { padding: 15px !important; }
+        .data-table { font-size: 12px !important; }
+        .data-table th, .data-table td { padding: 8px !important; }
+        .form-grid { grid-template-columns: 1fr !important; }
+        .btn { padding: 10px 16px !important; font-size: 13px !important; }
+    }
+    @media (max-width: 480px) {
+        .admin-content { padding: 10px !important; }
+        .stat-card { padding: 15px !important; }
+        .stat-number { font-size: 24px !important; }
+    }
+    </style>
+    <style>
+        .sidebar-group { position: relative; margin-bottom: 5px; }
+        .sidebar-group-header { display: flex; justify-content: space-between; align-items: center; }
+        .settings-arrow { font-size: 10px; transition: transform 0.2s; }
+        .sidebar-submenu { 
+            position: absolute; 
+            left: 100%; 
+            top: 0; 
+            background: #ffffff; 
+            min-width: 160px; 
+            border-radius: 0 8px 8px 0; 
+            box-shadow: 4px 4px 16px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+            border: 1px solid #e8e8e8;
+            border-left: none;
+        }
+        .sidebar-submenu.show { display: block; }
+        .sidebar-subitem { 
+            padding: 14px 20px !important; 
+            font-size: 14px !important; 
+            white-space: nowrap; 
+            color: #333333 !important;
+            cursor: pointer;
+        }
+        .sidebar-subitem:hover { background: #f5f5f5; color: #1a1a1a !important; }
+>>>>>>> e6fb457fc4bb9b96a64affcbc77d3bf3bad51027
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -154,13 +200,23 @@
         <div class="topbar"><h1>RoyalSpl 後台管理</h1><div class="topbar-links"><a href="index.html">返回前台</a><a onclick="doLogout()">登出</a></div></div>
         <div class="sidebar">
             <div class="sidebar-item active" data-page="analytics" onclick="switchPage('analytics')">數據分析</div>
-            <div class="sidebar-item" data-page="homepage" onclick="switchPage('homepage')">首頁管理</div>
             <div class="sidebar-item" data-page="content" onclick="switchPage('content')">文案內容</div>
             <div class="sidebar-item" data-page="products" onclick="switchPage('products')">商品管理</div>
             <div class="sidebar-item" data-page="categories" onclick="switchPage('categories')">商品分類</div>
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
-            <div class="sidebar-item" data-page="template" onclick="switchPage('template')">模板預覽</div>
+            <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
+            <div class="sidebar-group">
+                <div class="sidebar-item sidebar-group-header" onclick="toggleSettingsMenu()">
+                    <span>⚙️ 設置</span>
+                    <span class="settings-arrow" id="settingsArrow">▶</span>
+                </div>
+                <div class="sidebar-submenu" id="settingsSubmenu">
+                    <div class="sidebar-item sidebar-subitem" data-page="homepage" onclick="switchPage('homepage')">首頁管理</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="template" onclick="switchPage('template')">模板預覽</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="aichat" onclick="switchPage('aichat')">AI客服管理</div>
+                </div>
+            </div>
         </div>
         <div class="main-content" id="mainContent"></div>
     </div>
@@ -196,11 +252,22 @@
     var currentOrderDetail = null;
     var selectedTemplateProduct = null;
     var tagCategories = {
-        tagOccasion: ['情人節','母親節','中秋節','清明節','畢業季','端午','聖誕節','生日','週年','婚禮','彌月','探病','帛事','開張','喬遷','商務送禮','企業周年'],
-        tagFlower: ['玫瑰','鬱金香','芍藥','荷花','百合','康乃馨','向日葵','滿天星','蘭花','牡丹','進口鮮花'],
-        tagStyle: ['經典風','韓式','日式極簡','法式田園','永生花'],
-        tagPrice: ['HK$300內','HK$300-600','HK$800+','HK$1200+']
+        tagOccasion: [],
+        tagFlower: [],
+        tagStyle: [],
+        tagPrice: []
     };
+
+    async function loadTagSettings() {
+        try {
+            var r = await supabaseClient.from('tag_settings').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            if (r.data) {
+                tagCategories.tagOccasion = r.data.filter(function(t) { return t.tag_type === 'occasion'; }).map(function(t) { return t.tag_name; });
+                tagCategories.tagFlower = r.data.filter(function(t) { return t.tag_type === 'flower'; }).map(function(t) { return t.tag_name; });
+                tagCategories.tagPrice = r.data.filter(function(t) { return t.tag_type === 'price'; }).map(function(t) { return t.tag_name; });
+            }
+        } catch (e) { console.error('載入標籤設置失敗:', e); }
+    }
     var areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
     var areaKeywords = {
         tier5: ['愉景灣','馬灣','離島','機場','迪士尼','大嶼山','長洲','南丫島','坪洲','東涌','梅窩','昂坪','discovery bay','lantau','airport'],
@@ -230,6 +297,24 @@
         } else { document.getElementById('loginError').style.display = 'block'; }
     }
     function doLogout() { localStorage.removeItem('royalspl_admin'); location.reload(); }
+    function toggleSettingsMenu() {
+        var submenu = document.getElementById('settingsSubmenu');
+        var arrow = document.getElementById('settingsArrow');
+        submenu.classList.toggle('show');
+        arrow.textContent = submenu.classList.contains('show') ? '◀' : '▶';
+    }
+    
+    // 点击其他地方关闭设置菜单
+    document.addEventListener('click', function(e) {
+        var group = document.querySelector('.sidebar-group');
+        if (group && !group.contains(e.target)) {
+            var submenu = document.getElementById('settingsSubmenu');
+            var arrow = document.getElementById('settingsArrow');
+            if (submenu) submenu.classList.remove('show');
+            if (arrow) arrow.textContent = '▶';
+        }
+    });
+
     function switchPage(page) {
         document.querySelectorAll('.sidebar-item').forEach(function(el) { el.classList.remove('active'); });
         document.querySelector('[data-page="' + page + '"]').classList.add('active');
@@ -248,7 +333,9 @@
         else if (page === 'categories') { renderCategoriesPage(c); }
         else if (page === 'addons') { renderAddonsPage(c); }
         else if (page === 'orders') { renderOrdersPage(c); }
+        else if (page === 'members') { renderMembersPage(c); }
         else if (page === 'template') { renderTemplatePage(c); }
+        else if (page === 'aichat') { renderAIChatPage(c); }
     }
     function checkVisitorNotifications() {
         setInterval(async function() {
@@ -445,8 +532,9 @@
         f.style.display = 'block';
         f.innerHTML = '<div class="page-header"><h2 class="page-title">新增商品</h2><button class="btn btn-secondary" onclick="showProductsList()">返回列表</button></div><div class="form-container"><input type="hidden" id="productId">';
         f.innerHTML += '<div class="form-group"><label class="form-label">商品圖片（拖拽上傳或黏貼網址）</label><div class="upload-area" id="uploadArea"><p>點擊或拖拽圖片到這裡上傳</p><input type="file" id="fileInput" multiple accept="image/*" style="display:none;"></div><div class="uploaded-imgs" id="uploadedImages"></div><div class="url-add-row"><input type="text" id="imageUrlInput" placeholder="黏貼圖片網址" style="flex:1;padding:10px;border:1px solid #1A1A1A;border-radius:5px;"><button class="btn btn-secondary" onclick="addImageByUrl()">添加圖片</button></div></div>';
+        f.innerHTML += '<div style="margin-top:10px;"><button type="button" class="btn btn-secondary" onclick="aiFillProductFromImage()" style="background:#6366f1;color:white;border:none;">🤖 AI看圖自動填寫</button><span id="aiFillStatus" style="margin-left:10px;font-size:13px;color:#666;"></span></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="nameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="nameEn"></div></div>';
-        f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div><div class="form-group"><label class="form-label">分類</label><input class="form-input" id="category"></div></div>';
+        f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div><div class="form-group"><label class="form-label">分類</label><div class="form-input" id="categoryDisplay" style="cursor:pointer;background:#f9f9f9;" onclick="openCategorySelector()">點擊選擇分類</div><input type="hidden" id="category"><input type="hidden" id="category_id"></div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">庫存狀態</label><select class="form-select" id="stock" onchange="toggleDeliveryDays()"><option value="現貨">現貨</option><option value="預訂">預訂</option></select></div><div class="form-group" id="deliveryDaysGroup"><label class="form-label">預計發貨天數</label><input type="number" class="form-input" id="deliveryDays" value="3" min="1"></div></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">描述</label><textarea class="form-textarea" id="description"></textarea></div>';
         f.innerHTML += '<div class="form-row-3"><div class="form-group"><label class="form-label">花材</label><input class="form-input" id="specsFlowers"></div><div class="form-group"><label class="form-label">產地</label><input class="form-input" id="specsOrigin"></div><div class="form-group"><label class="form-label">規格</label><input class="form-input" id="specsSize"></div></div>';
@@ -458,7 +546,7 @@
         f.innerHTML += '<div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>';
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = []; variants = []; selectedAddons = []; selectedTags = [];
-        toggleDeliveryDays(); initTagPills(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea();
+        toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea();
     }
     function showProductsList() { document.getElementById('productsListView').style.display = 'block'; document.getElementById('productFormView').style.display = 'none'; loadProducts(); }
     function showEditFormById(id) { for (var i = 0; i < allProducts.length; i++) { if (allProducts[i].id === id) { showEditForm(allProducts[i]); return; } } }
@@ -468,6 +556,7 @@
         f.style.display = 'block';
         f.innerHTML = '<div class="page-header"><h2 class="page-title">編輯商品</h2><button class="btn btn-secondary" onclick="showProductsList()">返回列表</button></div><div class="form-container"><input type="hidden" id="productId" value="' + p.id + '">';
         f.innerHTML += '<div class="form-group"><label class="form-label">商品圖片</label><div class="upload-area" id="uploadArea"><p>點擊或拖拽圖片上傳</p><input type="file" id="fileInput" multiple accept="image/*" style="display:none;"></div><div class="uploaded-imgs" id="uploadedImages"></div><div class="url-add-row"><input type="text" id="imageUrlInput" placeholder="黏貼圖片網址" style="flex:1;padding:10px;border:1px solid #1A1A1A;border-radius:5px;"><button class="btn btn-secondary" onclick="addImageByUrl()">添加圖片</button></div></div>';
+        f.innerHTML += '<div style="margin-top:10px;"><button type="button" class="btn btn-secondary" onclick="aiFillProductFromImage()" style="background:#6366f1;color:white;border:none;">🤖 AI看圖自動填寫</button><span id="aiFillStatus" style="margin-left:10px;font-size:13px;color:#666;"></span></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="nameZh" value="' + (p.name_zh || '') + '"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="nameEn" value="' + (p.name_en || '') + '"></div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" value="' + (p.price || '') + '" step="0.01"></div><div class="form-group"><label class="form-label">分類</label><input class="form-input" id="category" value="' + (p.category || '') + '"></div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">庫存狀態</label><select class="form-select" id="stock" onchange="toggleDeliveryDays()"><option value="現貨"' + (p.stock === '現貨' ? ' selected' : '') + '>現貨</option><option value="預訂"' + (p.stock === '預訂' ? ' selected' : '') + '>預訂</option></select></div><div class="form-group" id="deliveryDaysGroup"><label class="form-label">預計發貨天數</label><input type="number" class="form-input" id="deliveryDays" value="' + (p.delivery_days || 3) + '" min="1"></div></div>';
@@ -482,8 +571,8 @@
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
         selectedAddons = p.linked_addons || [];
-        selectedTags = p.tags || [];
-        toggleDeliveryDays(); initTagPills(); renderUploadedImages(); renderAddonsCheckbox(); loadVariants(p.id); initUploadArea();
+        selectedTags = p.tags || []; setCategoryDisplay(p.category || '');
+        toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderAddonsCheckbox(); loadVariants(p.id); initUploadArea();
     }
     function initUploadArea() { var ua = document.getElementById('uploadArea'); var fi = document.getElementById('fileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleUploadFiles(this.files); }; ua.addEventListener('dragover', function(e) { e.preventDefault(); }); ua.addEventListener('drop', function(e) { e.preventDefault(); handleUploadFiles(e.dataTransfer.files); }); } }
     async function handleUploadFiles(files) { for (var i = 0; i < files.length; i++) { var fd = new FormData(); fd.append('file', files[i]); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { uploadedImages.push(data.url); renderUploadedImages(); } } catch (err) {} } }
@@ -494,13 +583,106 @@
     function addVariantRow() { variants.push({ name: '', price: '' }); renderVariants(); }
     function removeVariant(i) { variants.splice(i, 1); renderVariants(); }
     function renderVariants() { var c = document.getElementById('variantsList'); if (!c) return; var h = ''; for (var i = 0; i < variants.length; i++) { h += '<div class="variant-row"><input type="text" placeholder="規格名稱" value="' + variants[i].name + '" onchange="variants[' + i + '].name=this.value"><input type="number" placeholder="價格" value="' + variants[i].price + '" onchange="variants[' + i + '].price=this.value"><button class="btn btn-danger btn-small" onclick="removeVariant(' + i + ')">刪除</button></div>'; } c.innerHTML = h; }
-    function renderAddonsCheckbox() { var c = document.getElementById('addonsCheckboxList'); if (!c) return; var h = ''; for (var i = 0; i < allAddons.length; i++) { var a = allAddons[i]; var checked = selectedAddons.indexOf(a.id) > -1 ? 'checked' : ''; h += '<label class="addon-checkbox-item"><input type="checkbox" value="' + a.id + '" ' + checked + ' onchange="toggleAddon(' + a.id + ')">' + (a.image_url ? '<img src="' + a.image_url + '">' : '') + a.name_zh + ' (HK$' + a.price + ')</label>'; } c.innerHTML = h || '<p>暫無配件</p>'; }
+    async function renderAddonsCheckbox() {
+        var c = document.getElementById('addonsCheckboxList');
+        if (!c) return;
+        // 如果 allAddons 为空，先加载
+        if (allAddons.length === 0) {
+            try {
+                var r = await supabaseClient.from('addons').select('*').eq('is_active', true).order('id', { ascending: true });
+                allAddons = r.data || [];
+            } catch(e) { console.error('載入加購配件失敗:', e); }
+        }
+        var h = '';
+        for (var i = 0; i < allAddons.length; i++) {
+            var a = allAddons[i];
+            var checked = selectedAddons.indexOf(a.id) > -1 ? 'checked' : '';
+            h += '<label class="addon-checkbox-item"><input type="checkbox" ' + checked + ' onchange="toggleAddon(' + a.id + ')"><span class="addon-checkbox-img">' + (a.image_url ? '<img src="' + a.image_url + '">' : '🎁') + '</span><span class="addon-checkbox-info"><strong>' + (a.name_zh || '') + '</strong><small>+HK$' + a.price + '</small></span></label>';
+        }
+        c.innerHTML = h || '<p style="font-size:13px;color:#888;padding:10px;">暫無配件，請先在「加購配件」中添加</p>';
+    }
     function toggleAddon(id) { var idx = selectedAddons.indexOf(id); if (idx > -1) { selectedAddons.splice(idx, 1); } else { selectedAddons.push(id); } }
     function initTagPills() { for (var g in tagCategories) { var c = document.getElementById(g); if (!c) continue; var h = ''; for (var i = 0; i < tagCategories[g].length; i++) { h += '<button type="button" class="tag-pill' + (selectedTags.indexOf(tagCategories[g][i]) > -1 ? ' active' : '') + '" data-tag="' + tagCategories[g][i] + '" onclick="toggleTag(this)">' + tagCategories[g][i] + '</button>'; } c.innerHTML = h; } }
+    async function loadStyleTags() {
+        try {
+            var r = await supabaseClient.from('categories').select('name_zh').eq('is_active', true).order('sort_order', { ascending: true });
+            if (r.data) {
+                tagCategories.tagStyle = r.data.map(function(c) { return c.name_zh; });
+                initTagPills();
+            }
+        } catch (e) { console.error('載入設計風格標籤失敗:', e); }
+    }
+    
+    async function loadAllTags() {
+        try {
+            var r = await supabaseClient.from('tag_settings').select('tag_name,tag_type').eq('is_active', true).order('sort_order', { ascending: true });
+            if (r.data) {
+                tagCategories.tagOccasion = r.data.filter(function(t) { return t.tag_type === 'occasion'; }).map(function(t) { return t.tag_name; });
+                tagCategories.tagFlower = r.data.filter(function(t) { return t.tag_type === 'flower'; }).map(function(t) { return t.tag_name; });
+                tagCategories.tagPrice = r.data.filter(function(t) { return t.tag_type === 'price'; }).map(function(t) { return t.tag_name; });
+                initTagPills();
+            }
+        } catch (e) { console.error('載入標籤失敗:', e); }
+    }
     function toggleTag(btn) { var tag = btn.getAttribute('data-tag'); var idx = selectedTags.indexOf(tag); if (idx > -1) { selectedTags.splice(idx, 1); btn.classList.remove('active'); } else { selectedTags.push(tag); btn.classList.add('active'); } }
     function toggleDeliveryDays() { var el = document.getElementById('deliveryDaysGroup'); if (el) el.style.display = document.getElementById('stock').value === '預訂' ? 'block' : 'none'; }
     async function loadVariants(productId) { variants = []; try { var r = await supabaseClient.from('product_variants').select('*').eq('product_id', productId); if (r.data) { for (var i = 0; i < r.data.length; i++) { variants.push({ name: r.data[i].variant_name, price: r.data[i].variant_price }); } } } catch (e) {} renderVariants(); }
-    async function saveProduct() {
+    
+    // ========== 分類選擇器 ==========
+    var allCategories = [];
+    
+    async function openCategorySelector() {
+        try {
+            var r = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            allCategories = r.data || [];
+        } catch(e) { allCategories = []; }
+        
+        var currentCat = document.getElementById('category').value;
+        var html = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)closeCategorySelector()">';
+        html += '<div style="background:#fff;border-radius:10px;padding:20px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h4 style="margin:0;font-size:18px;">選擇商品分類</h4><button onclick="closeCategorySelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button></div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">';
+        
+        if (allCategories.length === 0) {
+            html += '<p style="grid-column:1/-1;text-align:center;color:#888;padding:30px;">尚無分類，請先在「商品分類」中添加</p>';
+        } else {
+            allCategories.forEach(function(cat) {
+                var isSelected = currentCat === cat.name_zh;
+                html += '<div onclick="selectCategory(\'' + cat.id + '\', \'' + (cat.name_zh || '').replace(/'/g, "\\'") + '\')" style="border:2px solid ' + (isSelected ? '#1A1A1A' : '#eee') + ';border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:' + (isSelected ? '#f0f0f0' : '#fff') + ';">';
+                html += '<div style="width:100%;aspect-ratio:1;background:#f5f5f5;border-radius:5px;overflow:hidden;margin-bottom:8px;">';
+                if (cat.image_url) { html += '<img src="' + cat.image_url + '" style="width:100%;height:100%;object-fit:cover;">'; }
+                html += '</div>';
+                html += '<div style="font-size:13px;font-weight:500;">' + (cat.name_zh || '') + '</div>';
+                html += '<div style="font-size:11px;color:#888;">' + (cat.name_en || '') + '</div>';
+                html += '</div>';
+            });
+        }
+        html += '</div></div></div>';
+        
+        var div = document.createElement('div');
+        div.id = 'categorySelectorModal';
+        div.innerHTML = html;
+        document.body.appendChild(div);
+    }
+    
+    function closeCategorySelector() {
+        var modal = document.getElementById('categorySelectorModal');
+        if (modal) modal.remove();
+    }
+    
+    function selectCategory(catId, catName) {
+        document.getElementById('category').value = catName;
+        document.getElementById('category_id').value = catId;
+        document.getElementById('categoryDisplay').textContent = catName;
+        closeCategorySelector();
+    }
+    
+    function setCategoryDisplay(name) {
+        var display = document.getElementById('categoryDisplay');
+        if (display) display.textContent = name || '點擊選擇分類';
+    }
+
+async function saveProduct() {
         var id = document.getElementById('productId').value;
         var data = {
             name_zh: document.getElementById('nameZh').value.trim(),
@@ -547,7 +729,7 @@
             var img = p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '無圖';
             var sku = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
             var eye = p.is_active !== false ? '顯示' : '隱藏';
-            h += '<tr><td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td><td>HK$' + p.price + '</td><td>' + (p.category || '-') + '</td><td>' + p.stock + '</td><td><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
+            h += '<tr><td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td><td>HK$' + p.price + '</td><td>' + (p.category || '-') + '</td><td>' + p.stock + '</td><td><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
         }
         h += '</tbody></table>';
         c.innerHTML = h;
@@ -606,12 +788,21 @@
                     sale_price: d['特價HKD'] ? parseFloat(d['特價HKD']) : null,
                     category: d.category || '',
                     description: d['中文描述'] || d.description || '',
+<<<<<<< HEAD
                     tags: d['標籤(|分隔)'] || d.tags ? (d['標籤(|分隔)'] || d.tags).split('|').filter(Boolean) : [],
                     scent_notes: d['香調備註(|分隔)'] || d.scent_notes ? (d['香調備註(|分隔)'] || d.scent_notes).split('|').filter(Boolean) : [],
                     style_spectrum: parseInt(d['香調分數'] || d.style_spectrum) || 0,
                     stock: d['庫存'] || d.stock || '現貨',
                     is_preorder: d['是否預購'] === 'Y',
                     delivery_days: parseInt(d['預購天數'] || d.delivery_days) || 1,
+=======
+                    tags: (d['標籤(|分隔)'] || d.tags || '').split('|').filter(Boolean),
+                    scent_notes: (d['香調備註(|分隔)'] || d.scent_notes || '').split('|').filter(Boolean),
+                    style_spectrum: parseInt(d['香調分數'] || d.style_spectrum) || 0,
+                    stock: d['庫存'] || d.stock || '現貨',
+                    is_preorder: d['是否預購'] === 'Y' || d.is_preorder === 'true',
+                    delivery_days: parseInt(d['預購天數'] || d.delivery_days) || 5,
+>>>>>>> e6fb457fc4bb9b96a64affcbc77d3bf3bad51027
                     is_active: (d['狀態'] || d.is_active) !== 'false' && (d['狀態'] || d.is_active) !== 'inactive',
                     image_url: imageArr.length > 0 ? imageArr[0] : null,
                     images: imageArr,
@@ -700,7 +891,7 @@
                 h += '<div class="category-card" data-id="' + cat.id + '" onclick="openCategoryDetail(' + cat.id + ')">';
                 h += '<input type="checkbox" class="category-card-check" onclick="event.stopPropagation()" value="' + cat.id + '">';
                 h += cat.image_url ? '<img class="category-card-img" src="' + cat.image_url + '">' : '<div style="height:180px;background:#F3EFEA;display:flex;align-items:center;justify-content:center;">無圖</div>';
-                h += '<div class="category-card-body"><p class="category-card-name">' + cat.name_zh + '</p><p style="font-size:13px;color:#383431;">' + (cat.name_en || '') + '</p><p style="font-size:13px;margin-top:5px;">' + count + ' 個商品</p></div></div>';
+                h += '<div class="category-card-body"><p class="category-card-name">' + cat.name_zh + '</p><p style="font-size:13px;color:#383431;">' + (cat.name_en || '') + '</p><p style="font-size:13px;margin-top:5px;">' + count + ' 個商品</p><a href="products.html?category=' + encodeURIComponent(cat.name_zh) + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;margin-top:8px;" onclick="event.stopPropagation()">查看前台</a></div></div>';
             }
             c.innerHTML = h;
         } catch (e) { c.innerHTML = '請先創建 categories 表'; }
@@ -751,7 +942,8 @@
         await supabaseClient.from('categories').update(categoryData).eq('id', categoryId);
         var existing = await supabaseClient.from('products').select('id').eq('category_id', categoryId);
         if (existing.data) { for (var i = 0; i < existing.data.length; i++) { await supabaseClient.from('products').update({ category_id: null }).eq('id', existing.data[i].id); } }
-        for (var j = 0; j < categoryDetailProducts.length; j++) { await supabaseClient.from('products').update({ category_id: categoryId, sort_order_in_category: j + 1 }).eq('id', categoryDetailProducts[j].id); }
+        var categoryName = document.getElementById('categoryDetailNameZh').value.trim();
+        for (var j = 0; j < categoryDetailProducts.length; j++) { await supabaseClient.from('products').update({ category_id: categoryId, category: categoryName, sort_order_in_category: j + 1 }).eq('id', categoryDetailProducts[j].id); }
         showToast('所有更改已保存'); showCategoryList();
     }
     async function openProductSelectForCategory() {
@@ -894,13 +1086,33 @@
                 shopAddress = shopResult.data[0].shop_address || '';
             }
         } catch (e) {}
-        var names = (o.product_names || '').split('|').filter(Boolean);
-        var images = (o.product_images || '').split('|').filter(Boolean);
+        var orderItems = [];
+        if (o.items && Array.isArray(o.items) && o.items.length > 0) {
+            orderItems = o.items;
+        } else {
+            var names = (o.product_names || '').split('|').filter(Boolean);
+            var images = [];
+            try {
+                var parsed = JSON.parse(o.product_images);
+                images = Array.isArray(parsed) ? parsed : [parsed];
+            } catch(e) {
+                images = (o.product_images || '').split('|').filter(Boolean);
+            }
+            orderItems = names.map(function(n, i) { return { name: n, image: images[i] || '', price: '', quantity: 1 }; });
+        }
         var productHtml = '';
-        for (var pi = 0; pi < names.length; pi++) {
-            productHtml += '<div class="order-product-item">';
-            if (images[pi]) { productHtml += '<img src="' + images[pi] + '">'; }
-            productHtml += '<span style="font-size:12px;">' + names[pi] + '</span></div>';
+        for (var pi = 0; pi < orderItems.length; pi++) {
+            var item = orderItems[pi];
+            productHtml += '<div class="order-product-item" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;">';
+            if (item.image) { productHtml += (item.productId ? '<a href="product-detail.html?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;cursor:pointer;"></a>' : '<img src="' + item.image + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;">'); }
+            else { productHtml += '<div style="width:100px;height:100px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:40px;">🌸</div>'; }
+            productHtml += '<div style="flex:1;">';
+            productHtml += '<div style="font-size:13px;font-weight:500;">' + item.name + '</div>';
+            if (item.nameEn) productHtml += '<div style="font-size:11px;color:#888;">' + item.nameEn + '</div>';
+            productHtml += '<div style="font-size:12px;color:#666;">單價：' + (item.price ? 'HK$' + item.price : '-') + ' | 數量：' + (item.quantity || 1) + '</div>';
+            productHtml += '</div>';
+            if (item.price && item.quantity) productHtml += '<div style="font-size:13px;font-weight:600;">HK$' + (item.price * item.quantity) + '</div>';
+            productHtml += '</div>';
         }
         var v = document.getElementById('orderDetailView');
         v.style.display = 'block';
@@ -912,12 +1124,15 @@
         v.innerHTML += '<h2 style="font-size:22px;font-weight:600;">' + shopName + '</h2>';
         v.innerHTML += '<p style="font-size:14px;color:#383431;">' + shopPhone + ' | ' + shopAddress + '</p></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂單編號</label><input class="form-input" id="detailOrderCode" value="' + o.order_code + '"></div><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂購人姓名</label><input class="form-input" id="detailCustomerName" value="' + (o.customer_name || o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">訂購人電話</label><input class="form-input" id="detailCustomerPhone" value="' + (o.customer_phone || o.recipient_phone || '') + '"></div></div>';
+        v.innerHTML += '<div class="form-group"><label class="form-label">訂購人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="detailRecipientName" value="' + (o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="detailRecipientPhone" value="' + (o.recipient_phone || '') + '"></div></div>';
-        v.innerHTML += '<div class="form-group"><label class="form-label">收件人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="detailRecipientAddress" value="' + (o.recipient_address || '') + '"></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div><div class="form-group"><label class="form-label">送貨時段</label><input class="form-input" id="detailDeliveryTimeSlot" value="' + (o.delivery_time_slot || '') + ' ' + (o.delivery_hour || '') + '"></div></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">產品</label><div>' + (productHtml || '無產品') + '</div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="detailCardMessage">' + (o.card_message || '') + '</textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="detailRemarks">' + (o.remarks || '') + '</textarea></div></div>';
-        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div><div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">商品小計</label><input type="number" class="form-input" id="detailSubtotal" value="' + (o.subtotal || 0) + '" readonly></div><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div></div>';
+        v.innerHTML += '<div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div>';
         v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
     }
     function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
@@ -1069,6 +1284,579 @@
             else { await supabaseClient.from('shop_settings').insert(data); }
             showToast('店鋪資料已保存');
         } catch (e) { showToast('保存失敗，請先創建 shop_settings 表'); }
+    }
+    async function renderMembersPage(c) {
+        c.innerHTML = '<div class="page-header"><h3>會員管理</h3><div style="display:flex;gap:10px;align-items:center;"><input type="text" id="memberSearch" placeholder="搜尋名稱或電郵..." style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;"><button class="btn btn-primary" onclick="showAddMemberForm()">手動新增</button><button class="btn btn-secondary" onclick="exportMembersCSV()">匯出 CSV</button><label class="btn btn-secondary" style="cursor:pointer;">匯入 CSV<input type="file" id="memberCSVInput" accept=".csv" style="display:none;" onchange="importMembersCSV(this)"></label></div></div><div id="membersTableContainer" style="overflow-x:auto;"></div>';
+        loadMembersList();
+    }
+
+    var allMembers = [];
+    var selectedMemberIds = [];
+
+    async function loadMembersList() {
+        var container = document.getElementById('membersTableContainer');
+        if (!container) return;
+        container.innerHTML = '<p style="text-align:center;padding:30px;">載入中...</p>';
+        try {
+            var r = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+            allMembers = r.data || [];
+            renderMembersTable();
+        } catch(e) {
+            container.innerHTML = '<p style="text-align:center;padding:30px;color:red;">載入失敗：' + e.message + '</p>';
+        }
+    }
+
+    // ========== AI 客服管理 ==========
+    async function renderAIChatPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">AI客服管理</h2><button class="btn btn-primary" onclick="saveAIChatSettings()">保存設置</button></div>';
+        c.innerHTML += '<div class="form-container" style="max-width:100%;">';
+        
+        // 基本設置
+        c.innerHTML += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">基本設置</h4>';
+        c.innerHTML += '<div class="form-row">';
+        c.innerHTML += '<div class="form-group"><label class="form-label">客服語言</label><select class="form-input" id="ai_language"><option value="zh-Hant">繁體中文</option><option value="yue">粵語</option><option value="en">English</option><option value="auto">自動檢測</option></select></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">WhatsApp 號碼</label><input class="form-input" id="ai_whatsapp" placeholder="例如：85265036907"></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">AI連續失敗次數轉人工</label><input class="form-input" type="number" id="ai_max_fail" value="2"></div>';
+        c.innerHTML += '</div>';
+        
+        c.innerHTML += '<div class="form-group"><label class="form-label">歡迎語</label><input class="form-input" id="ai_welcome" placeholder="輸入歡迎語"></div>';
+        
+        c.innerHTML += '<div class="form-group"><label class="form-label">轉人工關鍵詞（逗號分隔）</label><input class="form-input" id="ai_transfer_keywords" placeholder="人工,客服,投訴,退款"></div>';
+        
+        // 系統提示詞（訓練）
+        c.innerHTML += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">AI 訓練（系統提示詞）</h4>';
+        c.innerHTML += '<p style="font-size:13px;color:#888;margin-bottom:10px;">在這裡編輯 AI 客服的性格、品牌資訊、回答規則等，保存後即時生效</p>';
+        c.innerHTML += '<textarea class="form-input" id="ai_system_prompt" rows="12" style="width:100%;font-family:monospace;font-size:13px;line-height:1.6;"></textarea>';
+        
+        // 啟用開關
+        c.innerHTML += '<div style="margin-top:20px;display:flex;align-items:center;gap:10px;">';
+        c.innerHTML += '<label class="form-label" style="margin:0;">啟用 AI 客服</label>';
+        c.innerHTML += '<input type="checkbox" id="ai_is_active" style="width:20px;height:20px;">';
+        c.innerHTML += '</div>';
+        
+        c.innerHTML += '<div style="margin-top:20px;"><button class="btn btn-primary" onclick="saveAIChatSettings()">保存設置</button></div>';
+        c.innerHTML += '</div>';
+        
+        // 加載設置
+        await loadAIChatSettings();
+    }
+    
+    async function loadAIChatSettings() {
+        try {
+            var resp = await fetch('/ai-chat-settings');
+            var s = await resp.json();
+            if (document.getElementById('ai_language')) document.getElementById('ai_language').value = s.language || 'zh-Hant';
+            if (document.getElementById('ai_welcome')) document.getElementById('ai_welcome').value = s.welcome_message || '';
+            if (document.getElementById('ai_system_prompt')) document.getElementById('ai_system_prompt').value = s.system_prompt || '';
+            if (document.getElementById('ai_whatsapp')) document.getElementById('ai_whatsapp').value = s.whatsapp_number || '';
+            if (document.getElementById('ai_transfer_keywords')) document.getElementById('ai_transfer_keywords').value = s.transfer_keywords || '';
+            if (document.getElementById('ai_max_fail')) document.getElementById('ai_max_fail').value = s.max_fail_count || 2;
+            if (document.getElementById('ai_is_active')) document.getElementById('ai_is_active').checked = s.is_active !== false;
+        } catch(e) { console.error('加載AI客服設置失敗:', e); }
+    }
+    
+    async function saveAIChatSettings() {
+        var payload = {
+            language: document.getElementById('ai_language').value,
+            welcome_message: document.getElementById('ai_welcome').value,
+            system_prompt: document.getElementById('ai_system_prompt').value,
+            whatsapp_number: document.getElementById('ai_whatsapp').value,
+            transfer_keywords: document.getElementById('ai_transfer_keywords').value,
+            max_fail_count: parseInt(document.getElementById('ai_max_fail').value) || 2,
+            is_active: document.getElementById('ai_is_active').checked
+        };
+        try {
+            var resp = await fetch('/ai-chat-save-settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            var result = await resp.json();
+            if (result.success) {
+                alert('AI 客服設置保存成功！');
+            } else {
+                alert('保存失敗：' + (result.error || '未知錯誤'));
+            }
+        } catch(e) {
+            alert('保存失敗：' + e.message);
+        }
+    }
+
+
+    function renderMembersTable() {
+        var container = document.getElementById('membersTableContainer');
+        if (!container) return;
+        var search = (document.getElementById('memberSearch')?.value || '').toLowerCase();
+        var filtered = allMembers.filter(function(m) {
+            return !search || (m.full_name || '').toLowerCase().includes(search) || (m.email || '').toLowerCase().includes(search);
+        });
+        var html = '<table style="width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed;"><thead><tr style="border-bottom:2px solid #1A1A1A;">';
+        html += '<th style="padding:12px 6px;text-align:left;width:5%;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:15%;">名稱</th><th style="padding:12px 6px;text-align:left;width:18%;">電子郵件</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:12%;">電話</th><th style="padding:12px 6px;text-align:left;width:10%;">會員狀態</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:10%;">標籤</th><th style="padding:12px 6px;text-align:left;width:15%;">最近活動</th><th style="padding:12px 6px;text-align:left;width:15%;">建立日期</th></tr></thead><tbody>';
+        if (filtered.length === 0) {
+            html += '<tr><td colspan="8" style="padding:30px;text-align:center;color:#888;">尚無會員</td></tr>';
+        } else {
+            filtered.forEach(function(m) {
+                var isSelected = selectedMemberIds.includes(m.id);
+                html += '<tr style="border-bottom:1px solid #eee;">';
+                html += '<td style="padding:12px 6px;"><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' data-id="' + m.id + '" onclick="toggleMember(this.dataset.id)"></td>';
+                html += '<td style="padding:12px 6px;word-break:break-all;"><a href="javascript:void(0)" onclick="showMemberDetail(\'' + m.id + '\')" style="color:#1A1A1A;text-decoration:underline;font-weight:500;">' + (m.full_name || '-') + '</a></td>';
+                html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.email || '-') + '</td>';
+                html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.phone || '-') + '</td>';
+                var statusColor = m.member_status === 'active' ? '#e8f5e9' : '#f5f5f5';
+                var statusTextColor = m.member_status === 'active' ? '#27ae60' : '#999';
+                html += '<td style="padding:12px 6px;"><span style="padding:3px 10px;border-radius:12px;font-size:12px;background:' + statusColor + ';color:' + statusTextColor + ';">' + (m.member_status || 'active') + '</span></td>';
+                html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.tags || '-') + '</td>';
+                html += '<td style="padding:12px 6px;color:#888;word-break:break-all;">' + (m.last_active || '').slice(0, 10) + '</td>';
+                html += '<td style="padding:12px 6px;color:#888;">' + (m.created_at || '').slice(0, 10) + '</td>';
+                html += '</tr>';
+            });
+        }
+        html += '</tbody></table>';
+        html += '<p style="margin-top:15px;color:#888;font-size:13px;">共 ' + filtered.length + ' 位會員' + (selectedMemberIds.length > 0 ? '，已選 ' + selectedMemberIds.length + ' 位' : '') + '</p>';
+        container.innerHTML = html;
+        var selectAll = document.getElementById('selectAllMembers');
+        if (selectAll) selectAll.checked = selectedMemberIds.length === filtered.length && filtered.length > 0;
+    }
+
+    // ========== 會員詳情頁 ==========
+    function showMemberDetail(memberId) {
+        var c = document.getElementById('mainContent');
+        var member = allMembers.find(function(m) { return m.id === memberId; });
+        if (!member) { c.innerHTML = '<p>會員不存在</p>'; return; }
+        
+        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>會員詳情</h3></div>';
+        html += '<div class="form-container" style="max-width:100%;">';
+        
+        // 基本資料
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">基本資料</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="md_full_name" value="' + (member.full_name || '') + '"></div>';
+        html += '<div class="form-group"><label class="form-label">會員狀態</label><select class="form-input" id="md_member_status"><option value="active"' + (member.member_status === 'active' ? ' selected' : '') + '>活躍</option><option value="inactive"' + (member.member_status === 'inactive' ? ' selected' : '') + '>非活躍</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">會員積分</label><input class="form-input" type="number" id="md_points" value="' + (member.points || 0) + '"></div>';
+        html += '</div>';
+        
+        // 聯絡資訊
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">聯絡資訊</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">主要電子郵件</label><input class="form-input" id="md_email" value="' + (member.email || '') + '"></div>';
+        html += '<div class="form-group"><label class="form-label">主要電話</label><input class="form-input" id="md_phone" value="' + (member.phone || '') + '"></div>';
+        html += '<div class="form-group"><label class="form-label">備用電話</label><input class="form-input" id="md_phone2" value="' + (member.phone2 || '') + '"></div>';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">送貨地址</label><textarea class="form-input" id="md_shipping_address" rows="2">' + (member.shipping_address || '') + '</textarea></div>';
+        html += '<div class="form-group"><label class="form-label">賬單地址</label><textarea class="form-input" id="md_billing_address" rows="2">' + (member.billing_address || '') + '</textarea></div>';
+        html += '</div>';
+        
+        // 訂閱狀態
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">訂閱狀態</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">電子郵件訂閱</label><select class="form-input" id="md_email_subscription"><option value="已訂閱"' + (member.email_subscription === '已訂閱' ? ' selected' : '') + '>已訂閱</option><option value="未訂閱"' + (member.email_subscription !== '已訂閱' ? ' selected' : '') + '>未訂閱</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">簡訊訂閱</label><select class="form-input" id="md_sms_subscription"><option value="已訂閱"' + (member.sms_subscription === '已訂閱' ? ' selected' : '') + '>已訂閱</option><option value="未訂閱"' + (member.sms_subscription !== '已訂閱' ? ' selected' : '') + '>未訂閱</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">標籤</label><input class="form-input" id="md_tags" value="' + (member.tags || '') + '"></div>';
+        html += '</div>';
+        
+        // 購買統計
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">購買統計</h4>';
+        html += '<div style="display:flex;gap:20px;margin-bottom:15px;">';
+        html += '<div style="background:#f9f9f9;padding:15px 20px;border-radius:8px;flex:1;"><div style="font-size:13px;color:#888;">購買次數</div><div style="font-size:24px;font-weight:600;" id="md_order_count">' + (member.order_count || 0) + '</div></div>';
+        html += '<div style="background:#f9f9f9;padding:15px 20px;border-radius:8px;flex:1;"><div style="font-size:13px;color:#888;">總消費金額</div><div style="font-size:24px;font-weight:600;" id="md_total_spent">HK$' + (member.total_spent || 0) + '</div></div>';
+        html += '<div style="background:#f9f9f9;padding:15px 20px;border-radius:8px;flex:1;"><div style="font-size:13px;color:#888;">會員積分</div><div style="font-size:24px;font-weight:600;">' + (member.points || 0) + '</div></div>';
+        html += '</div>';
+        
+        // 手動建立訂單
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">手動建立訂單</h4>';
+        html += '<div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px;">';
+        html += '<div style="margin-bottom:15px;"><button class="btn btn-secondary" onclick="toggleProductSelector()">選擇商品</button><span id="mo_selected_count" style="margin-left:10px;color:#888;">未選擇商品</span></div>';
+        html += '<div id="mo_product_selector" style="display:none;margin-bottom:15px;max-height:300px;overflow-y:auto;border:1px solid #ddd;border-radius:5px;padding:10px;background:#fff;"></div>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">訂單金額 (HK$)</label><input class="form-input" type="number" id="mo_amount" placeholder="自動計算或手動輸入" oninput="updateManualOrderTotal()"></div>';
+        html += '<div class="form-group"><label class="form-label">特別事項</label><input class="form-input" id="mo_remark" placeholder="例如：情人節花束"></div>';
+        html += '</div>';
+        html += '<div class="form-group" style="margin-top:10px;"><label class="form-label">心意卡內容</label><textarea class="form-input" id="mo_card_message" rows="2" placeholder="輸入心意卡內容"></textarea></div>';
+        html += '<div style="margin-top:15px;font-size:16px;font-weight:600;">總金額：HK$<span id="mo_total_display">0</span></div>';
+        html += '<div style="margin-top:10px;"><button class="btn btn-primary" onclick="createManualOrder(\'' + memberId + '\')">建立訂單並發送付款鏈接</button></div>';
+        html += '</div>';
+        
+        // 保存按钮
+        html += '<div style="margin-top:20px;"><button class="btn btn-primary" onclick="saveMemberDetail(\'' + memberId + '\')">保存修改</button></div>';
+        html += '</div>';
+        
+        c.innerHTML = html;
+        // 加载订单统计
+        loadMemberOrderStats(memberId);
+    }
+    
+    async function loadMemberOrderStats(memberId) {
+        try {
+            var member = allMembers.find(function(m) { return m.id === memberId; });
+            if (!member) return;
+            var r = await supabaseClient.from('orders').select('total_amount,status').eq('user_id', memberId);
+            var orders = r.data || [];
+            var paidOrders = orders.filter(function(o) { return o.status === 'paid'; });
+            var count = paidOrders.length;
+            var total = paidOrders.reduce(function(sum, o) { return sum + (parseFloat(o.total_amount) || 0); }, 0);
+            document.getElementById('md_order_count').textContent = count;
+            document.getElementById('md_total_spent').textContent = 'HK$' + total.toFixed(2);
+            // 更新数据库
+            await supabaseClient.from('profiles').update({ order_count: count, total_spent: total }).eq('id', memberId);
+        } catch(e) { console.error('加载订单统计失败', e); }
+    }
+    
+    async function saveMemberDetail(memberId) {
+        try {
+            var payload = {
+                full_name: document.getElementById('md_full_name').value,
+                member_status: document.getElementById('md_member_status').value,
+                points: parseInt(document.getElementById('md_points').value) || 0,
+                email: document.getElementById('md_email').value,
+                phone: document.getElementById('md_phone').value,
+                phone2: document.getElementById('md_phone2').value,
+                shipping_address: document.getElementById('md_shipping_address').value,
+                billing_address: document.getElementById('md_billing_address').value,
+                email_subscription: document.getElementById('md_email_subscription').value,
+                sms_subscription: document.getElementById('md_sms_subscription').value,
+                tags: document.getElementById('md_tags').value
+            };
+            await supabaseClient.from('profiles').update(payload).eq('id', memberId);
+            alert('保存成功！');
+            // 更新本地数据
+            var idx = allMembers.findIndex(function(m) { return m.id === memberId; });
+            if (idx >= 0) { allMembers[idx] = Object.assign(allMembers[idx], payload); }
+        } catch(e) { alert('保存失败：' + e.message); }
+    }
+    
+    // ========== 手動訂單商品選擇器 ==========
+    var manualOrderProducts = [];
+    
+    function toggleProductSelector() {
+        var selector = document.getElementById('mo_product_selector');
+        if (!selector) return;
+        if (selector.style.display === 'none') {
+            selector.style.display = 'block';
+            loadProductSelector();
+        } else {
+            selector.style.display = 'none';
+        }
+    }
+    
+    async function loadProductSelector() {
+        var selector = document.getElementById('mo_product_selector');
+        if (!selector) return;
+        selector.innerHTML = '<p style="text-align:center;padding:20px;">載入中...</p>';
+        try {
+            var r = await supabaseClient.from('products').select('id,name,name_en,price,images').eq('is_active', true).order('created_at', { ascending: false });
+            var products = r.data || [];
+            if (products.length === 0) {
+                selector.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">尚無商品</p>';
+                return;
+            }
+            var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">';
+            products.forEach(function(p) {
+                var img = '';
+                try {
+                    var imgs = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+                    img = imgs[0] || '';
+                } catch(e) { img = ''; }
+                var isSelected = manualOrderProducts.some(function(mp) { return mp.id === p.id; });
+                html += '<div style="border:1px solid ' + (isSelected ? '#1A1A1A' : '#eee') + ';border-radius:8px;padding:8px;cursor:pointer;background:' + (isSelected ? '#f0f0f0' : '#fff') + ';" onclick="selectManualProduct(\'' + p.id + '\', \'' + (p.name || '').replace(/'/g, "\\'") + '\', ' + (p.price || 0) + ')">';
+                html += '<div style="width:100%;aspect-ratio:1;background:#f5f5f5;border-radius:4px;overflow:hidden;margin-bottom:5px;">';
+                if (img) { html += '<img src="' + img + '" style="width:100%;height:100%;object-fit:cover;">'; }
+                html += '</div>';
+                html += '<div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (p.name || '') + '</div>';
+                html += '<div style="font-size:12px;color:#888;">HK$' + (p.price || 0) + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            selector.innerHTML = html;
+        } catch(e) {
+            selector.innerHTML = '<p style="text-align:center;padding:20px;color:red;">載入失敗：' + e.message + '</p>';
+        }
+    }
+    
+    function selectManualProduct(id, name, price) {
+        var idx = manualOrderProducts.findIndex(function(p) { return p.id === id; });
+        if (idx >= 0) {
+            manualOrderProducts.splice(idx, 1);
+        } else {
+            manualOrderProducts.push({ id: id, name: name, price: parseFloat(price) || 0, quantity: 1 });
+        }
+        updateManualOrderTotal();
+        loadProductSelector(); // 刷新选中状态
+    }
+    
+    function updateManualOrderTotal() {
+        var total = manualOrderProducts.reduce(function(sum, p) { return sum + p.price * p.quantity; }, 0);
+        var manualAmount = parseFloat(document.getElementById('mo_amount')?.value) || 0;
+        var finalTotal = manualAmount > 0 ? manualAmount : total;
+        var display = document.getElementById('mo_total_display');
+        if (display) display.textContent = finalTotal.toFixed(2);
+        var count = document.getElementById('mo_selected_count');
+        if (count) count.textContent = manualOrderProducts.length > 0 ? '已選 ' + manualOrderProducts.length + ' 件商品' : '未選擇商品';
+    }
+
+    async function createManualOrder(memberId) {
+        var manualAmount = parseFloat(document.getElementById('mo_amount')?.value) || 0;
+        var remark = document.getElementById('mo_remark')?.value || '';
+        var cardMessage = document.getElementById('mo_card_message')?.value || '';
+        
+        // 计算总价
+        var productsTotal = manualOrderProducts.reduce(function(sum, p) { return sum + p.price * p.quantity; }, 0);
+        var amount = manualAmount > 0 ? manualAmount : productsTotal;
+        
+        if (!amount || amount <= 0) { alert('请选择商品或输入有效的订单金额'); return; }
+        
+        try {
+            var member = allMembers.find(function(m) { return m.id === memberId; });
+            var orderCode = 'RS' + Date.now().toString().slice(-8);
+            
+            // 商品明细
+            var items = manualOrderProducts.map(function(p) {
+                return { product_id: p.id, name: p.name, price: p.price, quantity: p.quantity };
+            });
+            var productNames = manualOrderProducts.map(function(p) { return p.name; }).join(', ') || '手動建立訂單';
+            
+            // 创建订单
+            var { data: order } = await supabaseClient.from('orders').insert({
+                order_code: orderCode,
+                user_id: memberId,
+                customer_name: member ? member.full_name : '',
+                customer_email: member ? member.email : '',
+                customer_phone: member ? member.phone : '',
+                recipient_name: member ? member.full_name : '',
+                recipient_phone: member ? member.phone : '',
+                recipient_address: member ? member.shipping_address : '',
+                subtotal: amount,
+                delivery_fee: 0,
+                total_amount: amount,
+                status: 'unpaid',
+                remarks: remark || '手動建立訂單',
+                card_message: cardMessage,
+                product_names: productNames,
+                items: items
+            }).select().single();
+            
+            // 创建 Stripe Checkout Session
+            var resp = await fetch('/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: order.id,
+                    orderCode: orderCode,
+                    amount: amount,
+                    customerEmail: member ? member.email : '',
+                    customerName: member ? member.full_name : ''
+                })
+            });
+            var result = await resp.json();
+            if (result.url) {
+                alert('訂單已建立！付款鏈接：\n' + result.url + '\n\n請複製發送給客人');
+                if (navigator.clipboard) { navigator.clipboard.writeText(result.url); }
+                // 清空选择
+                manualOrderProducts = [];
+            } else {
+                alert('訂單已建立，但付款鏈接生成失敗：' + (result.error || '未知错误'));
+            }
+        } catch(e) { alert('建立訂單失敗：' + e.message); }
+    }
+    function showAddMemberForm() {
+        var c = document.getElementById('mainContent');
+        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>手動新增會員</h3></div>';
+        html += '<div class="form-container" style="max-width:100%;">';
+        
+        // 基本資料
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">基本資料</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">姓名 *</label><input class="form-input" id="am_full_name" placeholder="輸入姓名"></div>';
+        html += '<div class="form-group"><label class="form-label">會員狀態</label><select class="form-input" id="am_member_status"><option value="active">活躍</option><option value="inactive">非活躍</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">會員積分</label><input class="form-input" type="number" id="am_points" value="0"></div>';
+        html += '</div>';
+        
+        // 聯絡資訊
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">聯絡資訊</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">主要電子郵件 *</label><input class="form-input" id="am_email" placeholder="輸入電子郵件"></div>';
+        html += '<div class="form-group"><label class="form-label">主要電話</label><input class="form-input" id="am_phone" placeholder="輸入電話"></div>';
+        html += '<div class="form-group"><label class="form-label">備用電話</label><input class="form-input" id="am_phone2" placeholder="輸入備用電話"></div>';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">送貨地址</label><textarea class="form-input" id="am_shipping_address" rows="2"></textarea></div>';
+        html += '<div class="form-group"><label class="form-label">賬單地址</label><textarea class="form-input" id="am_billing_address" rows="2"></textarea></div>';
+        html += '</div>';
+        
+        // 訂閱狀態
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">訂閱狀態</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">電子郵件訂閱</label><select class="form-input" id="am_email_subscription"><option value="已訂閱">已訂閱</option><option value="未訂閱" selected>未訂閱</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">簡訊訂閱</label><select class="form-input" id="am_sms_subscription"><option value="已訂閱">已訂閱</option><option value="未訂閱" selected>未訂閱</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">標籤</label><input class="form-input" id="am_tags" placeholder="逗號分隔"></div>';
+        html += '</div>';
+        
+        html += '<div style="margin-top:20px;display:flex;gap:10px;">';
+        html += '<button class="btn btn-primary" onclick="addNewMember()">建立會員並發送設置密碼郵件</button>';
+        html += '<button class="btn btn-secondary" onclick="switchPage(\'members\')">取消</button>';
+        html += '</div></div>';
+        c.innerHTML = html;
+    }
+    
+    async function addNewMember() {
+        var fullName = document.getElementById('am_full_name').value.trim();
+        var email = document.getElementById('am_email').value.trim();
+        if (!fullName || !email) { alert('姓名和電子郵件為必填'); return; }
+        
+        var member = {
+            full_name: fullName,
+            email: email,
+            phone: document.getElementById('am_phone').value,
+            phone2: document.getElementById('am_phone2').value,
+            shipping_address: document.getElementById('am_shipping_address').value,
+            billing_address: document.getElementById('am_billing_address').value,
+            member_status: document.getElementById('am_member_status').value,
+            points: parseInt(document.getElementById('am_points').value) || 0,
+            tags: document.getElementById('am_tags').value,
+            source: '手動新增',
+            email_subscription: document.getElementById('am_email_subscription').value,
+            sms_subscription: document.getElementById('am_sms_subscription').value
+        };
+        
+        try {
+            var resp = await fetch('/import-members', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ members: [member] })
+            });
+            var result = await resp.json();
+            if (result.error) {
+                alert('建立失敗：' + result.error + '\n\n請確認 Cloudflare Pages 已配置 SUPABASE_SERVICE_ROLE_KEY 環境變量');
+            } else if (result.failed > 0) {
+                alert('建立失敗：' + result.errors[0].error);
+            } else {
+                alert('會員建立成功！已發送設置密碼郵件到 ' + email);
+                switchPage('members');
+                loadMembersList();
+            }
+        } catch(e) {
+            alert('建立失敗：' + e.message + '\n\n如在本地測試，請部署到 Cloudflare Pages 後再使用');
+        }
+    }
+    function toggleMember(id) {
+        if (selectedMemberIds.includes(id)) selectedMemberIds = selectedMemberIds.filter(function(i) { return i !== id; });
+        else selectedMemberIds.push(id);
+        renderMembersTable();
+    }
+
+    function toggleAllMembers(checkbox) {
+        if (checkbox.checked) {
+            var search = (document.getElementById('memberSearch')?.value || '').toLowerCase();
+            selectedMemberIds = allMembers.filter(function(m) {
+                return !search || (m.full_name || '').toLowerCase().includes(search) || (m.email || '').toLowerCase().includes(search);
+            }).map(function(m) { return m.id; });
+        } else {
+            selectedMemberIds = [];
+        }
+        renderMembersTable();
+    }
+
+    async function exportMembersCSV() {
+        var exportMembers = selectedMemberIds.length > 0 ? allMembers.filter(function(m) { return selectedMemberIds.includes(m.id); }) : allMembers;
+        var headers = ['名稱', '電子郵件', '電話', '會員狀態', '標籤', '最近活動', '建立日期'];
+        var rows = exportMembers.map(function(m) {
+            return [m.full_name || '', m.email || '', m.phone || '', m.member_status || 'active', m.tags || '', m.last_active || '', m.created_at || ''];
+        });
+        var csv = [headers].concat(rows).map(function(r) {
+            return r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
+        }).join('\n');
+        var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'members_' + new Date().toISOString().slice(0, 10) + '.csv';
+        link.click();
+    }
+
+    async function importMembersCSV(input) {
+        var file = input.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = async function(e) {
+            var text = e.target.result;
+            var lines = text.split('\n').filter(function(l) { return l.trim(); });
+            if (lines.length < 2) { alert('CSV 格式錯誤'); return; }
+            
+            function parseCSVLine(line) {
+                var result = [];
+                var current = '';
+                var inQuotes = false;
+                for (var i = 0; i < line.length; i++) {
+                    var char = line[i];
+                    if (char === '"') { inQuotes = !inQuotes; }
+                    else if (char === ',' && !inQuotes) { result.push(current); current = ''; }
+                    else { current += char; }
+                }
+                result.push(current);
+                return result.map(function(v) { return v.trim(); });
+            }
+            
+            var headers = parseCSVLine(lines[0]);
+            var members = [];
+            
+            for (var i = 1; i < lines.length; i++) {
+                var vals = parseCSVLine(lines[i]);
+                var row = {};
+                headers.forEach(function(h, idx) { row[h] = (vals[idx] || '').trim(); });
+                
+                var fullName = (row['名字'] || '') + ' ' + (row['姓氏'] || '');
+                fullName = fullName.trim();
+                var shippingAddr = [row['地址 1 - 街道'], row['地址 1 - 城市'], row['地址 1 - 郵遞區號'], row['地址 1 - 國家']].filter(Boolean).join(', ');
+                var billingAddr = [row['地址 2 - 街道'], row['地址 2 - 城市'], row['地址 2 - 郵遞區號'], row['地址 2 - 國家']].filter(Boolean).join(', ');
+                var email = row['電子郵件 1'] || row['電子郵件'] || '';
+                if (!email) continue;
+                
+                members.push({
+                    full_name: fullName,
+                    email: email,
+                    phone: row['電話 1'] || row['電話'] || '',
+                    phone2: row['電話 2'] || '',
+                    shipping_address: shippingAddr,
+                    billing_address: billingAddr,
+                    member_status: 'active',
+                    tags: '',
+                    source: row['來源'] || 'Wix 商店',
+                    email_subscription: row['電子郵件訂閱者狀態'] || '未訂閱',
+                    sms_subscription: row['簡訊訂閱者狀態'] || '未訂閱',
+                    language: row['語言'] || 'zh',
+                    last_active: row['上次活動日期 (UTC+0)'] || new Date().toISOString(),
+                    created_at: row['建立時間 (UTC+0)'] || new Date().toISOString()
+                });
+            }
+            
+            if (members.length === 0) { alert('沒有有效的會員資料'); return; }
+            if (!confirm('即將匯入 ' + members.length + ' 位會員，並為每位會員創建登錄賬號及發送設置密碼郵件，是否繼續？')) return;
+            
+            try {
+                var resp = await fetch('/import-members', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ members: members })
+                });
+                var result = await resp.json();
+                if (result.error) {
+                    alert('匯入失敗：' + result.error + '\n\n請確認 Cloudflare Pages 已配置 SUPABASE_SERVICE_ROLE_KEY 環境變量');
+                } else {
+                    var msg = '匯入完成！\n成功：' + result.success + ' 位\n失敗：' + result.failed + ' 位';
+                    if (result.errors && result.errors.length > 0) {
+                        msg += '\n\n失敗詳情：' + result.errors.map(function(e) { return e.email + ': ' + e.error; }).join('\n');
+                    }
+                    alert(msg);
+                }
+                loadMembersList();
+            } catch(err) {
+                alert('匯入失敗：' + err.message + '\n\n如在本地測試，請部署到 Cloudflare Pages 後再使用');
+            }
+        };
+        reader.readAsText(file);
+        input.value = '';
     }
     function loadTemplateProductOptions() {
         var sel = document.getElementById('tplProductSelect');
@@ -1854,6 +2642,10 @@
                     }
                 };
                 loadData();
+            
+                const onSave = () => handleSave();
+                window.addEventListener('save-contact', onSave);
+                return () => window.removeEventListener('save-contact', onSave);
             }, []);
 
             const handleSave = async () => {
@@ -1909,6 +2701,263 @@
                 )
             );
         }
+
+        function PrivacyPolicyEditor() {
+            const [content, setContent] = useState('');
+            const [isPublished, setIsPublished] = useState(false);
+            const [saving, setSaving] = useState(false);
+
+            useEffect(() => {
+                const loadData = async () => {
+                    const { data } = await window.supabaseClient.from('privacy_policy').select('*').limit(1).maybeSingle();
+                    if (data) {
+                        setContent(data.content || '');
+                        setIsPublished(data.is_published || false);
+                    }
+                };
+                loadData();
+                const onSave = () => handleSave();
+                window.addEventListener('save-privacy', onSave);
+                return () => window.removeEventListener('save-privacy', onSave);
+            }, []);
+
+            const handleSave = async () => {
+                setSaving(true);
+                const payload = { content, is_published: isPublished, updated_at: new Date().toISOString() };
+                const { data: existing } = await window.supabaseClient.from('privacy_policy').select('id').limit(1);
+                if (existing && existing.length > 0) {
+                    await window.supabaseClient.from('privacy_policy').update(payload).eq('id', existing[0].id);
+                } else {
+                    await window.supabaseClient.from('privacy_policy').insert(payload);
+                }
+                setSaving(false);
+                alert('已保存');
+            };
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '私隱政策 Privacy Policy')
+                ),
+                React.createElement('div', { className: 'form-container' },
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, '私隱政策內容（支援 HTML）'),
+                        React.createElement('textarea', {
+                            className: 'form-textarea',
+                            style: { minHeight: '400px', fontFamily: 'monospace', fontSize: '14px' },
+                            value: content,
+                            onChange: (e) => setContent(e.target.value),
+                            placeholder: '輸入私隱政策內容...'
+                        })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                            React.createElement('input', { type: 'checkbox', checked: isPublished, onChange: (e) => setIsPublished(e.target.checked) }),
+                            '發佈到前台'
+                        )
+                    ),
+                    React.createElement('button', { className: 'btn btn-primary', onClick: handleSave, disabled: saving }, saving ? '保存中...' : '保存')
+                )
+            );
+        }
+
+        function FlowerCareEditor() {
+            const [content, setContent] = useState('');
+            const [isPublished, setIsPublished] = useState(false);
+            const [saving, setSaving] = useState(false);
+
+            useEffect(() => {
+                const loadData = async () => {
+                    const { data } = await window.supabaseClient.from('flower_care').select('*').limit(1).maybeSingle();
+                    if (data) {
+                        setContent(data.content || '');
+                        setIsPublished(data.is_published || false);
+                    }
+                };
+                loadData();
+                const onSave = () => handleSave();
+                window.addEventListener('save-flowercare', onSave);
+                return () => window.removeEventListener('save-flowercare', onSave);
+            }, []);
+
+            const handleSave = async () => {
+                setSaving(true);
+                const payload = { content, is_published: isPublished, updated_at: new Date().toISOString() };
+                const { data: existing } = await window.supabaseClient.from('flower_care').select('id').limit(1);
+                if (existing && existing.length > 0) {
+                    await window.supabaseClient.from('flower_care').update(payload).eq('id', existing[0].id);
+                } else {
+                    await window.supabaseClient.from('flower_care').insert(payload);
+                }
+                setSaving(false);
+                alert('已保存');
+            };
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '花材護理知識')
+                ),
+                React.createElement('div', { className: 'form-container' },
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, '花材護理知識內容（支援 HTML）'),
+                        React.createElement('textarea', {
+                            className: 'form-textarea',
+                            style: { minHeight: '300px' },
+                            value: content,
+                            onChange: (e) => setContent(e.target.value),
+                            placeholder: '輸入花材護理知識...'
+                        })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' } },
+                            React.createElement('input', {
+                                type: 'checkbox',
+                                checked: isPublished,
+                                onChange: (e) => setIsPublished(e.target.checked)
+                            }),
+                            '發布到前台'
+                        )
+                    ),
+                    React.createElement('div', { className: 'form-actions' },
+                        React.createElement('button', {
+                            className: 'btn btn-primary',
+                            onClick: handleSave,
+                            disabled: saving
+                        }, saving ? '保存中...' : '保存')
+                    )
+                )
+            );
+        }
+
+
+        function MemberManagement() {
+            const [members, setMembers] = React.useState([]);
+            const [selected, setSelected] = React.useState([]);
+            const [search, setSearch] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+
+            React.useEffect(() => { loadMembers(); }, []);
+
+            const loadMembers = async () => {
+                setLoading(true);
+                try {
+                    const { data, error } = await window.supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+                    if (data) setMembers(data);
+                } catch(e) { console.error('加载会员失败:', e); }
+                setLoading(false);
+            };
+
+            const toggleSelect = (id) => {
+                setSelected(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+            };
+
+            const toggleSelectAll = () => {
+                if (selected.length === members.length) setSelected([]);
+                else setSelected(members.map(m => m.id));
+            };
+
+            const exportCSV = () => {
+                const exportMembers = selected.length > 0 ? members.filter(m => selected.includes(m.id)) : members;
+                const headers = ['名稱', '電子郵件', '電話', '會員狀態', '標籤', '最近活動', '建立日期'];
+                const rows = exportMembers.map(m => [
+                    m.full_name || '', m.email || '', m.phone || '',
+                    m.member_status || 'active', m.tags || '', m.last_active || '', m.created_at || ''
+                ]);
+                const csv = [headers, ...rows].map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'members_' + new Date().toISOString().slice(0,10) + '.csv';
+                link.click();
+            };
+
+            const importCSV = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    const text = ev.target.result;
+                    const lines = text.split('\n').filter(l => l.trim());
+                    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                    for (let i = 1; i < lines.length; i++) {
+                        const vals = lines[i].match(/(".*?"|[^,]+)/g) || [];
+                        const row = {};
+                        headers.forEach((h, idx) => { row[h] = (vals[idx] || '').replace(/"/g, '').trim(); });
+                        try {
+                            await window.supabaseClient.from('profiles').upsert({
+                                full_name: row['名稱'] || '', email: row['電子郵件'] || '',
+                                phone: row['電話'] || '', member_status: row['會員狀態'] || 'active',
+                                tags: row['標籤'] || '', last_active: row['最近活動'] || new Date().toISOString()
+                            });
+                        } catch(err) { console.error('导入失败:', err); }
+                    }
+                    alert('匯入完成！');
+                    loadMembers();
+                };
+                reader.readAsText(file);
+            };
+
+            const filtered = members.filter(m =>
+                !search || (m.full_name || '').includes(search) || (m.email || '').includes(search)
+            );
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' } },
+                    React.createElement('div', null,
+                        React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '會員管理'),
+                        React.createElement('span', { style: { color: '#888', fontSize: '14px', marginLeft: '10px' } }, '共 ' + members.length + ' 位會員')
+                    ),
+                    React.createElement('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } },
+                        React.createElement('input', {
+                            type: 'text', placeholder: '搜尋...', value: search,
+                            onChange: (e) => setSearch(e.target.value),
+                            style: { padding: '8px 12px', border: '1px solid #ddd', borderRadius: '5px', fontSize: '14px' }
+                        }),
+                        React.createElement('button', { className: 'btn btn-secondary', onClick: exportCSV }, '匯出 CSV'),
+                        React.createElement('label', { className: 'btn btn-primary', style: { cursor: 'pointer' } },
+                            '匯入 CSV',
+                            React.createElement('input', { type: 'file', accept: '.csv', onChange: importCSV, style: { display: 'none' } })
+                        )
+                    )
+                ),
+                React.createElement('div', { className: 'form-container', style: { overflowX: 'auto' } },
+                    React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '14px' } },
+                        React.createElement('thead', null,
+                            React.createElement('tr', { style: { borderBottom: '2px solid #1A1A1A' } },
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } },
+                                    React.createElement('input', { type: 'checkbox', checked: selected.length === members.length && members.length > 0, onChange: toggleSelectAll })
+                                ),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '名稱'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '電子郵件'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '電話'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '會員狀態'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '標籤'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '最近活動'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '建立日期')
+                            )
+                        ),
+                        React.createElement('tbody', null,
+                            loading ? React.createElement('tr', null, React.createElement('td', { colSpan: 8, style: { padding: '30px', textAlign: 'center', color: '#888' } }, '載入中...')) :
+                            filtered.length === 0 ? React.createElement('tr', null, React.createElement('td', { colSpan: 8, style: { padding: '30px', textAlign: 'center', color: '#888' } }, '尚無會員')) :
+                            filtered.map(m => React.createElement('tr', { key: m.id, style: { borderBottom: '1px solid #eee' } },
+                                React.createElement('td', { style: { padding: '12px 8px' } },
+                                    React.createElement('input', { type: 'checkbox', checked: selected.includes(m.id), onChange: () => toggleSelect(m.id) })
+                                ),
+                                React.createElement('td', { style: { padding: '12px 8px' } }, m.full_name || '-'),
+                                React.createElement('td', { style: { padding: '12px 8px' } }, m.email || '-'),
+                                React.createElement('td', { style: { padding: '12px 8px' } }, m.phone || '-'),
+                                React.createElement('td', { style: { padding: '12px 8px' } },
+                                    React.createElement('span', { style: { padding: '3px 10px', borderRadius: '12px', fontSize: '12px', background: m.member_status === 'active' ? '#e8f5e9' : '#f5f5f5', color: m.member_status === 'active' ? '#27ae60' : '#999' } }, m.member_status || 'active')
+                                ),
+                                React.createElement('td', { style: { padding: '12px 8px' } }, m.tags || '-'),
+                                React.createElement('td', { style: { padding: '12px 8px', color: '#888' } }, (m.last_active || '').slice(0, 10)),
+                                React.createElement('td', { style: { padding: '12px 8px', color: '#888' } }, (m.created_at || '').slice(0, 10))
+                            ))
+                        )
+                    )
+                )
+            );
+        }
+
 
         function ContentEditor() {
             const [activeSection, setActiveSection] = useState('articles');
@@ -2049,12 +3098,17 @@
             const sidebarItems = [
                 { key: 'overview', label: '總覽', icon: 'LayoutDashboard' },
                 { key: 'articles', label: '文章', icon: 'FileText' },
+                { key: 'faq', label: '常見問題', icon: 'HelpCircle' },
+                { key: 'contact', label: '聯絡我們', icon: 'Mail' },
+                { key: 'privacy', label: '私隱政策', icon: 'Shield' },
+                { key: 'flowercare', label: '花材護理', icon: 'Flower' },
                 { key: 'comments', label: '留言', icon: 'MessageSquare' },
                 { key: 'categories', label: '類別', icon: 'FolderOpen' },
                 { key: 'tags', label: '標籤', icon: 'Tags' },
                 { key: 'authors', label: '作家', icon: 'Users' },
                 { key: 'monetization', label: '創造營收', icon: 'TrendingUp' },
-                { key: 'analytics', label: '分析', icon: 'BarChart2' }
+                { key: 'analytics', label: '分析', icon: 'BarChart2' },
+                { key: 'members', label: '會員管理', icon: 'Users' }
             ];
 
             return React.createElement('div', { className: 'block-editor-wrapper' },
@@ -2078,6 +3132,9 @@
                                 activeSection === 'articles' ? '文章管理' :
                                 activeSection === 'faq' ? '常見問題管理' :
                                 activeSection === 'contact' ? '聯絡我們設定' :
+                                activeSection === 'privacy' ? '私隱政策管理' :
+                                activeSection === 'flowercare' ? '花材護理知識管理' :
+                                activeSection === 'members' ? '會員管理' :
                                 activeSection === 'categories' ? '文章分類管理' :
                                 activeSection === 'tags' ? '文章標籤管理' :
                                 activeSection === 'comments' ? '留言管理' :
@@ -2085,9 +3142,14 @@
                             )
                         ),
                         React.createElement('div', { className: 'editor-topbar-right' },
-                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('save-content')) }, '儲存'),
-                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('preview-content')) }, '預覽'),
-                            React.createElement('button', { className: 'btn btn-primary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('publish-content')) }, '發佈')
+                            activeSection === 'articles' || activeSection === 'faq' ? React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('preview-content')) }, '預覽') : null,
+                            activeSection === 'articles' ? React.createElement('button', { className: 'btn btn-primary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('publish-content')) }, '發佈') : null,
+                            React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => {
+                                if (activeSection === 'contact') { window.dispatchEvent(new CustomEvent('save-contact')); }
+                                else if (activeSection === 'privacy') { window.dispatchEvent(new CustomEvent('save-privacy')); }
+                                else if (activeSection === 'flowercare') { window.dispatchEvent(new CustomEvent('save-flowercare')); }
+                                else { window.dispatchEvent(new CustomEvent('save-content')); }
+                            } }, '儲存')
                         )
                     ),
                     React.createElement('div', { className: 'editor-canvas' },
@@ -2145,6 +3207,9 @@
                         activeSection === 'tags' && React.createElement(TagManager),
                         activeSection === 'faq' && React.createElement(FaqEditor),
                         activeSection === 'contact' && React.createElement(ContactEditor),
+                        activeSection === 'privacy' && React.createElement(PrivacyPolicyEditor),
+                        activeSection === 'flowercare' && React.createElement(FlowerCareEditor),
+                        activeSection === 'members' && React.createElement(MemberManagement),
                         activeSection === 'comments' && React.createElement('div', { className: 'empty-state' }, '留言管理開發中'),
                         !['articles', 'categories', 'tags', 'faq', 'contact', 'comments'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
                     )
@@ -2159,5 +3224,78 @@
             root.render(React.createElement(ContentEditor));
         };
     </script>
-    </body>
+    
+<!-- AI 写作助手浮动按钮 -->
+<div id="aiWriterWidget" style="position:fixed;bottom:20px;right:20px;z-index:99999;">
+    <button onclick="toggleAIWriter()" style="width:50px;height:50px;border-radius:50%;background:#6366f1;color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">✍️</button>
+</div>
+<div id="aiWriterModal" style="display:none;position:fixed;bottom:80px;right:20px;width:400px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:99999;overflow:hidden;">
+    <div style="background:#6366f1;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;">
+        <h4 style="margin:0;font-size:16px;">🤖 AI 寫作助手</h4>
+        <button onclick="toggleAIWriter()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">×</button>
+    </div>
+    <div style="padding:15px;">
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">文案類型</label>
+            <select id="aiWriterType" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;">
+                <option value="blog">Blog 文章</option>
+                <option value="faq">常見問題 FAQ</option>
+                <option value="contact">聯絡我們</option>
+                <option value="privacy">私隱政策</option>
+                <option value="flower_care">花材護理知識</option>
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">主題/問題</label>
+            <input type="text" id="aiWriterTopic" placeholder="例如：玫瑰花語與保養方法" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;">
+        </div>
+        <button onclick="aiWriterGenerate()" style="width:100%;padding:10px;background:#6366f1;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:600;">生成文案</button>
+        <div id="aiWriterResult" style="margin-top:15px;display:none;">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">生成結果</label>
+            <textarea id="aiWriterOutput" rows="10" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;font-size:13px;"></textarea>
+            <button onclick="copyAIWriterResult()" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:5px;cursor:pointer;">📋 複製到剪貼簿</button>
+        </div>
+    </div>
+</div>
+<script>
+function toggleAIWriter() {
+    var modal = document.getElementById('aiWriterModal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+async function aiWriterGenerate() {
+    var type = document.getElementById('aiWriterType').value;
+    var topic = document.getElementById('aiWriterTopic').value;
+    var resultDiv = document.getElementById('aiWriterResult');
+    var output = document.getElementById('aiWriterOutput');
+    if (!topic && type !== 'contact' && type !== 'privacy') {
+        alert('請輸入主題');
+        return;
+    }
+    output.value = 'AI 正在生成，請稍候...';
+    resultDiv.style.display = 'block';
+    try {
+        var resp = await fetch('/ai-write', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: type, topic: topic })
+        });
+        var data = await resp.json();
+        if (data.success) {
+            output.value = data.content;
+        } else {
+            output.value = '生成失敗：' + (data.error || '未知錯誤');
+        }
+    } catch(e) {
+        output.value = '錯誤：' + e.message;
+    }
+}
+function copyAIWriterResult() {
+    var output = document.getElementById('aiWriterOutput');
+    output.select();
+    document.execCommand('copy');
+    alert('已複製到剪貼簿，可直接貼到編輯頁面');
+}
+</script>
+
+</body>
 </html>
