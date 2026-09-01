@@ -1094,7 +1094,7 @@
             filtered.forEach(function(m) {
                 var isSelected = selectedMemberIds.includes(m.id);
                 html += '<tr style="border-bottom:1px solid #eee;">';
-                html += '<td style="padding:12px 8px;"><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="toggleMember('' + m.id + '')"></td>';
+                html += '<td style="padding:12px 8px;"><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' data-id="' + m.id + '" onclick="toggleMember(this.dataset.id)"></td>';
                 html += '<td style="padding:12px 8px;">' + (m.full_name || '-') + '</td>';
                 html += '<td style="padding:12px 8px;">' + (m.email || '-') + '</td>';
                 html += '<td style="padding:12px 8px;">' + (m.phone || '-') + '</td>';
