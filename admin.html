@@ -134,13 +134,11 @@
         .block-content-input { width: 100%; border: none; outline: none; font-size: 18px; line-height: 1.6; background: transparent; min-height: 1.6em; }
         .block-content-input:focus { outline: none; }
         .cover-image-preview { max-width: 150px; max-height: 100px; object-fit: cover; }
-<<<<<<< HEAD
         .uploaded-imgs { display: flex; flex-wrap: wrap; gap: 10px; }
         .uploaded-img-item { position: relative; cursor: move; user-select: none; transition: transform 0.2s; }
         .uploaded-img-item:hover { transform: scale(1.03); }
         .sortable-ghost { opacity: 0.4; transform: scale(0.95); }
         .sortable-chosen { cursor: grabbing; }
-=======
 
     @media (max-width: 768px) {
         .admin-layout { flex-direction: column !important; }
@@ -184,7 +182,6 @@
             cursor: pointer;
         }
         .sidebar-subitem:hover { background: #f5f5f5; color: #1a1a1a !important; }
->>>>>>> e6fb457fc4bb9b96a64affcbc77d3bf3bad51027
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -788,21 +785,12 @@ async function saveProduct() {
                     sale_price: d['特價HKD'] ? parseFloat(d['特價HKD']) : null,
                     category: d.category || '',
                     description: d['中文描述'] || d.description || '',
-<<<<<<< HEAD
-                    tags: d['標籤(|分隔)'] || d.tags ? (d['標籤(|分隔)'] || d.tags).split('|').filter(Boolean) : [],
-                    scent_notes: d['香調備註(|分隔)'] || d.scent_notes ? (d['香調備註(|分隔)'] || d.scent_notes).split('|').filter(Boolean) : [],
-                    style_spectrum: parseInt(d['香調分數'] || d.style_spectrum) || 0,
-                    stock: d['庫存'] || d.stock || '現貨',
-                    is_preorder: d['是否預購'] === 'Y',
-                    delivery_days: parseInt(d['預購天數'] || d.delivery_days) || 1,
-=======
                     tags: (d['標籤(|分隔)'] || d.tags || '').split('|').filter(Boolean),
                     scent_notes: (d['香調備註(|分隔)'] || d.scent_notes || '').split('|').filter(Boolean),
                     style_spectrum: parseInt(d['香調分數'] || d.style_spectrum) || 0,
                     stock: d['庫存'] || d.stock || '現貨',
                     is_preorder: d['是否預購'] === 'Y' || d.is_preorder === 'true',
                     delivery_days: parseInt(d['預購天數'] || d.delivery_days) || 5,
->>>>>>> e6fb457fc4bb9b96a64affcbc77d3bf3bad51027
                     is_active: (d['狀態'] || d.is_active) !== 'false' && (d['狀態'] || d.is_active) !== 'inactive',
                     image_url: imageArr.length > 0 ? imageArr[0] : null,
                     images: imageArr,
