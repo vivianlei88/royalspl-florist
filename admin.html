@@ -1948,6 +1948,72 @@
             );
         }
 
+        function FlowerCareEditor() {
+            const [content, setContent] = useState('');
+            const [isPublished, setIsPublished] = useState(false);
+            const [saving, setSaving] = useState(false);
+
+            useEffect(() => {
+                const loadData = async () => {
+                    const { data } = await window.supabaseClient.from('flower_care').select('*').limit(1).maybeSingle();
+                    if (data) {
+                        setContent(data.content || '');
+                        setIsPublished(data.is_published || false);
+                    }
+                };
+                loadData();
+            }, []);
+
+            const handleSave = async () => {
+                setSaving(true);
+                const payload = { content, is_published: isPublished, updated_at: new Date().toISOString() };
+                const { data: existing } = await window.supabaseClient.from('flower_care').select('id').limit(1);
+                if (existing && existing.length > 0) {
+                    await window.supabaseClient.from('flower_care').update(payload).eq('id', existing[0].id);
+                } else {
+                    await window.supabaseClient.from('flower_care').insert(payload);
+                }
+                setSaving(false);
+                alert('已保存');
+            };
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header' },
+                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '花材護理知識')
+                ),
+                React.createElement('div', { className: 'form-container' },
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { className: 'form-label' }, '花材護理知識內容（支援 HTML）'),
+                        React.createElement('textarea', {
+                            className: 'form-textarea',
+                            style: { minHeight: '300px' },
+                            value: content,
+                            onChange: (e) => setContent(e.target.value),
+                            placeholder: '輸入花材護理知識...'
+                        })
+                    ),
+                    React.createElement('div', { className: 'form-group' },
+                        React.createElement('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' } },
+                            React.createElement('input', {
+                                type: 'checkbox',
+                                checked: isPublished,
+                                onChange: (e) => setIsPublished(e.target.checked)
+                            }),
+                            '發布到前台'
+                        )
+                    ),
+                    React.createElement('div', { className: 'form-actions' },
+                        React.createElement('button', {
+                            className: 'btn btn-primary',
+                            onClick: handleSave,
+                            disabled: saving
+                        }, saving ? '保存中...' : '保存')
+                    )
+                )
+            );
+        }
+
+
         function ContentEditor() {
             const [activeSection, setActiveSection] = useState('articles');
             const [editingPost, setEditingPost] = useState(undefined);
@@ -2090,6 +2156,7 @@
                 { key: 'faq', label: '常見問題', icon: 'HelpCircle' },
                 { key: 'contact', label: '聯絡我們', icon: 'Mail' },
                 { key: 'privacy', label: '私隱政策', icon: 'Shield' },
+                { key: 'flowercare', label: '花材護理', icon: 'Flower' },
                 { key: 'comments', label: '留言', icon: 'MessageSquare' },
                 { key: 'categories', label: '類別', icon: 'FolderOpen' },
                 { key: 'tags', label: '標籤', icon: 'Tags' },
@@ -2120,6 +2187,7 @@
                                 activeSection === 'faq' ? '常見問題管理' :
                                 activeSection === 'contact' ? '聯絡我們設定' :
                                 activeSection === 'privacy' ? '私隱政策管理' :
+                                activeSection === 'flowercare' ? '花材護理知識管理' :
                                 activeSection === 'categories' ? '文章分類管理' :
                                 activeSection === 'tags' ? '文章標籤管理' :
                                 activeSection === 'comments' ? '留言管理' :
@@ -2188,6 +2256,7 @@
                         activeSection === 'faq' && React.createElement(FaqEditor),
                         activeSection === 'contact' && React.createElement(ContactEditor),
                         activeSection === 'privacy' && React.createElement(PrivacyPolicyEditor),
+                        activeSection === 'flowercare' && React.createElement(FlowerCareEditor),
                         activeSection === 'comments' && React.createElement('div', { className: 'empty-state' }, '留言管理開發中'),
                         !['articles', 'categories', 'tags', 'faq', 'contact', 'comments'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
                     )
