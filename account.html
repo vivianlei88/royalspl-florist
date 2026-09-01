@@ -41,7 +41,28 @@
         .btn-default { background: #e0e0e0; border: none; }
         .points-value { font-size: 32px; font-weight: 700; color: #1A1A1A; }
         .hidden { display: none; }
-    </style>
+    
+        .account-order-item { display: flex; gap: 15px; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .account-order-item:last-child { border-bottom: none; }
+        .account-order-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+        .account-order-img-ph { width: 60px; height: 60px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .account-order-info { flex: 1; }
+        .account-order-code { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+        .account-order-meta { font-size: 12px; color: #888; }
+        .account-order-price { font-size: 15px; font-weight: 700; color: #1A1A1A; margin-top: 3px; }
+        .account-order-right { text-align: right; flex-shrink: 0; }
+        .account-order-actions { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+        .account-order-btn { padding: 6px 12px; border-radius: 4px; font-size: 12px; text-decoration: none; cursor: pointer; border: none; font-family: inherit; }
+        .account-order-btn-detail { background: transparent; border: 1px solid #1A1A1A; color: #1A1A1A; }
+        .account-order-btn-pay { background: #1A1A1A; color: #FAF8F5; }
+        .account-order-btn-pay:hover { background: #333; }
+        .account-order-empty { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .status-badge-sm { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .status-unpaid { background: #fdecea; color: #c0392b; }
+        .status-paid { background: #e8f5e9; color: #27ae60; }
+        .status-shipped { background: #e3f2fd; color: #2980b9; }
+        .status-cancelled { background: #f5f5f5; color: #999; }
+</style>
 </head>
 <body>
     <a href="index.html" class="back-btn">←</a>
@@ -140,11 +161,10 @@
             </div>
 
             <!-- 所有訂單 -->
-            <a href="orders.html" style="text-decoration:none;color:inherit;display:block;">
-            <div class="orders-card" style="cursor:pointer;">
-                <div class="card-title">所有訂單 →</div>
+            <div class="orders-card">
+                <div class="card-title">所有訂單</div>
+                <div id="accountOrdersList"></div>
             </div>
-            </a>
         </div>
     </div>
 
@@ -332,7 +352,101 @@
             await loadProfile();
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        
+        function getAccountOrderImage(order) {
+            if (order.items && Array.isArray(order.items) && order.items.length > 0 && order.items[0].image) {
+                return order.items[0].image;
+            }
+            try {
+                const parsed = JSON.parse(order.product_images);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+                if (typeof parsed === 'string') return parsed;
+            } catch(e) {}
+            if (order.product_images && typeof order.product_images === 'string' && order.product_images.startsWith('http')) {
+                return order.product_images;
+            }
+            return '';
+        }
+
+        async function loadAccountOrders() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
+            const { data: orders, error } = await supabaseClient.from('orders').select('*').eq('customer_email', user.email).order('created_at', { ascending: false }).limit(5);
+            if (error) { document.getElementById('accountOrdersList').innerHTML = '<div class="account-order-empty">載入失敗</div>'; return; }
+            renderAccountOrders(orders || []);
+        }
+
+        function renderAccountOrders(orders) {
+            const container = document.getElementById('accountOrdersList');
+            if (!container) return;
+            if (!orders.length) { container.innerHTML = '<div class="account-order-empty">尚無訂單</div>'; return; }
+            const statusMap = { unpaid: '未付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
+            let html = '';
+            orders.forEach(order => {
+                const img = getAccountOrderImage(order);
+                const imgHtml = img ? '<img src="' + img + '" class="account-order-img" alt="">' : '<div class="account-order-img-ph">🌸</div>';
+                const createdDate = (order.created_at || '').slice(0, 10);
+                html += '<div class="account-order-item">';
+                html += imgHtml;
+                html += '<div class="account-order-info">';
+                html += '<div class="account-order-code">' + order.order_code + '</div>';
+                html += '<div class="account-order-meta">成立：' + createdDate + ' | 送貨：' + (order.delivery_date || '-') + '</div>';
+                html += '<div class="account-order-price">HK$' + order.total_amount + '</div>';
+                html += '</div>';
+                html += '<div class="account-order-right">';
+                html += '<span class="status-badge-sm status-' + order.status + '">' + (statusMap[order.status] || order.status) + '</span>';
+                html += '<div class="account-order-actions">';
+                html += '<a href="order-detail.html?id=' + order.id + '" class="account-order-btn account-order-btn-detail">詳情</a>';
+                if (order.status === 'unpaid') {
+                    html += '<button class="account-order-btn account-order-btn-pay" onclick="payAccountOrder(' + order.id + ', this)">支付</button>';
+                }
+                html += '</div></div></div>';
+            });
+            container.innerHTML = html;
+        }
+
+        async function payAccountOrder(orderId, btn) {
+            btn.disabled = true;
+            btn.textContent = '處理中...';
+            try {
+                const { data: order, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
+                if (error || !order) throw new Error('訂單不存在');
+                let items = [];
+                if (order.items && Array.isArray(order.items)) {
+                    items = order.items;
+                } else {
+                    const names = (order.product_names || '').split('|').filter(Boolean);
+                    items = names.map(n => ({ name: n, price: 0, quantity: 1 }));
+                }
+                localStorage.setItem('pending_order', JSON.stringify({
+                    id: order.id, orderCode: order.order_code, items: items,
+                    subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount,
+                    recipient: { name: order.recipient_name, phone: order.recipient_phone, address: order.recipient_address, date: order.delivery_date, timeSlot: order.delivery_time_slot, email: order.customer_email }
+                }));
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: items, recipientName: order.recipient_name, recipientPhone: order.recipient_phone,
+                        recipientAddress: order.recipient_address, deliveryDate: order.delivery_date,
+                        deliveryTimeSlot: order.delivery_time_slot, deliveryHour: order.delivery_hour,
+                        deliveryArea: order.delivery_area, deliveryFee: order.delivery_fee,
+                        subtotal: order.subtotal, totalAmount: order.total_amount,
+                        orderId: order.id, orderCode: order.order_code
+                    })
+                });
+                const data = await response.json();
+                if (data.url) { window.location.href = data.url; }
+                else { window.location.href = 'payment.html?order_id=' + orderId; }
+            } catch (e) {
+                console.error('支付失败:', e);
+                alert('支付處理失敗，請稍後重試');
+                btn.disabled = false;
+                btn.textContent = '支付';
+            }
+        }
+
+document.addEventListener('DOMContentLoaded', async () => {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (user) {
                 currentUser = user;
