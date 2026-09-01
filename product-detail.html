@@ -522,9 +522,30 @@
         } catch(e) { console.log('花材護理知識加载失败:', e); }
     }
 
+    // 从数据库加载隐私政策
+    async function loadPrivacyPolicyContent() {
+        try {
+            const { data, error } = await supabaseClient.from('privacy_policy').select('*').eq('is_published', true).limit(1).maybeSingle();
+            const el = document.getElementById('privacyContent');
+            if (el) {
+                if (data && data.content) {
+                    el.innerHTML = data.content;
+                } else {
+                    el.innerHTML = '暫無內容';
+                }
+            }
+        } catch(e) { 
+            console.log('隐私政策加载失败:', e); 
+            const el = document.getElementById('privacyContent');
+            if (el) el.innerHTML = '暫無內容';
+        }
+    }
+
 document.addEventListener('DOMContentLoaded', function() {
         loadProduct();
         updateCartBadge();
+        loadFlowerCareContent();
+        loadPrivacyPolicyContent();
     });
     </script>
     <script>
