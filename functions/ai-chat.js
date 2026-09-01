@@ -2,12 +2,12 @@ export async function onRequestPost(context) {
     try {
         const { message, history, productInfo } = await context.request.json();
         
-        const API_KEY = context.env.DOUBAO_API_KEY;
-        const MODEL_ID = context.env.DOUBAO_MODEL_ID || 'doubao-seed-2-0-mini-260428';
+        const API_KEY = context.env.DOUBAO_SEED_2_0_MINI_API_KEY;
+        const MODEL_ID = 'doubao-seed-2-0-mini-260428';
         const BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3';
         
         if (!API_KEY) {
-            return Response.json({ error: 'AI 服务未配置' }, { status: 500 });
+            return Response.json({ error: 'AI 服务未配置，请设置 DOUBAO_SEED_2_0_MINI_API_KEY 环境变量' }, { status: 500 });
         }
         
         // 构建系统提示词
