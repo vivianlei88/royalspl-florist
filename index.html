@@ -16,12 +16,9 @@
         .cart-icon { display: flex; align-items: center; justify-content: center; }
         .collections-section { padding-bottom: 80px; }
         .collections-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
-        .collection-card { background-color: #FAF8F5; border-radius: 8px; display: block; text-align: center; transition: all 0.3s; cursor: pointer; overflow: hidden; padding: 0; text-decoration: none; color: inherit; }
+        .collection-card { background-color: transparent; border-radius: 0; display: block; text-align: center; transition: all 0.3s; cursor: pointer; overflow: visible; padding: 0; text-decoration: none; color: inherit; }
         .collection-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
-        .collection-card-1, .collection-card-2, .collection-card-3 { aspect-ratio: 3/4; }
-        .collection-card-4 { aspect-ratio: 3/4; }
-        .collection-card-5 { aspect-ratio: 4/3; }
-        .collection-card-6 { aspect-ratio: 1/1; }
+        .collection-card-1, .collection-card-2, .collection-card-3, .collection-card-4, .collection-card-5, .collection-card-6 { aspect-ratio: auto; }
         .collection-emoji { font-size: 70px; margin-bottom: 20px; }
         .collection-title { font-size: 20px; font-weight: 600; margin-bottom: 5px; color: #1A1A1A; }
         .collection-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 13px; letter-spacing: 1px; color: #383431; text-transform: uppercase; }
@@ -38,7 +35,7 @@
         .tag-pill { display: inline-block; padding: 4px 12px; border: 1px solid #1A1A1A; border-radius: 15px; font-size: 12px; color: #1A1A1A; }
         .add-to-cart-btn { display: inline-block; width: 100%; padding: 12px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.3s; }
         .add-to-cart-btn:hover { background-color: #383431; }
-        @media (min-width: 769px) { .collection-card-2 { transform: translateY(40px); } .collection-card-5 { transform: translateY(30px); } .collection-card-2:hover { transform: translateY(35px); } .collection-card-5:hover { transform: translateY(25px); } }
+        @media (min-width: 769px) { .collection-card-2 { transform: none; } .collection-card-5 { transform: none; } }
         @media (max-width: 768px) { .collections-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } .featured-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } .collection-card-1, .collection-card-2, .collection-card-3, .collection-card-4, .collection-card-5, .collection-card-6 { aspect-ratio: auto; min-height: 200px; transform: none !important; } }
         @media (max-width: 480px) { .collections-grid { grid-template-columns: 1fr; } .featured-grid { grid-template-columns: 1fr; } }
     </style>
