@@ -139,6 +139,12 @@
         .uploaded-img-item:hover { transform: scale(1.03); }
         .sortable-ghost { opacity: 0.4; transform: scale(0.95); }
         .sortable-chosen { cursor: grabbing; }
+        .lightbox-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; justify-content: center; align-items: center; }
+        .lightbox-overlay.show { display: flex; }
+        .lightbox-img { max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; z-index: 100000; line-height: 1; }
+        .lightbox-close:hover { color: #ccc; }
+        .uploaded-img-item img { cursor: zoom-in; }
 
     @media (max-width: 768px) {
         .admin-layout { flex-direction: column !important; }
@@ -573,8 +579,10 @@
     }
     function initUploadArea() { var ua = document.getElementById('uploadArea'); var fi = document.getElementById('fileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleUploadFiles(this.files); }; ua.addEventListener('dragover', function(e) { e.preventDefault(); }); ua.addEventListener('drop', function(e) { e.preventDefault(); handleUploadFiles(e.dataTransfer.files); }); } }
     async function handleUploadFiles(files) { for (var i = 0; i < files.length; i++) { var fd = new FormData(); fd.append('file', files[i]); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { uploadedImages.push(data.url); renderUploadedImages(); } } catch (err) {} } }
-    function renderUploadedImages() { var c = document.getElementById('uploadedImages'); if (!c) return; var h = ''; for (var i = 0; i < uploadedImages.length; i++) { h += '<div class="uploaded-img-item" data-index="' + i + '"><img src="' + uploadedImages[i] + '"><button class="del-btn" onclick="removeImage(' + i + ')">×</button></div>'; } c.innerHTML = h; initImageSortable(); }
+    function renderUploadedImages() { var c = document.getElementById('uploadedImages'); if (!c) return; var h = ''; for (var i = 0; i < uploadedImages.length; i++) { h += '<div class="uploaded-img-item" data-index="' + i + '"><img src="' + uploadedImages[i] + '" onclick="openLightbox(\'' + uploadedImages[i] + '\')" title="點擊放大預覽"><button class="del-btn" onclick="removeImage(' + i + ')">×</button></div>'; } c.innerHTML = h; initImageSortable(); }
     function initImageSortable() { var c = document.getElementById('uploadedImages'); if (!c || typeof Sortable === 'undefined') return; if (c._sortable) { c._sortable.destroy(); } c._sortable = Sortable.create(c, { animation: 200, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', onEnd: function(evt) { var oldIndex = evt.oldIndex; var newIndex = evt.newIndex; if (oldIndex !== newIndex) { var item = uploadedImages.splice(oldIndex, 1)[0]; uploadedImages.splice(newIndex, 0, item); renderUploadedImages(); } } }); }
+    function openLightbox(url) { document.getElementById('lightboxImg').src = url; document.getElementById('imageLightbox').classList.add('show'); }
+    function closeLightbox() { document.getElementById('imageLightbox').classList.remove('show'); document.getElementById('lightboxImg').src = ''; }
     function removeImage(i) { uploadedImages.splice(i, 1); renderUploadedImages(); }
     function addImageByUrl() { var url = document.getElementById('imageUrlInput').value.trim(); if (url) { uploadedImages.push(url); renderUploadedImages(); document.getElementById('imageUrlInput').value = ''; } }
     function addVariantRow() { variants.push({ name: '', price: '' }); renderVariants(); }
@@ -1908,7 +1916,12 @@ async function saveProduct() {
     function downloadTemplatePDF() {
         renderTemplatePreview();
         var w = window.open('', '_blank');
-        w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '</body></html>');
+        w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '    <!-- 图片放大预览 -->
+    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img id="lightboxImg" class="lightbox-img" src="" alt="预览">
+    </div>
+</body></html>');
         w.document.close();
         w.print();
     }
