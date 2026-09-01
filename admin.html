@@ -1056,7 +1056,7 @@
         } catch (e) { showToast('保存失敗，請先創建 shop_settings 表'); }
     }
     async function renderMembersPage(c) {
-        c.innerHTML = '<div class="page-header"><h3>會員管理</h3><div style="display:flex;gap:10px;align-items:center;"><input type="text" id="memberSearch" placeholder="搜尋名稱或電郵..." style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;"><button class="btn btn-secondary" onclick="exportMembersCSV()">匯出 CSV</button><label class="btn btn-primary" style="cursor:pointer;">匯入 CSV<input type="file" id="memberCSVInput" accept=".csv" style="display:none;" onchange="importMembersCSV(this)"></label></div></div><div id="membersTableContainer" style="overflow-x:auto;"></div>';
+        c.innerHTML = '<div class="page-header"><h3>會員管理</h3><div style="display:flex;gap:10px;align-items:center;"><input type="text" id="memberSearch" placeholder="搜尋名稱或電郵..." style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;"><button class="btn btn-primary" onclick="showAddMemberForm()">手動新增</button><button class="btn btn-secondary" onclick="exportMembersCSV()">匯出 CSV</button><label class="btn btn-secondary" style="cursor:pointer;">匯入 CSV<input type="file" id="memberCSVInput" accept=".csv" style="display:none;" onchange="importMembersCSV(this)"></label></div></div><div id="membersTableContainer" style="overflow-x:auto;"></div>';
         loadMembersList();
     }
 
@@ -1083,27 +1083,27 @@
         var filtered = allMembers.filter(function(m) {
             return !search || (m.full_name || '').toLowerCase().includes(search) || (m.email || '').toLowerCase().includes(search);
         });
-        var html = '<table style="width:100%;border-collapse:collapse;font-size:14px;"><thead><tr style="border-bottom:2px solid #1A1A1A;">';
-        html += '<th style="padding:12px 8px;text-align:left;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
-        html += '<th style="padding:12px 8px;text-align:left;">名稱</th><th style="padding:12px 8px;text-align:left;">電子郵件</th>';
-        html += '<th style="padding:12px 8px;text-align:left;">電話</th><th style="padding:12px 8px;text-align:left;">會員狀態</th>';
-        html += '<th style="padding:12px 8px;text-align:left;">標籤</th><th style="padding:12px 8px;text-align:left;">最近活動</th><th style="padding:12px 8px;text-align:left;">建立日期</th></tr></thead><tbody>';
+        var html = '<table style="width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed;"><thead><tr style="border-bottom:2px solid #1A1A1A;">';
+        html += '<th style="padding:12px 6px;text-align:left;width:5%;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:15%;">名稱</th><th style="padding:12px 6px;text-align:left;width:18%;">電子郵件</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:12%;">電話</th><th style="padding:12px 6px;text-align:left;width:10%;">會員狀態</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:10%;">標籤</th><th style="padding:12px 6px;text-align:left;width:15%;">最近活動</th><th style="padding:12px 6px;text-align:left;width:15%;">建立日期</th></tr></thead><tbody>';
         if (filtered.length === 0) {
             html += '<tr><td colspan="8" style="padding:30px;text-align:center;color:#888;">尚無會員</td></tr>';
         } else {
             filtered.forEach(function(m) {
                 var isSelected = selectedMemberIds.includes(m.id);
                 html += '<tr style="border-bottom:1px solid #eee;">';
-                html += '<td style="padding:12px 8px;"><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' data-id="' + m.id + '" onclick="toggleMember(this.dataset.id)"></td>';
-                html += '<td style="padding:12px 8px;">' + (m.full_name || '-') + '</td>';
-                html += '<td style="padding:12px 8px;">' + (m.email || '-') + '</td>';
-                html += '<td style="padding:12px 8px;">' + (m.phone || '-') + '</td>';
+                html += '<td style="padding:12px 6px;"><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' data-id="' + m.id + '" onclick="toggleMember(this.dataset.id)"></td>';
+                html += '<td style="padding:12px 6px;word-break:break-all;"><a href="javascript:void(0)" onclick="showMemberDetail(\'' + m.id + '\')" style="color:#1A1A1A;text-decoration:underline;font-weight:500;">' + (m.full_name || '-') + '</a></td>';
+                html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.email || '-') + '</td>';
+                html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.phone || '-') + '</td>';
                 var statusColor = m.member_status === 'active' ? '#e8f5e9' : '#f5f5f5';
                 var statusTextColor = m.member_status === 'active' ? '#27ae60' : '#999';
-                html += '<td style="padding:12px 8px;"><span style="padding:3px 10px;border-radius:12px;font-size:12px;background:' + statusColor + ';color:' + statusTextColor + ';">' + (m.member_status || 'active') + '</span></td>';
-                html += '<td style="padding:12px 8px;">' + (m.tags || '-') + '</td>';
-                html += '<td style="padding:12px 8px;color:#888;">' + (m.last_active || '').slice(0, 10) + '</td>';
-                html += '<td style="padding:12px 8px;color:#888;">' + (m.created_at || '').slice(0, 10) + '</td>';
+                html += '<td style="padding:12px 6px;"><span style="padding:3px 10px;border-radius:12px;font-size:12px;background:' + statusColor + ';color:' + statusTextColor + ';">' + (m.member_status || 'active') + '</span></td>';
+                html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.tags || '-') + '</td>';
+                html += '<td style="padding:12px 6px;color:#888;word-break:break-all;">' + (m.last_active || '').slice(0, 10) + '</td>';
+                html += '<td style="padding:12px 6px;color:#888;">' + (m.created_at || '').slice(0, 10) + '</td>';
                 html += '</tr>';
             });
         }
@@ -1112,6 +1112,231 @@
         container.innerHTML = html;
         var selectAll = document.getElementById('selectAllMembers');
         if (selectAll) selectAll.checked = selectedMemberIds.length === filtered.length && filtered.length > 0;
+    }
+
+    // ========== 會員詳情頁 ==========
+    function showMemberDetail(memberId) {
+        var c = document.getElementById('mainContent');
+        var member = allMembers.find(function(m) { return m.id === memberId; });
+        if (!member) { c.innerHTML = '<p>會員不存在</p>'; return; }
+        
+        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>會員詳情</h3></div>';
+        html += '<div class="form-container" style="max-width:100%;">';
+        
+        // 基本資料
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">基本資料</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="md_full_name" value="' + (member.full_name || '') + '"></div>';
+        html += '<div class="form-group"><label class="form-label">會員狀態</label><select class="form-input" id="md_member_status"><option value="active"' + (member.member_status === 'active' ? ' selected' : '') + '>活躍</option><option value="inactive"' + (member.member_status === 'inactive' ? ' selected' : '') + '>非活躍</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">會員積分</label><input class="form-input" type="number" id="md_points" value="' + (member.points || 0) + '"></div>';
+        html += '</div>';
+        
+        // 聯絡資訊
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">聯絡資訊</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">主要電子郵件</label><input class="form-input" id="md_email" value="' + (member.email || '') + '"></div>';
+        html += '<div class="form-group"><label class="form-label">主要電話</label><input class="form-input" id="md_phone" value="' + (member.phone || '') + '"></div>';
+        html += '<div class="form-group"><label class="form-label">備用電話</label><input class="form-input" id="md_phone2" value="' + (member.phone2 || '') + '"></div>';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">送貨地址</label><textarea class="form-input" id="md_shipping_address" rows="2">' + (member.shipping_address || '') + '</textarea></div>';
+        html += '<div class="form-group"><label class="form-label">賬單地址</label><textarea class="form-input" id="md_billing_address" rows="2">' + (member.billing_address || '') + '</textarea></div>';
+        html += '</div>';
+        
+        // 訂閱狀態
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">訂閱狀態</h4>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">電子郵件訂閱</label><select class="form-input" id="md_email_subscription"><option value="已訂閱"' + (member.email_subscription === '已訂閱' ? ' selected' : '') + '>已訂閱</option><option value="未訂閱"' + (member.email_subscription !== '已訂閱' ? ' selected' : '') + '>未訂閱</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">簡訊訂閱</label><select class="form-input" id="md_sms_subscription"><option value="已訂閱"' + (member.sms_subscription === '已訂閱' ? ' selected' : '') + '>已訂閱</option><option value="未訂閱"' + (member.sms_subscription !== '已訂閱' ? ' selected' : '') + '>未訂閱</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">標籤</label><input class="form-input" id="md_tags" value="' + (member.tags || '') + '"></div>';
+        html += '</div>';
+        
+        // 購買統計
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">購買統計</h4>';
+        html += '<div style="display:flex;gap:20px;margin-bottom:15px;">';
+        html += '<div style="background:#f9f9f9;padding:15px 20px;border-radius:8px;flex:1;"><div style="font-size:13px;color:#888;">購買次數</div><div style="font-size:24px;font-weight:600;" id="md_order_count">' + (member.order_count || 0) + '</div></div>';
+        html += '<div style="background:#f9f9f9;padding:15px 20px;border-radius:8px;flex:1;"><div style="font-size:13px;color:#888;">總消費金額</div><div style="font-size:24px;font-weight:600;" id="md_total_spent">HK$' + (member.total_spent || 0) + '</div></div>';
+        html += '<div style="background:#f9f9f9;padding:15px 20px;border-radius:8px;flex:1;"><div style="font-size:13px;color:#888;">會員積分</div><div style="font-size:24px;font-weight:600;">' + (member.points || 0) + '</div></div>';
+        html += '</div>';
+        
+        // 手動建立訂單
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">手動建立訂單</h4>';
+        html += '<div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px;">';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">訂單金額 (HK$)</label><input class="form-input" type="number" id="mo_amount" placeholder="輸入金額"></div>';
+        html += '<div class="form-group"><label class="form-label">訂單備註</label><input class="form-input" id="mo_remark" placeholder="例如：情人節花束"></div>';
+        html += '</div>';
+        html += '<button class="btn btn-primary" onclick="createManualOrder(\'' + memberId + '\')">建立訂單並發送付款鏈接</button>';
+        html += '</div>';
+        
+        // 保存按钮
+        html += '<div style="margin-top:20px;"><button class="btn btn-primary" onclick="saveMemberDetail(\'' + memberId + '\')">保存修改</button></div>';
+        html += '</div>';
+        
+        c.innerHTML = html;
+        // 加载订单统计
+        loadMemberOrderStats(memberId);
+    }
+    
+    async function loadMemberOrderStats(memberId) {
+        try {
+            var member = allMembers.find(function(m) { return m.id === memberId; });
+            if (!member) return;
+            var r = await supabaseClient.from('orders').select('total_amount,status').eq('user_id', memberId);
+            var orders = r.data || [];
+            var paidOrders = orders.filter(function(o) { return o.status === 'paid'; });
+            var count = paidOrders.length;
+            var total = paidOrders.reduce(function(sum, o) { return sum + (parseFloat(o.total_amount) || 0); }, 0);
+            document.getElementById('md_order_count').textContent = count;
+            document.getElementById('md_total_spent').textContent = 'HK$' + total.toFixed(2);
+            // 更新数据库
+            await supabaseClient.from('profiles').update({ order_count: count, total_spent: total }).eq('id', memberId);
+        } catch(e) { console.error('加载订单统计失败', e); }
+    }
+    
+    async function saveMemberDetail(memberId) {
+        try {
+            var payload = {
+                full_name: document.getElementById('md_full_name').value,
+                member_status: document.getElementById('md_member_status').value,
+                points: parseInt(document.getElementById('md_points').value) || 0,
+                email: document.getElementById('md_email').value,
+                phone: document.getElementById('md_phone').value,
+                phone2: document.getElementById('md_phone2').value,
+                shipping_address: document.getElementById('md_shipping_address').value,
+                billing_address: document.getElementById('md_billing_address').value,
+                email_subscription: document.getElementById('md_email_subscription').value,
+                sms_subscription: document.getElementById('md_sms_subscription').value,
+                tags: document.getElementById('md_tags').value
+            };
+            await supabaseClient.from('profiles').update(payload).eq('id', memberId);
+            alert('保存成功！');
+            // 更新本地数据
+            var idx = allMembers.findIndex(function(m) { return m.id === memberId; });
+            if (idx >= 0) { allMembers[idx] = Object.assign(allMembers[idx], payload); }
+        } catch(e) { alert('保存失败：' + e.message); }
+    }
+    
+    async function createManualOrder(memberId) {
+        var amount = parseFloat(document.getElementById('mo_amount').value);
+        var remark = document.getElementById('mo_remark').value;
+        if (!amount || amount <= 0) { alert('请输入有效的订单金额'); return; }
+        
+        try {
+            var member = allMembers.find(function(m) { return m.id === memberId; });
+            var orderCode = 'RS' + Date.now().toString().slice(-8);
+            // 创建订单
+            var { data: order } = await supabaseClient.from('orders').insert({
+                order_code: orderCode,
+                user_id: memberId,
+                customer_name: member ? member.full_name : '',
+                customer_email: member ? member.email : '',
+                customer_phone: member ? member.phone : '',
+                recipient_name: member ? member.full_name : '',
+                recipient_phone: member ? member.phone : '',
+                recipient_address: member ? member.shipping_address : '',
+                subtotal: amount,
+                delivery_fee: 0,
+                total_amount: amount,
+                status: 'unpaid',
+                remarks: remark || '手動建立訂單',
+                product_names: remark || '手動建立訂單'
+            }).select().single();
+            
+            // 创建 Stripe Checkout Session
+            var resp = await fetch('/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: order.id,
+                    orderCode: orderCode,
+                    amount: amount,
+                    customerEmail: member ? member.email : '',
+                    customerName: member ? member.full_name : ''
+                })
+            });
+            var result = await resp.json();
+            if (result.url) {
+                alert('訂單已建立！付款鏈接：\n' + result.url + '\n\n請複製發送給客人');
+                // 复制到剪贴板
+                if (navigator.clipboard) { navigator.clipboard.writeText(result.url); }
+            } else {
+                alert('訂單已建立，但付款鏈接生成失敗：' + (result.error || '未知错误'));
+            }
+        } catch(e) { alert('建立訂單失敗：' + e.message); }
+    }
+    
+    // ========== 手動新增會員 ==========
+    function showAddMemberForm() {
+        var c = document.getElementById('mainContent');
+        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>手動新增會員</h3></div>';
+        html += '<div class="form-container" style="max-width:800px;">';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">姓名 *</label><input class="form-input" id="am_full_name" placeholder="輸入姓名"></div>';
+        html += '<div class="form-group"><label class="form-label">電子郵件 *</label><input class="form-input" id="am_email" placeholder="輸入電子郵件"></div>';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">電話</label><input class="form-input" id="am_phone" placeholder="輸入電話"></div>';
+        html += '<div class="form-group"><label class="form-label">備用電話</label><input class="form-input" id="am_phone2" placeholder="輸入備用電話"></div>';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">送貨地址</label><textarea class="form-input" id="am_shipping_address" rows="2"></textarea></div>';
+        html += '<div class="form-group"><label class="form-label">賬單地址</label><textarea class="form-input" id="am_billing_address" rows="2"></textarea></div>';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<div class="form-group"><label class="form-label">會員狀態</label><select class="form-input" id="am_member_status"><option value="active">活躍</option><option value="inactive">非活躍</option></select></div>';
+        html += '<div class="form-group"><label class="form-label">會員積分</label><input class="form-input" type="number" id="am_points" value="0"></div>';
+        html += '<div class="form-group"><label class="form-label">標籤</label><input class="form-input" id="am_tags" placeholder="逗號分隔"></div>';
+        html += '</div>';
+        html += '<div style="margin-top:20px;display:flex;gap:10px;">';
+        html += '<button class="btn btn-primary" onclick="addNewMember()">建立會員並發送設置密碼郵件</button>';
+        html += '<button class="btn btn-secondary" onclick="switchPage(\'members\')">取消</button>';
+        html += '</div></div>';
+        c.innerHTML = html;
+    }
+    
+    async function addNewMember() {
+        var fullName = document.getElementById('am_full_name').value.trim();
+        var email = document.getElementById('am_email').value.trim();
+        if (!fullName || !email) { alert('姓名和電子郵件為必填'); return; }
+        
+        try {
+            // 创建 auth 用户
+            var { data: authData, error: authError } = await supabaseClient.auth.admin.createUser({
+                email: email,
+                password: 'Temp' + Date.now() + '!',
+                email_confirm: true,
+                user_metadata: { full_name: fullName }
+            });
+            if (authError) throw authError;
+            
+            var userId = authData.user.id;
+            // 创建 profile
+            await supabaseClient.from('profiles').insert({
+                id: userId,
+                full_name: fullName,
+                email: email,
+                phone: document.getElementById('am_phone').value,
+                phone2: document.getElementById('am_phone2').value,
+                shipping_address: document.getElementById('am_shipping_address').value,
+                billing_address: document.getElementById('am_billing_address').value,
+                member_status: document.getElementById('am_member_status').value,
+                points: parseInt(document.getElementById('am_points').value) || 0,
+                tags: document.getElementById('am_tags').value,
+                source: '手動新增',
+                email_subscription: '未訂閱',
+                sms_subscription: '未訂閱'
+            });
+            
+            // 发送重置密码邮件
+            await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/account.html' });
+            
+            alert('會員建立成功！已發送設置密碼郵件到 ' + email);
+            switchPage('members');
+            loadMembersList();
+        } catch(e) {
+            alert('建立失敗：' + e.message + '\n\n注意：手動新增會員需要 service_role 權限，如失敗請使用CSV匯入方式');
+        }
     }
 
     function toggleMember(id) {
@@ -1156,29 +1381,81 @@
             var text = e.target.result;
             var lines = text.split('\n').filter(function(l) { return l.trim(); });
             if (lines.length < 2) { alert('CSV 格式錯誤'); return; }
-            var headers = lines[0].split(',').map(function(h) { return h.replace(/"/g, '').trim(); });
-            var imported = 0;
-            for (var i = 1; i < lines.length; i++) {
-                var vals = lines[i].match(/(".*?"|[^,]+)/g) || [];
-                var row = {};
-                headers.forEach(function(h, idx) { row[h] = (vals[idx] || '').replace(/"/g, '').trim(); });
-                try {
-                    await supabaseClient.from('profiles').upsert({
-                        full_name: row['名稱'] || '', email: row['電子郵件'] || '',
-                        phone: row['電話'] || '', member_status: row['會員狀態'] || 'active',
-                        tags: row['標籤'] || '', last_active: row['最近活動'] || new Date().toISOString()
-                    });
-                    imported++;
-                } catch(err) { console.error('导入失败:', err); }
+            
+            function parseCSVLine(line) {
+                var result = [];
+                var current = '';
+                var inQuotes = false;
+                for (var i = 0; i < line.length; i++) {
+                    var char = line[i];
+                    if (char === '"') { inQuotes = !inQuotes; }
+                    else if (char === ',' && !inQuotes) { result.push(current); current = ''; }
+                    else { current += char; }
+                }
+                result.push(current);
+                return result.map(function(v) { return v.trim(); });
             }
-            alert('成功匯入 ' + imported + ' 位會員！');
-            loadMembersList();
+            
+            var headers = parseCSVLine(lines[0]);
+            var members = [];
+            
+            for (var i = 1; i < lines.length; i++) {
+                var vals = parseCSVLine(lines[i]);
+                var row = {};
+                headers.forEach(function(h, idx) { row[h] = (vals[idx] || '').trim(); });
+                
+                var fullName = (row['名字'] || '') + ' ' + (row['姓氏'] || '');
+                fullName = fullName.trim();
+                var shippingAddr = [row['地址 1 - 街道'], row['地址 1 - 城市'], row['地址 1 - 郵遞區號'], row['地址 1 - 國家']].filter(Boolean).join(', ');
+                var billingAddr = [row['地址 2 - 街道'], row['地址 2 - 城市'], row['地址 2 - 郵遞區號'], row['地址 2 - 國家']].filter(Boolean).join(', ');
+                var email = row['電子郵件 1'] || row['電子郵件'] || '';
+                if (!email) continue;
+                
+                members.push({
+                    full_name: fullName,
+                    email: email,
+                    phone: row['電話 1'] || row['電話'] || '',
+                    phone2: row['電話 2'] || '',
+                    shipping_address: shippingAddr,
+                    billing_address: billingAddr,
+                    member_status: 'active',
+                    tags: '',
+                    source: row['來源'] || 'Wix 商店',
+                    email_subscription: row['電子郵件訂閱者狀態'] || '未訂閱',
+                    sms_subscription: row['簡訊訂閱者狀態'] || '未訂閱',
+                    language: row['語言'] || 'zh',
+                    last_active: row['上次活動日期 (UTC+0)'] || new Date().toISOString(),
+                    created_at: row['建立時間 (UTC+0)'] || new Date().toISOString()
+                });
+            }
+            
+            if (members.length === 0) { alert('沒有有效的會員資料'); return; }
+            if (!confirm('即將匯入 ' + members.length + ' 位會員，並為每位會員創建登錄賬號及發送設置密碼郵件，是否繼續？')) return;
+            
+            try {
+                var resp = await fetch('/import-members', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ members: members })
+                });
+                var result = await resp.json();
+                if (result.error) {
+                    alert('匯入失敗：' + result.error + '\n\n請確認 Cloudflare Pages 已配置 SUPABASE_SERVICE_ROLE_KEY 環境變量');
+                } else {
+                    var msg = '匯入完成！\n成功：' + result.success + ' 位\n失敗：' + result.failed + ' 位';
+                    if (result.errors && result.errors.length > 0) {
+                        msg += '\n\n失敗詳情：' + result.errors.map(function(e) { return e.email + ': ' + e.error; }).join('\n');
+                    }
+                    alert(msg);
+                }
+                loadMembersList();
+            } catch(err) {
+                alert('匯入失敗：' + err.message + '\n\n如在本地測試，請部署到 Cloudflare Pages 後再使用');
+            }
         };
         reader.readAsText(file);
         input.value = '';
     }
-
-
     function loadTemplateProductOptions() {
         var sel = document.getElementById('tplProductSelect');
         if (!sel) return;
