@@ -210,14 +210,16 @@
                 </div>
             </div>
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)"><div class="cart-section-title" onclick="toggleSection(this)">訂購人聯絡方法（選填）<span>+</span></div>
+                <div class="cart-section-title" onclick="toggleSection(this)">訂購人聯絡方法（選填）<span>+</span></div>
                 <div class="cart-section-content">
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
                         <input type="text" class="card-textarea" placeholder="訂購人姓名" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactName = this.value" value="${contactName}">
                         <input type="tel" class="card-textarea" placeholder="訂購人電話" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactPhone = this.value" value="${contactPhone}">
                     </div>
                 </div>
-                cart-section-title" onclick="toggleSection(this)">特別事項（選填）<span>+</span></div>
+            </div>
+            <div class="cart-section">
+                <div class="cart-section-title" onclick="toggleSection(this)">特別事項（選填）<span>+</span></div>
                 <div class="cart-section-content"><textarea class="card-textarea" placeholder="請輸入特別事項..." oninput="remarks = this.value">${remarks}</textarea></div>
             </div>
             <div class="cart-section">
