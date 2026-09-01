@@ -49,10 +49,12 @@
     </style>
 </head>
 <body>
-    <a href="orders.html" class="back-btn">←</a>
     <div class="container">
         <div id="shopHeader" class="shop-header"></div>
-        <h1 style="text-align:center;margin-bottom:25px;font-size:20px;">訂單詳情</h1>
+        <div style="display:flex;align-items:center;gap:15px;margin-bottom:25px;">
+            <a href="orders.html" class="back-btn" style="margin:0;">←</a>
+            <h1 style="margin:0;font-size:20px;">訂單詳情</h1>
+        </div>
         <div id="orderDetail"></div>
         <p style="text-align:center;margin-top:20px;"><a href="orders.html" class="back-link">返回訂單列表</a></p>
     </div>
@@ -155,13 +157,6 @@
             html += '<div class="detail-row"><span class="detail-label">下單時間</span><span class="detail-value">' + (order.created_at || '').slice(0, 16).replace('T', ' ') + '</span></div>';
             html += '</div>';
 
-            // 未付款显示支付按钮
-            if (order.status === 'unpaid') {
-                html += '<div class="pay-btn-area">';
-                html += '<button class="pay-btn" onclick="payNow(' + order.id + ', this)">立即支付</button>';
-                html += '</div>';
-            }
-
             // 3. 訂購人資訊
             html += '<div class="detail-section">';
             html += '<div class="section-title">訂購人資訊</div>';
@@ -198,6 +193,13 @@
             html += '<div class="detail-row"><span class="detail-label">運費</span><span class="detail-value">' + (order.delivery_fee === 0 ? '免費' : 'HK$' + (order.delivery_fee || '-')) + '</span></div>';
             html += '<div class="total-row"><span>總金額</span><span>HK$' + (order.total_amount || '-') + '</span></div>';
             html += '</div>';
+
+            // 未付款：总金额下面显示立即支付按钮
+            if (order.status === 'unpaid') {
+                html += '<div class="pay-btn-area" style="margin-top:30px;">';
+                html += '<button class="pay-btn" onclick="payNow(' + order.id + ', this)">立即支付</button>';
+                html += '</div>';
+            }
 
             document.getElementById('orderDetail').innerHTML = html;
         }

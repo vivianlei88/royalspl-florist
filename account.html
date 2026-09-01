@@ -390,9 +390,9 @@
                 const imgHtml = img ? '<img src="' + img + '" class="account-order-img" alt="">' : '<div class="account-order-img-ph">🌸</div>';
                 const createdDate = (order.created_at || '').slice(0, 10);
                 html += '<div class="account-order-item">';
-                html += imgHtml;
+                html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;">' + imgHtml + '</a>';
                 html += '<div class="account-order-info">';
-                html += '<div class="account-order-code">' + order.order_code + '</div>';
+                html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;"><div class="account-order-code">' + order.order_code + '</div></a>';
                 html += '<div class="account-order-meta">成立：' + createdDate + ' | 送貨：' + (order.delivery_date || '-') + '</div>';
                 html += '<div class="account-order-price">HK$' + order.total_amount + '</div>';
                 html += '</div>';
