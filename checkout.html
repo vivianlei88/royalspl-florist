@@ -468,6 +468,7 @@
                     product_names: productNames,
                     product_images: productImages,
                     items: cart.map(item => ({
+                        productId: item.productId,
                         name: item.name,
                         nameEn: item.nameEn || '',
                         price: item.price,
