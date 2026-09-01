@@ -172,6 +172,7 @@
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
             <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
             <div class="sidebar-item" data-page="template" onclick="switchPage('template')">模板預覽</div>
+            <div class="sidebar-item" data-page="aichat" onclick="switchPage('aichat')">AI客服管理</div>
         </div>
         <div class="main-content" id="mainContent"></div>
     </div>
@@ -272,6 +273,7 @@
         else if (page === 'orders') { renderOrdersPage(c); }
         else if (page === 'members') { renderMembersPage(c); }
         else if (page === 'template') { renderTemplatePage(c); }
+        else if (page === 'aichat') { renderAIChatPage(c); }
     }
     function checkVisitorNotifications() {
         setInterval(async function() {
@@ -1159,6 +1161,81 @@ async function saveProduct() {
             container.innerHTML = '<p style="text-align:center;padding:30px;color:red;">載入失敗：' + e.message + '</p>';
         }
     }
+
+    // ========== AI 客服管理 ==========
+    async function renderAIChatPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">AI客服管理</h2><button class="btn btn-primary" onclick="saveAIChatSettings()">保存設置</button></div>';
+        c.innerHTML += '<div class="form-container" style="max-width:100%;">';
+        
+        // 基本設置
+        c.innerHTML += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">基本設置</h4>';
+        c.innerHTML += '<div class="form-row">';
+        c.innerHTML += '<div class="form-group"><label class="form-label">客服語言</label><select class="form-input" id="ai_language"><option value="zh-Hant">繁體中文</option><option value="yue">粵語</option><option value="en">English</option><option value="auto">自動檢測</option></select></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">WhatsApp 號碼</label><input class="form-input" id="ai_whatsapp" placeholder="例如：85265036907"></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">AI連續失敗次數轉人工</label><input class="form-input" type="number" id="ai_max_fail" value="2"></div>';
+        c.innerHTML += '</div>';
+        
+        c.innerHTML += '<div class="form-group"><label class="form-label">歡迎語</label><input class="form-input" id="ai_welcome" placeholder="輸入歡迎語"></div>';
+        
+        c.innerHTML += '<div class="form-group"><label class="form-label">轉人工關鍵詞（逗號分隔）</label><input class="form-input" id="ai_transfer_keywords" placeholder="人工,客服,投訴,退款"></div>';
+        
+        // 系統提示詞（訓練）
+        c.innerHTML += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">AI 訓練（系統提示詞）</h4>';
+        c.innerHTML += '<p style="font-size:13px;color:#888;margin-bottom:10px;">在這裡編輯 AI 客服的性格、品牌資訊、回答規則等，保存後即時生效</p>';
+        c.innerHTML += '<textarea class="form-input" id="ai_system_prompt" rows="12" style="width:100%;font-family:monospace;font-size:13px;line-height:1.6;"></textarea>';
+        
+        // 啟用開關
+        c.innerHTML += '<div style="margin-top:20px;display:flex;align-items:center;gap:10px;">';
+        c.innerHTML += '<label class="form-label" style="margin:0;">啟用 AI 客服</label>';
+        c.innerHTML += '<input type="checkbox" id="ai_is_active" style="width:20px;height:20px;">';
+        c.innerHTML += '</div>';
+        
+        c.innerHTML += '<div style="margin-top:20px;"><button class="btn btn-primary" onclick="saveAIChatSettings()">保存設置</button></div>';
+        c.innerHTML += '</div>';
+        
+        // 加載設置
+        await loadAIChatSettings();
+    }
+    
+    async function loadAIChatSettings() {
+        try {
+            var r = await supabaseClient.from('ai_chat_settings').select('*').limit(1).maybeSingle();
+            var s = r.data || {};
+            if (document.getElementById('ai_language')) document.getElementById('ai_language').value = s.language || 'zh-Hant';
+            if (document.getElementById('ai_welcome')) document.getElementById('ai_welcome').value = s.welcome_message || '';
+            if (document.getElementById('ai_system_prompt')) document.getElementById('ai_system_prompt').value = s.system_prompt || '';
+            if (document.getElementById('ai_whatsapp')) document.getElementById('ai_whatsapp').value = s.whatsapp_number || '';
+            if (document.getElementById('ai_transfer_keywords')) document.getElementById('ai_transfer_keywords').value = s.transfer_keywords || '';
+            if (document.getElementById('ai_max_fail')) document.getElementById('ai_max_fail').value = s.max_fail_count || 2;
+            if (document.getElementById('ai_is_active')) document.getElementById('ai_is_active').checked = s.is_active !== false;
+        } catch(e) { console.error('加載AI客服設置失敗:', e); }
+    }
+    
+    async function saveAIChatSettings() {
+        var payload = {
+            language: document.getElementById('ai_language').value,
+            welcome_message: document.getElementById('ai_welcome').value,
+            system_prompt: document.getElementById('ai_system_prompt').value,
+            whatsapp_number: document.getElementById('ai_whatsapp').value,
+            transfer_keywords: document.getElementById('ai_transfer_keywords').value,
+            max_fail_count: parseInt(document.getElementById('ai_max_fail').value) || 2,
+            is_active: document.getElementById('ai_is_active').checked,
+            updated_at: new Date().toISOString()
+        };
+        try {
+            // 检查是否已有记录
+            var r = await supabaseClient.from('ai_chat_settings').select('id').limit(1).maybeSingle();
+            if (r.data && r.data.id) {
+                await supabaseClient.from('ai_chat_settings').update(payload).eq('id', r.data.id);
+            } else {
+                await supabaseClient.from('ai_chat_settings').insert(payload);
+            }
+            alert('AI 客服設置保存成功！');
+        } catch(e) {
+            alert('保存失敗：' + e.message);
+        }
+    }
+
 
     function renderMembersTable() {
         var container = document.getElementById('membersTableContainer');
