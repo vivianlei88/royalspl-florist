@@ -1916,12 +1916,7 @@ async function saveProduct() {
     function downloadTemplatePDF() {
         renderTemplatePreview();
         var w = window.open('', '_blank');
-        w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '    <!-- 图片放大预览 -->
-    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
-        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-        <img id="lightboxImg" class="lightbox-img" src="" alt="预览">
-    </div>
-</body></html>');
+        w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '</body></html>');
         w.document.close();
         w.print();
     }
@@ -3309,5 +3304,10 @@ function copyAIWriterResult() {
 }
 </script>
 
+    <!-- 图片放大预览 -->
+    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img id="lightboxImg" class="lightbox-img" src="" alt="预览">
+    </div>
 </body>
 </html>
