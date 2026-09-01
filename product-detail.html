@@ -219,18 +219,10 @@
             html += '<\/div>';
         }
         html += '<div class="detail-seo-section" style="margin-top:30px;">';
-        // 花材護理知識（从数据库动态加载）
-        loadFlowerCareContent(html_container => {
-            const careHtml = '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">花材護理知識 <span>+<\/span><\/div><div class="seo-content">' + (window.flowerCareContent || '鮮花護理建議：<br>1. 每日更換清水<br>2. 斜剪花腳45度<br>3. 避免陽光直射<br>4. 定期清除枯萎花瓣') + '<\/div><\/div>';
-            // 香港隱私條例（链接到私隐政策页）
-            const privacyHtml = '<div class="seo-collapsible"><div class="seo-header" onclick="window.location.href=\'privacy.html\'" style="cursor:pointer;">香港隱私條例 <span>→<\/span><\/div><\/div>';
-            const insertPoint = document.getElementById('productDetail');
-            if (insertPoint) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = careHtml + privacyHtml;
-                insertPoint.appendChild(tempDiv);
-            }
-        });
+        // 花材護理知識（默认内容，后续异步更新）
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">花材護理知識 <span>+<\/span><\/div><div class="seo-content" id="flowerCareContent">鮮花護理建議：<br>1. 每日更換清水<br>2. 斜剪花腳45度<br>3. 避免陽光直射<br>4. 定期清除枯萎花瓣<\/div><\/div>';
+        // 香港隱私條例（链接到私隐政策页）
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="window.location.href=\'privacy.html\'" style="cursor:pointer;">香港隱私條例 <span>→<\/span><\/div><\/div>';
         html += '<\/div>';
         html += '<\/div>';
         html += '<div class="detail-info-area">';
@@ -517,7 +509,19 @@
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    
+    // 从数据库加载花材護理知識
+    async function loadFlowerCareContent() {
+        try {
+            const { data, error } = await supabaseClient.from('flower_care').select('*').eq('is_published', true).limit(1).maybeSingle();
+            if (data && data.content) {
+                const el = document.getElementById('flowerCareContent');
+                if (el) el.innerHTML = data.content;
+            }
+        } catch(e) { console.log('花材護理知識加载失败:', e); }
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
         loadProduct();
         updateCartBadge();
     });
