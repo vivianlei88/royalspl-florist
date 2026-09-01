@@ -854,13 +854,27 @@
                 shopAddress = shopResult.data[0].shop_address || '';
             }
         } catch (e) {}
-        var names = (o.product_names || '').split('|').filter(Boolean);
-        var images = (o.product_images || '').split('|').filter(Boolean);
+        var orderItems = [];
+        if (o.items && Array.isArray(o.items) && o.items.length > 0) {
+            orderItems = o.items;
+        } else {
+            var names = (o.product_names || '').split('|').filter(Boolean);
+            var images = (o.product_images || '').split('|').filter(Boolean);
+            orderItems = names.map(function(n, i) { return { name: n, image: images[i] || '', price: '', quantity: 1 }; });
+        }
         var productHtml = '';
-        for (var pi = 0; pi < names.length; pi++) {
-            productHtml += '<div class="order-product-item">';
-            if (images[pi]) { productHtml += '<img src="' + images[pi] + '">'; }
-            productHtml += '<span style="font-size:12px;">' + names[pi] + '</span></div>';
+        for (var pi = 0; pi < orderItems.length; pi++) {
+            var item = orderItems[pi];
+            productHtml += '<div class="order-product-item" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;">';
+            if (item.image) { productHtml += '<img src="' + item.image + '" style="width:50px;height:50px;object-fit:cover;border-radius:4px;">'; }
+            else { productHtml += '<div style="width:50px;height:50px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;">🌸</div>'; }
+            productHtml += '<div style="flex:1;">';
+            productHtml += '<div style="font-size:13px;font-weight:500;">' + item.name + '</div>';
+            if (item.nameEn) productHtml += '<div style="font-size:11px;color:#888;">' + item.nameEn + '</div>';
+            productHtml += '<div style="font-size:12px;color:#666;">單價：' + (item.price ? 'HK$' + item.price : '-') + ' | 數量：' + (item.quantity || 1) + '</div>';
+            productHtml += '</div>';
+            if (item.price && item.quantity) productHtml += '<div style="font-size:13px;font-weight:600;">HK$' + (item.price * item.quantity) + '</div>';
+            productHtml += '</div>';
         }
         var v = document.getElementById('orderDetailView');
         v.style.display = 'block';
@@ -872,12 +886,15 @@
         v.innerHTML += '<h2 style="font-size:22px;font-weight:600;">' + shopName + '</h2>';
         v.innerHTML += '<p style="font-size:14px;color:#383431;">' + shopPhone + ' | ' + shopAddress + '</p></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂單編號</label><input class="form-input" id="detailOrderCode" value="' + o.order_code + '"></div><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂購人姓名</label><input class="form-input" id="detailCustomerName" value="' + (o.customer_name || o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">訂購人電話</label><input class="form-input" id="detailCustomerPhone" value="' + (o.customer_phone || o.recipient_phone || '') + '"></div></div>';
+        v.innerHTML += '<div class="form-group"><label class="form-label">訂購人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="detailRecipientName" value="' + (o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="detailRecipientPhone" value="' + (o.recipient_phone || '') + '"></div></div>';
-        v.innerHTML += '<div class="form-group"><label class="form-label">收件人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="detailRecipientAddress" value="' + (o.recipient_address || '') + '"></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div><div class="form-group"><label class="form-label">送貨時段</label><input class="form-input" id="detailDeliveryTimeSlot" value="' + (o.delivery_time_slot || '') + ' ' + (o.delivery_hour || '') + '"></div></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">產品</label><div>' + (productHtml || '無產品') + '</div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="detailCardMessage">' + (o.card_message || '') + '</textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="detailRemarks">' + (o.remarks || '') + '</textarea></div></div>';
-        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div><div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div></div>';
+        v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">商品小計</label><input type="number" class="form-input" id="detailSubtotal" value="' + (o.subtotal || 0) + '" readonly></div><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div></div>';
+        v.innerHTML += '<div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div>';
         v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
     }
     function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }

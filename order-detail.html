@@ -8,20 +8,42 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
-        .container { max-width: 700px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .container { max-width: 750px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin: 20px 0 0 20px; }
         .back-btn:hover { background: #f0f0f0; }
-        .detail-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .detail-label { font-weight: 600; }
-        .product-item { display: flex; align-items: center; gap: 15px; margin: 10px 0; }
-        .product-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
+        .detail-section { margin-bottom: 25px; }
+        .section-title { font-size: 16px; font-weight: 600; color: #1A1A1A; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #1A1A1A; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: #888; min-width: 100px; }
+        .detail-value { flex: 1; text-align: right; color: #1A1A1A; }
+        .product-item { display: flex; align-items: center; gap: 15px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .product-item:last-child { border-bottom: none; }
+        .product-item img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; }
+        .product-img-placeholder { width: 70px; height: 70px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+        .product-info { flex: 1; }
+        .product-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+        .product-name-en { font-size: 12px; color: #888; margin-bottom: 4px; }
+        .product-meta { font-size: 13px; color: #666; }
+        .product-price { font-size: 15px; font-weight: 600; color: #1A1A1A; }
+        .total-row { display: flex; justify-content: space-between; padding: 12px 0; font-size: 16px; font-weight: 700; border-top: 2px solid #1A1A1A; margin-top: 10px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 13px; font-weight: 600; }
+        .status-unpaid { background: #fdecea; color: #c0392b; }
+        .status-paid { background: #e8f5e9; color: #27ae60; }
+        .status-shipped { background: #e3f2fd; color: #2980b9; }
+        .status-cancelled { background: #f5f5f5; color: #999; }
         .back-link { display: inline-block; margin-top: 10px; color: #1A1A1A; }
+        @media (max-width: 600px) {
+            .container { margin: 20px 10px; padding: 15px; }
+            .detail-row { flex-direction: column; gap: 4px; }
+            .detail-value { text-align: left; }
+        }
     </style>
 </head>
 <body>
     <a href="orders.html" class="back-btn">←</a>
     <div class="container">
-        <h1 style="text-align:center;">訂單詳情</h1>
+        <h1 style="text-align:center;margin-bottom:25px;">訂單詳情</h1>
         <div id="orderDetail"></div>
         <p style="text-align:center;margin-top:20px;"><a href="orders.html" class="back-link">返回訂單列表</a></p>
     </div>
@@ -40,9 +62,9 @@
             if (!user) { window.location.href = 'account.html'; return; }
 
             const { data: order, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
-            if (error || !order) { document.getElementById('orderDetail').innerHTML = '<p>訂單不存在</p>'; return; }
+            if (error || !order) { document.getElementById('orderDetail').innerHTML = '<p style="text-align:center;">訂單不存在</p>'; return; }
             if (order.customer_email !== user.email) {
-                document.getElementById('orderDetail').innerHTML = '<p>無權查看此訂單</p>';
+                document.getElementById('orderDetail').innerHTML = '<p style="text-align:center;">無權查看此訂單</p>';
                 return;
             }
             renderOrderDetail(order);
@@ -50,27 +72,83 @@
 
         function renderOrderDetail(order) {
             const statusMap = { unpaid: '未付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
-            const productNames = (order.product_names || '').split('|').filter(Boolean);
-            const productImages = (order.product_images || '').split('|').filter(Boolean);
-            let productsHtml = '';
-            for (let i = 0; i < productNames.length; i++) {
-                productsHtml += `<div class="product-item">
-                    ${productImages[i] ? `<img src="${productImages[i]}" alt="${productNames[i]}">` : '<div style="width:60px;height:60px;background:#f0f0f0;border-radius:5px;"></div>'}
-                    <span>${productNames[i]}</span>
-                </div>`;
+            const statusClass = 'status-' + order.status;
+            
+            let items = [];
+            if (order.items && Array.isArray(order.items) && order.items.length > 0) {
+                items = order.items;
+            } else {
+                const names = (order.product_names || '').split('|').filter(Boolean);
+                const images = (order.product_images || '').split('|').filter(Boolean);
+                items = names.map((name, i) => ({
+                    name: name, price: '', quantity: 1, image: images[i] || ''
+                }));
             }
+
+            let productsHtml = '';
+            items.forEach(item => {
+                const imgHtml = item.image 
+                    ? `<img src="${item.image}" alt="${item.name}">`
+                    : '<div class="product-img-placeholder">🌸</div>';
+                const priceHtml = item.price ? `HK$${item.price}` : '-';
+                const subtotal = item.price && item.quantity ? `HK$${item.price * item.quantity}` : '';
+                productsHtml += `<div class="product-item">
+                    ${imgHtml}
+                    <div class="product-info">
+                        <div class="product-name">${item.name}</div>
+                        ${item.nameEn ? `<div class="product-name-en">${item.nameEn}</div>` : ''}
+                        <div class="product-meta">單價：${priceHtml} | 數量：${item.quantity || 1}</div>
+                    </div>
+                    <div class="product-price">${subtotal}</div>
+                </div>`;
+            });
+
+            const deliveryTime = [order.delivery_date, order.delivery_time_slot, order.delivery_hour].filter(Boolean).join(' ');
+
             document.getElementById('orderDetail').innerHTML = `
-                <div class="detail-row"><span class="detail-label">訂單編號</span><span>${order.order_code}</span></div>
-                <div class="detail-row"><span class="detail-label">狀態</span><span>${statusMap[order.status] || order.status}</span></div>
-                <div class="detail-row"><span class="detail-label">送貨日期</span><span>${order.delivery_date || '-'}</span></div>
-                <div class="detail-row"><span class="detail-label">收件人</span><span>${order.recipient_name}</span></div>
-                <div class="detail-row"><span class="detail-label">電話</span><span>${order.recipient_phone}</span></div>
-                <div class="detail-row"><span class="detail-label">地址</span><span>${order.recipient_address}</span></div>
-                <div class="detail-row"><span class="detail-label">商品</span><span>${productsHtml}</span></div>
-                <div class="detail-row"><span class="detail-label">小計</span><span>HK$${order.subtotal}</span></div>
-                <div class="detail-row"><span class="detail-label">運費</span><span>HK$${order.delivery_fee}</span></div>
-                <div class="detail-row"><span class="detail-label">總金額</span><span>HK$${order.total_amount}</span></div>
-                ${order.card_message ? `<div class="detail-row"><span class="detail-label">心意卡</span><span>${order.card_message}</span></div>` : ''}
+                <div class="detail-section">
+                    <div class="section-title">訂單資訊</div>
+                    <div class="detail-row"><span class="detail-label">訂單編號</span><span class="detail-value">${order.order_code}</span></div>
+                    <div class="detail-row"><span class="detail-label">訂單狀態</span><span class="detail-value"><span class="status-badge ${statusClass}">${statusMap[order.status] || order.status}</span></span></div>
+                    <div class="detail-row"><span class="detail-label">下單時間</span><span class="detail-value">${(order.created_at || '').slice(0, 16).replace('T', ' ')}</span></div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">訂購人資訊</div>
+                    <div class="detail-row"><span class="detail-label">姓名</span><span class="detail-value">${order.customer_name || order.recipient_name || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">電話</span><span class="detail-value">${order.customer_phone || order.recipient_phone || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">電郵</span><span class="detail-value">${order.customer_email || '-'}</span></div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">收件人資訊</div>
+                    <div class="detail-row"><span class="detail-label">姓名</span><span class="detail-value">${order.recipient_name || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">電話</span><span class="detail-value">${order.recipient_phone || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">地址</span><span class="detail-value">${order.recipient_address || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">送貨時間</span><span class="detail-value">${deliveryTime || '-'}</span></div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">商品明細</div>
+                    ${productsHtml || '<p style="color:#999;text-align:center;padding:20px;">暫無商品資訊</p>'}
+                </div>
+
+                ${order.card_message ? `<div class="detail-section">
+                    <div class="section-title">心意卡內容</div>
+                    <div style="padding:15px;background:#F9F9F9;border-radius:8px;font-size:14px;line-height:1.8;">${order.card_message}</div>
+                </div>` : ''}
+
+                ${order.remarks ? `<div class="detail-section">
+                    <div class="section-title">特別事項</div>
+                    <div style="padding:15px;background:#F9F9F9;border-radius:8px;font-size:14px;line-height:1.8;">${order.remarks}</div>
+                </div>` : ''}
+
+                <div class="detail-section">
+                    <div class="section-title">金額明細</div>
+                    <div class="detail-row"><span class="detail-label">商品小計</span><span class="detail-value">HK$${order.subtotal || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">運費</span><span class="detail-value">${order.delivery_fee === 0 ? '免費' : 'HK$' + (order.delivery_fee || '-')}</span></div>
+                    <div class="total-row"><span>總金額</span><span>HK$${order.total_amount || '-'}</span></div>
+                </div>
             `;
         }
 

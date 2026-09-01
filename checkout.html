@@ -467,6 +467,16 @@
                     status: 'unpaid',
                     product_names: productNames,
                     product_images: productImages,
+                    items: cart.map(item => ({
+                        name: item.name,
+                        nameEn: item.nameEn || '',
+                        price: item.price,
+                        quantity: item.quantity,
+                        image: item.image || '',
+                        addons: item.addons || []
+                    })),
+                    customer_name: orderData.recipientName,
+                    customer_phone: orderData.recipientPhone,
                     remarks: document.getElementById('remarks') ? document.getElementById('remarks').value : '',
                     card_message: document.getElementById('cardMessage') ? document.getElementById('cardMessage').value : ''
                 })
