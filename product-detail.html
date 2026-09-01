@@ -240,9 +240,9 @@
         }
         
         html += '<div class="specs-matrix">';
-        html += '<div class="spec-row"><span class="spec-label">花材<\/span><span class="spec-value">' + (specs.flowers || 'N/A') + '<\/span><\/div>';
-        html += '<div class="spec-row"><span class="spec-label">產地<\/span><span class="spec-value">' + (specs.origin || 'N/A') + '<\/span><\/div>';
-        html += '<div class="spec-row"><span class="spec-label">規格<\/span><span class="spec-value">' + (specs.size || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">花材<\/span><span class="spec-value">' + (product.specs_flowers || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">產地<\/span><span class="spec-value">' + (product.specs_origin || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">規格<\/span><span class="spec-value">' + (product.specs_size || 'N/A') + '<\/span><\/div>';
         html += '<\/div>';
         
         html += '<div class="addon-section"><p class="addon-label">精選加購配件<\/p><div id="addonList"><\/div><\/div>';
