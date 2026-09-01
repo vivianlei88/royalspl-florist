@@ -457,8 +457,8 @@
                 .insert({
                     order_code: orderCode,
                     customer_email: customerEmail,
-                    customer_name: orderData.recipientName,
-                    customer_phone: orderData.recipientPhone,
+                    customer_name: orderExtra.contactName || orderData.recipientName,
+                    customer_phone: orderExtra.contactPhone || orderData.recipientPhone,
                     recipient_name: orderData.recipientName,
                     recipient_phone: orderData.recipientPhone,
                     recipient_address: orderData.recipientAddress,
@@ -481,8 +481,8 @@
                         image: item.image || '',
                         addons: item.addons || []
                     })),
-                    customer_name: orderData.recipientName,
-                    customer_phone: orderData.recipientPhone,
+                    customer_name: orderExtra.contactName || orderData.recipientName,
+                    customer_phone: orderExtra.contactPhone || orderData.recipientPhone,
                     remarks: orderExtra.remarks || '',
                     card_message: orderExtra.cardMessage || ''
                 })
