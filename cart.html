@@ -128,6 +128,10 @@
     let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
     let cardType = 'none';
     let cardMessage = '';
+    let remarks = '';
+    let contactName = '';
+    let contactPhone = '';
+    let couponCode = '';
 
     function saveCart() { localStorage.setItem('royalspl_cart', JSON.stringify(cart)); updateCartBadge(); }
     function updateCartBadge() { const badge = document.getElementById('cartBadge'); if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; } }
@@ -205,20 +209,19 @@
                 </div>
             </div>
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">訂購人聯絡方法（選填）<span>+</span></div>
+                <div class="cart-section-title" onclick="toggleSection(this)"><div class="cart-section-title" onclick="toggleSection(this)">訂購人聯絡方法（選填）<span>+</span></div>
                 <div class="cart-section-content">
-                    <input type="text" class="form-input" placeholder="姓名">
-                    <input type="email" class="form-input" placeholder="Email">
-                    <input type="tel" class="form-input" placeholder="電話 / WhatsApp">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <input type="text" class="card-textarea" placeholder="訂購人姓名" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactName = this.value" value="${contactName}">
+                        <input type="tel" class="card-textarea" placeholder="訂購人電話" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactPhone = this.value" value="${contactPhone}">
+                    </div>
                 </div>
-            </div>
-            <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">特別事項（選填）<span>+</span></div>
-                <div class="cart-section-content"><textarea class="card-textarea" placeholder="請輸入特別事項..."></textarea></div>
+                cart-section-title" onclick="toggleSection(this)">特別事項（選填）<span>+</span></div>
+                <div class="cart-section-content"><textarea class="card-textarea" placeholder="請輸入特別事項..." oninput="remarks = this.value">${remarks}</textarea></div>
             </div>
             <div class="cart-section">
                 <div class="cart-section-title" onclick="toggleSection(this)">優惠碼<span>+</span></div>
-                <div class="cart-section-content"><div class="coupon-input"><input type="text" placeholder="輸入優惠碼"><button class="coupon-btn">套用</button></div></div>
+                <div class="cart-section-content"><div class="coupon-input"><input type="text" id="couponInput" placeholder="輸入優惠碼" oninput="couponCode = this.value" value="${couponCode}"><button class="coupon-btn" onclick="applyCoupon()">套用</button></div></div>
             </div>
             <div class="cart-summary">
                 <div class="summary-row"><span>商品小計</span><span>HK$${subtotal}</span></div>
@@ -269,6 +272,14 @@
             document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500);
             return;
         }
+        // 保存额外订单信息到 localStorage
+        localStorage.setItem('order_extra', JSON.stringify({
+            cardMessage: cardMessage,
+            remarks: remarks,
+            contactName: contactName,
+            contactPhone: contactPhone,
+            couponCode: couponCode
+        }));
         window.location.href = 'checkout.html';
     }
     const menuBtn = document.getElementById('menuBtn');
