@@ -204,3 +204,15 @@
         height: 60vh;
     }
 }
+
+/* 图片上传按钮 */
+.ai-chat-upload {
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+}
+.ai-chat-upload:hover {
+    opacity: 0.7;
+}

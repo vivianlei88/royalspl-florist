@@ -112,8 +112,16 @@
                     <div class="ai-message">${getWelcomeMessage()}</div>
                 </div>
                 <div class="ai-chat-input">
+                    <label class="ai-chat-upload" title="上传图片">
+                        📷
+                        <input type="file" id="aiChatImage" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+                    </label>
                     <input type="text" id="aiChatInput" placeholder="输入您的问题..." onkeypress="if(event.key==='Enter')sendMessage()">
                     <button onclick="sendMessage()">发送</button>
+                </div>
+                <div id="aiChatImagePreview" style="display:none;padding:5px 15px;">
+                    <img id="aiChatPreviewImg" style="max-width:80px;max-height:80px;border-radius:5px;">
+                    <span onclick="clearImage()" style="cursor:pointer;color:#999;margin-left:5px;">✕</span>
                 </div>
                 <div class="ai-chat-transfer">
                     <button onclick="showHumanSupport()">转人工客服</button>
@@ -130,6 +138,27 @@
         if (win.classList.contains('active')) {
             detectProduct();
         }
+    };
+
+    let pendingImage = null;
+
+    // 图片上传处理
+    window.handleImageUpload = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            pendingImage = e.target.result; // base64
+            document.getElementById('aiChatImagePreview').style.display = 'block';
+            document.getElementById('aiChatPreviewImg').src = pendingImage;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.clearImage = function() {
+        pendingImage = null;
+        document.getElementById('aiChatImagePreview').style.display = 'none';
+        document.getElementById('aiChatImage').value = '';
     };
 
     // 发送消息
@@ -153,8 +182,14 @@
             return;
         }
 
-        addMessage(message, 'user');
+        if (pendingImage) {
+            addMessage('[图片] ' + message, 'user');
+        } else {
+            addMessage(message, 'user');
+        }
         input.value = '';
+        const imgToSend = pendingImage;
+        clearImage();
         showTyping();
 
         try {
@@ -166,7 +201,8 @@
                     history: chatHistory,
                     productInfo: currentProduct,
                     userEmail: userInfo.email,
-                    userOrders: userInfo.orders
+                    userOrders: userInfo.orders,
+                    imageBase64: imgToSend
                 })
             });
             const data = await resp.json();
