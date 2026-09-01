@@ -4,6 +4,7 @@
     let aiFailCount = 0;
     let isHumanMode = false;
     let currentProduct = null;
+    let userInfo = { email: null, orders: [] };
     let chatConfig = {
         welcome_message: '您好！我是 RoyalSpl AI 客服，有什么可以帮您？🌸',
         whatsapp_number: '85265036907',
@@ -11,6 +12,9 @@
         max_fail_count: 2,
         is_active: true
     };
+
+    const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
 
     // 加载配置
     async function loadConfig() {
@@ -21,6 +25,36 @@
                 chatConfig = Object.assign(chatConfig, data);
             }
         } catch(e) { console.error('加载客服配置失败:', e); }
+    }
+
+    // 检测用户登录和订单
+    async function loadUserInfo() {
+        try {
+            // 等待 supabase 库加载
+            if (!window.supabase) {
+                await new Promise(resolve => {
+                    const check = setInterval(() => {
+                        if (window.supabase) { clearInterval(check); resolve(); }
+                    }, 100);
+                    setTimeout(() => { clearInterval(check); resolve(); }, 3000);
+                });
+            }
+            
+            if (window.supabase) {
+                const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const { data: { user } } = await sb.auth.getUser();
+                if (user) {
+                    userInfo.email = user.email;
+                    // 查询用户最近订单
+                    const { data: orders } = await sb.from('orders')
+                        .select('id,order_code,status,total,created_at')
+                        .eq('user_id', user.id)
+                        .order('created_at', { ascending: false })
+                        .limit(5);
+                    if (orders) userInfo.orders = orders;
+                }
+            }
+        } catch(e) { console.error('加载用户信息失败:', e); }
     }
 
     // 检测当前页面商品
@@ -116,14 +150,22 @@
                 body: JSON.stringify({
                     message: message,
                     history: chatHistory,
-                    productInfo: currentProduct
+                    productInfo: currentProduct,
+                    userEmail: userInfo.email,
+                    userOrders: userInfo.orders
                 })
             });
             const data = await resp.json();
             hideTyping();
 
             if (data.reply) {
-                addMessage(data.reply, 'ai');
+                // 处理回复中的链接，让它可点击
+                let replyHtml = data.reply.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                replyHtml = replyHtml.replace(/(\/product-detail\.html\?id=[^\s]+)/g, '<a href="$1">$1</a>');
+                replyHtml = replyHtml.replace(/(\/order-detail\.html\?id=[^\s]+)/g, '<a href="$1">$1</a>');
+                replyHtml = replyHtml.replace(/(\/products\.html)/g, '<a href="$1">$1</a>');
+                addMessageHtml(replyHtml, 'ai');
+                
                 chatHistory.push({ role: 'user', content: message });
                 chatHistory.push({ role: 'assistant', content: data.reply });
 
@@ -149,12 +191,22 @@
         }
     };
 
-    // 添加消息
+    // 添加消息（纯文本）
     function addMessage(text, type) {
         const container = document.getElementById('aiChatMessages');
         const div = document.createElement('div');
         div.className = type === 'user' ? 'ai-message user-message' : 'ai-message';
         div.textContent = text;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // 添加消息（HTML，支持链接）
+    function addMessageHtml(html, type) {
+        const container = document.getElementById('aiChatMessages');
+        const div = document.createElement('div');
+        div.className = type === 'user' ? 'ai-message user-message' : 'ai-message';
+        div.innerHTML = html;
         container.appendChild(div);
         container.scrollTop = container.scrollHeight;
     }
@@ -232,6 +284,7 @@
     // 初始化
     async function init() {
         await loadConfig();
+        loadUserInfo(); // 异步加载，不阻塞
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', createWidget);
         } else {
