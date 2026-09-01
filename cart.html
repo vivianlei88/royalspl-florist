@@ -51,6 +51,23 @@
         .empty-cart-emoji { font-size: 80px; margin-bottom: 20px; }
         .empty-cart-text { font-size: 18px; color: #383431; margin-bottom: 30px; }
         .continue-shopping-btn { display: inline-block; padding: 15px 40px; background-color: #1A1A1A; color: #FAF8F5; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: inherit; }
+
+    @media (max-width: 768px) {
+        .cart-page { padding: 20px 15px !important; }
+        .cart-item { flex-direction: column !important; align-items: flex-start !important; gap: 15px !important; padding: 15px !important; }
+        .cart-item-image { width: 100% !important; height: 200px !important; }
+        .cart-item-info { width: 100% !important; }
+        .cart-item-quantity { width: 100% !important; justify-content: space-between !important; }
+        .cart-header { flex-direction: column !important; gap: 10px !important; }
+        .cart-title { font-size: 24px !important; }
+        .checkout-btn { width: 100% !important; padding: 15px !important; font-size: 16px !important; }
+        .cart-section { padding: 15px !important; }
+    }
+    @media (max-width: 480px) {
+        .cart-item-image { height: 180px !important; }
+        .cart-item-name { font-size: 16px !important; }
+        .cart-item-price { font-size: 18px !important; }
+    }
     </style>
 </head>
 <body>

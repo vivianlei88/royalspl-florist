@@ -36,6 +36,22 @@
         .no-results-emoji { font-size: 60px; margin-bottom: 20px; }
         .no-results-text { font-size: 18px; margin-bottom: 25px; color: #383431; }
         .clear-filter-btn { padding: 12px 30px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 15px; cursor: pointer; font-family: inherit; }
+
+    @media (max-width: 768px) {
+        .products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px !important; }
+        .filter-section { padding: 15px !important; }
+        .filter-pills { gap: 6px !important; }
+        .filter-pill { padding: 5px 12px !important; font-size: 12px !important; }
+        .page-title { font-size: 28px !important; }
+        .product-card-name { font-size: 14px !important; }
+        .product-card-price { font-size: 14px !important; }
+    }
+    @media (max-width: 480px) {
+        .products-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .filter-dimensions { flex-direction: column !important; gap: 15px !important; }
+        .header-container { padding: 0 15px !important; }
+        .logo { font-size: 18px !important; }
+    }
     </style>
 </head>
 <body>

@@ -134,6 +134,22 @@
         .block-content-input { width: 100%; border: none; outline: none; font-size: 18px; line-height: 1.6; background: transparent; min-height: 1.6em; }
         .block-content-input:focus { outline: none; }
         .cover-image-preview { max-width: 150px; max-height: 100px; object-fit: cover; }
+
+    @media (max-width: 768px) {
+        .admin-layout { flex-direction: column !important; }
+        .admin-sidebar { width: 100% !important; position: relative !important; height: auto !important; }
+        .admin-content { padding: 15px !important; }
+        .admin-header { padding: 15px !important; }
+        .data-table { font-size: 12px !important; }
+        .data-table th, .data-table td { padding: 8px !important; }
+        .form-grid { grid-template-columns: 1fr !important; }
+        .btn { padding: 10px 16px !important; font-size: 13px !important; }
+    }
+    @media (max-width: 480px) {
+        .admin-content { padding: 10px !important; }
+        .stat-card { padding: 15px !important; }
+        .stat-number { font-size: 24px !important; }
+    }
     </style>
 </head>
 <body>
