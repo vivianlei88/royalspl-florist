@@ -4,6 +4,24 @@
     let aiFailCount = 0;
     let isHumanMode = false;
     let currentProduct = null;
+    let chatConfig = {
+        welcome_message: '您好！我是 RoyalSpl AI 客服，有什么可以帮您？🌸',
+        whatsapp_number: '85265036907',
+        transfer_keywords: '人工,客服,真人,投诉,退款,退貨,投訴,#人工',
+        max_fail_count: 2,
+        is_active: true
+    };
+
+    // 加载配置
+    async function loadConfig() {
+        try {
+            const resp = await fetch('/ai-chat-settings');
+            const data = await resp.json();
+            if (data && !data.error) {
+                chatConfig = Object.assign(chatConfig, data);
+            }
+        } catch(e) { console.error('加载客服配置失败:', e); }
+    }
 
     // 检测当前页面商品
     function detectProduct() {
@@ -18,13 +36,11 @@
         }
     }
 
-    // 转人工关键词
-    const transferKeywords = ['人工', '客服', '真人', '投诉', '退款', '退貨', '投訴', '#人工'];
-    
     // 检测是否需要转人工
     function shouldTransfer(message) {
         const msg = message.toLowerCase();
-        return transferKeywords.some(kw => msg.includes(kw.toLowerCase()));
+        const keywords = chatConfig.transfer_keywords.split(',').map(k => k.trim().toLowerCase());
+        return keywords.some(kw => msg.includes(kw));
     }
 
     // 检测 AI 是否无法回答
@@ -45,7 +61,7 @@
                     <button class="ai-chat-close" onclick="toggleChat()">×</button>
                 </div>
                 <div class="ai-chat-messages" id="aiChatMessages">
-                    <div class="ai-message">您好！我是 RoyalSpl AI 客服，有什么可以帮您？🌸</div>
+                    <div class="ai-message">${chatConfig.welcome_message}</div>
                 </div>
                 <div class="ai-chat-input">
                     <input type="text" id="aiChatInput" placeholder="输入您的问题..." onkeypress="if(event.key==='Enter')sendMessage()">
@@ -114,7 +130,7 @@
                 // 检测 AI 无法回答
                 if (isAIUnable(data.reply)) {
                     aiFailCount++;
-                    if (aiFailCount >= 2) {
+                    if (aiFailCount >= chatConfig.max_fail_count) {
                         setTimeout(() => {
                             addMessage('抱歉多次未能解答您的问题，建议转人工客服为您服务。', 'ai');
                             setTimeout(showHumanSupport, 1000);
@@ -167,7 +183,7 @@
             <div class="human-support-panel">
                 <h5>人工客服</h5>
                 <p style="font-size:13px;color:#666;margin-bottom:15px;">您可以通过以下方式联系我们：</p>
-                <a href="https://wa.me/85265036907" target="_blank" class="whatsapp-link">
+                <a href="https://wa.me/${chatConfig.whatsapp_number}" target="_blank" class="whatsapp-link">
                     <span style="font-size:20px;">💬</span>
                     <span>WhatsApp 联系客服</span>
                 </a>
@@ -214,9 +230,13 @@
     };
 
     // 初始化
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createWidget);
-    } else {
-        createWidget();
+    async function init() {
+        await loadConfig();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', createWidget);
+        } else {
+            createWidget();
+        }
     }
+    init();
 })();
