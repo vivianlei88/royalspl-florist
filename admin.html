@@ -469,7 +469,7 @@
         f.innerHTML = '<div class="page-header"><h2 class="page-title">新增商品</h2><button class="btn btn-secondary" onclick="showProductsList()">返回列表</button></div><div class="form-container"><input type="hidden" id="productId">';
         f.innerHTML += '<div class="form-group"><label class="form-label">商品圖片（拖拽上傳或黏貼網址）</label><div class="upload-area" id="uploadArea"><p>點擊或拖拽圖片到這裡上傳</p><input type="file" id="fileInput" multiple accept="image/*" style="display:none;"></div><div class="uploaded-imgs" id="uploadedImages"></div><div class="url-add-row"><input type="text" id="imageUrlInput" placeholder="黏貼圖片網址" style="flex:1;padding:10px;border:1px solid #1A1A1A;border-radius:5px;"><button class="btn btn-secondary" onclick="addImageByUrl()">添加圖片</button></div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="nameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="nameEn"></div></div>';
-        f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div><div class="form-group"><label class="form-label">分類</label><input class="form-input" id="category"></div></div>';
+        f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div><div class="form-group"><label class="form-label">分類</label><div class="form-input" id="categoryDisplay" style="cursor:pointer;background:#f9f9f9;" onclick="openCategorySelector()">點擊選擇分類</div><input type="hidden" id="category"><input type="hidden" id="category_id"></div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">庫存狀態</label><select class="form-select" id="stock" onchange="toggleDeliveryDays()"><option value="現貨">現貨</option><option value="預訂">預訂</option></select></div><div class="form-group" id="deliveryDaysGroup"><label class="form-label">預計發貨天數</label><input type="number" class="form-input" id="deliveryDays" value="3" min="1"></div></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">描述</label><textarea class="form-textarea" id="description"></textarea></div>';
         f.innerHTML += '<div class="form-row-3"><div class="form-group"><label class="form-label">花材</label><input class="form-input" id="specsFlowers"></div><div class="form-group"><label class="form-label">產地</label><input class="form-input" id="specsOrigin"></div><div class="form-group"><label class="form-label">規格</label><input class="form-input" id="specsSize"></div></div>';
@@ -505,7 +505,7 @@
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
         selectedAddons = p.linked_addons || [];
-        selectedTags = p.tags || [];
+        selectedTags = p.tags || []; setCategoryDisplay(p.category || '');
         toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderAddonsCheckbox(); loadVariants(p.id); initUploadArea();
     }
     function initUploadArea() { var ua = document.getElementById('uploadArea'); var fi = document.getElementById('fileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleUploadFiles(this.files); }; ua.addEventListener('dragover', function(e) { e.preventDefault(); }); ua.addEventListener('drop', function(e) { e.preventDefault(); handleUploadFiles(e.dataTransfer.files); }); } }
@@ -516,7 +516,24 @@
     function addVariantRow() { variants.push({ name: '', price: '' }); renderVariants(); }
     function removeVariant(i) { variants.splice(i, 1); renderVariants(); }
     function renderVariants() { var c = document.getElementById('variantsList'); if (!c) return; var h = ''; for (var i = 0; i < variants.length; i++) { h += '<div class="variant-row"><input type="text" placeholder="規格名稱" value="' + variants[i].name + '" onchange="variants[' + i + '].name=this.value"><input type="number" placeholder="價格" value="' + variants[i].price + '" onchange="variants[' + i + '].price=this.value"><button class="btn btn-danger btn-small" onclick="removeVariant(' + i + ')">刪除</button></div>'; } c.innerHTML = h; }
-    function renderAddonsCheckbox() { var c = document.getElementById('addonsCheckboxList'); if (!c) return; var h = ''; for (var i = 0; i < allAddons.length; i++) { var a = allAddons[i]; var checked = selectedAddons.indexOf(a.id) > -1 ? 'checked' : ''; h += '<label class="addon-checkbox-item"><input type="checkbox" value="' + a.id + '" ' + checked + ' onchange="toggleAddon(' + a.id + ')">' + (a.image_url ? '<img src="' + a.image_url + '">' : '') + a.name_zh + ' (HK$' + a.price + ')</label>'; } c.innerHTML = h || '<p>暫無配件</p>'; }
+    async function renderAddonsCheckbox() {
+        var c = document.getElementById('addonsCheckboxList');
+        if (!c) return;
+        // 如果 allAddons 为空，先加载
+        if (allAddons.length === 0) {
+            try {
+                var r = await supabaseClient.from('addons').select('*').eq('is_active', true).order('id', { ascending: true });
+                allAddons = r.data || [];
+            } catch(e) { console.error('載入加購配件失敗:', e); }
+        }
+        var h = '';
+        for (var i = 0; i < allAddons.length; i++) {
+            var a = allAddons[i];
+            var checked = selectedAddons.indexOf(a.id) > -1 ? 'checked' : '';
+            h += '<label class="addon-checkbox-item"><input type="checkbox" ' + checked + ' onchange="toggleAddon(' + a.id + ')"><span class="addon-checkbox-img">' + (a.image_url ? '<img src="' + a.image_url + '">' : '🎁') + '</span><span class="addon-checkbox-info"><strong>' + (a.name_zh || '') + '</strong><small>+HK$' + a.price + '</small></span></label>';
+        }
+        c.innerHTML = h || '<p style="font-size:13px;color:#888;padding:10px;">暫無配件，請先在「加購配件」中添加</p>';
+    }
     function toggleAddon(id) { var idx = selectedAddons.indexOf(id); if (idx > -1) { selectedAddons.splice(idx, 1); } else { selectedAddons.push(id); } }
     function initTagPills() { for (var g in tagCategories) { var c = document.getElementById(g); if (!c) continue; var h = ''; for (var i = 0; i < tagCategories[g].length; i++) { h += '<button type="button" class="tag-pill' + (selectedTags.indexOf(tagCategories[g][i]) > -1 ? ' active' : '') + '" data-tag="' + tagCategories[g][i] + '" onclick="toggleTag(this)">' + tagCategories[g][i] + '</button>'; } c.innerHTML = h; } }
     async function loadStyleTags() {
@@ -543,7 +560,62 @@
     function toggleTag(btn) { var tag = btn.getAttribute('data-tag'); var idx = selectedTags.indexOf(tag); if (idx > -1) { selectedTags.splice(idx, 1); btn.classList.remove('active'); } else { selectedTags.push(tag); btn.classList.add('active'); } }
     function toggleDeliveryDays() { var el = document.getElementById('deliveryDaysGroup'); if (el) el.style.display = document.getElementById('stock').value === '預訂' ? 'block' : 'none'; }
     async function loadVariants(productId) { variants = []; try { var r = await supabaseClient.from('product_variants').select('*').eq('product_id', productId); if (r.data) { for (var i = 0; i < r.data.length; i++) { variants.push({ name: r.data[i].variant_name, price: r.data[i].variant_price }); } } } catch (e) {} renderVariants(); }
-    async function saveProduct() {
+    
+    // ========== 分類選擇器 ==========
+    var allCategories = [];
+    
+    async function openCategorySelector() {
+        try {
+            var r = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            allCategories = r.data || [];
+        } catch(e) { allCategories = []; }
+        
+        var currentCat = document.getElementById('category').value;
+        var html = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)closeCategorySelector()">';
+        html += '<div style="background:#fff;border-radius:10px;padding:20px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h4 style="margin:0;font-size:18px;">選擇商品分類</h4><button onclick="closeCategorySelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button></div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">';
+        
+        if (allCategories.length === 0) {
+            html += '<p style="grid-column:1/-1;text-align:center;color:#888;padding:30px;">尚無分類，請先在「商品分類」中添加</p>';
+        } else {
+            allCategories.forEach(function(cat) {
+                var isSelected = currentCat === cat.name_zh;
+                html += '<div onclick="selectCategory(\'' + cat.id + '\', \'' + (cat.name_zh || '').replace(/'/g, "\\'") + '\')" style="border:2px solid ' + (isSelected ? '#1A1A1A' : '#eee') + ';border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:' + (isSelected ? '#f0f0f0' : '#fff') + ';">';
+                html += '<div style="width:100%;aspect-ratio:1;background:#f5f5f5;border-radius:5px;overflow:hidden;margin-bottom:8px;">';
+                if (cat.image_url) { html += '<img src="' + cat.image_url + '" style="width:100%;height:100%;object-fit:cover;">'; }
+                html += '</div>';
+                html += '<div style="font-size:13px;font-weight:500;">' + (cat.name_zh || '') + '</div>';
+                html += '<div style="font-size:11px;color:#888;">' + (cat.name_en || '') + '</div>';
+                html += '</div>';
+            });
+        }
+        html += '</div></div></div>';
+        
+        var div = document.createElement('div');
+        div.id = 'categorySelectorModal';
+        div.innerHTML = html;
+        document.body.appendChild(div);
+    }
+    
+    function closeCategorySelector() {
+        var modal = document.getElementById('categorySelectorModal');
+        if (modal) modal.remove();
+    }
+    
+    function selectCategory(catId, catName) {
+        document.getElementById('category').value = catName;
+        document.getElementById('category_id').value = catId;
+        document.getElementById('categoryDisplay').textContent = catName;
+        closeCategorySelector();
+    }
+    
+    function setCategoryDisplay(name) {
+        var display = document.getElementById('categoryDisplay');
+        if (display) display.textContent = name || '點擊選擇分類';
+    }
+
+async function saveProduct() {
         var id = document.getElementById('productId').value;
         var data = {
             name_zh: document.getElementById('nameZh').value.trim(),
