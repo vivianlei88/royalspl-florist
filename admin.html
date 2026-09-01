@@ -1055,7 +1055,7 @@
             showToast('店鋪資料已保存');
         } catch (e) { showToast('保存失敗，請先創建 shop_settings 表'); }
     }
-    function renderMembersPage(c) {
+    async function renderMembersPage(c) {
         c.innerHTML = '<div class="page-header"><h3>會員管理</h3><div style="display:flex;gap:10px;align-items:center;"><input type="text" id="memberSearch" placeholder="搜尋名稱或電郵..." style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;"><button class="btn btn-secondary" onclick="exportMembersCSV()">匯出 CSV</button><label class="btn btn-primary" style="cursor:pointer;">匯入 CSV<input type="file" id="memberCSVInput" accept=".csv" style="display:none;" onchange="importMembersCSV(this)"></label></div></div><div id="membersTableContainer" style="overflow-x:auto;"></div>';
         loadMembersList();
     }
@@ -1132,7 +1132,7 @@
         renderMembersTable();
     }
 
-    function exportMembersCSV() {
+    async function exportMembersCSV() {
         var exportMembers = selectedMemberIds.length > 0 ? allMembers.filter(function(m) { return selectedMemberIds.includes(m.id); }) : allMembers;
         var headers = ['名稱', '電子郵件', '電話', '會員狀態', '標籤', '最近活動', '建立日期'];
         var rows = exportMembers.map(function(m) {
