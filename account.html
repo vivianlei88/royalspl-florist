@@ -327,9 +327,24 @@
         }
 
         async function setDefaultAddress(id) {
-            await supabaseClient.from('user_addresses').update({ is_default: false }).eq('user_id', currentUser.id);
-            await supabaseClient.from('user_addresses').update({ is_default: true }).eq('id', id);
-            await loadAddresses();
+            try {
+                // 先把所有地址设为非默认
+                const { error: err1 } = await supabaseClient.from('user_addresses').update({ is_default: false }).eq('user_id', currentUser.id);
+                if (err1) { console.error('清除默认失败:', err1); alert('設置失敗：' + err1.message); return; }
+                // 再把选中的地址设为默认
+                const { error: err2 } = await supabaseClient.from('user_addresses').update({ is_default: true }).eq('id', id);
+                if (err2) { console.error('设置默认失败:', err2); alert('設置失敗：' + err2.message); return; }
+                await loadAddresses();
+                // 成功提示
+                const toast = document.createElement('div');
+                toast.textContent = '已設為預設地址';
+                toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#FAF8F5;padding:12px 24px;border-radius:5px;z-index:9999;font-size:14px;';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            } catch (e) {
+                console.error('设置默认地址异常:', e);
+                alert('設置失敗，請稍後重試');
+            }
         }
 
         async function deleteAddress(id) {
