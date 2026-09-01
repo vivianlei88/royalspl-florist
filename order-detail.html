@@ -52,11 +52,11 @@
     <div class="container">
         <div id="shopHeader" class="shop-header"></div>
         <div style="display:flex;align-items:center;gap:15px;margin-bottom:25px;">
-            <a href="orders.html" class="back-btn" style="margin:0;">←</a>
+            <a href="account.html" class="back-btn" style="margin:0;">←</a>
             <h1 style="margin:0;font-size:20px;">訂單詳情</h1>
         </div>
         <div id="orderDetail"></div>
-        <p style="text-align:center;margin-top:20px;"><a href="orders.html" class="back-link">返回訂單列表</a></p>
+        <p style="text-align:center;margin-top:20px;"><a href="account.html" class="back-link">返回會員中心</a></p>
     </div>
 
     <script>
@@ -88,7 +88,7 @@
         async function loadOrderDetail() {
             const urlParams = new URLSearchParams(window.location.search);
             const orderId = urlParams.get('id');
-            if (!orderId) { window.location.href = 'orders.html'; return; }
+            if (!orderId) { window.location.href = 'account.html'; return; }
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) { window.location.href = 'account.html'; return; }
             const { data: order, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
