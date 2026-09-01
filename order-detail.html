@@ -133,15 +133,15 @@
                     ${productsHtml || '<p style="color:#999;text-align:center;padding:20px;">暫無商品資訊</p>'}
                 </div>
 
-                ${order.card_message ? `<div class="detail-section">
+                <div class="detail-section">
                     <div class="section-title">心意卡內容</div>
-                    <div style="padding:15px;background:#F9F9F9;border-radius:8px;font-size:14px;line-height:1.8;">${order.card_message}</div>
-                </div>` : ''}
+                    <div style="padding:15px;background:#F9F9F9;border-radius:8px;font-size:14px;line-height:1.8;">${order.card_message || '<span style="color:#ccc;">無</span>'}</div>
+                </div>
 
-                ${order.remarks ? `<div class="detail-section">
+                <div class="detail-section">
                     <div class="section-title">特別事項</div>
-                    <div style="padding:15px;background:#F9F9F9;border-radius:8px;font-size:14px;line-height:1.8;">${order.remarks}</div>
-                </div>` : ''}
+                    <div style="padding:15px;background:#F9F9F9;border-radius:8px;font-size:14px;line-height:1.8;">${order.remarks || '<span style="color:#ccc;">無</span>'}</div>
+                </div>
 
                 <div class="detail-section">
                     <div class="section-title">金額明細</div>
