@@ -84,6 +84,20 @@
     }
 
     // 创建客服窗口
+    function getWelcomeMessage() {
+        const lang = navigator.language || navigator.userLanguage || 'zh';
+        const msg = chatConfig.welcome_message || '';
+        // 如果欢迎语包含中英文分隔符 ||，自动选择
+        if (msg.includes('||')) {
+            const parts = msg.split('||');
+            if (lang.toLowerCase().startsWith('en')) {
+                return parts[1]?.trim() || parts[0];
+            }
+            return parts[0]?.trim() || parts[1] || msg;
+        }
+        return msg;
+    }
+
     function createWidget() {
         const widget = document.createElement('div');
         widget.className = 'ai-chat-widget';
@@ -95,7 +109,7 @@
                     <button class="ai-chat-close" onclick="toggleChat()">×</button>
                 </div>
                 <div class="ai-chat-messages" id="aiChatMessages">
-                    <div class="ai-message">${chatConfig.welcome_message}</div>
+                    <div class="ai-message">${getWelcomeMessage()}</div>
                 </div>
                 <div class="ai-chat-input">
                     <input type="text" id="aiChatInput" placeholder="输入您的问题..." onkeypress="if(event.key==='Enter')sendMessage()">
