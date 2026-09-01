@@ -2014,6 +2014,136 @@
         }
 
 
+        function MemberManagement() {
+            const [members, setMembers] = React.useState([]);
+            const [selected, setSelected] = React.useState([]);
+            const [search, setSearch] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+
+            React.useEffect(() => { loadMembers(); }, []);
+
+            const loadMembers = async () => {
+                setLoading(true);
+                try {
+                    const { data, error } = await window.supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+                    if (data) setMembers(data);
+                } catch(e) { console.error('加载会员失败:', e); }
+                setLoading(false);
+            };
+
+            const toggleSelect = (id) => {
+                setSelected(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+            };
+
+            const toggleSelectAll = () => {
+                if (selected.length === members.length) setSelected([]);
+                else setSelected(members.map(m => m.id));
+            };
+
+            const exportCSV = () => {
+                const exportMembers = selected.length > 0 ? members.filter(m => selected.includes(m.id)) : members;
+                const headers = ['名稱', '電子郵件', '電話', '會員狀態', '標籤', '最近活動', '建立日期'];
+                const rows = exportMembers.map(m => [
+                    m.full_name || '', m.email || '', m.phone || '',
+                    m.member_status || 'active', m.tags || '', m.last_active || '', m.created_at || ''
+                ]);
+                const csv = [headers, ...rows].map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'members_' + new Date().toISOString().slice(0,10) + '.csv';
+                link.click();
+            };
+
+            const importCSV = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    const text = ev.target.result;
+                    const lines = text.split('\n').filter(l => l.trim());
+                    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                    for (let i = 1; i < lines.length; i++) {
+                        const vals = lines[i].match(/(".*?"|[^,]+)/g) || [];
+                        const row = {};
+                        headers.forEach((h, idx) => { row[h] = (vals[idx] || '').replace(/"/g, '').trim(); });
+                        try {
+                            await window.supabaseClient.from('profiles').upsert({
+                                full_name: row['名稱'] || '', email: row['電子郵件'] || '',
+                                phone: row['電話'] || '', member_status: row['會員狀態'] || 'active',
+                                tags: row['標籤'] || '', last_active: row['最近活動'] || new Date().toISOString()
+                            });
+                        } catch(err) { console.error('导入失败:', err); }
+                    }
+                    alert('匯入完成！');
+                    loadMembers();
+                };
+                reader.readAsText(file);
+            };
+
+            const filtered = members.filter(m =>
+                !search || (m.full_name || '').includes(search) || (m.email || '').includes(search)
+            );
+
+            return React.createElement('div', null,
+                React.createElement('div', { className: 'page-header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' } },
+                    React.createElement('div', null,
+                        React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '會員管理'),
+                        React.createElement('span', { style: { color: '#888', fontSize: '14px', marginLeft: '10px' } }, '共 ' + members.length + ' 位會員')
+                    ),
+                    React.createElement('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } },
+                        React.createElement('input', {
+                            type: 'text', placeholder: '搜尋...', value: search,
+                            onChange: (e) => setSearch(e.target.value),
+                            style: { padding: '8px 12px', border: '1px solid #ddd', borderRadius: '5px', fontSize: '14px' }
+                        }),
+                        React.createElement('button', { className: 'btn btn-secondary', onClick: exportCSV }, '匯出 CSV'),
+                        React.createElement('label', { className: 'btn btn-primary', style: { cursor: 'pointer' } },
+                            '匯入 CSV',
+                            React.createElement('input', { type: 'file', accept: '.csv', onChange: importCSV, style: { display: 'none' } })
+                        )
+                    )
+                ),
+                React.createElement('div', { className: 'form-container', style: { overflowX: 'auto' } },
+                    React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '14px' } },
+                        React.createElement('thead', null,
+                            React.createElement('tr', { style: { borderBottom: '2px solid #1A1A1A' } },
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } },
+                                    React.createElement('input', { type: 'checkbox', checked: selected.length === members.length && members.length > 0, onChange: toggleSelectAll })
+                                ),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '名稱'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '電子郵件'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '電話'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '會員狀態'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '標籤'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '最近活動'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '建立日期')
+                            )
+                        ),
+                        React.createElement('tbody', null,
+                            loading ? React.createElement('tr', null, React.createElement('td', { colSpan: 8, style: { padding: '30px', textAlign: 'center', color: '#888' } }, '載入中...')) :
+                            filtered.length === 0 ? React.createElement('tr', null, React.createElement('td', { colSpan: 8, style: { padding: '30px', textAlign: 'center', color: '#888' } }, '尚無會員')) :
+                            filtered.map(m => React.createElement('tr', { key: m.id, style: { borderBottom: '1px solid #eee' } },
+                                React.createElement('td', { style: { padding: '12px 8px' } },
+                                    React.createElement('input', { type: 'checkbox', checked: selected.includes(m.id), onChange: () => toggleSelect(m.id) })
+                                ),
+                                React.createElement('td', { style: { padding: '12px 8px' } }, m.full_name || '-'),
+                                React.createElement('td', { style: { padding: '12px 8px' } }, m.email || '-'),
+                                React.createElement('td', { style: { padding: '12px 8px' } }, m.phone || '-'),
+                                React.createElement('td', { style: { padding: '12px 8px' } },
+                                    React.createElement('span', { style: { padding: '3px 10px', borderRadius: '12px', fontSize: '12px', background: m.member_status === 'active' ? '#e8f5e9' : '#f5f5f5', color: m.member_status === 'active' ? '#27ae60' : '#999' } }, m.member_status || 'active')
+                                ),
+                                React.createElement('td', { style: { padding: '12px 8px' } }, m.tags || '-'),
+                                React.createElement('td', { style: { padding: '12px 8px', color: '#888' } }, (m.last_active || '').slice(0, 10)),
+                                React.createElement('td', { style: { padding: '12px 8px', color: '#888' } }, (m.created_at || '').slice(0, 10))
+                            ))
+                        )
+                    )
+                )
+            );
+        }
+
+
         function ContentEditor() {
             const [activeSection, setActiveSection] = useState('articles');
             const [editingPost, setEditingPost] = useState(undefined);
@@ -2162,7 +2292,8 @@
                 { key: 'tags', label: '標籤', icon: 'Tags' },
                 { key: 'authors', label: '作家', icon: 'Users' },
                 { key: 'monetization', label: '創造營收', icon: 'TrendingUp' },
-                { key: 'analytics', label: '分析', icon: 'BarChart2' }
+                { key: 'analytics', label: '分析', icon: 'BarChart2' },
+                { key: 'members', label: '會員管理', icon: 'Users' }
             ];
 
             return React.createElement('div', { className: 'block-editor-wrapper' },
@@ -2188,6 +2319,7 @@
                                 activeSection === 'contact' ? '聯絡我們設定' :
                                 activeSection === 'privacy' ? '私隱政策管理' :
                                 activeSection === 'flowercare' ? '花材護理知識管理' :
+                                activeSection === 'members' ? '會員管理' :
                                 activeSection === 'categories' ? '文章分類管理' :
                                 activeSection === 'tags' ? '文章標籤管理' :
                                 activeSection === 'comments' ? '留言管理' :
@@ -2257,6 +2389,7 @@
                         activeSection === 'contact' && React.createElement(ContactEditor),
                         activeSection === 'privacy' && React.createElement(PrivacyPolicyEditor),
                         activeSection === 'flowercare' && React.createElement(FlowerCareEditor),
+                        activeSection === 'members' && React.createElement(MemberManagement),
                         activeSection === 'comments' && React.createElement('div', { className: 'empty-state' }, '留言管理開發中'),
                         !['articles', 'categories', 'tags', 'faq', 'contact', 'comments'].includes(activeSection) && React.createElement('div', { className: 'empty-state' }, '此功能開發中')
                     )

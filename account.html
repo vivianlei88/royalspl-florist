@@ -242,6 +242,22 @@
         }
 
         async function loadProfile() {
+            // 自动同步用户信息到 profiles 表
+            try {
+                const { data: existing } = await supabaseClient.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
+                if (!existing) {
+                    await supabaseClient.from('profiles').insert({
+                        id: currentUser.id,
+                        full_name: currentUser.user_metadata?.full_name || '',
+                        email: currentUser.email,
+                        member_status: 'active',
+                        last_active: new Date().toISOString()
+                    });
+                } else {
+                    await supabaseClient.from('profiles').update({ last_active: new Date().toISOString() }).eq('id', currentUser.id);
+                }
+            } catch(e) { console.log('同步profile失败:', e); }
+            
             const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
             if (data) {
                 document.getElementById('profileName').textContent = data.full_name || '-';
