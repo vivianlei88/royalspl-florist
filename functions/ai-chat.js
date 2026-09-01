@@ -3,10 +3,10 @@ export async function onRequestPost(context) {
         const { message, history, productInfo } = await context.request.json();
         
         const API_KEY = context.env.DOUBAO_API_KEY;
-        const ENDPOINT_ID = context.env.DOUBAO_ENDPOINT_ID;
+        const MODEL_ID = context.env.DOUBAO_MODEL_ID || 'doubao-seed-2-0-mini-260428';
         const BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3';
         
-        if (!API_KEY || !ENDPOINT_ID) {
+        if (!API_KEY) {
             return Response.json({ error: 'AI 服务未配置' }, { status: 500 });
         }
         
@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
         // 构建消息
         let messages = [{ role: 'system', content: systemPrompt }];
         if (history && Array.isArray(history)) {
-            messages = messages.concat(history.slice(-6)); // 保留最近6轮
+            messages = messages.concat(history.slice(-6));
         }
         messages.push({ role: 'user', content: message });
         
@@ -39,7 +39,7 @@ export async function onRequestPost(context) {
                 'Authorization': `Bearer ${API_KEY}`
             },
             body: JSON.stringify({
-                model: ENDPOINT_ID,
+                model: MODEL_ID,
                 messages: messages,
                 max_tokens: 500,
                 temperature: 0.7
