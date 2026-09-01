@@ -1201,8 +1201,8 @@ async function saveProduct() {
     
     async function loadAIChatSettings() {
         try {
-            var r = await supabaseClient.from('ai_chat_settings').select('*').limit(1).maybeSingle();
-            var s = r.data || {};
+            var resp = await fetch('/ai-chat-settings');
+            var s = await resp.json();
             if (document.getElementById('ai_language')) document.getElementById('ai_language').value = s.language || 'zh-Hant';
             if (document.getElementById('ai_welcome')) document.getElementById('ai_welcome').value = s.welcome_message || '';
             if (document.getElementById('ai_system_prompt')) document.getElementById('ai_system_prompt').value = s.system_prompt || '';
@@ -1221,18 +1221,20 @@ async function saveProduct() {
             whatsapp_number: document.getElementById('ai_whatsapp').value,
             transfer_keywords: document.getElementById('ai_transfer_keywords').value,
             max_fail_count: parseInt(document.getElementById('ai_max_fail').value) || 2,
-            is_active: document.getElementById('ai_is_active').checked,
-            updated_at: new Date().toISOString()
+            is_active: document.getElementById('ai_is_active').checked
         };
         try {
-            // 检查是否已有记录
-            var r = await supabaseClient.from('ai_chat_settings').select('id').limit(1).maybeSingle();
-            if (r.data && r.data.id) {
-                await supabaseClient.from('ai_chat_settings').update(payload).eq('id', r.data.id);
+            var resp = await fetch('/ai-chat-save-settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            var result = await resp.json();
+            if (result.success) {
+                alert('AI 客服設置保存成功！');
             } else {
-                await supabaseClient.from('ai_chat_settings').insert(payload);
+                alert('保存失敗：' + (result.error || '未知錯誤'));
             }
-            alert('AI 客服設置保存成功！');
         } catch(e) {
             alert('保存失敗：' + e.message);
         }
