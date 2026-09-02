@@ -234,7 +234,8 @@
                 html += '<button class="filter-pill" data-category="' + cat.name_zh + '" onclick="toggleCategory(\'' + cat.name_zh + '\')">' + cat.name_zh + '<\/button>';
             }
             container.innerHTML = html;
-            if (selectedCategory) { updateFilterUI(); }
+            // 分類映射就緒後，若 URL 已帶選定分類則重新渲染（避免競態：products 先載入而 categoryIdMap 未就緒時顯示 0 款）
+            if (selectedCategory) { updateFilterUI(); renderProducts(); }
         } catch (err) {
             console.error('載入分類失敗:', err);
         }
