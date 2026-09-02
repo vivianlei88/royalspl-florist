@@ -282,6 +282,10 @@
         if (selectedCategory) {
             var targetCategoryId = categoryIdMap[selectedCategory];
             filtered = filtered.filter(function(p) {
+                // 多分类：检查 category_ids 数组
+                if (targetCategoryId && p.category_ids && p.category_ids.indexOf(targetCategoryId) > -1) return true;
+                if (p.categories && p.categories.indexOf(selectedCategory) > -1) return true;
+                // 兼容旧数据
                 if (targetCategoryId && p.category_id === targetCategoryId) return true;
                 if (p.category === selectedCategory) return true;
                 return false;
