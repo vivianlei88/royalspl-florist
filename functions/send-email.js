@@ -12,20 +12,28 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const { to, subject, html } = await request.json();
-    
+    const { to, subject, html, attachments } = await request.json();
+
+    const payload = {
+      from: 'RoyalSpl Florist <info@royalspl.xyz>',
+      to: [to],
+      subject: subject,
+      html: html,
+    };
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      payload.attachments = attachments.map((a) => ({
+        filename: a.filename || 'order.pdf',
+        content: a.content || '',
+      }));
+    }
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + env.RESEND_API_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: 'RoyalSpl Florist <info@royalspl.xyz>',
-        to: [to],
-        subject: subject,
-        html: html,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const result = await response.json();

@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="js/order-pdf.js"></script>
     <style>
         .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
         .user-icon svg { display: block; }
@@ -519,13 +522,37 @@
                 // 发送订单成立通知邮件
                 if (customerEmail) {
                     const itemsList = cart.map(item => `<li>${item.name} × ${item.quantity} - HK$${item.price * item.quantity}</li>`).join('');
+                    let pdfBase64 = '';
+                    try {
+                        pdfBase64 = await generateOrderPdfBase64({
+                            shopName: 'RoyalSpl Florist',
+                            orderCode: orderCode,
+                            deliveryDate: orderData.deliveryDate,
+                            deliveryTime: orderData.deliveryTimeSlot,
+                            deliveryArea: orderData.deliveryArea,
+                            customerName: orderExtra.contactName || orderData.recipientName,
+                            customerEmail: customerEmail,
+                            customerPhone: orderExtra.contactPhone || orderData.recipientPhone,
+                            recipientName: orderData.recipientName,
+                            recipientPhone: orderData.recipientPhone,
+                            address: orderData.recipientAddress,
+                            items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price, image: item.image || '' })),
+                            subtotal: orderData.subtotal,
+                            deliveryFee: orderData.deliveryFee,
+                            total: orderData.totalAmount,
+                            cardMessage: orderExtra.cardMessage || '',
+                            remarks: orderExtra.remarks || '',
+                            status: '未付款'
+                        });
+                    } catch (pdfErr) { console.warn('生成訂單PDF失敗:', pdfErr); }
                     fetch('/send-email', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             to: customerEmail,
                             subject: '【RoyalSpl Florist】訂單成立通知 ' + orderCode,
-                            html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">訂單已成立</h2><p>親愛的顧客，感謝您的訂購！</p><p><strong>訂單號：</strong>' + orderCode + '</p><p><strong>訂單金額：</strong>HK$' + orderData.totalAmount + '</p><h3>訂單明細：</h3><ul>' + itemsList + '</ul><p><strong>收貨人：</strong>' + orderData.recipientName + '</p><p><strong>配送地址：</strong>' + orderData.recipientAddress + '</p><p style="color:#888;font-size:12px;margin-top:30px;">請完成支付以確認訂單，支付後我們會盡快安排配送。</p></div>'
+                            html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">訂單已成立</h2><p>親愛的顧客，感謝您的訂購！</p><p><strong>訂單號：</strong>' + orderCode + '</p><p><strong>訂單金額：</strong>HK$' + orderData.totalAmount + '</p><h3>訂單明細：</h3><ul>' + itemsList + '</ul><p><strong>收貨人：</strong>' + orderData.recipientName + '</p><p><strong>配送地址：</strong>' + orderData.recipientAddress + '</p><p style="color:#888;font-size:12px;margin-top:30px;">請完成支付以確認訂單，支付後我們會盡快安排配送。</p></div>',
+                            attachments: pdfBase64 ? [{ filename: 'Order-' + orderCode + '.pdf', content: pdfBase64 }] : []
                         })
                     }).catch(e => console.warn('發送訂單成立郵件失敗:', e));
                 }
