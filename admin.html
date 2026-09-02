@@ -260,6 +260,7 @@
         tagStyle: [],
         tagPrice: []
     };
+    var styleCategoryMap = {};
 
     async function loadTagSettings() {
         try {
@@ -735,9 +736,11 @@
     function initTagPills() { for (var g in tagCategories) { var c = document.getElementById(g); if (!c) continue; var h = ''; for (var i = 0; i < tagCategories[g].length; i++) { h += '<button type="button" class="tag-pill' + (selectedTags.indexOf(tagCategories[g][i]) > -1 ? ' active' : '') + '" data-tag="' + tagCategories[g][i] + '" onclick="toggleTag(this)">' + tagCategories[g][i] + '</button>'; } c.innerHTML = h; } }
     async function loadStyleTags() {
         try {
-            var r = await supabaseClient.from('categories').select('name_zh').eq('is_active', true).order('sort_order', { ascending: true });
+            var r = await supabaseClient.from('categories').select('id,name_zh').eq('is_active', true).order('sort_order', { ascending: true });
             if (r.data) {
                 tagCategories.tagStyle = r.data.map(function(c) { return c.name_zh; });
+                styleCategoryMap = {};
+                r.data.forEach(function(c) { styleCategoryMap[c.name_zh] = c.id; });
                 initTagPills();
             }
         } catch (e) { console.error('載入設計風格標籤失敗:', e); }
@@ -754,7 +757,65 @@
             }
         } catch (e) { console.error('載入標籤失敗:', e); }
     }
-    function toggleTag(btn) { var tag = btn.getAttribute('data-tag'); var idx = selectedTags.indexOf(tag); if (idx > -1) { selectedTags.splice(idx, 1); btn.classList.remove('active'); } else { selectedTags.push(tag); btn.classList.add('active'); } }
+    function toggleTag(btn) {
+        var tag = btn.getAttribute('data-tag');
+        var idx = selectedTags.indexOf(tag);
+        if (idx > -1) {
+            selectedTags.splice(idx, 1);
+            btn.classList.remove('active');
+            // 如果是设计风格标签，同时移除对应分类
+            if (styleCategoryMap[tag]) {
+                removeCategoryFromProduct(styleCategoryMap[tag], tag);
+            }
+        } else {
+            selectedTags.push(tag);
+            btn.classList.add('active');
+            // 如果是设计风格标签，同时添加对应分类
+            if (styleCategoryMap[tag]) {
+                addCategoryToProduct(styleCategoryMap[tag], tag);
+            }
+        }
+    }
+    function addCategoryToProduct(catId, catName) {
+        try {
+            var idsEl = document.getElementById('category_ids');
+            var namesEl = document.getElementById('categories');
+            var ids = idsEl ? JSON.parse(idsEl.value || '[]') : [];
+            var names = namesEl ? JSON.parse(namesEl.value || '[]') : [];
+            if (ids.indexOf(catId) === -1) {
+                ids.push(catId);
+                names.push(catName);
+                if (idsEl) idsEl.value = JSON.stringify(ids);
+                if (namesEl) namesEl.value = JSON.stringify(names);
+                var catEl = document.getElementById('category');
+                if (catEl) catEl.value = names.join(', ');
+                var catIdEl = document.getElementById('category_id');
+                if (catIdEl) catIdEl.value = ids.length > 0 ? ids[0] : '';
+                setCategoryDisplay(names);
+                showToast('已自動加入分類：' + catName);
+            }
+        } catch(e) { console.error('添加分类失败:', e); }
+    }
+    function removeCategoryFromProduct(catId, catName) {
+        try {
+            var idsEl = document.getElementById('category_ids');
+            var namesEl = document.getElementById('categories');
+            var ids = idsEl ? JSON.parse(idsEl.value || '[]') : [];
+            var names = namesEl ? JSON.parse(namesEl.value || '[]') : [];
+            var idx = ids.indexOf(catId);
+            if (idx > -1) {
+                ids.splice(idx, 1);
+                names.splice(idx, 1);
+                if (idsEl) idsEl.value = JSON.stringify(ids);
+                if (namesEl) namesEl.value = JSON.stringify(names);
+                var catEl = document.getElementById('category');
+                if (catEl) catEl.value = names.join(', ');
+                var catIdEl = document.getElementById('category_id');
+                if (catIdEl) catIdEl.value = ids.length > 0 ? ids[0] : '';
+                setCategoryDisplay(names);
+            }
+        } catch(e) { console.error('移除分类失败:', e); }
+    }
     function toggleDeliveryDays() { var el = document.getElementById('deliveryDaysGroup'); if (el) el.style.display = document.getElementById('stock').value === '預訂' ? 'block' : 'none'; }
     async function loadVariants(productId) { variants = []; try { var r = await supabaseClient.from('product_variants').select('*').eq('product_id', productId); if (r.data) { for (var i = 0; i < r.data.length; i++) { variants.push({ name: r.data[i].variant_name, price: r.data[i].variant_price }); } } } catch (e) {} renderVariants(); }
     
