@@ -146,6 +146,10 @@
                 <input type="text" class="form-input address-input" id="recipientAddress" placeholder="請輸入送花地址（中/英文皆可）" oninput="autoDetectArea(this.value)">
                 <p class="form-error" id="recipientAddressError">請填寫送花地址</p>
             </div>
+            <div class="form-group">
+                <label class="form-label">訂購人電郵（接收訂單通知）</label>
+                <input type="email" class="form-input" id="customerEmail" placeholder="請輸入電郵地址">
+            </div>
             <div class="delivery-tier-banner" id="autoDetectBanner">
                 <div class="tier-zh" id="autoDetectTierZh"></div>
                 <div class="tier-en" id="autoDetectTierEn"></div>
@@ -247,6 +251,17 @@
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+    
+    // 页面加载时，如果用户已登录，自动填充邮箱
+    (async function() {
+        try {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user && user.email) {
+                const emailInput = document.getElementById('customerEmail');
+                if (emailInput) emailInput.value = user.email;
+            }
+        } catch (e) { /* 忽略 */ }
+    })();
     let selectedTimeSlot = 'full_day';
     let selectedTimeFee = 90;
     let detectedArea = '';
@@ -416,12 +431,14 @@
         btn.disabled = true;
         btn.textContent = '正在連接支付...';
 
-        // 取得目前登入的使用者 email，若已登入則一併送出
-        let customerEmail = '';
-        try {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) customerEmail = user.email || '';
-        } catch (e) { /* 忽略 */ }
+        // 取得訂購人電郵：优先使用输入框，其次使用登录用户
+        let customerEmail = document.getElementById('customerEmail').value.trim();
+        if (!customerEmail) {
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (user) customerEmail = user.email || '';
+            } catch (e) { /* 忽略 */ }
+        }
 
         const orderData = {
             items: cart.map(item => ({
