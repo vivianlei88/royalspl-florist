@@ -480,7 +480,7 @@
         var c = document.getElementById('modalProductList');
         var currentIds = [];
         for (var i = 0; i < selectedFeaturedProducts.length; i++) { currentIds.push(selectedFeaturedProducts[i].product_id); }
-        selectedFeaturedProducts = [];
+        selectedFeaturedProducts = currentIds.slice();
         var h = '';
         for (var j = 0; j < allProducts.length; j++) {
             var p = allProducts[j];
