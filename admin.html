@@ -139,6 +139,12 @@
         .uploaded-img-item:hover { transform: scale(1.03); }
         .sortable-ghost { opacity: 0.4; transform: scale(0.95); }
         .sortable-chosen { cursor: grabbing; }
+        .lightbox-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; justify-content: center; align-items: center; }
+        .lightbox-overlay.show { display: flex; }
+        .lightbox-img { max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; z-index: 100000; line-height: 1; }
+        .lightbox-close:hover { color: #ccc; }
+        .uploaded-img-item img { cursor: zoom-in; }
 
     @media (max-width: 768px) {
         .admin-layout { flex-direction: column !important; }
@@ -378,7 +384,7 @@
         c.innerHTML += '<div class="form-container" style="max-width:100%;">';
         c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">Hero Banner</h3>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">主標題</label><input class="form-input" id="heroTitle"></div><div class="form-group"><label class="form-label">副標題</label><input class="form-input" id="heroSubtitle"></div></div>';
-        c.innerHTML += '<div class="form-group"><label class="form-label">背景圖片</label><div class="upload-area" id="heroUploadArea"><p>點擊上傳圖片</p><input type="file" id="heroFileInput" accept="image/*" style="display:none;"></div><div id="heroImagePreview"></div></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">背景圖片（可多張，拖拽或點擊上傳，最多5張）</label><div class="upload-area" id="heroUploadArea" style="min-height:120px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:all 0.3s;"><p style="margin:0;font-size:14px;color:#888;">📁 拖拽圖片到此處，或點擊選擇</p><p style="margin:5px 0 0 0;font-size:12px;color:#aaa;">支援 JPG、PNG，最多5張</p><input type="file" id="heroFileInput" accept="image/*" multiple style="display:none;"></div><div id="heroImagePreview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;"></div></div>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">CTA 文字</label><input class="form-input" id="heroCtaText"></div><div class="form-group"><label class="form-label">CTA 連結</label><input class="form-input" id="heroCtaLink"></div></div>';
         c.innerHTML += '<hr style="margin:25px 0;border-top:1px solid #ddd;">';
         c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">臻選系列（6卡片）</h3><div class="category-grid" id="collectionCardsGrid"></div>';
@@ -392,9 +398,70 @@
         loadFeaturedProducts();
         initHeroUpload();
     }
-    var heroUploadedImage = '';
-    function initHeroUpload() { var ua = document.getElementById('heroUploadArea'); var fi = document.getElementById('heroFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleHeroFileUpload(this.files[0]); }; } }
-    async function handleHeroFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { heroUploadedImage = data.url; document.getElementById('heroImagePreview').innerHTML = '<img src="' + data.url + '" style="width:200px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (e) {} }
+    var heroUploadedImages = [];
+    function initHeroUpload() { 
+        var ua = document.getElementById('heroUploadArea'); 
+        var fi = document.getElementById('heroFileInput'); 
+        if (ua && fi) { 
+            ua.onclick = function() { fi.click(); }; 
+            fi.onchange = function(e) { 
+                if (e.target.files) { 
+                    for (var i = 0; i < e.target.files.length; i++) { 
+                        if (heroUploadedImages.length < 5) { handleHeroFileUpload(e.target.files[i]); }
+                    } 
+                } 
+            };
+            ua.ondragover = function(e) { e.preventDefault(); ua.style.borderColor = '#1A1A1A'; ua.style.background = '#f9f9f9'; };
+            ua.ondragleave = function(e) { e.preventDefault(); ua.style.borderColor = '#ccc'; ua.style.background = ''; };
+            ua.ondrop = function(e) { 
+                e.preventDefault(); 
+                ua.style.borderColor = '#ccc'; 
+                ua.style.background = '';
+                if (e.dataTransfer.files) { 
+                    for (var i = 0; i < e.dataTransfer.files.length; i++) { 
+                        if (heroUploadedImages.length < 5) { handleHeroFileUpload(e.dataTransfer.files[i]); }
+                    } 
+                } 
+            };
+        } 
+    }
+    async function handleHeroFileUpload(file) { 
+        if (!file) return; 
+        if (heroUploadedImages.length >= 5) { showToast('最多上傳5張圖片'); return; }
+        var fd = new FormData(); 
+        fd.append('file', file); 
+        try { 
+            var res = await fetch('/r2-upload', { method: 'POST', body: fd }); 
+            var data = await res.json(); 
+            if (data.url) { 
+                heroUploadedImages.push(data.url); 
+                renderHeroImagesPreview(); 
+                showToast('圖片上傳成功'); 
+            } else { 
+                showToast('上傳失敗'); 
+            } 
+        } catch(e) { 
+            showToast('上傳失敗: ' + e.message); 
+        } 
+    }
+    function renderHeroImagesPreview() {
+        var preview = document.getElementById('heroImagePreview');
+        if (!preview) return;
+        if (heroUploadedImages.length === 0) { preview.innerHTML = ''; return; }
+        var h = '';
+        for (var i = 0; i < heroUploadedImages.length; i++) {
+            h += '<div style="position:relative;width:160px;height:90px;border-radius:8px;overflow:hidden;">';
+            h += '<img src="' + heroUploadedImages[i] + '" style="width:100%;height:100%;object-fit:cover;">';
+            h += '<button onclick="removeHeroImage(' + i + ')" style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.6);color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;">×</button>';
+            h += '<span style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;">' + (i+1) + '</span>';
+            h += '</div>';
+        }
+        preview.innerHTML = h;
+    }
+    function removeHeroImage(index) {
+        heroUploadedImages.splice(index, 1);
+        renderHeroImagesPreview();
+    }
     async function loadHomepageData() {
         try {
             var r = await supabaseClient.from('homepage_settings').select('*').limit(1);
@@ -405,8 +472,8 @@
                 document.getElementById('heroCtaText').value = d.hero_cta_text || '';
                 document.getElementById('heroCtaLink').value = d.hero_cta_link || '';
                 document.getElementById('aboutText').value = d.about_text || '';
-                heroUploadedImage = d.hero_image || '';
-                if (d.hero_image) { document.getElementById('heroImagePreview').innerHTML = '<img src="' + d.hero_image + '" style="width:200px;height:100px;object-fit:cover;border-radius:8px;">'; }
+                heroUploadedImages = d.hero_images && d.hero_images.length > 0 ? d.hero_images.slice() : (d.hero_image ? [d.hero_image] : []);
+                renderHeroImagesPreview();
             }
         } catch (e) {}
     }
@@ -414,7 +481,8 @@
         var data = {
             hero_title: document.getElementById('heroTitle').value.trim(),
             hero_subtitle: document.getElementById('heroSubtitle').value.trim(),
-            hero_image: heroUploadedImage || null,
+            hero_image: heroUploadedImages.length > 0 ? heroUploadedImages[0] : null,
+            hero_images: heroUploadedImages,
             hero_cta_text: document.getElementById('heroCtaText').value.trim(),
             hero_cta_link: document.getElementById('heroCtaLink').value.trim(),
             about_text: document.getElementById('aboutText').value.trim()
@@ -474,7 +542,7 @@
         var c = document.getElementById('modalProductList');
         var currentIds = [];
         for (var i = 0; i < selectedFeaturedProducts.length; i++) { currentIds.push(selectedFeaturedProducts[i].product_id); }
-        selectedFeaturedProducts = [];
+        selectedFeaturedProducts = currentIds.slice();
         var h = '';
         for (var j = 0; j < allProducts.length; j++) {
             var p = allProducts[j];
@@ -531,7 +599,7 @@
         f.innerHTML += '<div class="form-group"><label class="form-label">商品圖片（拖拽上傳或黏貼網址）</label><div class="upload-area" id="uploadArea"><p>點擊或拖拽圖片到這裡上傳</p><input type="file" id="fileInput" multiple accept="image/*" style="display:none;"></div><div class="uploaded-imgs" id="uploadedImages"></div><div class="url-add-row"><input type="text" id="imageUrlInput" placeholder="黏貼圖片網址" style="flex:1;padding:10px;border:1px solid #1A1A1A;border-radius:5px;"><button class="btn btn-secondary" onclick="addImageByUrl()">添加圖片</button></div></div>';
         f.innerHTML += '<div style="margin-top:10px;"><button type="button" class="btn btn-secondary" onclick="aiFillProductFromImage()" style="background:#6366f1;color:white;border:none;">🤖 AI看圖自動填寫</button><span id="aiFillStatus" style="margin-left:10px;font-size:13px;color:#666;"></span></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="nameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="nameEn"></div></div>';
-        f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div><div class="form-group"><label class="form-label">分類</label><div class="form-input" id="categoryDisplay" style="cursor:pointer;background:#f9f9f9;" onclick="openCategorySelector()">點擊選擇分類</div><input type="hidden" id="category"><input type="hidden" id="category_id"></div></div>';
+        f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div><div class="form-group"><label class="form-label">分類</label><div class="form-input" id="categoryDisplay" style="cursor:pointer;background:#f9f9f9;" onclick="openCategorySelector()">點擊選擇分類</div><input type="hidden" id="category"><input type="hidden" id="category_id"><input type="hidden" id="category_ids" value="[]"><input type="hidden" id="categories" value="[]"></div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">庫存狀態</label><select class="form-select" id="stock" onchange="toggleDeliveryDays()"><option value="現貨">現貨</option><option value="預訂">預訂</option></select></div><div class="form-group" id="deliveryDaysGroup"><label class="form-label">預計發貨天數</label><input type="number" class="form-input" id="deliveryDays" value="3" min="1"></div></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">描述</label><textarea class="form-textarea" id="description"></textarea></div>';
         f.innerHTML += '<div class="form-row-3"><div class="form-group"><label class="form-label">花材</label><input class="form-input" id="specsFlowers"></div><div class="form-group"><label class="form-label">產地</label><input class="form-input" id="specsOrigin"></div><div class="form-group"><label class="form-label">規格</label><input class="form-input" id="specsSize"></div></div>';
@@ -568,64 +636,27 @@
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
         selectedAddons = p.linked_addons || [];
-        selectedTags = p.tags || []; setCategoryDisplay(p.category || '');
+        selectedTags = p.tags || [];
+        var catIds = p.category_ids || [];
+        var catNames = p.categories || [];
+        // 兼容旧数据：如果没有数组字段但有单值，转换为数组
+        if ((!catIds || catIds.length === 0) && p.category_id) { catIds = [p.category_id]; }
+        if ((!catNames || catNames.length === 0) && p.category) { catNames = [p.category]; }
+        document.getElementById('category_ids').value = JSON.stringify(catIds);
+        document.getElementById('categories').value = JSON.stringify(catNames);
+        document.getElementById('category').value = catNames.join(', ');
+        document.getElementById('category_id').value = catIds.length > 0 ? catIds[0] : '';
+        setCategoryDisplay(catNames);
         toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderAddonsCheckbox(); loadVariants(p.id); initUploadArea();
     }
     function initUploadArea() { var ua = document.getElementById('uploadArea'); var fi = document.getElementById('fileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleUploadFiles(this.files); }; ua.addEventListener('dragover', function(e) { e.preventDefault(); }); ua.addEventListener('drop', function(e) { e.preventDefault(); handleUploadFiles(e.dataTransfer.files); }); } }
     async function handleUploadFiles(files) { for (var i = 0; i < files.length; i++) { var fd = new FormData(); fd.append('file', files[i]); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { uploadedImages.push(data.url); renderUploadedImages(); } } catch (err) {} } }
-    function renderUploadedImages() { var c = document.getElementById('uploadedImages'); if (!c) return; var h = ''; for (var i = 0; i < uploadedImages.length; i++) { h += '<div class="uploaded-img-item" data-index="' + i + '"><img src="' + uploadedImages[i] + '"><button class="del-btn" onclick="removeImage(' + i + ')">×</button></div>'; } c.innerHTML = h; initImageSortable(); }
+    function renderUploadedImages() { var c = document.getElementById('uploadedImages'); if (!c) return; var h = ''; for (var i = 0; i < uploadedImages.length; i++) { h += '<div class="uploaded-img-item" data-index="' + i + '"><img src="' + uploadedImages[i] + '" onclick="openLightbox(\'' + uploadedImages[i] + '\')" title="點擊放大預覽"><button class="del-btn" onclick="removeImage(' + i + ')">×</button></div>'; } c.innerHTML = h; initImageSortable(); }
     function initImageSortable() { var c = document.getElementById('uploadedImages'); if (!c || typeof Sortable === 'undefined') return; if (c._sortable) { c._sortable.destroy(); } c._sortable = Sortable.create(c, { animation: 200, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', onEnd: function(evt) { var oldIndex = evt.oldIndex; var newIndex = evt.newIndex; if (oldIndex !== newIndex) { var item = uploadedImages.splice(oldIndex, 1)[0]; uploadedImages.splice(newIndex, 0, item); renderUploadedImages(); } } }); }
+    function openLightbox(url) { document.getElementById('lightboxImg').src = url; document.getElementById('imageLightbox').classList.add('show'); }
+    function closeLightbox() { document.getElementById('imageLightbox').classList.remove('show'); document.getElementById('lightboxImg').src = ''; }
     function removeImage(i) { uploadedImages.splice(i, 1); renderUploadedImages(); }
     function addImageByUrl() { var url = document.getElementById('imageUrlInput').value.trim(); if (url) { uploadedImages.push(url); renderUploadedImages(); document.getElementById('imageUrlInput').value = ''; } }
-    async function aiFillProductFromImage() {
-        if (uploadedImages.length === 0) {
-            showToast('請先上傳商品圖片');
-            return;
-        }
-        var statusEl = document.getElementById('aiFillStatus');
-        if (statusEl) statusEl.textContent = 'AI識別中，請稍候...';
-        
-        try {
-            var existingData = {
-                name_zh: document.getElementById('nameZh') ? document.getElementById('nameZh').value : '',
-                price: document.getElementById('price') ? document.getElementById('price').value : ''
-            };
-            var resp = await fetch('/ai-product-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: uploadedImages[0], existingData: existingData })
-            });
-            var result = await resp.json();
-            if (result.success && result.data) {
-                var d = result.data;
-                if (d.name_zh && document.getElementById('nameZh')) document.getElementById('nameZh').value = d.name_zh;
-                if (d.name_en && document.getElementById('nameEn')) document.getElementById('nameEn').value = d.name_en;
-                if (d.description && document.getElementById('description')) document.getElementById('description').value = d.description;
-                if (d.flower_materials && document.getElementById('specsFlowers')) document.getElementById('specsFlowers').value = d.flower_materials;
-                if (d.specs && document.getElementById('specsSize')) document.getElementById('specsSize').value = d.specs;
-                if (d.scent_notes && document.getElementById('scentNotes')) document.getElementById('scentNotes').value = d.scent_notes;
-                // 标签
-                var newTags = [];
-                if (d.occasion_tags) newTags = newTags.concat(d.occasion_tags.split(',').map(function(t){return t.trim();}).filter(Boolean));
-                if (d.flower_tags) newTags = newTags.concat(d.flower_tags.split(',').map(function(t){return t.trim();}).filter(Boolean));
-                if (d.price_range) newTags.push(d.price_range);
-                if (d.style_tags) newTags = newTags.concat(d.style_tags.split(',').map(function(t){return t.trim();}).filter(Boolean));
-                selectedTags = newTags;
-                initTagPills();
-                if (statusEl) statusEl.textContent = '✅ 已完成，請檢查後保存';
-                showToast('AI已自動填寫');
-            } else {
-                if (statusEl) statusEl.textContent = '❌ 識別失敗，請重試';
-                showToast('識別失敗，請重試');
-                console.error('AI result:', result);
-            }
-        } catch (e) {
-            if (statusEl) statusEl.textContent = '❌ 服務錯誤';
-            showToast('AI服務錯誤：' + e.message);
-            console.error(e);
-        }
-    }
-
     function addVariantRow() { variants.push({ name: '', price: '' }); renderVariants(); }
     function removeVariant(i) { variants.splice(i, 1); renderVariants(); }
     function renderVariants() { var c = document.getElementById('variantsList'); if (!c) return; var h = ''; for (var i = 0; i < variants.length; i++) { h += '<div class="variant-row"><input type="text" placeholder="規格名稱" value="' + variants[i].name + '" onchange="variants[' + i + '].name=this.value"><input type="number" placeholder="價格" value="' + variants[i].price + '" onchange="variants[' + i + '].price=this.value"><button class="btn btn-danger btn-small" onclick="removeVariant(' + i + ')">刪除</button></div>'; } c.innerHTML = h; }
@@ -674,8 +705,10 @@
     function toggleDeliveryDays() { var el = document.getElementById('deliveryDaysGroup'); if (el) el.style.display = document.getElementById('stock').value === '預訂' ? 'block' : 'none'; }
     async function loadVariants(productId) { variants = []; try { var r = await supabaseClient.from('product_variants').select('*').eq('product_id', productId); if (r.data) { for (var i = 0; i < r.data.length; i++) { variants.push({ name: r.data[i].variant_name, price: r.data[i].variant_price }); } } } catch (e) {} renderVariants(); }
     
-    // ========== 分類選擇器 ==========
+    // ========== 分類選擇器（多選） ==========
     var allCategories = [];
+    var selectedCategoryIds = [];
+    var selectedCategoryNames = [];
     
     async function openCategorySelector() {
         try {
@@ -683,18 +716,25 @@
             allCategories = r.data || [];
         } catch(e) { allCategories = []; }
         
-        var currentCat = document.getElementById('category').value;
+        // 读取已选分类
+        var idsStr = document.getElementById('category_ids').value;
+        selectedCategoryIds = idsStr ? JSON.parse(idsStr) : [];
+        var namesStr = document.getElementById('categories').value;
+        selectedCategoryNames = namesStr ? JSON.parse(namesStr) : [];
+        
         var html = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)closeCategorySelector()">';
         html += '<div style="background:#fff;border-radius:10px;padding:20px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;">';
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h4 style="margin:0;font-size:18px;">選擇商品分類</h4><button onclick="closeCategorySelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button></div>';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h4 style="margin:0;font-size:18px;">選擇商品分類（可多選）</h4><button onclick="closeCategorySelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button></div>';
+        html += '<p style="font-size:13px;color:#666;margin-bottom:12px;">點擊分類卡片切換選中狀態，可同時選擇多個分類</p>';
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">';
         
         if (allCategories.length === 0) {
             html += '<p style="grid-column:1/-1;text-align:center;color:#888;padding:30px;">尚無分類，請先在「商品分類」中添加</p>';
         } else {
             allCategories.forEach(function(cat) {
-                var isSelected = currentCat === cat.name_zh;
-                html += '<div onclick="selectCategory(\'' + cat.id + '\', \'' + (cat.name_zh || '').replace(/'/g, "\\'") + '\')" style="border:2px solid ' + (isSelected ? '#1A1A1A' : '#eee') + ';border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:' + (isSelected ? '#f0f0f0' : '#fff') + ';">';
+                var isSelected = selectedCategoryIds.indexOf(cat.id) > -1;
+                html += '<div onclick="toggleCategory(' + cat.id + ', \'' + (cat.name_zh || '').replace(/'/g, "\\'") + '\')" id="cat-card-' + cat.id + '" style="border:2px solid ' + (isSelected ? '#1A1A1A' : '#eee') + ';border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:' + (isSelected ? '#f0f0f0' : '#fff') + ';position:relative;">';
+                if (isSelected) { html += '<div style="position:absolute;top:5px;right:5px;background:#1A1A1A;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">&#10003;</div>'; }
                 html += '<div style="width:100%;aspect-ratio:1;background:#f5f5f5;border-radius:5px;overflow:hidden;margin-bottom:8px;">';
                 if (cat.image_url) { html += '<img src="' + cat.image_url + '" style="width:100%;height:100%;object-fit:cover;">'; }
                 html += '</div>';
@@ -703,6 +743,10 @@
                 html += '</div>';
             });
         }
+        html += '</div>';
+        html += '<div style="margin-top:15px;display:flex;justify-content:space-between;align-items:center;">';
+        html += '<span id="selectedCatCount" style="font-size:13px;color:#666;">已選 ' + selectedCategoryIds.length + ' 個分類</span>';
+        html += '<button onclick="confirmCategorySelection()" style="padding:8px 20px;background:#1A1A1A;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:14px;">確認</button>';
         html += '</div></div></div>';
         
         var div = document.createElement('div');
@@ -716,18 +760,54 @@
         if (modal) modal.remove();
     }
     
-    function selectCategory(catId, catName) {
-        document.getElementById('category').value = catName;
-        document.getElementById('category_id').value = catId;
-        document.getElementById('categoryDisplay').textContent = catName;
+    function toggleCategory(catId, catName) {
+        var idx = selectedCategoryIds.indexOf(catId);
+        var card = document.getElementById('cat-card-' + catId);
+        if (idx > -1) {
+            selectedCategoryIds.splice(idx, 1);
+            selectedCategoryNames.splice(idx, 1);
+            if (card) {
+                card.style.border = '2px solid #eee';
+                card.style.background = '#fff';
+                var check = card.querySelector('div[style*="position:absolute"]');
+                if (check) check.remove();
+            }
+        } else {
+            selectedCategoryIds.push(catId);
+            selectedCategoryNames.push(catName);
+            if (card) {
+                card.style.border = '2px solid #1A1A1A';
+                card.style.background = '#f0f0f0';
+                var checkDiv = document.createElement('div');
+                checkDiv.style.cssText = 'position:absolute;top:5px;right:5px;background:#1A1A1A;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;';
+                checkDiv.innerHTML = '&#10003;';
+                card.appendChild(checkDiv);
+            }
+        }
+        var countEl = document.getElementById('selectedCatCount');
+        if (countEl) countEl.textContent = '已選 ' + selectedCategoryIds.length + ' 個分類';
+    }
+    
+    function confirmCategorySelection() {
+        document.getElementById('category_ids').value = JSON.stringify(selectedCategoryIds);
+        document.getElementById('categories').value = JSON.stringify(selectedCategoryNames);
+        document.getElementById('category').value = selectedCategoryNames.join(', ');
+        document.getElementById('category_id').value = selectedCategoryIds.length > 0 ? selectedCategoryIds[0] : '';
+        setCategoryDisplay(selectedCategoryNames);
         closeCategorySelector();
     }
     
-    function setCategoryDisplay(name) {
+    function setCategoryDisplay(names) {
         var display = document.getElementById('categoryDisplay');
-        if (display) display.textContent = name || '點擊選擇分類';
+        if (display) {
+            if (Array.isArray(names)) {
+                display.textContent = names.length > 0 ? names.join('、') : '點擊選擇分類';
+            } else {
+                display.textContent = names || '點擊選擇分類';
+            }
+        }
     }
-
+    
 async function saveProduct() {
         var id = document.getElementById('productId').value;
         var data = {
@@ -735,6 +815,8 @@ async function saveProduct() {
             name_en: document.getElementById('nameEn').value.trim(),
             price: parseFloat(document.getElementById('price').value),
             category: document.getElementById('category').value.trim(),
+            category_ids: JSON.parse(document.getElementById('category_ids').value || '[]'),
+            categories: JSON.parse(document.getElementById('categories').value || '[]'),
             description: document.getElementById('description').value.trim(),
             specs_flowers: document.getElementById('specsFlowers').value.trim(),
             specs_origin: document.getElementById('specsOrigin').value.trim(),
@@ -838,6 +920,9 @@ async function saveProduct() {
                     scent_notes: (d['香調備註(|分隔)'] || d.scent_notes || '').split('|').filter(Boolean),
                     style_spectrum: parseInt(d['香調分數'] || d.style_spectrum) || 0,
                     stock: d['庫存'] || d.stock || '現貨',
+                    specs_flowers: d['花材'] || d.specs_flowers || '',
+                    specs_origin: d['產地'] || d.specs_origin || '',
+                    specs_size: d['規格'] || d.specs_size || '',
                     is_preorder: d['是否預購'] === 'Y' || d.is_preorder === 'true',
                     delivery_days: parseInt(d['預購天數'] || d.delivery_days) || 5,
                     is_active: (d['狀態'] || d.is_active) !== 'false' && (d['狀態'] || d.is_active) !== 'inactive',
@@ -847,7 +932,15 @@ async function saveProduct() {
                     seo_title: d['SEO標題'] || '',
                     seo_description: d['SEO描述'] || ''
                 };
-                if (d.id) {
+                // 按SKU判断：已存在则更新，不存在则新增
+                if (pd.sku) {
+                    var { data: existing } = await supabaseClient.from('products').select('id').eq('sku', pd.sku).limit(1);
+                    if (existing && existing.length > 0) {
+                        await supabaseClient.from('products').update(pd).eq('id', existing[0].id);
+                    } else {
+                        await supabaseClient.from('products').insert(pd);
+                    }
+                } else if (d.id) {
                     await supabaseClient.from('products').update(pd).eq('id', d.id);
                 } else {
                     await supabaseClient.from('products').insert(pd);
@@ -913,7 +1006,7 @@ async function saveProduct() {
     function initCategoryUpload() { var ua = document.getElementById('categoryUploadArea'); var fi = document.getElementById('categoryFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleCategoryFileUpload(this.files[0]); }; } }
     async function handleCategoryFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { categoryUploadedImage = data.url; document.getElementById('categoryImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (e) {} }
     async function saveCategory() { var id = document.getElementById('categoryId').value; var data = { name_zh: document.getElementById('categoryNameZh').value.trim(), name_en: document.getElementById('categoryNameEn').value.trim(), description: document.getElementById('categoryDescription').value.trim(), image_url: categoryUploadedImage || null, is_active: true }; if (!data.name_zh) { showToast('請填寫分類名稱'); return; } try { if (id) { await supabaseClient.from('categories').update(data).eq('id', id); } else { await supabaseClient.from('categories').insert(data); } showToast('保存成功'); hideCategoryForm(); loadCategories(); } catch (e) { showToast('保存失敗'); } }
-    async function getCategoryProductCount(categoryId) { try { var r = await supabaseClient.from('products').select('id', { count: 'exact', head: true }).eq('category_id', categoryId); return r.count || 0; } catch (e) { return 0; } }
+    async function getCategoryProductCount(categoryId) { try { var r = await supabaseClient.from('products').select('id', { count: 'exact', head: true }).contains('category_ids', [categoryId]); return r.count || 0; } catch (e) { return 0; } }
     async function loadCategories() {
         var c = document.getElementById('categoriesGrid');
         if (!c) return;
@@ -953,7 +1046,7 @@ async function saveProduct() {
     }
     function initCategoryDetailUpload() { var ua = document.getElementById('categoryDetailUploadArea'); var fi = document.getElementById('categoryDetailFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleCategoryDetailFileUpload(this.files[0]); }; } }
     async function handleCategoryDetailFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { categoryDetailUploadedImage = data.url; document.getElementById('categoryDetailImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (e) {} }
-    async function loadCategoryProducts(categoryId) { try { var r = await supabaseClient.from('products').select('*').eq('category_id', categoryId).order('sort_order_in_category', { ascending: true }); if (r.error) { categoryDetailProducts = []; } else { categoryDetailProducts = r.data || []; } } catch (e) { categoryDetailProducts = []; } renderCategoryProductsList(); }
+    async function loadCategoryProducts(categoryId) { try { var r = await supabaseClient.from('products').select('*').contains('category_ids', [categoryId]).order('sort_order_in_category', { ascending: true }); if (r.error) { categoryDetailProducts = []; } else { categoryDetailProducts = r.data || []; } } catch (e) { categoryDetailProducts = []; } renderCategoryProductsList(); }
     function renderCategoryProductsList() {
         var c = document.getElementById('categoryProductsGrid');
         if (!c) return;
@@ -977,12 +1070,40 @@ async function saveProduct() {
         var categoryId = parseInt(document.getElementById('categoryDetailId').value);
         var categoryData = { name_zh: document.getElementById('categoryDetailNameZh').value.trim(), name_en: document.getElementById('categoryDetailNameEn').value.trim(), description: document.getElementById('categoryDetailDescription').value.trim(), image_url: categoryDetailUploadedImage || null };
         await supabaseClient.from('categories').update(categoryData).eq('id', categoryId);
-        var existing = await supabaseClient.from('products').select('id').eq('category_id', categoryId);
-        if (existing.data) { for (var i = 0; i < existing.data.length; i++) { await supabaseClient.from('products').update({ category_id: null }).eq('id', existing.data[i].id); } }
         var categoryName = document.getElementById('categoryDetailNameZh').value.trim();
-        for (var j = 0; j < categoryDetailProducts.length; j++) { await supabaseClient.from('products').update({ category_id: categoryId, category: categoryName, sort_order_in_category: j + 1 }).eq('id', categoryDetailProducts[j].id); }
+        // 获取当前在该分类下的所有商品
+        var existing = await supabaseClient.from('products').select('id,category_ids,categories').contains('category_ids', [categoryId]);
+        var existingIds = [];
+        var existingMap = {};
+        if (existing.data) {
+            for (var i = 0; i < existing.data.length; i++) {
+                existingIds.push(existing.data[i].id);
+                existingMap[existing.data[i].id] = existing.data[i];
+            }
+        }
+        var newIds = [];
+        for (var j = 0; j < categoryDetailProducts.length; j++) { newIds.push(categoryDetailProducts[j].id); }
+        // 移除不再属于该分类的商品
+        for (var k = 0; k < existingIds.length; k++) {
+            if (newIds.indexOf(existingIds[k]) === -1) {
+                var p = existingMap[existingIds[k]];
+                var newCatIds = (p.category_ids || []).filter(function(id) { return id !== categoryId; });
+                var newCatNames = (p.categories || []).filter(function(n) { return n !== categoryName; });
+                await supabaseClient.from('products').update({ category_ids: newCatIds, categories: newCatNames, category: newCatNames.join(', '), category_id: newCatIds.length > 0 ? newCatIds[0] : null }).eq('id', existingIds[k]);
+            }
+        }
+        // 添加新商品到该分类
+        for (var m = 0; m < categoryDetailProducts.length; m++) {
+            var pid = categoryDetailProducts[m].id;
+            var prod = existingMap[pid];
+            var catIds = prod ? (prod.category_ids || []) : [];
+            var catNames = prod ? (prod.categories || []) : [];
+            if (catIds.indexOf(categoryId) === -1) { catIds.push(categoryId); catNames.push(categoryName); }
+            await supabaseClient.from('products').update({ category_ids: catIds, categories: catNames, category: catNames.join(', '), category_id: catIds.length > 0 ? catIds[0] : null, sort_order_in_category: m + 1 }).eq('id', pid);
+        }
         showToast('所有更改已保存'); showCategoryList();
     }
+    
     async function openProductSelectForCategory() {
         var categoryId = parseInt(document.getElementById('categoryDetailId').value);
         document.getElementById('modalCategoryId').value = 'category_' + categoryId;
@@ -3334,5 +3455,10 @@ function copyAIWriterResult() {
 }
 </script>
 
+    <!-- 图片放大预览 -->
+    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img id="lightboxImg" class="lightbox-img" src="" alt="预览">
+    </div>
 </body>
 </html>

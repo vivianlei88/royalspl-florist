@@ -312,6 +312,56 @@ button {
     transform: translateY(-2px);
 }
 
+/* Hero Banner 轮播 */
+.hero-slides {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.2s ease-in-out;
+}
+
+.hero-slide.active {
+    opacity: 1;
+}
+
+.hero-dots {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.hero-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.hero-dot.active {
+    background: #fff;
+    width: 30px;
+    border-radius: 5px;
+}
+
 /* ============================================
    區塊標題
    ============================================ */
@@ -356,21 +406,17 @@ button {
 }
 
 .collection-card {
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    padding: 40px 30px;
-    text-align: center;
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
+    text-align: left;
     transition: all 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 250px;
+    display: block;
+    min-height: auto;
 }
 
-.collection-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+.collection-card:hover .collection-card-img-wrap img {
+    transform: scale(1.05);
 }
 
 .collection-emoji {
@@ -410,17 +456,16 @@ button {
 }
 
 .product-card {
-    background-color: var(--primary-bg);
-    border-radius: 8px;
-    padding: 30px;
-    text-align: center;
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
+    text-align: left;
     transition: all 0.3s;
     display: block;
 }
 
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+.product-card:hover .product-card-img img {
+    transform: scale(1.05);
 }
 
 .product-emoji {
@@ -429,17 +474,23 @@ button {
 }
 
 .product-card-img {
-    aspect-ratio: 1 / 1;
-    background-color: #F3EFEA;
-    border-radius: 8px;
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    background-color: transparent;
+    border-radius: 0;
     overflow: hidden;
-    margin-bottom: 15px;
+    margin-bottom: 0;
 }
 
 .product-card-img img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s ease;
 }
 
 .product-name {
