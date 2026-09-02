@@ -1606,11 +1606,12 @@ async function saveProduct() {
             shop_logo: document.getElementById('tplShopLogo').value.trim()
         };
         try {
-            var r = await supabaseClient.from('shop_settings').select('id').limit(1);
-            if (r.data && r.data.length > 0) { await supabaseClient.from('shop_settings').update(data).eq('id', r.data[0].id); }
-            else { await supabaseClient.from('shop_settings').insert(data); }
+            // shop_settings 表有 UPDATE trigger 依賴 updated_at 欄位但表無呢個欄位，
+            // 所以用「刪舊建新」方式繞過，避免 update 失敗。
+            await supabaseClient.from('shop_settings').delete().neq('id', -1);
+            await supabaseClient.from('shop_settings').insert(data);
             showToast('店鋪資料已保存');
-        } catch (e) { showToast('保存失敗，請先創建 shop_settings 表'); }
+        } catch (e) { showToast('保存失敗：' + (e.message || '請檢查 shop_settings 表')); }
     }
     async function renderMembersPage(c) {
         c.innerHTML = '<div class="page-header"><h3>會員管理</h3><div style="display:flex;gap:10px;align-items:center;"><input type="text" id="memberSearch" placeholder="搜尋名稱或電郵..." style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;"><button class="btn btn-primary" onclick="showAddMemberForm()">手動新增</button><button class="btn btn-secondary" onclick="exportMembersCSV()">匯出 CSV</button><label class="btn btn-secondary" style="cursor:pointer;">匯入 CSV<input type="file" id="memberCSVInput" accept=".csv" style="display:none;" onchange="importMembersCSV(this)"></label></div></div><div id="membersTableContainer" style="overflow-x:auto;"></div>';
