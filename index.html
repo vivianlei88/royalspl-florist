@@ -333,7 +333,7 @@
                         if (prod && prod.is_active) { ordered.push(prod); }
                     }
                     if (ordered.length > 0) {
-                        featuredProductsData = ordered;
+                        featuredProductsData = ordered.slice(0, 6);
                         renderFeaturedProducts();
                         return;
                     }

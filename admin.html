@@ -628,9 +628,15 @@
         closeCardCategoryModal();
         showToast('已選擇分類：' + nameZh);
     }
+    async function ensureProductsLoaded() {
+        if (allProducts.length) return;
+        var r = await supabaseClient.from('products').select('*').order('id', { ascending: true });
+        allProducts = r.data || [];
+    }
     async function loadFeaturedProducts() {
         var c = document.getElementById('featuredProductsGrid');
         try {
+            await ensureProductsLoaded();
             var r = await supabaseClient.from('featured_products').select('*').order('sort_order', { ascending: true });
             selectedFeaturedProducts = r.data || [];
             if (!selectedFeaturedProducts.length) { c.innerHTML = '<div class="empty-state">尚未選擇商品</div>'; return; }
@@ -647,7 +653,8 @@
             c.innerHTML = h;
         } catch (e) { c.innerHTML = '請先創建 featured_products 表'; }
     }
-    function openFeaturedProductSelect() {
+    async function openFeaturedProductSelect() {
+        await ensureProductsLoaded();
         var c = document.getElementById('modalProductList');
         var currentIds = [];
         for (var i = 0; i < selectedFeaturedProducts.length; i++) {
