@@ -47,7 +47,7 @@
                     userInfo.email = user.email;
                     // 查询用户最近订单
                     const { data: orders } = await sb.from('orders')
-                        .select('id,order_code,status,total,created_at')
+                        .select('id,order_code,status,total_amount,created_at')
                         .eq('user_id', user.id)
                         .order('created_at', { ascending: false })
                         .limit(5);
@@ -209,13 +209,8 @@
             hideTyping();
 
             if (data.reply) {
-                // 处理回复中的链接，让它可点击
-                let replyHtml = data.reply.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
-                replyHtml = replyHtml.replace(/(\/product-detail\.html\?id=[^\s]+)/g, '<a href="$1">$1</a>');
-                replyHtml = replyHtml.replace(/(\/order-detail\.html\?id=[^\s]+)/g, '<a href="$1">$1</a>');
-                replyHtml = replyHtml.replace(/(\/products\.html)/g, '<a href="$1">$1</a>');
-                addMessageHtml(replyHtml, 'ai');
-                
+                // 处理回复：商品/訂單鏈接渲染成淘寶風格卡片，其餘鏈接可點擊
+                await displayAiReply(data.reply);
                 chatHistory.push({ role: 'user', content: message });
                 chatHistory.push({ role: 'assistant', content: data.reply });
 
@@ -259,6 +254,125 @@
         div.innerHTML = html;
         container.appendChild(div);
         container.scrollTop = container.scrollHeight;
+    }
+
+    // ===== 淘寶風格：把回覆中的商品/訂單鏈接渲染成卡片 =====
+    // 撈商品資料（圖片/名稱/價格）渲染成可點擊卡片
+    async function enrichProductCards(replyHtml) {
+        const regex = /\/product-detail\.html\?id=(\d+)/g;
+        const ids = [];
+        let m;
+        while ((m = regex.exec(replyHtml)) !== null) {
+            if (ids.indexOf(m[1]) === -1) ids.push(m[1]);
+        }
+        if (ids.length === 0) return replyHtml;
+        if (!window.supabase) return replyHtml;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { data: products, error } = await sb.from('products')
+            .select('id,name_zh,name_en,price,image_url,images')
+            .in('id', ids);
+        if (error || !products || products.length === 0) return replyHtml;
+        const pMap = {};
+        products.forEach(function(p) { pMap[String(p.id)] = p; });
+        // 每個 id 替換為卡片
+        ids.forEach(function(id) {
+            const p = pMap[id];
+            if (!p) return;
+            const img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
+            const card = buildProductCard(p.id, img, p.name_zh, p.name_en, p.price);
+            // 替換「鏈接：/product-detail.html?id=X」或「/product-detail.html?id=X」格式
+            const urlPattern = new RegExp('(鏈接[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?', 'g');
+            replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) {
+                return card;
+            });
+        });
+        return replyHtml;
+    }
+
+    function buildProductCard(id, img, nameZh, nameEn, price) {
+        var imgHtml = img ? '<img src="' + img + '" alt="' + (nameZh || '') + '">' : '<div class="ai-card-noimg">🌸</div>';
+        return '<a href="/product-detail.html?id=' + id + '" target="_blank" class="ai-product-card">' +
+            '<span class="ai-card-img">' + imgHtml + '</span>' +
+            '<span class="ai-card-body">' +
+            '<span class="ai-card-name">' + (nameZh || '') + '</span>' +
+            (nameEn ? '<span class="ai-card-name-en">' + nameEn + '</span>' : '') +
+            '<span class="ai-card-price">HK$' + price + '</span>' +
+            '</span>' +
+            '<span class="ai-card-go">查看 ›</span>' +
+            '</a>';
+    }
+
+    // 撈訂單資料渲染成訂單卡片
+    async function enrichOrderCards(replyHtml) {
+        const regex = /\/order-detail\.html\?id=(\d+)/g;
+        const ids = [];
+        let m;
+        while ((m = regex.exec(replyHtml)) !== null) {
+            if (ids.indexOf(m[1]) === -1) ids.push(m[1]);
+        }
+        if (ids.length === 0) return replyHtml;
+        if (!window.supabase) return replyHtml;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { data: orders, error } = await sb.from('orders')
+            .select('id,order_code,status,total_amount,subtotal,created_at,items,product_images,product_names')
+            .in('id', ids);
+        if (error || !orders || orders.length === 0) return replyHtml;
+        const oMap = {};
+        orders.forEach(function(o) { oMap[String(o.id)] = o; });
+        ids.forEach(function(id) {
+            const o = oMap[id];
+            if (!o) return;
+            const card = buildOrderCard(o);
+            const urlPattern = new RegExp('(鏈接[：: ]*|\\()?/?order-detail\\.html\\?id=' + id + '(\\))?', 'g');
+            replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) {
+                return card;
+            });
+        });
+        return replyHtml;
+    }
+
+    function buildOrderCard(o) {
+        // 取訂單第一件商品圖片
+        let img = '';
+        if (o.items && Array.isArray(o.items) && o.items.length > 0 && o.items[0].image) {
+            img = o.items[0].image;
+        } else if (o.product_images) {
+            try {
+                const arr = JSON.parse(o.product_images);
+                if (arr && arr.length > 0) img = arr[0];
+            } catch(e) {
+                img = (o.product_images || '').split('|')[0];
+            }
+        }
+        const statusMap = { pending: '待付款', paid: '已付款', processing: '處理中', shipped: '已發貨', delivered: '已完成', cancelled: '已取消', completed: '已完成' };
+        const statusText = statusMap[o.status] || o.status || '';
+        const nameText = (o.items && o.items.length > 0 && o.items[0].name) ? o.items[0].name : (o.product_names || '');
+        const imgHtml = img ? '<img src="' + img + '" alt="訂單">' : '<div class="ai-card-noimg">📦</div>';
+        return '<a href="/order-detail.html?id=' + o.id + '" target="_blank" class="ai-order-card">' +
+            '<span class="ai-card-img">' + imgHtml + '</span>' +
+            '<span class="ai-card-body">' +
+            '<span class="ai-card-name">' + (nameText || '訂單 ' + o.order_code) + '</span>' +
+            '<span class="ai-card-sub">訂單號 ' + (o.order_code || o.id) + '</span>' +
+            '<span class="ai-card-sub">' + (statusText ? '狀態 ' + statusText : '') + '</span>' +
+            '<span class="ai-card-price">HK$' + (o.total_amount != null ? o.total_amount : '-') + '</span>' +
+            '</span>' +
+            '<span class="ai-card-go">查看 ›</span>' +
+            '</a>';
+    }
+
+    // 處理回覆：先換卡片再顯示
+    async function displayAiReply(reply) {
+        let replyHtml = reply.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        replyHtml = replyHtml.replace(/<a href="(\/product-detail\.html\?id=\d+)"[^>]*>[^<]*<\/a>/g, '$1');
+        replyHtml = replyHtml.replace(/<a href="(\/order-detail\.html\?id=\d+)"[^>]*>[^<]*<\/a>/g, '$1');
+        // 先轉換為卡片
+        try {
+            replyHtml = await enrichProductCards(replyHtml);
+            replyHtml = await enrichOrderCards(replyHtml);
+        } catch(e) { console.error('渲染卡片失敗:', e); }
+        // 剩餘普通鏈接才轉成 <a>
+        replyHtml = replyHtml.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        addMessageHtml(replyHtml, 'ai');
     }
 
     // 显示输入中

@@ -106,7 +106,7 @@ export async function onRequestPost(context) {
         if (userOrders && userOrders.length > 0) {
             systemPrompt += '\n\n【用戶訂單與消費分析】這是該客戶的歷史訂單，請根據購買記錄了解客戶的喜好、消費力，提供個性化推薦和服務：\n';
             systemPrompt += userOrders.map(o => 
-                '訂單號:' + (o.order_code || o.id) + ' | 狀態:' + o.status + ' | 金額:HK$' + o.total + ' | 日期:' + (o.created_at? o.created_at.substring(0,10) : '') + ' | 商品:' + JSON.stringify(o.items || []).substring(0,200) + ' | 鏈接:/order-detail.html?id=' + o.id
+                '訂單號:' + (o.order_code || o.id) + ' | 狀態:' + o.status + ' | 金額:HK$' + (o.total_amount != null ? o.total_amount : '-') + ' | 日期:' + (o.created_at? o.created_at.substring(0,10) : '') + ' | 商品:' + JSON.stringify(o.items || []).substring(0,200) + ' | 鏈接:/order-detail.html?id=' + o.id
             ).join('\n');
             systemPrompt += '\n請根據客戶過往購買的花材類型、價格區間、購買頻率，推薦符合其喜好和消費力的商品。';
         } else if (userEmail) {
