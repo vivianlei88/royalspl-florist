@@ -257,6 +257,17 @@
     }
 
     // ===== 淘寶風格：把回覆中的商品/訂單鏈接渲染成卡片 =====
+    // 等待 supabase 庫就緒
+    async function waitForSupabase(timeoutMs) {
+        if (window.supabase) return true;
+        return new Promise(function(resolve) {
+            let done = false;
+            const check = setInterval(function() {
+                if (window.supabase) { clearInterval(check); done = true; resolve(true); }
+            }, 100);
+            setTimeout(function() { if (!done) { clearInterval(check); resolve(false); } }, timeoutMs || 4000);
+        });
+    }
     // 撈商品資料（圖片/名稱/價格）渲染成可點擊卡片
     async function enrichProductCards(replyHtml) {
         const regex = /\/product-detail\.html\?id=(\d+)/g;
@@ -266,7 +277,8 @@
             if (ids.indexOf(m[1]) === -1) ids.push(m[1]);
         }
         if (ids.length === 0) return replyHtml;
-        if (!window.supabase) return replyHtml;
+        const ready = await waitForSupabase();
+        if (!ready) return replyHtml;
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const { data: products, error } = await sb.from('products')
             .select('id,name_zh,name_en,price,image_url,images')
@@ -311,7 +323,8 @@
             if (ids.indexOf(m[1]) === -1) ids.push(m[1]);
         }
         if (ids.length === 0) return replyHtml;
-        if (!window.supabase) return replyHtml;
+        const ready = await waitForSupabase();
+        if (!ready) return replyHtml;
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const { data: orders, error } = await sb.from('orders')
             .select('id,order_code,status,total_amount,subtotal,created_at,items,product_images,product_names')
