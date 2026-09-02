@@ -315,6 +315,31 @@
     async function loadFeaturedProducts() {
         var container = document.getElementById('featuredProducts');
         try {
+            // 優先讀後台精選花藝（featured_products 表），按後台排序顯示
+            var fpResult = await supabaseClient.from('featured_products').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            if (fpResult.error) throw fpResult.error;
+            var fpList = fpResult.data || [];
+            if (fpList.length > 0) {
+                var ids = [];
+                for (var i = 0; i < fpList.length; i++) { if (fpList[i].product_id) { ids.push(fpList[i].product_id); } }
+                if (ids.length > 0) {
+                    var pResult = await supabaseClient.from('products').select('*').in('id', ids);
+                    if (pResult.error) throw pResult.error;
+                    var pMap = {};
+                    for (var m = 0; m < (pResult.data || []).length; m++) { pMap[pResult.data[m].id] = pResult.data[m]; }
+                    var ordered = [];
+                    for (var n = 0; n < fpList.length; n++) {
+                        var prod = pMap[fpList[n].product_id];
+                        if (prod && prod.is_active) { ordered.push(prod); }
+                    }
+                    if (ordered.length > 0) {
+                        featuredProductsData = ordered;
+                        renderFeaturedProducts();
+                        return;
+                    }
+                }
+            }
+            // 若無精選花藝設定，fallback：顯示前 6 件商品
             var result = await supabaseClient.from('products').select('*').eq('is_active', true).limit(6).order('id', { ascending: true });
             if (result.error) throw result.error;
             featuredProductsData = result.data || [];

@@ -249,6 +249,14 @@
             <div class="form-actions" style="margin-top:20px;"><button class="btn btn-primary" onclick="saveModalProducts()">保存</button><button class="btn btn-secondary" onclick="closeProductModal()">取消</button></div>
         </div>
     </div>
+    <div class="modal-overlay" id="cardCategoryModal">
+        <div class="modal-content">
+            <h2 class="modal-title">選擇分類</h2>
+            <input type="hidden" id="cardCategoryTargetCard">
+            <div class="category-grid" id="cardCategoryList" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));"></div>
+            <div class="form-actions" style="margin-top:20px;"><button class="btn btn-secondary" onclick="closeCardCategoryModal()">取消</button></div>
+        </div>
+    </div>
         <script>
     var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
@@ -270,6 +278,7 @@
     var categoryDetailProducts = [];
     var selectedOrderProducts = [];
     var selectedFeaturedProducts = [];
+    var collectionCardsData = [];
     var currentOrderDetail = null;
     var selectedTemplateProduct = null;
     var tagCategories = {
@@ -399,7 +408,7 @@
     }
 
     function renderHomepagePage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">首頁管理</h2><button class="btn btn-primary" onclick="saveHomepageSettings()">保存全部</button></div>';
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">首頁管理</h2><button class="btn btn-primary" onclick="publishHomepage()">發布</button></div>';
         c.innerHTML += '<div class="form-container" style="max-width:100%;">';
         c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">Hero Banner</h3>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">主標題</label><input class="form-input" id="heroTitle"></div><div class="form-group"><label class="form-label">副標題</label><input class="form-input" id="heroSubtitle"></div></div>';
@@ -513,6 +522,24 @@
             showToast('首頁設置已保存');
         } catch (e) { showToast('保存失敗'); }
     }
+    async function publishHomepage() {
+        showToast('正在發布...');
+        try {
+            // 1. 保存 Hero Banner + 關於我們
+            await saveHomepageSettings();
+            // 2. 保存臻選系列：將所有卡片設為已發布（前台只顯示 is_active=true）
+            try {
+                var cards = await supabaseClient.from('collection_cards').select('id');
+                if (cards.data) { for (var i = 0; i < cards.data.length; i++) { await supabaseClient.from('collection_cards').update({ is_active: true }).eq('id', cards.data[i].id); } }
+            } catch (e2) { showToast('臻選系列發布失敗'); }
+            // 3. 精選花藝：確保 featured_products 全部發布
+            try {
+                var fps = await supabaseClient.from('featured_products').select('id');
+                if (fps.data) { for (var j = 0; j < fps.data.length; j++) { await supabaseClient.from('featured_products').update({ is_active: true }).eq('id', fps.data[j].id); } }
+            } catch (e3) { showToast('精選花藝發布失敗'); }
+            showToast('✅ 已發布到前台首頁');
+        } catch (e) { showToast('發布失敗: ' + e.message); }
+    }
     async function loadCollectionCards() {
         var c = document.getElementById('collectionCardsGrid');
         try {
@@ -523,21 +550,84 @@
                 var r2 = await supabaseClient.from('collection_cards').select('*').order('sort_order', { ascending: true });
                 cards = r2.data || [];
             }
+            collectionCardsData = cards;
             var h = '';
             for (var j = 0; j < cards.length; j++) {
                 var card = cards[j];
-                h += '<div class="collection-card-edit">' + (card.image_url ? '<img src="' + card.image_url + '">' : '<div style="height:150px;background:#F3EFEA;border-radius:8px;display:flex;align-items:center;justify-content:center;">無圖</div>');
+                var imgBlock = card.image_url ? '<img src="' + card.image_url + '" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">' : '<p style="margin:0;font-size:14px;color:#888;">📁 拖拽圖片到此處，或點擊選擇</p>';
+                h += '<div class="collection-card-edit">';
+                h += '<div class="upload-area" id="cardUpArea' + card.id + '" style="min-height:150px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:all 0.3s;overflow:hidden;">' + imgBlock + '<input type="file" id="cardFileInput' + card.id + '" accept="image/*" style="display:none;"></div>';
                 h += '<div class="form-group" style="margin-top:10px;"><input class="form-input" placeholder="中文標題" value="' + (card.title_zh || '') + '" onchange="updateCollectionCard(' + card.id + ',\'title_zh\',this.value)"></div>';
                 h += '<div class="form-group"><input class="form-input" placeholder="英文標題" value="' + (card.title_en || '') + '" onchange="updateCollectionCard(' + card.id + ',\'title_en\',this.value)"></div>';
-                h += '<div class="form-group"><input class="form-input" placeholder="連結" value="' + (card.link_url || '') + '" onchange="updateCollectionCard(' + card.id + ',\'link_url\',this.value)"></div>';
-                h += '<div class="url-add-row"><input type="text" id="cardImg' + card.id + '" placeholder="圖片網址" value="' + (card.image_url || '') + '"><button class="btn btn-small btn-secondary" onclick="updateCardImage(' + card.id + ')">更新圖片</button></div>';
+                h += '<div class="form-group"><label class="form-label" style="font-size:13px;">關聯分類</label><button class="btn btn-secondary btn-small" onclick="openCardCategorySelect(' + card.id + ')">選擇分類</button><span id="cardCatLabel' + card.id + '" style="margin-left:8px;font-size:13px;color:#383431;">' + (card.link_url ? getCardCategoryName(card.link_url) : '未選擇') + '</span></div>';
                 h += '</div>';
             }
             c.innerHTML = h;
+            for (var k = 0; k < cards.length; k++) { initCardUpload(cards[k].id); }
         } catch (e) { c.innerHTML = '請先創建 collection_cards 表'; }
     }
     async function updateCollectionCard(id, field, value) { await supabaseClient.from('collection_cards').update({ [field]: value }).eq('id', id); }
-    async function updateCardImage(id) { var url = document.getElementById('cardImg' + id).value.trim(); if (url) { await supabaseClient.from('collection_cards').update({ image_url: url }).eq('id', id); showToast('圖片已更新'); loadCollectionCards(); } }
+    function getCardCategoryName(url) { if (!url) return ''; var m = url.match(/category=([^&]+)/); if (m) { try { return decodeURIComponent(m[1]); } catch(e) { return m[1]; } } return ''; }
+    function initCardUpload(cardId) {
+        var ua = document.getElementById('cardUpArea' + cardId);
+        var fi = document.getElementById('cardFileInput' + cardId);
+        if (!ua || !fi) return;
+        ua.onclick = function() { fi.click(); };
+        fi.onchange = function(e) { if (e.target.files[0]) { handleCardFileUpload(cardId, e.target.files[0]); } };
+        ua.ondragover = function(e) { e.preventDefault(); ua.style.borderColor = '#1A1A1A'; ua.style.background = '#f9f9f9'; };
+        ua.ondragleave = function(e) { e.preventDefault(); ua.style.borderColor = '#ccc'; ua.style.background = ''; };
+        ua.ondrop = function(e) { e.preventDefault(); ua.style.borderColor = '#ccc'; ua.style.background = ''; if (e.dataTransfer.files && e.dataTransfer.files[0]) { handleCardFileUpload(cardId, e.dataTransfer.files[0]); } };
+    }
+    async function handleCardFileUpload(cardId, file) {
+        if (!file) return;
+        var fd = new FormData();
+        fd.append('file', file);
+        try {
+            var res = await fetch('/r2-upload', { method: 'POST', body: fd });
+            var data = await res.json();
+            if (data.url) {
+                await supabaseClient.from('collection_cards').update({ image_url: data.url }).eq('id', cardId);
+                var ua = document.getElementById('cardUpArea' + cardId);
+                if (ua) { ua.innerHTML = '<img src="' + data.url + '" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">'; }
+                showToast('圖片上傳成功');
+            } else { showToast('上傳失敗'); }
+        } catch (e) { showToast('上傳失敗: ' + e.message); }
+    }
+    async function openCardCategorySelect(cardId) {
+        document.getElementById('cardCategoryTargetCard').value = cardId;
+        var list = document.getElementById('cardCategoryList');
+        var catRes;
+        try {
+            catRes = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+        } catch (e) { showToast('無法讀取分類'); return; }
+        var cats = catRes.data || [];
+        var h = '';
+        if (!cats.length) { h = '<div class="empty-state">暫無分類，請先在「商品分類」新增</div>'; }
+        for (var i = 0; i < cats.length; i++) {
+            var cat = cats[i];
+            h += '<div style="border:1px solid #ddd;border-radius:8px;overflow:hidden;cursor:pointer;background:#fff;" onclick="pickCardCategory(' + cardId + ',' + cat.id + ')">';
+            h += (cat.image_url ? '<img src="' + cat.image_url + '" style="width:100%;height:100px;object-fit:cover;">' : '<div style="height:100px;background:#F3EFEA;display:flex;align-items:center;justify-content:center;">無圖</div>');
+            h += '<div style="padding:8px;"><b style="font-size:14px;">' + (cat.name_zh || '') + '</b><br><small style="color:#888;">' + (cat.name_en || '') + '</small></div>';
+            h += '</div>';
+        }
+        list.innerHTML = h;
+        document.getElementById('cardCategoryModal').classList.add('show');
+    }
+    function closeCardCategoryModal() { document.getElementById('cardCategoryModal').classList.remove('show'); }
+    async function pickCardCategory(cardId, catId) {
+        var list = document.getElementById('cardCategoryList');
+        var cats = list.querySelectorAll('div[style*="border:1px solid #ddd"]');
+        var nameZh = '';
+        var catRes = await supabaseClient.from('categories').select('*').eq('id', catId).limit(1);
+        if (catRes.data && catRes.data.length > 0) { nameZh = catRes.data[0].name_zh || ''; }
+        if (!nameZh) { closeCardCategoryModal(); return; }
+        var link = 'products.html?category=' + encodeURIComponent(nameZh);
+        await supabaseClient.from('collection_cards').update({ link_url: link }).eq('id', cardId);
+        var label = document.getElementById('cardCatLabel' + cardId);
+        if (label) { label.textContent = nameZh; }
+        closeCardCategoryModal();
+        showToast('已選擇分類：' + nameZh);
+    }
     async function loadFeaturedProducts() {
         var c = document.getElementById('featuredProductsGrid');
         try {
