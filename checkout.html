@@ -317,7 +317,7 @@
         renderSummary();
     }
 
-    function getSubtotal() { return cart.reduce((sum, item) => { const addonsTotal = item.addons.reduce((a, addon) => a + addon.price, 0); return sum + (item.price + addonsTotal) * item.quantity; }, 0); }
+    function getSubtotal() { return cart.reduce((sum, item) => { const addons = item.addons || []; const addonsTotal = addons.reduce((a, addon) => a + (addon.price || 0), 0); return sum + ((item.price || 0) + addonsTotal) * (item.quantity || 1); }, 0); }
     function getDeliveryFee() { const subtotal = getSubtotal(); const area = getEffectiveArea(); const areaFee = getEffectiveAreaFee(); let fee = Math.max(areaFee, selectedTimeFee); if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 500) { fee = 0; } return fee; }
     function getTotal() { return getSubtotal() + getDeliveryFee(); }
 
@@ -393,7 +393,7 @@
         const areaFee = getEffectiveAreaFee();
         const itemsHtml = cart.map(item => {
                 const itemImg = item.image ? `<img src="${item.image}" class="summary-item-img">` : `<span class="summary-item-emoji">${item.emoji || '🌸'}</span>`;
-                return `<div class="summary-item"><span class="summary-item-info">${itemImg}<span class="summary-item-name">${item.name} × ${item.quantity}</span></span><span>HK$${item.price * item.quantity}</span></div>`;
+                return `<div class="summary-item"><span class="summary-item-info">${itemImg}<span class="summary-item-name">${item.name || '商品'} × ${item.quantity || 1}</span></span><span>HK$${((item.price || 0) * (item.quantity || 1))}</span></div>`;
             }).join('');
         container.innerHTML = `
             <h3 class="summary-title">訂單摘要</h3>
@@ -521,7 +521,7 @@
                 
                 // 发送订单成立通知邮件
                 if (customerEmail) {
-                    const itemsList = cart.map(item => `<li>${item.name} × ${item.quantity} - HK$${item.price * item.quantity}</li>`).join('');
+                    const itemsList = cart.map(item => `<li>${item.name || '商品'} × ${item.quantity || 1} - HK$${((item.price || 0) * (item.quantity || 1))}</li>`).join('');
                     let pdfBase64 = '';
                     try {
                         pdfBase64 = await generateOrderPdfBase64({

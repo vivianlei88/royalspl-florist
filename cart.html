@@ -135,7 +135,7 @@
     let couponCode = '';
 
     function saveCart() { localStorage.setItem('royalspl_cart', JSON.stringify(cart)); updateCartBadge(); }
-    function updateCartBadge() { const badge = document.getElementById('cartBadge'); if (badge) { const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; } }
+    function updateCartBadge() { const badge = document.getElementById('cartBadge'); if (badge) { const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; } }
     async function syncCartWithDatabase() {
         if (!cart.length) { renderCart(); return; }
         const productIds = cart.map(item => item.productId).filter(Boolean);
@@ -173,15 +173,16 @@
             return;
         }
         let itemsHtml = cart.map((item, index) => {
-            const addonsTotal = item.addons.reduce((sum, a) => sum + a.price, 0);
-            const itemTotal = (item.price + addonsTotal) * item.quantity;
-            const addonsHtml = item.addons.length > 0 ? `<p class="cart-item-addons">+ ${item.addons.map(a => a.name).join(', ')}</p>` : '';
-            const itemImg = item.image ? `<img src="${item.image}" class="cart-item-image">` : `<span class="cart-item-emoji">${item.emoji}</span>`;
+            const addons = item.addons || [];
+            const addonsTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
+            const itemTotal = ((item.price || 0) + addonsTotal) * (item.quantity || 1);
+            const addonsHtml = addons.length > 0 ? `<p class="cart-item-addons">+ ${addons.map(a => a.name || '').join(', ')}</p>` : '';
+            const itemImg = item.image ? `<img src="${item.image}" class="cart-item-image">` : `<span class="cart-item-emoji">${item.emoji || '🌸'}</span>`;
             return `<div class="cart-item">
                 ${itemImg}
                 <div class="cart-item-info">
-                    <p class="cart-item-name">${item.name}</p>
-                    <p class="cart-item-name-en">${item.nameEn}</p>
+                    <p class="cart-item-name">${item.name || '商品'}</p>
+                    <p class="cart-item-name-en">${item.nameEn || ''}</p>
                     ${addonsHtml}
                     <p class="cart-item-price">HK$${itemTotal}</p>
                 </div>
@@ -193,7 +194,7 @@
                 <button class="cart-item-remove" onclick="removeItem(${index})">✕</button>
             </div>`;
         }).join('');
-        const subtotal = cart.reduce((sum, item) => { const addonsTotal = item.addons.reduce((a, addon) => a + addon.price, 0); return sum + (item.price + addonsTotal) * item.quantity; }, 0);
+        const subtotal = cart.reduce((sum, item) => { const addons = item.addons || []; const addonsTotal = addons.reduce((a, addon) => a + (addon.price || 0), 0); return sum + ((item.price || 0) + addonsTotal) * (item.quantity || 1); }, 0);
         const cardSectionOpen = cardType === 'yes' || cardType === 'blank';
         const showTextarea = cardType === 'yes' || cardType === 'blank';
         container.innerHTML = `
@@ -234,7 +235,7 @@
             </div>
         `;
     }
-    function changeQty(index, delta) { cart[index].quantity = Math.max(1, cart[index].quantity + delta); saveCart(); renderCart(); }
+    function changeQty(index, delta) { cart[index].quantity = Math.max(1, (cart[index].quantity || 1) + delta); saveCart(); renderCart(); }
     function removeItem(index) { cart.splice(index, 1); saveCart(); renderCart(); }
     function setCardType(type) {
         cardType = type;
