@@ -483,8 +483,28 @@
     }
 
     function handleBuyNow() {
-        handleAddToCart();
-        window.location.href = 'cart.html';
+        if (!currentProduct) return;
+        var addons = [];
+        document.querySelectorAll('.addon-checkbox').forEach(function(cb) {
+            if (cb.checked) {
+                var addonId = parseInt(cb.getAttribute('data-id'));
+                var addon = allAddons.find(function(a) { return a.id === addonId; });
+                if (addon) addons.push({ id: addon.id, name: addon.name_zh, price: addon.price });
+            }
+        });
+        // 立即購買：只買當前這一件（含所選配件），直接去結帳，不影響原本購物車
+        var buyNowItems = [{
+            productId: currentProduct.id,
+            name: currentProduct.name_zh,
+            nameEn: currentProduct.name_en,
+            price: parseFloat(currentProduct.price),
+            emoji: currentProduct.emoji || '🌸',
+            quantity: quantity,
+            addons: addons,
+            deliveryDays: currentProduct.delivery_days || 1
+        }];
+        sessionStorage.setItem('royalspl_buynow', JSON.stringify(buyNowItems));
+        window.location.href = 'checkout.html?buynow=1';
     }
 
     function updateCartBadge() {

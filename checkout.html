@@ -255,6 +255,13 @@
 
     let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
     
+    // 「立即購買」模式：URL 帶 buynow=1 時，讀取獨立暫存，不影響原本購物車
+    var isBuyNow = new URLSearchParams(window.location.search).get('buynow') === '1';
+    if (isBuyNow) {
+        var buyNowCart = JSON.parse(sessionStorage.getItem('royalspl_buynow') || '[]');
+        if (buyNowCart.length) cart = buyNowCart;
+    }
+    
     // 页面加载时，如果用户已登录，自动填充邮箱
     (async function() {
         try {
@@ -310,7 +317,11 @@
                 }
                 return item;
             });
-            localStorage.setItem('royalspl_cart', JSON.stringify(cart));
+            if (isBuyNow) {
+                sessionStorage.setItem('royalspl_buynow', JSON.stringify(cart));
+            } else {
+                localStorage.setItem('royalspl_cart', JSON.stringify(cart));
+            }
         } catch (e) {
             console.error('同步購物車失敗:', e);
         }
@@ -594,8 +605,12 @@
                     }
                 }));
                 
-                // 清空购物车
-                localStorage.removeItem('royalspl_cart');
+                // 清空購物車（立即購買模式只清立即購買暫存，保留原本購物車）
+                if (isBuyNow) {
+                    sessionStorage.removeItem('royalspl_buynow');
+                } else {
+                    localStorage.removeItem('royalspl_cart');
+                }
                 
                 // 调用 Stripe Checkout Session
                 try {
