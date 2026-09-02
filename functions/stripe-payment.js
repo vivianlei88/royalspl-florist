@@ -19,8 +19,8 @@ export async function onRequestPost(context) {
       // 創建收款連結
       const formData = new URLSearchParams();
       formData.append('mode', 'payment');
-      formData.append('success_url', 'https://royalspl.pages.dev/order-success.html');
-      formData.append('cancel_url', 'https://royalspl.pages.dev/admin.html');
+      formData.append('success_url', 'https://royalspl.shop/order-success.html');
+      formData.append('cancel_url', 'https://royalspl.shop/admin.html');
       formData.append('line_items[0][price_data][currency]', 'hkd');
       formData.append('line_items[0][price_data][product_data][name]', '訂單 ' + orderCode);
       formData.append('line_items[0][price_data][unit_amount]', Math.round(amount * 100));

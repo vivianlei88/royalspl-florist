@@ -36,8 +36,8 @@ export async function onRequestPost(context) {
     // 構建 Stripe Checkout Session
     const formData = new URLSearchParams();
     formData.append('mode', 'payment');
-    formData.append('success_url', 'https://royalspl.pages.dev/order-success.html');
-    formData.append('cancel_url', 'https://royalspl.pages.dev/checkout.html');
+    formData.append('success_url', 'https://royalspl.shop/order-success.html');
+    formData.append('cancel_url', 'https://royalspl.shop/checkout.html');
     formData.append('line_items[0][price_data][currency]', 'hkd');
     formData.append('line_items[0][price_data][product_data][name]', 'RoyalSpl Florist 花禮訂單');
     formData.append('line_items[0][price_data][unit_amount]', Math.round(totalAmount * 100));
