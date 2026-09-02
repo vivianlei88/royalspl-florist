@@ -333,7 +333,16 @@
                         if (prod && prod.is_active) { ordered.push(prod); }
                     }
                     if (ordered.length > 0) {
-                        featuredProductsData = ordered.slice(0, 6);
+                        // 輪播：每次刷新顯示下一組 6 個商品（2行x3個）
+                        var GROUP_SIZE = 6;
+                        var totalGroups = Math.ceil(ordered.length / GROUP_SIZE);
+                        var curPage = parseInt(localStorage.getItem('royalspl_featured_page') || '0', 10);
+                        if (isNaN(curPage) || curPage < 0) { curPage = 0; }
+                        var start = curPage * GROUP_SIZE;
+                        featuredProductsData = ordered.slice(start, start + GROUP_SIZE);
+                        // 更新頁索引，下次刷新顯示下一組
+                        var nextPage = (curPage + 1) % totalGroups;
+                        localStorage.setItem('royalspl_featured_page', String(nextPage));
                         renderFeaturedProducts();
                         return;
                     }
