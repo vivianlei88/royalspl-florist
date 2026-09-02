@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設計風格 | RoyalSpl Florist Hong Kong</title>
+    <meta name="description" content="RoyalSpl Florist Hong Kong - 瀏覽所有花藝設計風格分類">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        .categories-page { padding: 40px 0 80px; }
+        .page-header { max-width: 1200px; margin: 0 auto 50px; padding: 0 20px; text-align: center; }
+        .page-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; color: #383431; margin: 0 0 10px; }
+        .page-title { font-size: 36px; font-weight: 600; color: #1A1A1A; margin: 0; }
+        .categories-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .category-card { display: block; text-decoration: none; color: inherit; cursor: pointer; transition: all 0.3s; }
+        .category-card-img-wrap { position: relative; width: 100%; padding-top: 100%; overflow: hidden; border-radius: 4px; background: #F3EFEA; }
+        .category-card-img-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .category-card:hover .category-card-img-wrap img { transform: scale(1.05); }
+        .category-card-text { padding: 15px 5px 5px; text-align: left; }
+        .category-card-en { font-family: 'Cormorant Garamond', serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #383431; margin: 0 0 5px; }
+        .category-card-zh { font-size: 18px; font-weight: 500; color: #1A1A1A; margin: 0; }
+        .category-card-count { font-size: 12px; color: #888; margin-top: 5px; }
+        .loading { text-align: center; padding: 60px; font-size: 18px; color: #888; grid-column: 1/-1; }
+        .empty-state { text-align: center; padding: 60px; grid-column: 1/-1; }
+        @media (max-width: 768px) {
+            .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .page-title { font-size: 28px; }
+            .category-card-zh { font-size: 16px; }
+        }
+        @media (max-width: 480px) {
+            .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        }
+    </style>
+    <link rel="stylesheet" href="css/ai-chat.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="account.html" class="user-icon" aria-label="會員中心">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+                <a href="cart.html" class="cart-icon" aria-label="購物車">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">選單</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="index.html" class="nav-link"><span class="nav-zh">首頁</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="categories.html" class="nav-link"><span class="nav-zh">設計風格</span><span class="nav-en">THE COLLECTIONS</span></a></div>
+            <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">ALL FLOWERS</span></a></div>
+            <div class="nav-item"><a href="blog.html" class="nav-link"><span class="nav-zh">花藝文章</span><span class="nav-en">BLOG</span></a></div>
+            <div class="nav-item"><a href="faq.html" class="nav-link"><span class="nav-zh">常見問題</span><span class="nav-en">FAQ</span></a></div>
+            <div class="nav-item"><a href="contact.html" class="nav-link"><span class="nav-zh">聯絡我們</span><span class="nav-en">CONTACT</span></a></div>
+        </nav>
+    </div>
+
+    <main class="categories-page">
+        <div class="page-header">
+            <p class="page-subtitle">THE COLLECTIONS</p>
+            <h1 class="page-title">設計風格</h1>
+        </div>
+        <div class="categories-grid" id="categoriesGrid">
+            <div class="loading">🌸 正在載入...</div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3 class="footer-logo">RoyalSpl Florist</h3>
+                <p class="footer-tagline">Hong Kong Luxury Florist</p>
+            </div>
+            <div class="footer-section">
+                <h4 class="footer-title">快速連結</h4>
+                <a href="index.html" class="footer-link">首頁</a>
+                <a href="categories.html" class="footer-link">設計風格</a>
+                <a href="products.html" class="footer-link">所有花藝</a>
+                <a href="contact.html" class="footer-link">聯絡我們</a>
+            </div>
+            <div class="footer-section">
+                <h4 class="footer-title">客戶服務</h4>
+                <a href="faq.html" class="footer-link">常見問題</a>
+                <a href="privacy.html" class="footer-link">私隱政策</a>
+                <a href="blog.html" class="footer-link">花藝文章</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const supabaseClient = supabase.createClient(
+            'https://gefqlrmozxbgfhxgngtg.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y'
+        );
+
+        // 导航菜单
+        const menuBtn = document.getElementById('menuBtn');
+        const navDrawer = document.getElementById('navDrawer');
+        const navCloseBtn = document.getElementById('navCloseBtn');
+        menuBtn.addEventListener('click', () => { navDrawer.classList.add('open'); });
+        navCloseBtn.addEventListener('click', () => { navDrawer.classList.remove('open'); });
+
+        // 购物车数量
+        function updateCartBadge() {
+            const cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartBadge').textContent = count;
+        }
+        updateCartBadge();
+
+        // 加载分类
+        async function loadCategories() {
+            const container = document.getElementById('categoriesGrid');
+            try {
+                const result = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+                if (result.error) throw result.error;
+                const categories = result.data || [];
+                if (!categories.length) {
+                    container.innerHTML = '<div class="empty-state">暫無分類</div>';
+                    return;
+                }
+                let html = '';
+                for (let i = 0; i < categories.length; i++) {
+                    const cat = categories[i];
+                    const imgHtml = cat.image_url
+                        ? '<div class="category-card-img-wrap"><img src="' + cat.image_url + '" alt="' + cat.name_zh + '"></div>'
+                        : '<div class="category-card-img-wrap" style="display:flex;align-items:center;justify-content:center;"><span style="font-size:50px;">🌸</span></div>';
+                    html += '<a href="products.html?category=' + encodeURIComponent(cat.name_zh) + '" class="category-card">';
+                    html += imgHtml;
+                    html += '<div class="category-card-text">';
+                    html += '<p class="category-card-en">' + (cat.name_en || '') + '</p>';
+                    html += '<h3 class="category-card-zh">' + cat.name_zh + '</h3>';
+                    html += '</div></a>';
+                }
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('載入分類失敗:', err);
+                container.innerHTML = '<div class="empty-state">❌ 載入失敗，請稍後重試</div>';
+            }
+        }
+        loadCategories();
+    </script>
+    <script src="js/ai-chat.js"></script>
+</body>
+</html>
