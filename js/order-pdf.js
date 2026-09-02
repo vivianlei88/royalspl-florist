@@ -5,7 +5,7 @@
 
 // 店舖資訊（如需修改電話/地址/logo，改呢度就得）
 var SHOP_INFO = {
-    name: 'RoyalSpl Florist',
+    name: 'RoyalSpl Florist HONG KONG',
     email: 'info@royalspl.xyz',
     whatsapp: '+852 6503 6907',
     phone: '',
@@ -215,8 +215,6 @@ function buildOrderEmailHtml(o) {
         + '<tr><td style="background:#1E3A5F;padding:20px 24px;text-align:center;">'
         + '<img src="' + logoUrl + '" width="104" height="104" style="width:104px;height:104px;object-fit:contain;background:#fff;border-radius:10px;padding:6px;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;" alt="' + shop.name + '"/>'
         + '<div style="font-size:24px;font-weight:bold;letter-spacing:3px;color:#fff;">' + shop.name + '</div>'
-        + (contactLine ? '<div style="font-size:12px;color:#D9E2F0;margin-top:6px;">' + contactLine + '</div>' : '')
-        + (shop.address ? '<div style="font-size:12px;color:#D9E2F0;margin-top:3px;">📍 ' + shop.address + '</div>' : '')
         + '</td></tr>'
         + '<tr><td style="padding:22px 28px;">'
         + '<div style="text-align:center;font-size:15px;color:#1E3A5F;font-weight:bold;letter-spacing:4px;margin:2px 0 14px;">' + (o.title || '訂單確認書') + '</div>'
@@ -251,9 +249,9 @@ function buildOrderEmailHtml(o) {
         + '</table>'
         + (o.cardMessage ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;"><tr><td style="background:#FFF8E1;padding:10px 14px;border-left:4px solid #FFC107;font-size:13px;"><b>心意卡：</b>' + o.cardMessage + '</td></tr></table>' : '')
         + (o.remarks ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;"><tr><td style="background:#F0F4F8;padding:10px 14px;border-left:4px solid #8BC8EA;font-size:13px;"><b>特別事項：</b>' + o.remarks + '</td></tr></table>' : '')
-        + '<p style="text-align:center;margin-top:22px;font-size:11px;color:#888;">感謝您的訂購！如有疑問請聯絡 ' + shop.name + ' · ' + shop.email + '</p>'
+        + '<p style="text-align:center;margin-top:22px;font-size:11px;color:#888;">感謝您的訂購！如有疑問請聯絡 ' + shop.name + '</p>'
         + '</td></tr>'
-        + '<tr><td style="background:#F7F5F1;padding:12px 24px;font-size:11px;color:#888;text-align:center;">此郵件由 RoyalSpl Florist 自動發出 · ' + shop.email + ' · WhatsApp ' + (shop.whatsapp || '-') + '</td></tr>'
+        + '<tr><td style="background:#F7F5F1;padding:12px 24px;font-size:11px;color:#888;text-align:center;">此郵件由 ' + shop.name + ' 自動發出</td></tr>'
         + '</table>'
         + '</td></tr></table>';
 }
