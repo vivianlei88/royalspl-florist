@@ -41,13 +41,15 @@
         .data-table th { background: #1A1A1A; color: white; padding: 15px 10px; text-align: left; font-size: 15px; }
         .data-table td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 16px; word-wrap: break-word; }
         .data-table .checkbox-col { width: 40px; }
-        .data-table th:nth-child(2), .data-table td:nth-child(2) { width: 100px; }
-        .data-table th:nth-child(3), .data-table td:nth-child(3) { width: 90px; }
-        .data-table th:nth-child(4), .data-table td:nth-child(4) { width: auto; }
-        .data-table th:nth-child(5), .data-table td:nth-child(5) { width: 90px; text-align: center; }
-        .data-table th:nth-child(6), .data-table td:nth-child(6) { width: 70px; text-align: center; }
-        .data-table th:nth-child(7), .data-table td:nth-child(7) { width: 70px; text-align: center; }
-        .data-table th:nth-child(8), .data-table td:nth-child(8) { width: 200px; }
+        .data-table th:nth-child(2), .data-table td:nth-child(2) { width: 80px; }
+        .data-table th:nth-child(3), .data-table td:nth-child(3) { width: 80px; }
+        .data-table th:nth-child(4), .data-table td:nth-child(4) { width: 200px; }
+        .data-table th:nth-child(5), .data-table td:nth-child(5) { width: 80px; text-align: center; }
+        .data-table th:nth-child(6), .data-table td:nth-child(6) { width: 60px; text-align: center; }
+        .data-table th:nth-child(7), .data-table td:nth-child(7) { width: 60px; text-align: center; }
+        .data-table th:nth-child(8), .data-table td:nth-child(8) { width: 180px; }
+        .data-table tbody tr { cursor: pointer; }
+        .data-table tbody tr:hover { background: #f5f0eb; }
         .product-img-lg { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; }
         .form-container { background: white; border-radius: 10px; padding: 35px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 750px; }
         .form-group { margin-bottom: 22px; }
@@ -115,7 +117,7 @@
         .order-product-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; display: block; }
         .collection-card-edit { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 15px; }
         .collection-card-edit img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
-        .products-sticky-header { position: sticky; top: 65px; background: #FAF8F5; z-index: 100; padding: 15px 0; border-bottom: 1px solid #e0d8cf; margin-bottom: 15px; }
+        .products-sticky-header { position: sticky; top: 0; background: #FAF8F5; z-index: 100; padding: 12px 0; border-bottom: 1px solid #e0d8cf; margin-bottom: 15px; }
     .products-header-row { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
     .products-search { width: 220px; padding: 10px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; }
     @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } .products-sticky-header { top: 0; } .products-search { width: 100%; } }
@@ -1015,7 +1017,7 @@ async function saveProduct() {
             var img = p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '無圖';
             var sku = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
             var eye = p.is_active !== false ? '顯示' : '隱藏';
-            h += '<tr><td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td><td>HK$' + p.price + '</td><td>' + p.stock + '</td><td><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
+            h += '<tr onclick="showEditFormById(' + p.id + ')"><td class="checkbox-col" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td><td>HK$' + p.price + '</td><td>' + p.stock + '</td><td onclick="event.stopPropagation()"><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td onclick="event.stopPropagation()"><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
         }
         h += '</tbody></table>';
         c.innerHTML = h;
