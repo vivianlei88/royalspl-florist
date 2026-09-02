@@ -384,7 +384,7 @@
         c.innerHTML += '<div class="form-container" style="max-width:100%;">';
         c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">Hero Banner</h3>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">主標題</label><input class="form-input" id="heroTitle"></div><div class="form-group"><label class="form-label">副標題</label><input class="form-input" id="heroSubtitle"></div></div>';
-        c.innerHTML += '<div class="form-group"><label class="form-label">背景圖片</label><div class="upload-area" id="heroUploadArea"><p>點擊上傳圖片</p><input type="file" id="heroFileInput" accept="image/*" style="display:none;"></div><div id="heroImagePreview"></div></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">背景圖片（可多張，拖拽或點擊上傳，最多5張）</label><div class="upload-area" id="heroUploadArea" style="min-height:120px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:all 0.3s;"><p style="margin:0;font-size:14px;color:#888;">📁 拖拽圖片到此處，或點擊選擇</p><p style="margin:5px 0 0 0;font-size:12px;color:#aaa;">支援 JPG、PNG，最多5張</p><input type="file" id="heroFileInput" accept="image/*" multiple style="display:none;"></div><div id="heroImagePreview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;"></div></div>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">CTA 文字</label><input class="form-input" id="heroCtaText"></div><div class="form-group"><label class="form-label">CTA 連結</label><input class="form-input" id="heroCtaLink"></div></div>';
         c.innerHTML += '<hr style="margin:25px 0;border-top:1px solid #ddd;">';
         c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">臻選系列（6卡片）</h3><div class="category-grid" id="collectionCardsGrid"></div>';
@@ -398,9 +398,70 @@
         loadFeaturedProducts();
         initHeroUpload();
     }
-    var heroUploadedImage = '';
-    function initHeroUpload() { var ua = document.getElementById('heroUploadArea'); var fi = document.getElementById('heroFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleHeroFileUpload(this.files[0]); }; } }
-    async function handleHeroFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { heroUploadedImage = data.url; document.getElementById('heroImagePreview').innerHTML = '<img src="' + data.url + '" style="width:200px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (e) {} }
+    var heroUploadedImages = [];
+    function initHeroUpload() { 
+        var ua = document.getElementById('heroUploadArea'); 
+        var fi = document.getElementById('heroFileInput'); 
+        if (ua && fi) { 
+            ua.onclick = function() { fi.click(); }; 
+            fi.onchange = function(e) { 
+                if (e.target.files) { 
+                    for (var i = 0; i < e.target.files.length; i++) { 
+                        if (heroUploadedImages.length < 5) { handleHeroFileUpload(e.target.files[i]); }
+                    } 
+                } 
+            };
+            ua.ondragover = function(e) { e.preventDefault(); ua.style.borderColor = '#1A1A1A'; ua.style.background = '#f9f9f9'; };
+            ua.ondragleave = function(e) { e.preventDefault(); ua.style.borderColor = '#ccc'; ua.style.background = ''; };
+            ua.ondrop = function(e) { 
+                e.preventDefault(); 
+                ua.style.borderColor = '#ccc'; 
+                ua.style.background = '';
+                if (e.dataTransfer.files) { 
+                    for (var i = 0; i < e.dataTransfer.files.length; i++) { 
+                        if (heroUploadedImages.length < 5) { handleHeroFileUpload(e.dataTransfer.files[i]); }
+                    } 
+                } 
+            };
+        } 
+    }
+    async function handleHeroFileUpload(file) { 
+        if (!file) return; 
+        if (heroUploadedImages.length >= 5) { showToast('最多上傳5張圖片'); return; }
+        var fd = new FormData(); 
+        fd.append('file', file); 
+        try { 
+            var res = await fetch('/r2-upload', { method: 'POST', body: fd }); 
+            var data = await res.json(); 
+            if (data.url) { 
+                heroUploadedImages.push(data.url); 
+                renderHeroImagesPreview(); 
+                showToast('圖片上傳成功'); 
+            } else { 
+                showToast('上傳失敗'); 
+            } 
+        } catch(e) { 
+            showToast('上傳失敗: ' + e.message); 
+        } 
+    }
+    function renderHeroImagesPreview() {
+        var preview = document.getElementById('heroImagePreview');
+        if (!preview) return;
+        if (heroUploadedImages.length === 0) { preview.innerHTML = ''; return; }
+        var h = '';
+        for (var i = 0; i < heroUploadedImages.length; i++) {
+            h += '<div style="position:relative;width:160px;height:90px;border-radius:8px;overflow:hidden;">';
+            h += '<img src="' + heroUploadedImages[i] + '" style="width:100%;height:100%;object-fit:cover;">';
+            h += '<button onclick="removeHeroImage(' + i + ')" style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.6);color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;">×</button>';
+            h += '<span style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;">' + (i+1) + '</span>';
+            h += '</div>';
+        }
+        preview.innerHTML = h;
+    }
+    function removeHeroImage(index) {
+        heroUploadedImages.splice(index, 1);
+        renderHeroImagesPreview();
+    }
     async function loadHomepageData() {
         try {
             var r = await supabaseClient.from('homepage_settings').select('*').limit(1);
@@ -411,8 +472,8 @@
                 document.getElementById('heroCtaText').value = d.hero_cta_text || '';
                 document.getElementById('heroCtaLink').value = d.hero_cta_link || '';
                 document.getElementById('aboutText').value = d.about_text || '';
-                heroUploadedImage = d.hero_image || '';
-                if (d.hero_image) { document.getElementById('heroImagePreview').innerHTML = '<img src="' + d.hero_image + '" style="width:200px;height:100px;object-fit:cover;border-radius:8px;">'; }
+                heroUploadedImages = d.hero_images && d.hero_images.length > 0 ? d.hero_images.slice() : (d.hero_image ? [d.hero_image] : []);
+                renderHeroImagesPreview();
             }
         } catch (e) {}
     }
@@ -420,7 +481,8 @@
         var data = {
             hero_title: document.getElementById('heroTitle').value.trim(),
             hero_subtitle: document.getElementById('heroSubtitle').value.trim(),
-            hero_image: heroUploadedImage || null,
+            hero_image: heroUploadedImages.length > 0 ? heroUploadedImages[0] : null,
+            hero_images: heroUploadedImages,
             hero_cta_text: document.getElementById('heroCtaText').value.trim(),
             hero_cta_link: document.getElementById('heroCtaLink').value.trim(),
             about_text: document.getElementById('aboutText').value.trim()
