@@ -551,7 +551,27 @@
                         body: JSON.stringify({
                             to: customerEmail,
                             subject: '【RoyalSpl Florist】訂單成立通知 ' + orderCode,
-                            html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">訂單已成立</h2><p>親愛的顧客，感謝您的訂購！</p><p><strong>訂單號：</strong>' + orderCode + '</p><p><strong>訂單金額：</strong>HK$' + orderData.totalAmount + '</p><h3>訂單明細：</h3><ul>' + itemsList + '</ul><p><strong>收貨人：</strong>' + orderData.recipientName + '</p><p><strong>配送地址：</strong>' + orderData.recipientAddress + '</p><p style="color:#888;font-size:12px;margin-top:30px;">請完成支付以確認訂單，支付後我們會盡快安排配送。</p></div>',
+                            html: buildOrderEmailHtml({
+                                title: '訂單確認書',
+                                message: '親愛的顧客，感謝您的訂購！您的訂單已成立，請核對訂單資料並完成支付。',
+                                orderCode: orderCode,
+                                status: '未付款',
+                                deliveryDate: orderData.deliveryDate,
+                                deliveryTime: orderData.deliveryTimeSlot,
+                                deliveryArea: orderData.deliveryArea,
+                                customerName: orderExtra.contactName || orderData.recipientName,
+                                customerEmail: customerEmail,
+                                customerPhone: orderExtra.contactPhone || orderData.recipientPhone,
+                                recipientName: orderData.recipientName,
+                                recipientPhone: orderData.recipientPhone,
+                                address: orderData.recipientAddress,
+                                items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price, image: item.image || '' })),
+                                subtotal: orderData.subtotal,
+                                deliveryFee: orderData.deliveryFee,
+                                total: orderData.totalAmount,
+                                cardMessage: orderExtra.cardMessage || '',
+                                remarks: orderExtra.remarks || ''
+                            }),
                             attachments: pdfBase64 ? [{ filename: 'Order-' + orderCode + '.pdf', content: pdfBase64 }] : []
                         })
                     }).catch(e => console.warn('發送訂單成立郵件失敗:', e));

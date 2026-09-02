@@ -1330,53 +1330,13 @@ async function saveProduct() {
     function toggleCheckAllOrders() { var c = document.getElementById('checkAllOrders'); document.querySelectorAll('.order-check').forEach(function(cb) { cb.checked = c.checked; }); }
     function getCheckedOrderIds() { var ids = []; document.querySelectorAll('.order-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
     async function bulkDeleteOrders() { var ids = getCheckedOrderIds(); if (!ids.length) { showToast('請先勾選'); return; } if (!confirm('刪除？')) return; await supabaseClient.from('orders').delete().in('id', ids); showToast('完成'); loadOrders(); }
-    function buildOrderEmailHtml(o) {
-        var itemRows = '';
-        var items = o.items;
-        if (typeof items === 'string') { try { items = JSON.parse(items); } catch (e) { items = null; } }
-        if (items && items.length) {
-            itemRows = '<ul style="margin:6px 0 0;padding-left:20px;">';
-            for (var i = 0; i < items.length; i++) {
-                var it = items[i] || {};
-                var nm = it.name || it.product_name || '';
-                var q = it.quantity || 1;
-                var pr = (it.price != null && it.price !== '') ? ' - HK$' + (parseFloat(it.price) * q) : '';
-                itemRows += '<li style="margin:4px 0;">' + nm + ' × ' + q + pr + '</li>';
-            }
-            itemRows += '</ul>';
-        } else if (o.productNames) {
-            var names = Array.isArray(o.productNames) ? o.productNames : String(o.productNames).split('|');
-            itemRows = '<ul style="margin:6px 0 0;padding-left:20px;">';
-            for (var j = 0; j < names.length; j++) { if (names[j]) itemRows += '<li style="margin:4px 0;">' + names[j] + '</li>'; }
-            itemRows += '</ul>';
-        } else { itemRows = '<p style="color:#999;">—</p>'; }
-        function row(label, val) { return val ? '<tr><td style="padding:5px 0;color:#666;width:110px;vertical-align:top;">' + label + '</td><td style="padding:5px 0;font-weight:600;">' + val + '</td></tr>' : ''; }
-        var recipient = o.recipientName + (o.recipientPhone ? '（' + o.recipientPhone + '）' : '');
-        var delivery = o.deliveryDate + (o.deliveryTime ? '（' + o.deliveryTime + '）' : '');
-        return '<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;background:#fff;">'
-            + '<div style="background:#1A1A1A;color:#FAF8F5;padding:18px 24px;"><h1 style="margin:0;font-size:19px;">' + o.title + '</h1><p style="margin:4px 0 0;font-size:12px;color:#E0DBD2;">RoyalSpl Florist 香港花店</p></div>'
-            + '<div style="padding:22px 24px;font-size:14px;color:#333;">'
-            + '<p style="margin:0 0 14px;">' + (o.message || '') + '</p>'
-            + '<table style="width:100%;border-collapse:collapse;">' + row('訂單編號', o.orderCode) + row('收貨人', recipient) + row('配送地址', o.address) + row('送貨日期', delivery) + '</table>'
-            + '<h3 style="margin:16px 0 6px;font-size:15px;border-bottom:1px solid #eee;padding-bottom:6px;">訂單明細</h3>' + itemRows
-            + '<div style="margin-top:14px;border-top:1px solid #eee;padding-top:10px;">'
-            + (o.subtotal != null ? '<p style="margin:3px 0;">商品小計 <span style="float:right;">HK$' + o.subtotal + '</span></p>' : '')
-            + (o.deliveryFee != null ? '<p style="margin:3px 0;">配送費 <span style="float:right;">HK$' + o.deliveryFee + '</span></p>' : '')
-            + (o.total != null ? '<p style="margin:8px 0 0;font-size:16px;font-weight:600;">總計 <span style="float:right;">HK$' + o.total + '</span></p>' : '')
-            + '</div>'
-            + (o.cardMessage ? '<p style="margin:12px 0 0;font-size:13px;color:#555;">心意卡：「' + o.cardMessage + '」</p>' : '')
-            + (o.remarks ? '<p style="margin:6px 0 0;font-size:13px;color:#555;">特別事項：' + o.remarks + '</p>' : '')
-            + '</div>'
-            + '<div style="background:#F7F5F1;padding:12px 24px;font-size:12px;color:#888;">此郵件由 RoyalSpl Florist 自動發出，請勿直接回覆。</div>'
-            + '</div>';
-    }
     async function updateOrderStatus(id, status) {
         await supabaseClient.from('orders').update({ status: status }).eq('id', id);
         if (status === 'shipped') {
             var order = null;
             for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { order = allOrders[i]; break; } }
             if (order && order.customer_email) {
-                var emailHtml = buildOrderEmailHtml({ title: '出貨通知', message: '您的花禮已出貨，即將送到！請留意收貨。', orderCode: order.order_code, recipientName: order.recipient_name, recipientPhone: order.recipient_phone, address: order.recipient_address, deliveryDate: order.delivery_date, deliveryTime: order.delivery_time_slot, items: order.items, productNames: order.product_names, subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount, cardMessage: order.card_message, remarks: order.remarks });
+                var emailHtml = buildOrderEmailHtml({ title: '出貨通知', message: '您的花禮已出貨，即將送到！請留意收貨。', orderCode: order.order_code, status: '已出貨', deliveryDate: order.delivery_date, deliveryTime: order.delivery_time_slot, deliveryArea: order.delivery_area, customerName: order.customer_name, customerEmail: order.customer_email, customerPhone: order.customer_phone, recipientName: order.recipient_name, recipientPhone: order.recipient_phone, address: order.recipient_address, items: order.items, productNames: order.product_names, productImages: order.product_images, subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount, cardMessage: order.card_message, remarks: order.remarks });
                 var pdfBase64 = '';
                 try { pdfBase64 = await generateOrderPdfBase64({ shopName: 'RoyalSpl Florist', orderCode: order.order_code, deliveryDate: order.delivery_date, deliveryTime: order.delivery_time_slot, deliveryArea: order.delivery_area, customerName: order.customer_name, customerEmail: order.customer_email, customerPhone: order.customer_phone, recipientName: order.recipient_name, recipientPhone: order.recipient_phone, address: order.recipient_address, items: order.items, productNames: order.product_names, productImages: order.product_images, subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount, cardMessage: order.card_message, remarks: order.remarks, status: '已出貨' }); } catch (pdfErr) { console.warn('生成PDF失敗:', pdfErr); }
                 try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: order.customer_email, subject: '出貨通知 - ' + order.order_code, html: emailHtml, attachments: pdfBase64 ? [{ filename: 'Order-' + order.order_code + '.pdf', content: pdfBase64 }] : [] }) }); showToast('出貨通知已發送'); } catch (e) { showToast('狀態已更新'); }
@@ -1430,7 +1390,7 @@ async function saveProduct() {
         document.getElementById('ordersTable').style.display = 'block';
         await loadOrders();
         if (email) {
-            var emailHtml = buildOrderEmailHtml({ title: '訂單確認', message: '您的訂單已成立，感謝惠顧！請留意後續支付通知。', orderCode: data.order_code, recipientName: name, recipientPhone: phone, address: addr, deliveryDate: data.delivery_date, deliveryTime: data.delivery_time_slot, productNames: (data.product_names || '').split('|'), subtotal: data.subtotal, deliveryFee: data.delivery_fee, total: data.total_amount, cardMessage: data.card_message, remarks: data.remarks });
+            var emailHtml = buildOrderEmailHtml({ title: '訂單確認書', message: '您的訂單已成立，感謝惠顧！請留意後續支付通知。', orderCode: data.order_code, status: '未付款', deliveryDate: data.delivery_date, deliveryTime: data.delivery_time_slot, deliveryArea: data.delivery_area, customerName: name, customerEmail: email, customerPhone: phone, recipientName: name, recipientPhone: phone, address: addr, productNames: (data.product_names || '').split('|'), productImages: (data.product_images || '').split('|'), subtotal: data.subtotal, deliveryFee: data.delivery_fee, total: data.total_amount, cardMessage: data.card_message, remarks: data.remarks });
             var pdfBase64 = '';
             try { pdfBase64 = await generateOrderPdfBase64({ shopName: 'RoyalSpl Florist', orderCode: data.order_code, deliveryDate: data.delivery_date, deliveryTime: data.delivery_time_slot, deliveryArea: data.delivery_area, customerName: name, customerEmail: email, customerPhone: phone, recipientName: name, recipientPhone: phone, address: addr, productNames: (data.product_names || '').split('|'), productImages: (data.product_images || '').split('|'), subtotal: data.subtotal, deliveryFee: data.delivery_fee, total: data.total_amount, cardMessage: data.card_message, remarks: data.remarks, status: '未付款' }); } catch (pdfErr) { console.warn('生成PDF失敗:', pdfErr); }
             try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, subject: '訂單確認 - ' + data.order_code, html: emailHtml, attachments: pdfBase64 ? [{ filename: 'Order-' + data.order_code + '.pdf', content: pdfBase64 }] : [] }) }); } catch (e) {}
