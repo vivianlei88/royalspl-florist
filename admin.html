@@ -541,7 +541,11 @@
     function openFeaturedProductSelect() {
         var c = document.getElementById('modalProductList');
         var currentIds = [];
-        for (var i = 0; i < selectedFeaturedProducts.length; i++) { currentIds.push(selectedFeaturedProducts[i].product_id); }
+        for (var i = 0; i < selectedFeaturedProducts.length; i++) {
+            var item = selectedFeaturedProducts[i];
+            var pid = (typeof item === 'object' && item !== null) ? item.product_id : item;
+            if (pid) currentIds.push(pid);
+        }
         selectedFeaturedProducts = currentIds.slice();
         var h = '';
         for (var j = 0; j < allProducts.length; j++) {
