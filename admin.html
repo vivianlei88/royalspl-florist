@@ -107,7 +107,10 @@
         .order-product-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; display: block; }
         .collection-card-edit { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 15px; }
         .collection-card-edit img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
-        @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } }
+        .products-sticky-header { position: sticky; top: 65px; background: #FAF8F5; z-index: 100; padding: 15px 0; border-bottom: 1px solid #e0d8cf; margin-bottom: 15px; }
+    .products-header-row { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .products-search { width: 220px; padding: 10px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; }
+    @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } .products-sticky-header { top: 0; } .products-search { width: 100%; } }
         .block-editor-wrapper { display: flex; height: calc(100vh - 180px); min-height: 600px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .editor-sidebar { width: 200px; background: #1E1E2D; color: #ccc; display: flex; flex-direction: column; padding: 20px 0; }
         .editor-sidebar-item { padding: 12px 20px; cursor: pointer; font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
@@ -593,7 +596,7 @@
         <script>
     // ==================== 商品管理 ====================
     function renderProductsPage(c) {
-        c.innerHTML = '<div id="productsListView"><div class="page-header"><h2 class="page-title">商品管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary" onclick="showAddForm()">新增商品</button></div></div><input type="text" class="search-bar" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group" style="margin-bottom:15px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
+        c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
         loadProducts();
     }
     function showAddForm() {
@@ -998,13 +1001,13 @@ async function saveProduct() {
     function renderProductsTable(list) {
         var c = document.getElementById('productsTable');
         if (!c) return;
-        var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAll" onchange="toggleCheckAll()"></th><th>圖片</th><th>SKU</th><th>名稱</th><th>價格</th><th>分類</th><th>庫存</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
+        var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAll" onchange="toggleCheckAll()"></th><th>圖片</th><th>SKU</th><th>名稱</th><th>價格</th><th>庫存</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
         for (var i = 0; i < list.length; i++) {
             var p = list[i];
             var img = p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '無圖';
             var sku = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
             var eye = p.is_active !== false ? '顯示' : '隱藏';
-            h += '<tr><td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td><td>HK$' + p.price + '</td><td>' + (p.category || '-') + '</td><td>' + p.stock + '</td><td><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
+            h += '<tr><td class="checkbox-col"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></td><td>HK$' + p.price + '</td><td>' + p.stock + '</td><td><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
         }
         h += '</tbody></table>';
         c.innerHTML = h;
