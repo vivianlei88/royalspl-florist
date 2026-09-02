@@ -37,9 +37,17 @@
         .btn-small { padding: 8px 14px; font-size: 14px; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .search-bar { width: 100%; padding: 14px 18px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 17px; margin-bottom: 18px; }
-        .data-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .data-table th { background: #1A1A1A; color: white; padding: 15px 14px; text-align: left; font-size: 15px; }
-        .data-table td { padding: 12px 14px; border-bottom: 1px solid #eee; font-size: 16px; }
+        .data-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); table-layout: fixed; }
+        .data-table th { background: #1A1A1A; color: white; padding: 15px 10px; text-align: left; font-size: 15px; }
+        .data-table td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 16px; word-wrap: break-word; }
+        .data-table .checkbox-col { width: 40px; }
+        .data-table th:nth-child(2), .data-table td:nth-child(2) { width: 100px; }
+        .data-table th:nth-child(3), .data-table td:nth-child(3) { width: 90px; }
+        .data-table th:nth-child(4), .data-table td:nth-child(4) { width: auto; }
+        .data-table th:nth-child(5), .data-table td:nth-child(5) { width: 90px; text-align: center; }
+        .data-table th:nth-child(6), .data-table td:nth-child(6) { width: 70px; text-align: center; }
+        .data-table th:nth-child(7), .data-table td:nth-child(7) { width: 70px; text-align: center; }
+        .data-table th:nth-child(8), .data-table td:nth-child(8) { width: 200px; }
         .product-img-lg { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; }
         .form-container { background: white; border-radius: 10px; padding: 35px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 750px; }
         .form-group { margin-bottom: 22px; }
