@@ -75,14 +75,6 @@
         .payment-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .toast { position: fixed; top: 20px; right: 20px; background-color: #1A1A1A; color: #FAF8F5; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transform: translateY(-20px); transition: all 0.3s; }
         .toast.show { opacity: 1; transform: translateY(0); }
-        .cart-section { margin-bottom: 20px; }
-        .cart-section-title { font-size: 16px; font-weight: 600; padding: 14px 16px; background: #FAF8F5; border: 1px solid rgba(26,26,26,0.15); border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .cart-section-content { padding: 16px; border: 1px solid rgba(26,26,26,0.1); border-top: none; border-radius: 0 0 8px 8px; display: none; }
-        .cart-section-content.open { display: block; }
-        .card-options { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-        .card-option { padding: 10px 20px; border: 1px solid #1A1A1A; border-radius: 5px; cursor: pointer; font-size: 14px; background: transparent; font-family: inherit; transition: all 0.2s; }
-        .card-option.active { background-color: #1A1A1A; color: #FAF8F5; }
-        .card-textarea { width: 100%; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; margin-top: 10px; background-color: white; }
 
     @media (max-width: 768px) {
         .checkout-page { padding: 20px 15px !important; }
@@ -156,10 +148,6 @@
                 <label class="form-label">收花人地址 *</label>
                 <input type="text" class="form-input address-input" id="recipientAddress" placeholder="請輸入送花地址（中/英文皆可）" oninput="autoDetectArea(this.value)">
                 <p class="form-error" id="recipientAddressError">請填寫送花地址</p>
-            </div>
-            <div class="form-group">
-                <label class="form-label">訂購人電郵（接收訂單通知）</label>
-                <input type="email" class="form-input" id="customerEmail" placeholder="請輸入電郵地址">
             </div>
             <div class="delivery-tier-banner" id="autoDetectBanner">
                 <div class="tier-zh" id="autoDetectTierZh"></div>
@@ -243,34 +231,6 @@
             </div>
         </div>
 
-        <div class="checkout-section">
-            <h2 class="checkout-section-title">心意卡</h2>
-            <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">需要心意卡嗎？<span>+</span></div>
-                <div class="cart-section-content">
-                    <div class="card-options" id="cardOptions">
-                        <button class="card-option" data-cardtype="yes" onclick="setCardType('yes')">需要</button>
-                        <button class="card-option" data-cardtype="none" onclick="setCardType('none')">不需要</button>
-                        <button class="card-option" data-cardtype="blank" onclick="setCardType('blank')">需要空白心意卡</button>
-                    </div>
-                    <div id="cardMessageWrap" style="display:none;"><textarea class="card-textarea" id="cardMessageInput" placeholder="請輸入祝福語..."></textarea></div>
-                </div>
-            </div>
-            <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">訂購人聯絡方法（選填）<span>+</span></div>
-                <div class="cart-section-content">
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <input type="text" class="card-textarea" id="contactNameInput" placeholder="訂購人姓名" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;">
-                        <input type="tel" class="card-textarea" id="contactPhoneInput" placeholder="訂購人電話" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;">
-                    </div>
-                </div>
-            </div>
-            <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">特別事項（選填）<span>+</span></div>
-                <div class="cart-section-content"><textarea class="card-textarea" id="remarksInput" placeholder="請輸入特別事項..."></textarea></div>
-            </div>
-        </div>
-
         <div class="order-summary" id="orderSummary"></div>
     </main>
 
@@ -298,53 +258,11 @@
         if (buyNowCart.length) cart = buyNowCart;
     }
     
-    // 页面加载时，如果用户已登录，自动填充邮箱
-    (async function() {
-        try {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user && user.email) {
-                const emailInput = document.getElementById('customerEmail');
-                if (emailInput) emailInput.value = user.email;
-            }
-        } catch (e) { /* 忽略 */ }
-    })();
     let selectedTimeSlot = 'full_day';
     let selectedTimeFee = 90;
     let detectedArea = '';
     let manualArea = '';
     let selectedHour = '';
-    // 心意卡 / 訂購人 / 特別事項 狀態
-    let cardType = 'none';
-    let cardMessage = '';
-    let contactName = '';
-    let contactPhone = '';
-    let remarks = '';
-    function toggleSection(element) { const content = element.nextElementSibling; if (!content) return; content.classList.toggle('open'); const span = element.querySelector('span'); if (span) span.textContent = content.classList.contains('open') ? '−' : '+'; }
-    function setCardType(type) {
-        cardType = type;
-        document.querySelectorAll('#cardOptions .card-option').forEach(function(btn) { btn.classList.remove('active'); if (btn.getAttribute('data-cardtype') === type) btn.classList.add('active'); });
-        const wrap = document.getElementById('cardMessageWrap');
-        if (wrap) { wrap.style.display = (type === 'yes' || type === 'blank') ? 'block' : 'none'; }
-        // 若選擇了需要心意卡，自動展開 section
-        const sectionTitle = document.querySelector('#cardOptions') ? document.querySelector('#cardOptions').closest('.cart-section-content').previousElementSibling : null;
-        if ((type === 'yes' || type === 'blank') && sectionTitle) { const content = sectionTitle.nextElementSibling; if (content && !content.classList.contains('open')) { content.classList.add('open'); const span = sectionTitle.querySelector('span'); if (span) span.textContent = '−'; } }
-    }
-    function loadOrderExtraToForm() {
-        let extra = {};
-        try { extra = JSON.parse(localStorage.getItem('order_extra') || '{}'); } catch(e) {}
-        cardMessage = extra.cardMessage || ''; contactName = extra.contactName || ''; contactPhone = extra.contactPhone || ''; remarks = extra.remarks || '';
-        const cmi = document.getElementById('cardMessageInput'); if (cmi) cmi.value = cardMessage;
-        const cni = document.getElementById('contactNameInput'); if (cni) cni.value = contactName;
-        const cpi = document.getElementById('contactPhoneInput'); if (cpi) cpi.value = contactPhone;
-        const ri = document.getElementById('remarksInput'); if (ri) ri.value = remarks;
-        if (cardMessage) setCardType('yes');
-    }
-    function collectOrderExtra() {
-        const cmi = document.getElementById('cardMessageInput'); if (cmi) cardMessage = cmi.value;
-        const cni = document.getElementById('contactNameInput'); if (cni) contactName = cni.value;
-        const cpi = document.getElementById('contactPhoneInput'); if (cpi) contactPhone = cpi.value;
-        const ri = document.getElementById('remarksInput'); if (ri) remarks = ri.value;
-    }
 
     const areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
     const areaKeywords = {
@@ -501,18 +419,11 @@
     }
 
     async function submitOrder() {
-        // 从购物车页面读取额外信息，并叠加結帳頁自己填寫的心意卡/訂購人/特別事項
+        // 从购物车页面读取额外信息
         let orderExtra = {};
         try {
             orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}');
         } catch(e) {}
-        collectOrderExtra();
-        orderExtra.cardMessage = cardMessage;
-        orderExtra.remarks = remarks;
-        orderExtra.contactName = contactName;
-        orderExtra.contactPhone = contactPhone;
-        // 寫回 localStorage，方便訂單/後台讀取
-        try { localStorage.setItem('order_extra', JSON.stringify(orderExtra)); } catch(e) {}
         if (cart.length === 0) { showToast('購物車為空'); window.location.href = 'products.html'; return; }
         if (!validateForm()) return;
 
@@ -520,8 +431,8 @@
         btn.disabled = true;
         btn.textContent = '正在連接支付...';
 
-        // 取得訂購人電郵：优先使用输入框，其次使用登录用户
-        let customerEmail = document.getElementById('customerEmail').value.trim();
+        // 取得訂購人電郵：优先使用購物車/立即購買頁填寫的 order_extra，其次使用登录用户
+        let customerEmail = (orderExtra.customerEmail || '').trim();
         if (!customerEmail) {
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
@@ -769,7 +680,6 @@
         syncCartWithDatabase();
         setupDatePicker();
         fillDefaultAddressIfLoggedIn();
-        loadOrderExtraToForm();
     });
     </script>
     <script>

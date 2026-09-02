@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>您的花禮 | RoyalSpl Florist Hong Kong</title>
+    <title>立即購買 | RoyalSpl Florist Hong Kong</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -107,7 +107,7 @@
     <main class="cart-page">
         <div class="cart-header">
             <a href="products.html" class="back-link">← 繼續選購</a>
-            <h1 class="cart-title">您的花禮</h1>
+            <h1 class="cart-title">立即購買</h1>
         </div>
         <div id="cartContent"></div>
     </main>
@@ -126,7 +126,7 @@
     const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+    let cart = JSON.parse(sessionStorage.getItem('royalspl_buynow') || '[]');
     let cardType = 'none';
     let cardMessage = '';
     let remarks = '';
@@ -135,7 +135,7 @@
     let customerEmail = '';
     let couponCode = '';
 
-    function saveCart() { localStorage.setItem('royalspl_cart', JSON.stringify(cart)); updateCartBadge(); }
+    function saveCart() { sessionStorage.setItem('royalspl_buynow', JSON.stringify(cart)); updateCartBadge(); }
     function updateCartBadge() { const badge = document.getElementById('cartBadge'); if (badge) { const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; } }
     async function syncCartWithDatabase() {
         if (!cart.length) { renderCart(); return; }
@@ -170,7 +170,7 @@
         const container = document.getElementById('cartContent');
         if (!container) return;
         if (cart.length === 0) {
-            container.innerHTML = `<div class="empty-cart"><p class="empty-cart-emoji">🛒</p><p class="empty-cart-text">您的花禮清單是空的</p><a href="products.html" class="continue-shopping-btn">去選購花藝</a></div>`;
+            container.innerHTML = `<div class="empty-cart"><p class="empty-cart-emoji">🛒</p><p class="empty-cart-text">沒有選取立即購買的商品</p><a href="products.html" class="continue-shopping-btn">去選購花藝</a></div>`;
             return;
         }
         let itemsHtml = cart.map((item, index) => {
@@ -192,7 +192,7 @@
                     <span class="qty-num">${item.quantity}</span>
                     <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
                 </div>
-                <button class="cart-item-remove" onclick="removeItem(${index})">✕</button>
+
             </div>`;
         }).join('');
         const subtotal = cart.reduce((sum, item) => { const addons = item.addons || []; const addonsTotal = addons.reduce((a, addon) => a + (addon.price || 0), 0); return sum + ((item.price || 0) + addonsTotal) * (item.quantity || 1); }, 0);
@@ -292,7 +292,7 @@
             customerEmail: customerEmail,
             couponCode: couponCode
         }));
-        window.location.href = 'checkout.html';
+        window.location.href = 'checkout.html?buynow=1';
     }
     const menuBtn = document.getElementById('menuBtn');
     const navCloseBtn = document.getElementById('navCloseBtn');
