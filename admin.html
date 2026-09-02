@@ -657,6 +657,55 @@
     function closeLightbox() { document.getElementById('imageLightbox').classList.remove('show'); document.getElementById('lightboxImg').src = ''; }
     function removeImage(i) { uploadedImages.splice(i, 1); renderUploadedImages(); }
     function addImageByUrl() { var url = document.getElementById('imageUrlInput').value.trim(); if (url) { uploadedImages.push(url); renderUploadedImages(); document.getElementById('imageUrlInput').value = ''; } }
+    async function aiFillProductFromImage() {
+        if (uploadedImages.length === 0) {
+            showToast('請先上傳商品圖片');
+            return;
+        }
+        var statusEl = document.getElementById('aiFillStatus');
+        if (statusEl) statusEl.textContent = 'AI識別中，請稍候...';
+        
+        try {
+            var existingData = {
+                name_zh: document.getElementById('nameZh') ? document.getElementById('nameZh').value : '',
+                price: document.getElementById('price') ? document.getElementById('price').value : ''
+            };
+            var resp = await fetch('/ai-product-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imageUrl: uploadedImages[0], existingData: existingData })
+            });
+            var result = await resp.json();
+            if (result.success && result.data) {
+                var d = result.data;
+                if (d.name_zh && document.getElementById('nameZh')) document.getElementById('nameZh').value = d.name_zh;
+                if (d.name_en && document.getElementById('nameEn')) document.getElementById('nameEn').value = d.name_en;
+                if (d.description && document.getElementById('description')) document.getElementById('description').value = d.description;
+                if (d.flower_materials && document.getElementById('specsFlowers')) document.getElementById('specsFlowers').value = d.flower_materials;
+                if (d.specs && document.getElementById('specsSize')) document.getElementById('specsSize').value = d.specs;
+                if (d.scent_notes && document.getElementById('scentNotes')) document.getElementById('scentNotes').value = d.scent_notes;
+                // 标签
+                var newTags = [];
+                if (d.occasion_tags) newTags = newTags.concat(d.occasion_tags.split(',').map(function(t){return t.trim();}).filter(Boolean));
+                if (d.flower_tags) newTags = newTags.concat(d.flower_tags.split(',').map(function(t){return t.trim();}).filter(Boolean));
+                if (d.price_range) newTags.push(d.price_range);
+                if (d.style_tags) newTags = newTags.concat(d.style_tags.split(',').map(function(t){return t.trim();}).filter(Boolean));
+                selectedTags = newTags;
+                initTagPills();
+                if (statusEl) statusEl.textContent = '✅ 已完成，請檢查後保存';
+                showToast('AI已自動填寫');
+            } else {
+                if (statusEl) statusEl.textContent = '❌ 識別失敗，請重試';
+                showToast('識別失敗，請重試');
+                console.error('AI result:', result);
+            }
+        } catch (e) {
+            if (statusEl) statusEl.textContent = '❌ 服務錯誤';
+            showToast('AI服務錯誤：' + e.message);
+            console.error(e);
+        }
+    }
+
     function addVariantRow() { variants.push({ name: '', price: '' }); renderVariants(); }
     function removeVariant(i) { variants.splice(i, 1); renderVariants(); }
     function renderVariants() { var c = document.getElementById('variantsList'); if (!c) return; var h = ''; for (var i = 0; i < variants.length; i++) { h += '<div class="variant-row"><input type="text" placeholder="規格名稱" value="' + variants[i].name + '" onchange="variants[' + i + '].name=this.value"><input type="number" placeholder="價格" value="' + variants[i].price + '" onchange="variants[' + i + '].price=this.value"><button class="btn btn-danger btn-small" onclick="removeVariant(' + i + ')">刪除</button></div>'; } c.innerHTML = h; }
