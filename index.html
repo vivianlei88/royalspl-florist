@@ -17,12 +17,11 @@
         .collections-section { padding-bottom: 80px; }
         .collections-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .collection-card { display: block; text-decoration: none; color: inherit; transition: all 0.3s; cursor: pointer; padding: 0; margin: 0; background: transparent; }
-        .collection-card-img-wrap { width: 100%; overflow: hidden; display: block; aspect-ratio: 3/4; }
-        .collection-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+        .collection-card-img-wrap { position: relative; width: 100%; padding-top: 133.33%; overflow: hidden; display: block; }
+        .collection-card-img-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
         .collection-card:hover .collection-card-img-wrap img { transform: scale(1.05); }
-        .collection-card-1 .collection-card-img-wrap, .collection-card-2 .collection-card-img-wrap, .collection-card-3 .collection-card-img-wrap, .collection-card-4 .collection-card-img-wrap { aspect-ratio: 3/4; }
-        .collection-card-5 .collection-card-img-wrap { aspect-ratio: 4/3; }
-        .collection-card-6 .collection-card-img-wrap { aspect-ratio: 1/1; }
+        .collection-card-5 .collection-card-img-wrap { padding-top: 75%; }
+        .collection-card-6 .collection-card-img-wrap { padding-top: 100%; }
         .collection-card-text { padding: 12px 2px 4px 2px; text-align: left; }
         .collection-card-text .en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #383431; margin: 0 0 6px 0; }
         .collection-card-text .zh { font-size: 18px; font-weight: 500; color: #1A1A1A; margin: 0; }
@@ -32,9 +31,9 @@
         .featured-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .product-card { background-color: transparent; border-radius: 0; padding: 0; text-align: center; transition: all 0.3s; display: block; overflow: visible; }
         .product-emoji { font-size: 70px; margin-bottom: 20px; }
-        .product-card-img { aspect-ratio: 1 / 1; background-color: transparent; border-radius: 0; overflow: hidden; margin-bottom: 0; }
+        .product-card-img { position: relative; width: 100%; padding-top: 100%; background-color: transparent; border-radius: 0; overflow: hidden; margin-bottom: 0; }
         .product-card-info { padding: 12px 2px 4px 2px; text-align: left; }
-        .product-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .product-card-img img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
         .product-card:hover .product-card-img img { transform: scale(1.05); }
         .product-name { font-size: 18px; font-weight: 500; margin: 0; color: #1A1A1A; }
         .product-name-en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #383431; margin: 0 0 6px 0; }
