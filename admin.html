@@ -91,6 +91,13 @@
         .category-card-body { padding: 15px; }
         .category-card-name { font-size: 18px; font-weight: 600; }
         .category-card-check { position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; cursor: pointer; z-index: 10; }
+        .category-detail-image-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-bottom: 22px; }
+        .category-image-upload-wrap { flex: 1 1 260px; min-width: 0; }
+        .category-image-preview-wrap { flex: 0 0 auto; }
+        .category-image-upload-wrap .upload-area { margin-bottom: 0; padding: 18px 20px; min-height: 100px; display: flex; align-items: center; justify-content: center; }
+        .category-image-preview { width: 140px; height: 140px; border: 1px solid #E4E3DD; border-radius: 10px; overflow: hidden; background: #FAF8F5; display: flex; align-items: center; justify-content: center; }
+        .category-image-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .category-image-preview-empty { color: #999; font-size: 14px; }
         .category-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
         .category-product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: grab; }
         .category-product-card.dragging { opacity: 0.5; }
@@ -690,12 +697,13 @@
     }
     async function removeFeaturedProduct(id) { await supabaseClient.from('featured_products').delete().eq('id', id); loadFeaturedProducts(); }
     var draggedFeaturedIndex = null;
-    function featuredDragStart(e) { draggedFeaturedIndex = parseInt(e.target.getAttribute('data-index')); }
+    function featuredDragStart(e) { var card = (e.target && e.target.closest) ? e.target.closest('.category-product-card') : null; draggedFeaturedIndex = card ? parseInt(card.getAttribute('data-index')) : null; if (card) card.classList.add('dragging'); }
     function featuredDragOver(e) { e.preventDefault(); }
-    function featuredDragEnd(e) {}
+    function featuredDragEnd(e) { var cards = document.querySelectorAll('.category-product-card'); for (var i = 0; i < cards.length; i++) cards[i].classList.remove('dragging'); draggedFeaturedIndex = null; }
     async function featuredDrop(e) {
         e.preventDefault();
-        var targetIndex = parseInt(e.target.getAttribute('data-index'));
+        var card = (e.target && e.target.closest) ? e.target.closest('.category-product-card') : null;
+        var targetIndex = card ? parseInt(card.getAttribute('data-index')) : null;
         if (draggedFeaturedIndex === null || targetIndex === null || draggedFeaturedIndex === targetIndex) return;
         var temp = selectedFeaturedProducts[draggedFeaturedIndex];
         selectedFeaturedProducts.splice(draggedFeaturedIndex, 1);
@@ -1298,7 +1306,7 @@ async function saveProduct() {
         dv.style.display = 'block';
         dv.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="showCategoryList()">返回列表</button><h2 class="page-title">' + category.name_zh + '</h2><button class="btn btn-primary" onclick="saveCategoryDetail()">保存所有更改</button></div>';
         dv.innerHTML += '<div class="form-container" style="max-width:100%;margin-bottom:20px;"><input type="hidden" id="categoryDetailId" value="' + category.id + '">';
-        dv.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">分類圖片</label><div class="upload-area" id="categoryDetailUploadArea"><p>點擊更換圖片</p><input type="file" id="categoryDetailFileInput" accept="image/*" style="display:none;"></div><div id="categoryDetailImagePreview">' + (category.image_url ? '<img src="' + category.image_url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">' : '') + '</div></div>';
+        dv.innerHTML += '<div class="category-detail-image-row"><div class="category-image-upload-wrap"><label class="form-label">分類圖片</label><div class="upload-area category-upload-area" id="categoryDetailUploadArea"><p>點擊更換圖片</p><input type="file" id="categoryDetailFileInput" accept="image/*" style="display:none;"></div></div><div class="category-image-preview-wrap"><label class="form-label">圖片預覽</label><div class="category-image-preview" id="categoryDetailImagePreview">' + (category.image_url ? '<img src="' + category.image_url + '">' : '<span class="category-image-preview-empty">未上傳</span>') + '</div></div></div>';
         dv.innerHTML += '<div><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="categoryDetailNameZh" value="' + (category.name_zh || '') + '"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="categoryDetailNameEn" value="' + (category.name_en || '') + '"></div></div></div>';
         dv.innerHTML += '<div class="form-group"><label class="form-label">文案簡介</label><textarea class="form-textarea" id="categoryDetailDescription">' + (category.description || '') + '</textarea></div></div>';
         dv.innerHTML += '<div class="page-header"><h3 style="font-size:20px;font-weight:600;">分類內商品</h3><button class="btn btn-primary" onclick="openProductSelectForCategory()">添加商品</button></div><div class="category-products-grid" id="categoryProductsGrid"></div><p style="font-size:14px;color:#888;margin-top:10px;">拖拽商品卡片調整順序，完成後點擊保存</p>';
@@ -1307,7 +1315,7 @@ async function saveProduct() {
         await loadCategoryProducts(categoryId);
     }
     function initCategoryDetailUpload() { var ua = document.getElementById('categoryDetailUploadArea'); var fi = document.getElementById('categoryDetailFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleCategoryDetailFileUpload(this.files[0]); }; } }
-    async function handleCategoryDetailFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { categoryDetailUploadedImage = data.url; document.getElementById('categoryDetailImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (e) {} }
+    async function handleCategoryDetailFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { categoryDetailUploadedImage = data.url; var preview = document.getElementById('categoryDetailImagePreview'); if (preview) preview.innerHTML = '<img src="' + data.url + '">'; showToast('圖片已上傳'); } else { showToast('圖片上傳失敗'); } } catch (e) { showToast('圖片上傳失敗：' + e.message); } }
     async function loadCategoryProducts(categoryId) { try { var r = await supabaseClient.from('products').select('*').contains('category_ids', [categoryId]).order('sort_order_in_category', { ascending: true }); if (r.error) { categoryDetailProducts = []; } else { categoryDetailProducts = r.data || []; } } catch (e) { categoryDetailProducts = []; } renderCategoryProductsList(); }
     function renderCategoryProductsList() {
         var c = document.getElementById('categoryProductsGrid');
@@ -1323,15 +1331,22 @@ async function saveProduct() {
         c.innerHTML = h;
     }
     var draggedProductIndex = null;
-    function productDragStart(e) { draggedProductIndex = parseInt(e.target.getAttribute('data-index')); }
+    function getDragIndex(e) { var card = (e.target && e.target.closest) ? e.target.closest('.category-product-card') : null; return card ? parseInt(card.getAttribute('data-index')) : null; }
+    function productDragStart(e) { draggedProductIndex = getDragIndex(e); if (draggedProductIndex !== null) { var card = e.target.closest('.category-product-card'); if (card) card.classList.add('dragging'); } }
     function productDragOver(e) { e.preventDefault(); }
-    function productDragEnd(e) {}
-    function productDrop(e) { e.preventDefault(); var targetIndex = parseInt(e.target.getAttribute('data-index')); if (draggedProductIndex === null || targetIndex === null || draggedProductIndex === targetIndex) return; var temp = categoryDetailProducts[draggedProductIndex]; categoryDetailProducts.splice(draggedProductIndex, 1); categoryDetailProducts.splice(targetIndex, 0, temp); renderCategoryProductsList(); }
+    function productDragEnd(e) { var cards = document.querySelectorAll('.category-product-card'); for (var i = 0; i < cards.length; i++) cards[i].classList.remove('dragging'); draggedProductIndex = null; }
+    function productDrop(e) { e.preventDefault(); var targetIndex = getDragIndex(e); if (draggedProductIndex === null || targetIndex === null || draggedProductIndex === targetIndex) { draggedProductIndex = null; return; } var temp = categoryDetailProducts[draggedProductIndex]; categoryDetailProducts.splice(draggedProductIndex, 1); categoryDetailProducts.splice(targetIndex, 0, temp); renderCategoryProductsList(); showToast('順序已調整，請點擊保存'); }
     function removeProductFromCategory(productId) { if (!confirm('從分類中移除？')) return; categoryDetailProducts = categoryDetailProducts.filter(function(p) { return p.id !== productId; }); renderCategoryProductsList(); showToast('已移除，請點擊保存'); }
     async function saveCategoryDetail() {
+        var saveBtn = null;
+        var btns = document.querySelectorAll('.page-header .btn-primary');
+        for (var bi = 0; bi < btns.length; bi++) { if (btns[bi].textContent.indexOf('保存') > -1) saveBtn = btns[bi]; }
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '保存中...'; }
+        try {
         var categoryId = parseInt(document.getElementById('categoryDetailId').value);
         var categoryData = { name_zh: document.getElementById('categoryDetailNameZh').value.trim(), name_en: document.getElementById('categoryDetailNameEn').value.trim(), description: document.getElementById('categoryDetailDescription').value.trim(), image_url: categoryDetailUploadedImage || null };
-        await supabaseClient.from('categories').update(categoryData).eq('id', categoryId);
+        var catResp = await supabaseClient.from('categories').update(categoryData).eq('id', categoryId);
+        if (catResp.error) { showToast('保存失敗：' + catResp.error.message); if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '保存所有更改'; } return; }
         var categoryName = document.getElementById('categoryDetailNameZh').value.trim();
         // 获取当前在该分类下的所有商品
         var existing = await supabaseClient.from('products').select('id,category_ids,categories').contains('category_ids', [categoryId]);
@@ -1351,7 +1366,8 @@ async function saveProduct() {
                 var p = existingMap[existingIds[k]];
                 var newCatIds = (p.category_ids || []).filter(function(id) { return id !== categoryId; });
                 var newCatNames = (p.categories || []).filter(function(n) { return n !== categoryName; });
-                await supabaseClient.from('products').update({ category_ids: newCatIds, categories: newCatNames, category: newCatNames.join(', '), category_id: newCatIds.length > 0 ? newCatIds[0] : null }).eq('id', existingIds[k]);
+                var rmResp = await supabaseClient.from('products').update({ category_ids: newCatIds, categories: newCatNames, category: newCatNames.join(', '), category_id: newCatIds.length > 0 ? newCatIds[0] : null }).eq('id', existingIds[k]);
+                if (rmResp.error) { showToast('移除商品失敗：' + rmResp.error.message); }
             }
         }
         // 添加新商品到该分类
@@ -1361,9 +1377,12 @@ async function saveProduct() {
             var catIds = prod ? (prod.category_ids || []) : [];
             var catNames = prod ? (prod.categories || []) : [];
             if (catIds.indexOf(categoryId) === -1) { catIds.push(categoryId); catNames.push(categoryName); }
-            await supabaseClient.from('products').update({ category_ids: catIds, categories: catNames, category: catNames.join(', '), category_id: catIds.length > 0 ? catIds[0] : null, sort_order_in_category: m + 1 }).eq('id', pid);
+            var addResp = await supabaseClient.from('products').update({ category_ids: catIds, categories: catNames, category: catNames.join(', '), category_id: catIds.length > 0 ? catIds[0] : null, sort_order_in_category: m + 1 }).eq('id', pid);
+            if (addResp.error) { showToast('保存商品失敗：' + addResp.error.message); }
         }
-        showToast('所有更改已保存'); showCategoryList();
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '保存所有更改'; }
+        showToast('✅ 所有更改已保存'); showCategoryList();
+        } catch (saveErr) { showToast('保存失敗：' + (saveErr.message || saveErr)); if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '保存所有更改'; } }
     }
     
     async function openProductSelectForCategory() {
