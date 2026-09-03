@@ -86,11 +86,11 @@ export async function onRequestPost(context) {
         } catch(e) {}
         
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,description,flower_materials,scent_notes,occasion_tags,is_active&is_active=eq.true&order=created_at.desc&limit=100', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,description,specs_flowers,scent_notes,tags,specs,is_active,image_url&is_active=eq.true&order=created_at.desc&limit=100', { headers });
             const products = await r.json();
             if (products && products.length > 0) {
                 knowledgeContext += '\n\n【全部商品列表】\n' + products.map(p => 
-                    'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 分類:' + (p.category||'') + ' | 花材:' + (p.flower_materials||'') + ' | 香氣:' + (p.scent_notes||'') + ' | 場景:' + (p.occasion_tags||'') + ' | 描述:' + (p.description||'').substring(0,100) + ' | 鏈接:/product-detail.html?id=' + p.id
+                    'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 分類:' + (p.category||'') + ' | 花材:' + (p.specs_flowers||'') + ' | 香氣:' + (p.scent_notes||'') + ' | 描述:' + (p.description||'').substring(0,100) + ' | 鏈接:/product-detail.html?id=' + p.id
                 ).join('\n');
             }
         } catch(e) {}
