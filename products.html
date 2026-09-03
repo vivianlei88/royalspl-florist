@@ -226,6 +226,7 @@
             var result = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
             if (result.error) throw result.error;
             var categories = result.data || [];
+            window.allCategories = categories;
             categoryIdMap = {};
             var html = '';
             for (var i = 0; i < categories.length; i++) {
@@ -374,7 +375,19 @@
         var urlTag = getUrlParam('tag');
         if (urlTag) { selectedTags.push(urlTag); updateFilterUI(); }
         var urlCategory = getUrlParam('category');
-        if (urlCategory) { selectedCategory = decodeURIComponent(urlCategory); }
+        if (urlCategory) {
+            selectedCategory = decodeURIComponent(urlCategory);
+            // 兼容數字分類ID：轉成對應分類名稱
+            if (/^\d+$/.test(selectedCategory)) {
+                var cid = parseInt(selectedCategory, 10);
+                var foundName = null;
+                var catsData = window.allCategories || [];
+                for (var ci = 0; ci < catsData.length; ci++) {
+                    if (catsData[ci].id === cid) { foundName = catsData[ci].name_zh; break; }
+                }
+                if (foundName) selectedCategory = foundName;
+            }
+        }
         loadProducts();
         updateCartBadge();
     });

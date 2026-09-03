@@ -257,16 +257,50 @@
     }
 
     // ===== 淘寶風格：把回覆中的商品/訂單鏈接渲染成卡片 =====
-    // 等待 supabase 庫就緒
-    async function waitForSupabase(timeoutMs) {
-        if (window.supabase) return true;
-        return new Promise(function(resolve) {
-            let done = false;
-            const check = setInterval(function() {
-                if (window.supabase) { clearInterval(check); done = true; resolve(true); }
-            }, 100);
-            setTimeout(function() { if (!done) { clearInterval(check); resolve(false); } }, timeoutMs || 4000);
-        });
+    // 用 REST API 撈商品資料（唔依賴 supabase 庫，更可靠）
+    async function fetchProductsByIds(ids) {
+        try {
+            const idList = ids.join(',');
+            const resp = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,image_url,images&id=in.(' + idList + ')', {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                }
+            });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            return Array.isArray(data) ? data : [];
+        } catch(e) { console.error('撈商品失敗:', e); return []; }
+    }
+    // 用 REST API 撈訂單資料
+    async function fetchOrdersByIds(ids) {
+        try {
+            const idList = ids.join(',');
+            const resp = await fetch(SUPABASE_URL + '/rest/v1/orders?select=id,order_code,status,total_amount,subtotal,created_at,items,product_images,product_names&id=in.(' + idList + ')', {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                }
+            });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            return Array.isArray(data) ? data : [];
+        } catch(e) { console.error('撈訂單失敗:', e); return []; }
+    }
+    // 用 REST API 撈分類資料（AI 有時推薦分類，id 指向 categories 表）
+    async function fetchCategoriesByIds(ids) {
+        try {
+            const idList = ids.join(',');
+            const resp = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name_zh,name_en,image_url,description&id=in.(' + idList + ')', {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                }
+            });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            return Array.isArray(data) ? data : [];
+        } catch(e) { console.error('撈分類失敗:', e); return []; }
     }
     // 撈商品資料（圖片/名稱/價格）渲染成可點擊卡片
     async function enrichProductCards(replyHtml) {
@@ -277,28 +311,54 @@
             if (ids.indexOf(m[1]) === -1) ids.push(m[1]);
         }
         if (ids.length === 0) return replyHtml;
-        const ready = await waitForSupabase();
-        if (!ready) return replyHtml;
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const { data: products, error } = await sb.from('products')
-            .select('id,name_zh,name_en,price,image_url,images')
-            .in('id', ids);
-        if (error || !products || products.length === 0) return replyHtml;
+        const products = await fetchProductsByIds(ids);
         const pMap = {};
-        products.forEach(function(p) { pMap[String(p.id)] = p; });
+        if (products && products.length > 0) {
+            products.forEach(function(p) { pMap[String(p.id)] = p; });
+        }
+        // 商品 id 搵唔到嘅，可能係分類 id，去 categories 表補查
+        const missIds = ids.filter(function(id) { return !pMap[id]; });
+        const cMap = {};
+        if (missIds.length > 0) {
+            const cats = await fetchCategoriesByIds(missIds);
+            if (cats && cats.length > 0) {
+                cats.forEach(function(c) { cMap[String(c.id)] = c; });
+            }
+        }
         // 每個 id 替換為卡片
         ids.forEach(function(id) {
-            const p = pMap[id];
-            if (!p) return;
-            const img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
-            const card = buildProductCard(p.id, img, p.name_zh, p.name_en, p.price);
-            // 替換「鏈接：/product-detail.html?id=X」或「/product-detail.html?id=X」格式
             const urlPattern = new RegExp('(鏈接[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?', 'g');
-            replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) {
-                return card;
-            });
+            const p = pMap[id];
+            if (p) {
+                const img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
+                const card = buildProductCard(p.id, img, p.name_zh, p.name_en, p.price);
+                replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) { return card; });
+                return;
+            }
+            const c = cMap[id];
+            if (c) {
+                const card = buildCategoryCard(c.id, c.image_url || '', c.name_zh, c.name_en, c.description);
+                // 分類卡片取代商品鏈接，跳去分類產品頁
+                const catPattern = new RegExp('(鏈接[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?', 'g');
+                replyHtml = replyHtml.replace(catPattern, function(match, prefix, suffix) { return card; });
+            }
         });
         return replyHtml;
+    }
+
+    function buildCategoryCard(id, img, nameZh, nameEn, desc) {
+        var imgHtml = img ? '<img src="' + img + '" alt="' + (nameZh || '') + '">' : '<div class="ai-card-noimg">🌸</div>';
+        // 用分類名做 URL 參數（products.html 用分類名過濾）；若名稱含特殊字符用 encodeURIComponent
+        var linkName = encodeURIComponent(nameZh || nameEn || ('category_' + id));
+        return '<a href="/products.html?category=' + linkName + '" target="_blank" class="ai-product-card">' +
+            '<span class="ai-card-img">' + imgHtml + '</span>' +
+            '<span class="ai-card-body">' +
+            '<span class="ai-card-name">' + (nameZh || '') + '</span>' +
+            (nameEn ? '<span class="ai-card-name-en">' + nameEn + '</span>' : '') +
+            '<span class="ai-card-sub">' + ((desc || '').substring(0, 30)) + '</span>' +
+            '</span>' +
+            '<span class="ai-card-go">查看分類 ›</span>' +
+            '</a>';
     }
 
     function buildProductCard(id, img, nameZh, nameEn, price) {
@@ -323,13 +383,8 @@
             if (ids.indexOf(m[1]) === -1) ids.push(m[1]);
         }
         if (ids.length === 0) return replyHtml;
-        const ready = await waitForSupabase();
-        if (!ready) return replyHtml;
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const { data: orders, error } = await sb.from('orders')
-            .select('id,order_code,status,total_amount,subtotal,created_at,items,product_images,product_names')
-            .in('id', ids);
-        if (error || !orders || orders.length === 0) return replyHtml;
+        const orders = await fetchOrdersByIds(ids);
+        if (!orders || orders.length === 0) return replyHtml;
         const oMap = {};
         orders.forEach(function(o) { oMap[String(o.id)] = o; });
         ids.forEach(function(id) {

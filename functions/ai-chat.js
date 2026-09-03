@@ -86,7 +86,7 @@ export async function onRequestPost(context) {
         } catch(e) {}
         
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,description,flower_materials,scent_notes,occasion_tags,is_active&is_active=eq.true&order=created_at.desc&limit=30', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,description,flower_materials,scent_notes,occasion_tags,is_active&is_active=eq.true&order=created_at.desc&limit=100', { headers });
             const products = await r.json();
             if (products && products.length > 0) {
                 knowledgeContext += '\n\n【全部商品列表】\n' + products.map(p => 
@@ -97,7 +97,7 @@ export async function onRequestPost(context) {
         
         systemPrompt += knowledgeContext;
         
-        systemPrompt += '\n\n【商品推薦規則】用戶詢問推薦商品、想買花、送禮、有什麼花束等，從上方商品列表中推薦最合適的商品，並給出鏈接（格式：商品名稱 - HK$價格 - 鏈接：/product-detail.html?id=商品ID）。可以推薦2-3個選項。';
+        systemPrompt += '\n\n【商品推薦規則】用戶詢問推薦商品、想買花、送禮、有什麼花束等，從上方【全部商品列表】中推薦最合適的具體商品，並嚴格使用列表中的真實商品ID，鏈接格式：商品名稱 - HK$價格 - 鏈接：/product-detail.html?id=真實商品ID。可以推薦2-3個選項。\n【重要】嚴禁編造或猜測ID：鏈接中的ID必須是上方商品列表中出現過的ID。如果用戶想了解某個分類（如法式田園自然風、日式鮮花束、即日鮮花、日式永生花、新娘花禮、進口牡丹/芍藥花），請用分類頁鏈接：分類名稱 - 鏈接：/products.html?category=分類ID，分類ID請從上方【商品分類】列表中選取。絕對不要把分類ID當成商品ID寫成product-detail.html?id=分類ID。';
         
         if (productInfo) {
             systemPrompt += '\n\n【用戶當前瀏覽的商品】ID:' + productInfo.id + ' | ' + productInfo.name + ' | ' + (productInfo.price || '');
