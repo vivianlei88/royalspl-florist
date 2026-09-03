@@ -92,9 +92,9 @@
         .category-card-name { font-size: 18px; font-weight: 600; }
         .category-card-check { position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; cursor: pointer; z-index: 10; }
         .category-detail-image-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-bottom: 22px; }
-        .category-image-upload-wrap { flex: 1 1 260px; min-width: 0; }
+        .category-image-upload-wrap { flex: 0 0 auto; width: 200px; }
         .category-image-preview-wrap { flex: 0 0 auto; }
-        .category-image-upload-wrap .upload-area { margin-bottom: 0; padding: 18px 20px; min-height: 100px; display: flex; align-items: center; justify-content: center; }
+        .category-image-upload-wrap .upload-area { margin-bottom: 0; padding: 30px 10px; height: 140px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
         .category-image-preview { width: 140px; height: 140px; border: 1px solid #E4E3DD; border-radius: 10px; overflow: hidden; background: #FAF8F5; display: flex; align-items: center; justify-content: center; }
         .category-image-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .category-image-preview-empty { color: #999; font-size: 14px; }
@@ -1392,14 +1392,23 @@ async function saveProduct() {
         var currentIds = [];
         for (var i = 0; i < categoryDetailProducts.length; i++) { currentIds.push(categoryDetailProducts[i].id); }
         selectedCategoryProducts = currentIds.slice();
+        document.getElementById('productSelectModal').classList.add('show');
+        c.innerHTML = '<div class="empty-state" style="padding:30px;">載入商品中...</div>';
+        // 主動從數據庫加載商品，避免依賴 allProducts（可能未加載）
+        var prodList = [];
+        try {
+            var pr = await supabaseClient.from('products').select('*').order('id', { ascending: true });
+            prodList = pr.data || [];
+            allProducts = prodList; // 同步全局，供 saveCategoryProducts 使用
+        } catch (e) { prodList = []; }
+        if (!prodList.length) { c.innerHTML = '<div class="empty-state" style="padding:30px;">暫無商品，請先到「商品管理」新增商品</div>'; return; }
         var h = '';
-        for (var j = 0; j < allProducts.length; j++) {
-            var p = allProducts[j];
+        for (var j = 0; j < prodList.length; j++) {
+            var p = prodList[j];
             var checked = selectedCategoryProducts.indexOf(p.id) > -1 ? 'checked' : '';
             h += '<label class="modal-product-item"><input type="checkbox" value="' + p.id + '" ' + checked + ' onchange="toggleCategoryProduct(' + p.id + ')">' + (p.image_url ? '<img src="' + p.image_url + '">' : '<span>無圖</span>') + p.name_zh + ' (HK$' + p.price + ')</label>';
         }
         c.innerHTML = h;
-        document.getElementById('productSelectModal').classList.add('show');
     }
     function toggleCategoryProduct(id) { var idx = selectedCategoryProducts.indexOf(id); if (idx > -1) { selectedCategoryProducts.splice(idx, 1); } else { selectedCategoryProducts.push(id); } }
     function closeProductModal() { document.getElementById('productSelectModal').classList.remove('show'); }
