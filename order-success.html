@@ -60,20 +60,27 @@
         );
 
         async function confirmPayment() {
+            // 轉數快 FPS 模式：只顯示「訂單已提交（待確認付款）」，不更新為已付款
+            const urlParams = new URLSearchParams(window.location.search);
+            const isFps = urlParams.get('p') === 'fps';
+            
             // 从 localStorage 获取待支付订单
             const pending = localStorage.getItem('pending_order');
             if (pending) {
                 const order = JSON.parse(pending);
                 
                 try {
-                    // 更新订单状态为已付款
-                    await supabaseClient
-                        .from('orders')
-                        .update({ 
-                            status: 'paid',
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', order.id);
+                    if (!isFps) {
+                        // 信用卡 / Apple Pay 付款成功 → 更新订单状态为已付款
+                        await supabaseClient
+                            .from('orders')
+                            .update({ 
+                                status: 'paid',
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', order.id);
+                    }
+                    // FPS 模式：保持 pending_payment（待確認付款），後台核對後才轉已付款
                     
                     // 显示订单信息
                     document.getElementById('orderInfo').innerHTML = `
@@ -81,11 +88,12 @@
                         <div class="order-row"><span class="order-label">商品金額</span><span class="order-value">HK$${order.subtotal}</span></div>
                         <div class="order-row"><span class="order-label">配送費</span><span class="order-value">${order.deliveryFee === 0 ? '免費' : 'HK$' + order.deliveryFee}</span></div>
                         <div class="order-row"><span class="order-label">總計</span><span class="order-value" style="font-size:18px;font-weight:700;">HK$${order.total}</span></div>
+                        ${isFps ? '<div class="order-row"><span class="order-label">付款狀態</span><span class="order-value" style="color:#c0392b;">待確認付款（轉數快）</span></div>' : ''}
                     `;
                     
-                    // 发送付款完成通知邮件
+                    // 发送付款完成通知邮件（FPS 模式不重複發）
                     const userEmail = order.recipient?.email || '';
-                    if (userEmail) {
+                    if (userEmail && !isFps) {
                         fetch('/send-email', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -108,8 +116,13 @@
             // 显示成功状态
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('successState').style.display = 'block';
+            if (isFps) {
+                // FPS 模式：修改標題與描述
+                document.querySelector('.success-icon').textContent = '📋';
+                document.querySelector('.success-title').textContent = '訂單已提交';
+                document.querySelector('.success-desc').innerHTML = '感謝您的訂購！<br>我們會核對您的轉數快付款（待確認付款），確認後會以電郵通知您。';
+            }
         }
-
         confirmPayment();
     </script>
     <script src="js/ai-chat-v2.js"></script>

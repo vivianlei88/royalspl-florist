@@ -76,7 +76,7 @@
         function renderOrders(orders) {
             const container = document.getElementById('ordersList');
             if (!orders.length) { container.innerHTML = '<p style="text-align:center;padding:40px;">尚無訂單</p>'; return; }
-            const statusMap = { unpaid: '未付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
+            const statusMap = { unpaid: '未付款', pending_payment: '待確認付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
             let html = '';
             orders.forEach(order => {
                 const img = getOrderImage(order);

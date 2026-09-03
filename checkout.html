@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="js/order-pdf.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
         .user-icon svg { display: block; }
@@ -75,6 +76,43 @@
         .payment-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .toast { position: fixed; top: 20px; right: 20px; background-color: #1A1A1A; color: #FAF8F5; padding: 15px 25px; border-radius: 5px; z-index: 9999; font-size: 14px; opacity: 0; transform: translateY(-20px); transition: all 0.3s; }
         .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* ===== 付款方式 ===== */
+        .payment-methods { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .payment-method { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border: 2px solid rgba(26,26,26,0.12); border-radius: 10px; cursor: pointer; background: #fff; transition: all 0.2s; }
+        .payment-method:hover { border-color: rgba(26,26,26,0.35); }
+        .payment-method.selected { border-color: #1A1A1A; background: #FAF8F5; }
+        .payment-method-icon { font-size: 22px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f1ece4; flex: none; }
+        .payment-method-info { flex: 1; min-width: 0; }
+        .payment-method-name { font-size: 15px; font-weight: 600; color: #1A1A1A; }
+        .payment-method-desc { font-size: 12.5px; color: #888; margin-top: 3px; }
+        .payment-method-check { width: 20px; height: 20px; border: 2px solid rgba(26,26,26,0.25); border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; transition: all 0.2s; }
+        .payment-method.selected .payment-method-check { background: #1A1A1A; border-color: #1A1A1A; }
+        .payment-panel { display: none; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 20px; background: #fff; margin-bottom: 5px; }
+        .payment-panel.active { display: block; }
+        .fps-qr-box { display: flex; align-items: center; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
+        .fps-qr-img { width: 150px; height: 150px; border: 1px solid rgba(26,26,26,0.15); border-radius: 8px; object-fit: contain; background: #fff; }
+        .fps-qr-info { flex: 1; min-width: 200px; }
+        .fps-qr-info .fps-label { font-size: 13px; color: #888; margin-bottom: 4px; }
+        .fps-qr-info .fps-value { font-size: 17px; font-weight: 700; color: #1A1A1A; margin-bottom: 8px; }
+        .fps-qr-info .fps-amount { font-size: 20px; font-weight: 700; color: #c0392b; }
+        .fps-steps { font-size: 13px; color: #555; line-height: 1.8; margin: 12px 0; padding: 12px 15px; background: #FAF8F5; border-radius: 8px; }
+        .fps-steps b { color: #1A1A1A; }
+        .fps-upload-row { display: flex; align-items: center; gap: 15px; margin-top: 12px; flex-wrap: wrap; }
+        .fps-upload-label { display: inline-block; padding: 10px 16px; border: 1.5px solid #1A1A1A; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fff; }
+        .fps-upload-label:hover { background: #FAF8F5; }
+        .fps-upload-input { display: none; }
+        .fps-preview { width: 70px; height: 70px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(26,26,26,0.15); display: none; }
+        .fps-ref-input { width: 100%; margin-top: 12px; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 6px; font-size: 15px; font-family: inherit; box-sizing: border-box; }
+        .fps-ref-input:focus { outline: none; border-width: 2px; }
+        .fps-hint { font-size: 12.5px; color: #999; margin-top: 8px; }
+        .stripe-element-wrap { min-height: 60px; }
+        .stripe-element-wrap #card-element { padding: 14px; border: 1px solid rgba(26,26,26,0.2); border-radius: 8px; background: #fff; }
+        #apple-pay-btn { margin-top: 14px; }
+        .stripe-or-divider { display: flex; align-items: center; gap: 12px; margin: 14px 0 4px; color: #999; font-size: 12.5px; }
+        .stripe-or-divider::before, .stripe-or-divider::after { content: ''; flex: 1; border-top: 1px solid rgba(26,26,26,0.12); }
+        .pm-note { font-size: 12px; color: #999; margin-top: 10px; }
+        .pm-error { color: #c0392b; font-size: 13px; margin-top: 8px; display: none; }
 
     @media (max-width: 768px) {
         .checkout-page { padding: 20px 15px !important; }
@@ -231,6 +269,76 @@
             </div>
         </div>
 
+        <div class="checkout-section">
+            <h2 class="checkout-section-title">付款方式</h2>
+            <div class="payment-methods">
+                <div class="payment-method selected" id="pmFps" onclick="selectPaymentMethod('fps')">
+                    <div class="payment-method-icon">🏦</div>
+                    <div class="payment-method-info">
+                        <div class="payment-method-name">轉數快 FPS（手動）</div>
+                        <div class="payment-method-desc">香港最常用・掃碼即轉・上傳付款證明</div>
+                    </div>
+                    <div class="payment-method-check">✓</div>
+                </div>
+                <div class="payment-method" id="pmCard" onclick="selectPaymentMethod('card')">
+                    <div class="payment-method-icon">💳</div>
+                    <div class="payment-method-info">
+                        <div class="payment-method-name">信用卡（Stripe）</div>
+                        <div class="payment-method-desc">Visa / Mastercard・即時扣款</div>
+                    </div>
+                    <div class="payment-method-check">✓</div>
+                </div>
+                <div class="payment-method" id="pmWallet" onclick="selectPaymentMethod('wallet')">
+                    <div class="payment-method-icon">📱</div>
+                    <div class="payment-method-info">
+                        <div class="payment-method-name">Apple Pay / Google Pay</div>
+                        <div class="payment-method-desc">iPhone / 安卓手機一鍵付款</div>
+                    </div>
+                    <div class="payment-method-check">✓</div>
+                </div>
+            </div>
+
+            <!-- 轉數快 FPS 面板 -->
+            <div class="payment-panel active" id="fpsPanel">
+                <div class="fps-qr-box">
+                    <img class="fps-qr-img" src="https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/royalspl-florist/1788401879438-u0fos7.jpg" alt="轉數快收款二維碼">
+                    <div class="fps-qr-info">
+                        <div class="fps-label">收款人</div>
+                        <div class="fps-value">RoyalSpl Florist</div>
+                        <div class="fps-label">轉數快 FPS ID</div>
+                        <div class="fps-value" id="fpsIdDisplay">113431563</div>
+                        <div class="fps-label">應付金額</div>
+                        <div class="fps-amount" id="fpsAmountDisplay">HK$0</div>
+                    </div>
+                </div>
+                <div class="fps-steps">
+                    <b>付款步驟：</b><br>
+                    1. 用銀行 App 掃描上方二維碼（或輸入 FPS ID <b>113431563</b>）轉賬<br>
+                    2. 轉賬完成後，上傳付款截圖<br>
+                    3. 填寫交易參考編號（轉賬後銀行 App 會顯示）<br>
+                    4. 提交訂單後，我們會核對付款，狀態為「待確認付款」
+                </div>
+                <div class="fps-upload-row">
+                    <label class="fps-upload-label">📎 上傳付款截圖
+                        <input type="file" class="fps-upload-input" id="fpsScreenshot" accept="image/*" onchange="previewFpsScreenshot(event)">
+                    </label>
+                    <img class="fps-preview" id="fpsScreenshotPreview" alt="付款截圖預覽">
+                </div>
+                <input type="text" class="fps-ref-input" id="fpsRef" placeholder="請輸入交易參考編號 (例: 20260903123456)">
+                <div class="fps-hint" id="fpsRefError" style="color:#c0392b; display:none;">請填寫交易參考編號，或上傳付款截圖</div>
+            </div>
+
+            <!-- 信用卡 / Apple Pay / Google Pay 面板 -->
+            <div class="payment-panel" id="cardPanel">
+                <div class="stripe-element-wrap">
+                    <div id="card-element"><p class="pm-note">付款方式載入中...</p></div>
+                </div>
+                <div class="stripe-or-divider">或使用 Apple Pay / Google Pay</div>
+                <div id="apple-pay-btn"></div>
+                <div class="pm-error" id="pmError"></div>
+            </div>
+        </div>
+
         <div class="order-summary" id="orderSummary"></div>
     </main>
 
@@ -263,6 +371,81 @@
     let detectedArea = '';
     let manualArea = '';
     let selectedHour = '';
+
+    // ========== 付款方式 ==========
+    let selectedPaymentMethod = 'fps';   // fps | card | wallet
+    let fpsScreenshotFile = null;        // 轉數快付款截圖
+    let stripeLoaded = false;            // Stripe Payment Element 是否已載入
+    let stripeElements = null;
+    let stripeClientSecret = null;
+    let stripePromise = null;
+    const FPS_ID = '113431563';
+    const FPS_QR_URL = 'https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/royalspl-florist/1788401879438-u0fos7.jpg';
+
+    function selectPaymentMethod(method) {
+        selectedPaymentMethod = method;
+        document.getElementById('pmFps').classList.toggle('selected', method === 'fps');
+        document.getElementById('pmCard').classList.toggle('selected', method === 'card');
+        document.getElementById('pmWallet').classList.toggle('selected', method === 'wallet');
+        document.getElementById('fpsPanel').classList.toggle('active', method === 'fps');
+        document.getElementById('cardPanel').classList.toggle('active', method === 'card' || method === 'wallet');
+        updatePaymentBtn();
+        if ((method === 'card' || method === 'wallet') && !stripeLoaded) {
+            loadStripeElement();
+        }
+    }
+
+    function updatePaymentBtn() {
+        const btn = document.getElementById('paymentBtn');
+        if (!btn) return;
+        btn.textContent = (selectedPaymentMethod === 'fps') ? '提交訂單（轉數快）' : '付款（信用卡 / Apple Pay / Google Pay）';
+    }
+
+    function previewFpsScreenshot(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        fpsScreenshotFile = file;
+        const preview = document.getElementById('fpsScreenshotPreview');
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        document.getElementById('fpsRefError').style.display = 'none';
+    }
+
+    // ========== Stripe 內嵌付款 ==========
+    function getStripePublishableKey() {
+        // 從後端取 publishable key（或直接用配置值）
+        return window.__STRIPE_PK__ || '';
+    }
+
+    async function loadStripeElement() {
+        try {
+            // 先向後端要 client_secret + publishable key
+            const total = getTotal();
+            const resp = await fetch('/create-payment-intent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: total })
+            });
+            const data = await resp.json();
+            if (!data.clientSecret || !data.publishableKey) {
+                document.getElementById('card-element').innerHTML = '<p class="pm-note">Stripe 尚未配置，請選擇轉數快 FPS 付款，或聯絡我們。</p>';
+                return;
+            }
+            stripeClientSecret = data.clientSecret;
+            window.__STRIPE_PK__ = data.publishableKey;
+            stripePromise = Stripe(data.publishableKey);
+            stripeElements = stripePromise.elements();
+            const element = stripeElements.create('payment', {
+                layout: 'tabs',
+                defaultValues: { billingDetails: { name: '' } }
+            });
+            element.mount('#card-element');
+            stripeLoaded = true;
+        } catch (e) {
+            console.error('Stripe 載入失敗:', e);
+            document.getElementById('card-element').innerHTML = '<p class="pm-note">Stripe 暫時無法使用，請選擇轉數快 FPS 付款。</p>';
+        }
+    }
 
     const areaFees = { tier1: 90, tier2: 100, tier3: 150, tier4: 200, tier5: 300 };
     const areaKeywords = {
@@ -401,8 +584,12 @@
             ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 HK$${selectedTimeFee}, 地區費 HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>總計</span><span>HK$${total}</span></div>
-            <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">前往支付</button>
+            <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">提交訂單（轉數快）</button>
         `;
+        // 更新轉數快應付金額
+        const fpsAmount = document.getElementById('fpsAmountDisplay');
+        if (fpsAmount) fpsAmount.textContent = 'HK$' + total;
+        updatePaymentBtn();
     }
 
     function validateForm() {
@@ -419,6 +606,225 @@
     }
 
     async function submitOrder() {
+        // 分流：轉數快 FPS 走手動確認流程；信用卡/Apple Pay 走 Stripe 內嵌即時扣款
+        if (selectedPaymentMethod === 'fps') {
+            return await submitOrderFps();
+        }
+        return await submitOrderCard();
+    }
+
+    // ========== 轉數快 FPS（手動）訂單流程 ==========
+    async function submitOrderFps() {
+        // 从购物车页面读取额外信息
+        let orderExtra = {};
+        try {
+            orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}');
+        } catch(e) {}
+        if (cart.length === 0) { showToast('購物車為空'); window.location.href = 'products.html'; return; }
+        if (!validateForm()) return;
+
+        // 校驗轉數快：需上傳截圖 或 填寫參考編號（至少一項）
+        const fpsRef = document.getElementById('fpsRef').value.trim();
+        if (!fpsScreenshotFile && !fpsRef) {
+            document.getElementById('fpsRefError').style.display = 'block';
+            showToast('請上傳付款截圖或填寫交易參考編號');
+            return;
+        }
+        document.getElementById('fpsRefError').style.display = 'none';
+
+        const btn = document.getElementById('paymentBtn');
+        btn.disabled = true;
+        btn.textContent = '正在提交訂單...';
+
+        // 取得訂購人電郵
+        let customerEmail = (orderExtra.customerEmail || '').trim();
+        if (!customerEmail) {
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (user) customerEmail = user.email || '';
+            } catch (e) { /* 忽略 */ }
+        }
+
+        const orderData = {
+            items: cart.map(item => ({
+                productId: item.productId,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                addons: item.addons || []
+            })),
+            recipientName: document.getElementById('recipientName').value.trim(),
+            recipientPhone: document.getElementById('recipientPhone').value.trim(),
+            recipientAddress: document.getElementById('recipientAddress').value.trim(),
+            deliveryDate: document.getElementById('deliveryDate').value,
+            deliveryTimeSlot: selectedTimeSlot,
+            deliveryHour: selectedHour,
+            deliveryArea: getEffectiveArea(),
+            deliveryFee: getDeliveryFee(),
+            subtotal: getSubtotal(),
+            totalAmount: getTotal(),
+            customerEmail: customerEmail
+        };
+
+        try {
+            // 上傳付款截圖到 R2（如有）
+            let screenshotUrl = '';
+            if (fpsScreenshotFile) {
+                const fd = new FormData();
+                fd.append('file', fpsScreenshotFile);
+                const upResp = await fetch('/r2-upload', { method: 'POST', body: fd });
+                const upData = await upResp.json();
+                if (upData.url) screenshotUrl = upData.url;
+            }
+
+            // 生成订单号
+            const orderCode = 'RS' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100);
+            const productImages = cart.map(item => item.image || '').filter(Boolean);
+            const productNames = cart.map(item => item.name).join(', ');
+
+            // 创建订单到 Supabase，状态为待確認付款
+            const { data: newOrder, error: orderError } = await supabaseClient
+                .from('orders')
+                .insert({
+                    order_code: orderCode,
+                    customer_email: customerEmail,
+                    customer_name: orderExtra.contactName || orderData.recipientName,
+                    customer_phone: orderExtra.contactPhone || orderData.recipientPhone,
+                    recipient_name: orderData.recipientName,
+                    recipient_phone: orderData.recipientPhone,
+                    recipient_address: orderData.recipientAddress,
+                    delivery_date: orderData.deliveryDate,
+                    delivery_time_slot: orderData.deliveryTimeSlot,
+                    delivery_hour: orderData.deliveryHour,
+                    delivery_area: orderData.deliveryArea,
+                    delivery_fee: orderData.deliveryFee,
+                    subtotal: orderData.subtotal,
+                    total_amount: orderData.totalAmount,
+                    status: 'pending_payment',
+                    payment_method: 'fps',
+                    fps_ref: fpsRef || '',
+                    fps_screenshot: screenshotUrl,
+                    product_names: productNames,
+                    product_images: productImages,
+                    items: cart.map(item => ({
+                        productId: item.productId,
+                        name: item.name,
+                        nameEn: item.nameEn || '',
+                        price: item.price,
+                        quantity: item.quantity,
+                        image: item.image || '',
+                        addons: item.addons || []
+                    })),
+                    remarks: orderExtra.remarks || '',
+                    card_message: orderExtra.cardMessage || ''
+                })
+                .select();
+
+            if (orderError) {
+                showToast('訂單創建失敗：' + orderError.message);
+                btn.disabled = false;
+                updatePaymentBtn();
+                return;
+            }
+
+            if (newOrder && newOrder[0]) {
+                const orderId = newOrder[0].id;
+
+                // 发送订单成立通知邮件
+                if (customerEmail) {
+                    let pdfBase64 = '';
+                    try {
+                        pdfBase64 = await generateOrderPdfBase64({
+                            shopName: 'RoyalSpl Florist',
+                            orderCode: orderCode,
+                            deliveryDate: orderData.deliveryDate,
+                            deliveryTime: orderData.deliveryTimeSlot,
+                            deliveryArea: orderData.deliveryArea,
+                            customerName: orderExtra.contactName || orderData.recipientName,
+                            customerEmail: customerEmail,
+                            customerPhone: orderExtra.contactPhone || orderData.recipientPhone,
+                            recipientName: orderData.recipientName,
+                            recipientPhone: orderData.recipientPhone,
+                            address: orderData.recipientAddress,
+                            items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price, image: item.image || '' })),
+                            subtotal: orderData.subtotal,
+                            deliveryFee: orderData.deliveryFee,
+                            total: orderData.totalAmount,
+                            cardMessage: orderExtra.cardMessage || '',
+                            remarks: orderExtra.remarks || '',
+                            status: '待確認付款'
+                        });
+                    } catch (pdfErr) { console.warn('生成訂單PDF失敗:', pdfErr); }
+                    fetch('/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            to: customerEmail,
+                            subject: '【RoyalSpl Florist】訂單成立通知 ' + orderCode,
+                            html: buildOrderEmailHtml({
+                                title: '訂單確認書',
+                                message: '親愛的顧客，感謝您的訂購！您的訂單已成立，付款方式：轉數快 FPS。我們會核對您的付款後確認訂單。',
+                                orderCode: orderCode,
+                                status: '待確認付款',
+                                deliveryDate: orderData.deliveryDate,
+                                deliveryTime: orderData.deliveryTimeSlot,
+                                deliveryArea: orderData.deliveryArea,
+                                customerName: orderExtra.contactName || orderData.recipientName,
+                                customerEmail: customerEmail,
+                                customerPhone: orderExtra.contactPhone || orderData.recipientPhone,
+                                recipientName: orderData.recipientName,
+                                recipientPhone: orderData.recipientPhone,
+                                address: orderData.recipientAddress,
+                                items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price, image: item.image || '' })),
+                                subtotal: orderData.subtotal,
+                                deliveryFee: orderData.deliveryFee,
+                                total: orderData.totalAmount,
+                                cardMessage: orderExtra.cardMessage || '',
+                                remarks: orderExtra.remarks || ''
+                            }),
+                            attachments: pdfBase64 ? [{ filename: 'Order-' + orderCode + '.pdf', content: pdfBase64 }] : []
+                        })
+                    }).catch(e => console.warn('發送訂單成立郵件失敗:', e));
+                }
+
+                // 保存待確認訂單資訊
+                localStorage.setItem('pending_order', JSON.stringify({
+                    id: orderId,
+                    orderCode: orderCode,
+                    items: cart,
+                    subtotal: orderData.subtotal,
+                    deliveryFee: orderData.deliveryFee,
+                    total: orderData.totalAmount,
+                    paymentMethod: 'fps',
+                    recipient: {
+                        name: orderData.recipientName,
+                        phone: orderData.recipientPhone,
+                        address: orderData.recipientAddress,
+                        date: orderData.deliveryDate,
+                        timeSlot: orderData.deliveryTimeSlot
+                    }
+                }));
+
+                // 清空購物車
+                if (isBuyNow) {
+                    sessionStorage.removeItem('royalspl_buynow');
+                } else {
+                    localStorage.removeItem('royalspl_cart');
+                }
+
+                // 跳轉訂單提交成功頁（轉數快需等確認）
+                window.location.href = 'order-success.html?p=fps&order_id=' + orderId;
+            }
+        } catch (err) {
+            console.error('提交訂單錯誤:', err);
+            showToast('網絡錯誤，請稍後再試');
+            btn.disabled = false;
+            updatePaymentBtn();
+        }
+    }
+
+    // ========== 信用卡 / Apple Pay / Google Pay（Stripe 內嵌）訂單流程 ==========
+    async function submitOrderCard() {
         // 从购物车页面读取额外信息
         let orderExtra = {};
         try {
@@ -429,9 +835,9 @@
 
         const btn = document.getElementById('paymentBtn');
         btn.disabled = true;
-        btn.textContent = '正在連接支付...';
+        btn.textContent = '正在處理付款...';
 
-        // 取得訂購人電郵：优先使用購物車/立即購買頁填寫的 order_extra，其次使用登录用户
+        // 取得訂購人電郵
         let customerEmail = (orderExtra.customerEmail || '').trim();
         if (!customerEmail) {
             try {
@@ -464,11 +870,9 @@
         try {
             // 生成订单号
             const orderCode = 'RS' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100);
-            
-            // 收集商品图片
             const productImages = cart.map(item => item.image || '').filter(Boolean);
             const productNames = cart.map(item => item.name).join(', ');
-            
+
             // 创建订单到 Supabase，状态为未付款
             const { data: newOrder, error: orderError } = await supabaseClient
                 .from('orders')
@@ -488,6 +892,7 @@
                     subtotal: orderData.subtotal,
                     total_amount: orderData.totalAmount,
                     status: 'unpaid',
+                    payment_method: 'card',
                     product_names: productNames,
                     product_images: productImages,
                     items: cart.map(item => ({
@@ -499,82 +904,44 @@
                         image: item.image || '',
                         addons: item.addons || []
                     })),
-                    customer_name: orderExtra.contactName || orderData.recipientName,
-                    customer_phone: orderExtra.contactPhone || orderData.recipientPhone,
                     remarks: orderExtra.remarks || '',
                     card_message: orderExtra.cardMessage || ''
                 })
                 .select();
-            
+
             if (orderError) {
                 showToast('訂單創建失敗：' + orderError.message);
                 btn.disabled = false;
-                btn.textContent = '前往支付';
+                updatePaymentBtn();
                 return;
             }
-            
+
             if (newOrder && newOrder[0]) {
                 const orderId = newOrder[0].id;
-                
-                // 发送订单成立通知邮件
-                if (customerEmail) {
-                    const itemsList = cart.map(item => `<li>${item.name || '商品'} × ${item.quantity || 1} - HK$${((item.price || 0) * (item.quantity || 1))}</li>`).join('');
-                    let pdfBase64 = '';
-                    try {
-                        pdfBase64 = await generateOrderPdfBase64({
-                            shopName: 'RoyalSpl Florist',
-                            orderCode: orderCode,
-                            deliveryDate: orderData.deliveryDate,
-                            deliveryTime: orderData.deliveryTimeSlot,
-                            deliveryArea: orderData.deliveryArea,
-                            customerName: orderExtra.contactName || orderData.recipientName,
-                            customerEmail: customerEmail,
-                            customerPhone: orderExtra.contactPhone || orderData.recipientPhone,
-                            recipientName: orderData.recipientName,
-                            recipientPhone: orderData.recipientPhone,
-                            address: orderData.recipientAddress,
-                            items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price, image: item.image || '' })),
-                            subtotal: orderData.subtotal,
-                            deliveryFee: orderData.deliveryFee,
-                            total: orderData.totalAmount,
-                            cardMessage: orderExtra.cardMessage || '',
-                            remarks: orderExtra.remarks || '',
-                            status: '未付款'
-                        });
-                    } catch (pdfErr) { console.warn('生成訂單PDF失敗:', pdfErr); }
-                    fetch('/send-email', {
+
+                // 創建 PaymentIntent（內嵌付款）
+                let clientSecret = '';
+                try {
+                    const piResp = await fetch('/create-payment-intent', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            to: customerEmail,
-                            subject: '【RoyalSpl Florist】訂單成立通知 ' + orderCode,
-                            html: buildOrderEmailHtml({
-                                title: '訂單確認書',
-                                message: '親愛的顧客，感謝您的訂購！您的訂單已成立，請核對訂單資料並完成支付。',
-                                orderCode: orderCode,
-                                status: '未付款',
-                                deliveryDate: orderData.deliveryDate,
-                                deliveryTime: orderData.deliveryTimeSlot,
-                                deliveryArea: orderData.deliveryArea,
-                                customerName: orderExtra.contactName || orderData.recipientName,
-                                customerEmail: customerEmail,
-                                customerPhone: orderExtra.contactPhone || orderData.recipientPhone,
-                                recipientName: orderData.recipientName,
-                                recipientPhone: orderData.recipientPhone,
-                                address: orderData.recipientAddress,
-                                items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price, image: item.image || '' })),
-                                subtotal: orderData.subtotal,
-                                deliveryFee: orderData.deliveryFee,
-                                total: orderData.totalAmount,
-                                cardMessage: orderExtra.cardMessage || '',
-                                remarks: orderExtra.remarks || ''
-                            }),
-                            attachments: pdfBase64 ? [{ filename: 'Order-' + orderCode + '.pdf', content: pdfBase64 }] : []
+                            amount: orderData.totalAmount,
+                            orderId: orderId,
+                            orderCode: orderCode,
+                            recipientName: orderData.recipientName,
+                            recipientPhone: orderData.recipientPhone,
+                            recipientAddress: orderData.recipientAddress,
+                            deliveryDate: orderData.deliveryDate,
+                            deliveryTimeSlot: orderData.deliveryTimeSlot
                         })
-                    }).catch(e => console.warn('發送訂單成立郵件失敗:', e));
-                }
-                
-                // 保存待支付订单信息
+                    });
+                    const piData = await piResp.json();
+                    clientSecret = piData.clientSecret;
+                    if (piData.publishableKey) window.__STRIPE_PK__ = piData.publishableKey;
+                } catch (piErr) { console.error('創建 PaymentIntent 失敗:', piErr); }
+
+                // 保存待支付訂單資訊
                 localStorage.setItem('pending_order', JSON.stringify({
                     id: orderId,
                     orderCode: orderCode,
@@ -582,6 +949,7 @@
                     subtotal: orderData.subtotal,
                     deliveryFee: orderData.deliveryFee,
                     total: orderData.totalAmount,
+                    paymentMethod: 'card',
                     recipient: {
                         name: orderData.recipientName,
                         phone: orderData.recipientPhone,
@@ -590,46 +958,58 @@
                         timeSlot: orderData.deliveryTimeSlot
                     }
                 }));
-                
-                // 清空購物車（立即購買模式只清立即購買暫存，保留原本購物車）
+
+                if (clientSecret && window.Stripe) {
+                    // 內嵌確認付款
+                    const stripe = stripePromise || (window.__STRIPE_PK__ ? Stripe(window.__STRIPE_PK__) : null);
+                    if (stripe) {
+                        const { error } = await stripe.confirmPayment({
+                            elements: stripeElements,
+                            confirmParams: {
+                                return_url: window.location.origin + '/order-success.html?order_id=' + orderId
+                            },
+                            redirect: 'if_required'
+                        });
+
+                        if (error) {
+                            showToast('付款失敗：' + (error.message || '請重試'));
+                            btn.disabled = false;
+                            updatePaymentBtn();
+                            return;
+                        }
+
+                        // 付款成功 → 更新訂單為已付款
+                        await supabaseClient
+                            .from('orders')
+                            .update({ status: 'paid', updated_at: new Date().toISOString() })
+                            .eq('id', orderId);
+
+                        // 清空購物車
+                        if (isBuyNow) {
+                            sessionStorage.removeItem('royalspl_buynow');
+                        } else {
+                            localStorage.removeItem('royalspl_cart');
+                        }
+
+                        window.location.href = 'order-success.html?order_id=' + orderId;
+                        return;
+                    }
+                }
+
+                // Stripe 不可用 → 跳轉訂單成功頁（未付款狀態）
                 if (isBuyNow) {
                     sessionStorage.removeItem('royalspl_buynow');
                 } else {
                     localStorage.removeItem('royalspl_cart');
                 }
-                
-                // 调用 Stripe Checkout Session
-                try {
-                    const stripeResponse = await fetch('/create-checkout-session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            ...orderData,
-                            orderId: orderId,
-                            orderCode: orderCode
-                        })
-                    });
-                    
-                    const stripeData = await stripeResponse.json();
-                    
-                    if (stripeData.url) {
-                        // 跳转到 Stripe 支付页
-                        window.location.href = stripeData.url;
-                    } else {
-                        // Stripe 接口不可用时，跳转到本地支付页
-                        window.location.href = 'payment.html?order_id=' + orderId;
-                    }
-                } catch (stripeErr) {
-                    // Stripe 调用失败，使用本地支付页作为后备
-                    console.warn('Stripe 调用失败，使用本地支付页:', stripeErr);
-                    window.location.href = 'payment.html?order_id=' + orderId;
-                }
+                showToast('付款暫時不可用，訂單已保存為未付款');
+                window.location.href = 'order-success.html?order_id=' + orderId;
             }
         } catch (err) {
-            console.error('提交订单错误:', err);
+            console.error('提交訂單錯誤:', err);
             showToast('網絡錯誤，請稍後再試');
             btn.disabled = false;
-            btn.textContent = '前往支付';
+            updatePaymentBtn();
         }
     }
 

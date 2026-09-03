@@ -1392,7 +1392,7 @@ async function saveProduct() {
         <script>
     // ==================== 訂單管理 ====================
     function renderOrdersPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>';
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="pending_payment">待確認付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>';
         loadOrders();
     }
     async function loadOrders() {
@@ -1412,11 +1412,12 @@ async function saveProduct() {
             var o = orders[i];
             h += '<tr><td class="checkbox-col"><input type="checkbox" class="order-check" value="' + o.id + '"></td>';
             h += '<td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + '</td>';
-            h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option></select></td>';
+            h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="pending_payment"' + (o.status === 'pending_payment' ? ' selected' : '') + '>待確認付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option></select></td>';
             var actionBtns = '<button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button> ';
             actionBtns += '<button class="btn btn-secondary btn-small" onclick="downloadOrderPDFById(' + o.id + ')">PDF</button> ';
             actionBtns += '<button class="btn btn-secondary btn-small" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button> ';
             if (o.status === 'unpaid') { actionBtns += '<button class="btn btn-primary btn-small" onclick="createStripePayment(' + o.id + ')">收款</button> '; }
+            if (o.status === 'pending_payment') { actionBtns += '<button class="btn btn-success btn-small" onclick="markOrderPaid(' + o.id + ')">核對付款</button> '; }
             if (o.status === 'paid' && o.stripe_payment_intent_id) { actionBtns += '<button class="btn btn-danger btn-small" onclick="showRefundForm(' + o.id + ')">退款</button> '; }
             h += '<td><div class="btn-group">' + actionBtns + '</div></td></tr>';
         }
@@ -1439,6 +1440,18 @@ async function saveProduct() {
                 try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: order.customer_email, subject: '出貨通知 - ' + order.order_code, html: emailHtml, attachments: pdfBase64 ? [{ filename: 'Order-' + order.order_code + '.pdf', content: pdfBase64 }] : [] }) }); showToast('出貨通知已發送'); } catch (e) { showToast('狀態已更新'); }
             } else { showToast('狀態已更新'); }
         } else { showToast('狀態已更新'); }
+    }
+    // 核對轉數快付款：待確認付款 → 已付款
+    async function markOrderPaid(id) {
+        if (!confirm('確認已收到顧客的轉數快付款？將訂單標記為已付款並通知顧客。')) return;
+        await supabaseClient.from('orders').update({ status: 'paid', updated_at: new Date().toISOString() }).eq('id', id);
+        var order = null;
+        for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === id) { order = allOrders[i]; break; } }
+        if (order && order.customer_email) {
+            var emailHtml = buildOrderEmailHtml({ title: '付款已確認', message: '您的轉數快付款已核對確認，訂單狀態已更新為已付款，我們會盡快安排配送！', orderCode: order.order_code, status: '已付款', deliveryDate: order.delivery_date, deliveryTime: order.delivery_time_slot, deliveryArea: order.delivery_area, customerName: order.customer_name, customerEmail: order.customer_email, customerPhone: order.customer_phone, recipientName: order.recipient_name, recipientPhone: order.recipient_phone, address: order.recipient_address, items: order.items, productNames: order.product_names, productImages: order.product_images, subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount, cardMessage: order.card_message, remarks: order.remarks });
+            try { await fetch('/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: order.customer_email, subject: '付款已確認 - ' + order.order_code, html: emailHtml }) }); showToast('已核對付款並通知顧客'); } catch (e) { showToast('狀態已更新（通知發送失敗）'); }
+        } else { showToast('狀態已更新'); }
+        loadOrders();
     }
     function showAddOrderForm() {
         var c = document.getElementById('addOrderFormContainer');
@@ -1556,6 +1569,12 @@ async function saveProduct() {
         v.innerHTML += '<div class="form-group"><label class="form-label">產品</label><div>' + (productHtml || '無產品') + '</div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="detailCardMessage">' + (o.card_message || '') + '</textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="detailRemarks">' + (o.remarks || '') + '</textarea></div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">商品小計</label><input type="number" class="form-input" id="detailSubtotal" value="' + (o.subtotal || 0) + '" readonly></div><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div></div>';
+        // 付款信息（轉數快/信用卡）
+        v.innerHTML += '<div class="form-group"><label class="form-label">付款方式</label><input class="form-input" id="detailPaymentMethod" value="' + (o.payment_method === 'fps' ? '轉數快 FPS' : o.payment_method === 'card' ? '信用卡/Apple Pay' : '') + '" readonly></div>';
+        if (o.payment_method === 'fps') {
+            v.innerHTML += '<div class="form-group"><label class="form-label">轉數快交易參考編號</label><input class="form-input" id="detailFpsRef" value="' + (o.fps_ref || '') + '" readonly></div>';
+            if (o.fps_screenshot) { v.innerHTML += '<div class="form-group"><label class="form-label">付款截圖</label><a href="' + o.fps_screenshot + '" target="_blank"><img src="' + o.fps_screenshot + '" style="max-width:220px;max-height:220px;object-fit:contain;border:1px solid #ddd;border-radius:6px;cursor:zoom-in;"></a></div>'; }
+        }
         v.innerHTML += '<div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div>';
         v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
     }

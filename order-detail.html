@@ -102,7 +102,7 @@
         }
 
         function renderOrderDetail(order) {
-            const statusMap = { unpaid: '未付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
+            const statusMap = { unpaid: '未付款', pending_payment: '待確認付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
             const statusClass = 'status-' + order.status;
             
             let items = [];

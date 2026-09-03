@@ -415,7 +415,7 @@
             const container = document.getElementById('accountOrdersList');
             if (!container) return;
             if (!orders.length) { container.innerHTML = '<div class="account-order-empty">尚無訂單</div>'; return; }
-            const statusMap = { unpaid: '未付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
+            const statusMap = { unpaid: '未付款', pending_payment: '待確認付款', paid: '已付款', shipped: '已出貨', cancelled: '已取消' };
             let html = '';
             orders.forEach(order => {
                 const img = getAccountOrderImage(order);
