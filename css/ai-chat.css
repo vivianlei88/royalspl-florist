@@ -130,8 +130,11 @@
 }
 
 .ai-chat-transfer {
-    margin-top: 10px;
+    padding: 9px 0 12px 0;
     text-align: center;
+    flex: none;
+    background: white;
+    border-radius: 0 0 15px 15px;
 }
 
 .ai-chat-transfer button {

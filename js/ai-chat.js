@@ -4,6 +4,7 @@
     let aiFailCount = 0;
     let isHumanMode = false;
     let currentProduct = null;
+    let pageContext = null; // 客人停留頁面上下文
     let userInfo = { email: null, orders: [] };
     let chatConfig = {
         welcome_message: '您好！我是 RoyalSpl AI 客服，有什么可以帮您？🌸',
@@ -57,17 +58,64 @@
         } catch(e) { console.error('加载用户信息失败:', e); }
     }
 
-    // 检测当前页面商品
-    function detectProduct() {
+    // 检测客人停留頁面上下文（URL、頁面類型、商品/分類資料）
+    function detectPageContext() {
+        const href = window.location.href || '';
+        const path = (window.location.pathname || '').toLowerCase();
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
-        if (productId && document.querySelector('.detail-title-zh')) {
-            currentProduct = {
-                id: productId,
-                name: document.querySelector('.detail-title-zh')?.textContent,
-                price: document.querySelector('.detail-price')?.textContent
-            };
+        let pageType = '其他頁面';
+        let pageDetail = '';
+        let pageName = document.title || '';
+
+        // 商品詳情頁
+        if (path.indexOf('product-detail') > -1 || path.indexOf('product_detail') > -1) {
+            pageType = '商品詳情頁';
+            const productId = urlParams.get('id');
+            if (productId && document.querySelector('.detail-title-zh')) {
+                currentProduct = {
+                    id: productId,
+                    name: document.querySelector('.detail-title-zh')?.textContent,
+                    price: document.querySelector('.detail-price')?.textContent
+                };
+                pageDetail = '正在瀏覽商品【' + currentProduct.name + '】(ID:' + productId + (currentProduct.price ? '，價格' + currentProduct.price : '') + ')';
+            } else if (productId) {
+                pageDetail = '正在瀏覽商品ID:' + productId;
+            }
         }
+        // 分類/商品列表頁
+        else if (path.indexOf('products') > -1) {
+            pageType = '商品分類頁';
+            const cat = urlParams.get('category');
+            pageDetail = cat ? '正在瀏覽分類【' + decodeURIComponent(cat) + '】' : '正在瀏覽全部商品';
+        }
+        // 購物車頁
+        else if (path.indexOf('cart') > -1) {
+            pageType = '購物車頁';
+            pageDetail = '正在瀏覽購物車';
+        }
+        // 結帳頁
+        else if (path.indexOf('checkout') > -1) {
+            pageType = '結帳頁';
+            pageDetail = '正在結帳流程';
+        }
+        // 首頁
+        else if (path === '/' || path === '/index.html' || path === '') {
+            pageType = '首頁';
+            pageDetail = '正在瀏覽首頁';
+        }
+        // 訂單查詢頁
+        else if (path.indexOf('order') > -1) {
+            pageType = '訂單頁';
+            pageDetail = '正在查看訂單';
+        }
+
+        pageContext = {
+            url: href.substring(0, 200),
+            pageType: pageType,
+            pageName: pageName,
+            detail: pageDetail,
+            product: currentProduct ? { id: currentProduct.id, name: currentProduct.name, price: currentProduct.price } : null
+        };
     }
 
     // 检测是否需要转人工
@@ -136,7 +184,7 @@
         const win = document.getElementById('aiChatWindow');
         win.classList.toggle('active');
         if (win.classList.contains('active')) {
-            detectProduct();
+            detectPageContext();
         }
     };
 
@@ -200,6 +248,7 @@
                     message: message,
                     history: chatHistory,
                     productInfo: currentProduct,
+                    pageContext: pageContext,
                     userEmail: userInfo.email,
                     userOrders: userInfo.orders,
                     imageBase64: imgToSend

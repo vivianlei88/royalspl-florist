@@ -1,6 +1,6 @@
 export async function onRequestPost(context) {
     try {
-        const { message, history, productInfo, userEmail, userOrders, imageBase64 } = await context.request.json();
+        const { message, history, productInfo, pageContext, userEmail, userOrders, imageBase64 } = await context.request.json();
         
         const API_KEY = context.env.DOUBAO_SEED_2_0_MINI_API_KEY;
         const MODEL_ID = 'doubao-seed-2-0-mini-260428';
@@ -101,6 +101,10 @@ export async function onRequestPost(context) {
         
         if (productInfo) {
             systemPrompt += '\n\n【用戶當前瀏覽的商品】ID:' + productInfo.id + ' | ' + productInfo.name + ' | ' + (productInfo.price || '');
+        }
+        if (pageContext) {
+            systemPrompt += '\n\n【客人停留頁面】' + (pageContext.pageType || '') + ' | ' + (pageContext.detail || '') + ' | 頁面地址:' + (pageContext.url || '');
+            systemPrompt += '\n請結合客人停留的頁面給出貼合情境的回覆：例如客人在商品詳情頁就圍繞該商品講解與推薦搭配；在分類頁就推薦該分類商品；在購物車/結帳頁就協助訂單問題；在首頁就引導選擇。';
         }
         
         if (userOrders && userOrders.length > 0) {
