@@ -434,7 +434,7 @@
             stripeClientSecret = data.clientSecret;
             window.__STRIPE_PK__ = data.publishableKey;
             stripePromise = Stripe(data.publishableKey);
-            stripeElements = stripePromise.elements();
+            stripeElements = stripePromise.elements({ clientSecret: data.clientSecret });
             const element = stripeElements.create('payment', {
                 layout: 'tabs',
                 defaultValues: { billingDetails: { name: '' } }
