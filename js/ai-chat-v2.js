@@ -124,7 +124,7 @@
                     <span onclick="clearImage()" style="cursor:pointer;color:#999;margin-left:5px;">✕</span>
                 </div>
                 <div class="ai-chat-transfer">
-                    <button onclick="showHumanSupport()">转人工客服</button>
+                    <button onclick="openWhatsApp()">💬 联系WhatsApp</button>
                 </div>
             </div>
         `;
@@ -173,12 +173,12 @@
             return;
         }
 
-        // 检测转人工
+        // 检测到人工/客服关键词 → 直接跳轉 WhatsApp
         if (shouldTransfer(message)) {
             addMessage(message, 'user');
-            addMessage('好的，正在为您转接人工客服...', 'ai');
-            setTimeout(showHumanSupport, 500);
+            addMessage('好的，正在為您開啟 WhatsApp 聯繫...', 'ai');
             input.value = '';
+            setTimeout(openWhatsApp, 600);
             return;
         }
 
@@ -219,8 +219,8 @@
                     aiFailCount++;
                     if (aiFailCount >= chatConfig.max_fail_count) {
                         setTimeout(() => {
-                            addMessage('抱歉多次未能解答您的问题，建议转人工客服为您服务。', 'ai');
-                            setTimeout(showHumanSupport, 1000);
+                            addMessage('抱歉多次未能解答您的问题，已為您開啟 WhatsApp 聯繫。', 'ai');
+                            setTimeout(openWhatsApp, 800);
                         }, 500);
                         aiFailCount = 0;
                     }
@@ -228,11 +228,11 @@
                     aiFailCount = 0;
                 }
             } else {
-                addMessage('抱歉，服务暂时不可用，请稍后重试或转人工客服。', 'ai');
+                addMessage('抱歉，服务暂时不可用，請稍後重試或點擊「聯繫WhatsApp」。', 'ai');
             }
         } catch(e) {
             hideTyping();
-            addMessage('网络错误，请检查连接或转人工客服。', 'ai');
+            addMessage('網絡錯誤，請檢查連接或點擊「聯繫WhatsApp」。', 'ai');
         }
     };
 
@@ -489,16 +489,29 @@
 
     // 處理回覆：先換卡片再顯示
     async function displayAiReply(reply) {
-        let replyHtml = reply.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        // 先用佔位符保護 AI 回覆中的裸 URL，避免卡片生成後被二次替換破壞
+        const urlTokens = [];
+        let replyHtml = reply.replace(/(https?:\/\/[^\s<>"'）)]+)/g, function(m) {
+            // 只保護外部 URL，唔好保護卡片鏈接同圖片 URL
+            if (m.indexOf('/product-detail.html') > -1 || m.indexOf('/order-detail.html') > -1 || m.indexOf('/products.html') > -1) {
+                return m;
+            }
+            urlTokens.push(m);
+            return '%%URLTOKEN' + (urlTokens.length - 1) + '%%';
+        });
+        // 還原可能被包成 <a> 的卡片鏈接（AI 偶爾輸出完整 <a> 標籤）
         replyHtml = replyHtml.replace(/<a href="(\/product-detail\.html\?id=\d+)"[^>]*>[^<]*<\/a>/g, '$1');
         replyHtml = replyHtml.replace(/<a href="(\/order-detail\.html\?id=\d+)"[^>]*>[^<]*<\/a>/g, '$1');
-        // 先轉換為卡片
+        // 轉換為卡片（商品/訂單/分類）
         try {
             replyHtml = await enrichProductCards(replyHtml);
             replyHtml = await enrichOrderCards(replyHtml);
         } catch(e) { console.error('渲染卡片失敗:', e); }
-        // 剩餘普通鏈接才轉成 <a>
-        replyHtml = replyHtml.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        // 最後還原外部 URL 佔位符為可點擊鏈接
+        replyHtml = replyHtml.replace(/%%URLTOKEN(\d+)%%/g, function(m, idx) {
+            const u = urlTokens[parseInt(idx, 10)];
+            return u ? '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>' : m;
+        });
         addMessageHtml(replyHtml, 'ai');
     }
 
@@ -518,27 +531,14 @@
         if (typing) typing.remove();
     }
 
-    // 显示人工客服
+    // 直接跳轉 WhatsApp（淘寶風格：點擊即開 WhatsApp 對話）
+    window.openWhatsApp = function() {
+        const num = (chatConfig.whatsapp_number || '85265036907').replace(/[^0-9]/g, '');
+        window.open('https://wa.me/' + num, '_blank');
+    };
+    // 兼容舊邏輯：showHumanSupport 同樣直接跳轉 WhatsApp
     window.showHumanSupport = function() {
-        isHumanMode = true;
-        const container = document.getElementById('aiChatMessages');
-        container.innerHTML = `
-            <div class="human-support-panel">
-                <h5>人工客服</h5>
-                <p style="font-size:13px;color:#666;margin-bottom:15px;">您可以通过以下方式联系我们：</p>
-                <a href="https://wa.me/${chatConfig.whatsapp_number}" target="_blank" class="whatsapp-link">
-                    <span style="font-size:20px;">💬</span>
-                    <span>WhatsApp 联系客服</span>
-                </a>
-                <p style="font-size:13px;color:#666;margin-bottom:10px;">或留言，我们会尽快回复：</p>
-                <div class="message-form">
-                    <input type="text" id="msgName" placeholder="您的姓名">
-                    <input type="tel" id="msgPhone" placeholder="联系电话">
-                    <textarea id="msgContent" placeholder="请描述您的问题..."></textarea>
-                    <button onclick="submitMessage()">提交留言</button>
-                </div>
-            </div>
-        `;
+        window.openWhatsApp();
     };
 
     // 提交留言
