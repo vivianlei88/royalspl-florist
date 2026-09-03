@@ -437,6 +437,7 @@
             stripeElements = stripePromise.elements({ clientSecret: data.clientSecret });
             const element = stripeElements.create('payment', {
                 layout: 'tabs',
+                fields: { billingDetails: { name: 'always' } },
                 defaultValues: { billingDetails: { name: '' } }
             });
             element.mount('#card-element');
