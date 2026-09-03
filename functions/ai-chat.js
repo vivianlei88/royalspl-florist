@@ -97,7 +97,7 @@ export async function onRequestPost(context) {
         
         systemPrompt += knowledgeContext;
         
-        systemPrompt += '\n\n【商品推薦規則】用戶詢問推薦商品、想買花、送禮、有什麼花束等，從上方【全部商品列表】中推薦最合適的具體商品，並嚴格使用列表中的真實商品ID，鏈接格式：商品名稱 - HK$價格 - 鏈接：/product-detail.html?id=真實商品ID。可以推薦2-3個選項。\n【重要】嚴禁編造或猜測ID：鏈接中的ID必須是上方商品列表中出現過的ID。如果用戶想了解某個分類（如法式田園自然風、日式鮮花束、即日鮮花、日式永生花、新娘花禮、進口牡丹/芍藥花），請用分類頁鏈接：分類名稱 - 鏈接：/products.html?category=分類ID，分類ID請從上方【商品分類】列表中選取。絕對不要把分類ID當成商品ID寫成product-detail.html?id=分類ID。';
+        systemPrompt += '\n\n【商品推薦規則-最重要】用戶詢問推薦商品、想買花、送禮、有什麼花束、報預算等，必須從上方【全部商品列表】中挑選具體商品來推薦，嚴禁推薦分類。\n推薦步驟：1) 若用戶報咗預算（如800-1000、600左右），從商品列表中篩選價格符合預算的商品；2) 若無預算，選2-3個最受歡迎/最合適嘅商品。\n每個推薦必須嚴格使用列表中的真實商品ID，鏈接格式（一字不差）：\n商品名稱 - HK$真實價格 - 鏈接：/product-detail.html?id=真實商品ID\n示例：\n鬱金香光譜 - HK$460 - 鏈接：/product-detail.html?id=66\n\n【禁止事項】\n1. 嚴禁推薦分類（如法式田園自然風、日式鮮花束等），必須推薦具體商品；\n2. 嚴禁編造或猜測ID，鏈接中的ID必須是商品列表中出現過的；\n3. 嚴禁寫HK$價格暫缺，價格必須用商品列表中的真實價格；\n4. 除非用戶明確問「有咩分類」，先可以用分類頁鏈接：/products.html?category=分類ID。';
         
         if (productInfo) {
             systemPrompt += '\n\n【用戶當前瀏覽的商品】ID:' + productInfo.id + ' | ' + productInfo.name + ' | ' + (productInfo.price || '');
