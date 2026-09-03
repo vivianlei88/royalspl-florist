@@ -517,7 +517,8 @@
             });
 
             const result = await walletPaymentRequest.canMakePayment();
-            if (result) {
+            // 只接受真正的 Apple Pay / Google Pay，過濾掉 Stripe Link
+            if (result && (result.applePay || result.googlePay)) {
                 walletButton.mount('#apple-pay-btn');
                 walletButtonMounted = true;
 
