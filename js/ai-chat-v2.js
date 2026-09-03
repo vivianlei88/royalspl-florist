@@ -302,47 +302,106 @@
             return Array.isArray(data) ? data : [];
         } catch(e) { console.error('撈分類失敗:', e); return []; }
     }
-    // 撈商品資料（圖片/名稱/價格）渲染成可點擊卡片
+    // 用 REST API 撈分類資料（AI 有時推薦分類，id 指向 categories 表）
+    async function fetchCategoriesByIds(ids) {
+        try {
+            const idList = ids.join(',');
+            const resp = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name_zh,name_en,image_url,description&id=in.(' + idList + ')', {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                }
+            });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            return Array.isArray(data) ? data : [];
+        } catch(e) { console.error('撈分類失敗:', e); return []; }
+    }
+    // 用分類名撈分類（AI 可能輸出 products.html?category=名稱）
+    async function fetchCategoryByName(name) {
+        try {
+            const enc = encodeURIComponent(name);
+            const resp = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name_zh,name_en,image_url,description&or=(name_zh.eq.' + enc + ',name_en.ilike.*' + enc + '*)', {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                }
+            });
+            if (!resp.ok) return null;
+            const data = await resp.json();
+            return (Array.isArray(data) && data.length > 0) ? data[0] : null;
+        } catch(e) { console.error('撈分類名失敗:', e); return null; }
+    }
+    // 撈商品資料（圖片/名稱/價格）渲染成可點擊卡片；同時兼容 product-detail 與 products?category 兩種連結
     async function enrichProductCards(replyHtml) {
-        const regex = /\/product-detail\.html\?id=(\d+)/g;
+        // --- 第 1 部分：/product-detail.html?id=X（商品ID；查唔到商品則兜底為分類ID）---
+        const pRegex = /\/product-detail\.html\?id=(\d+)/g;
         const ids = [];
         let m;
-        while ((m = regex.exec(replyHtml)) !== null) {
+        while ((m = pRegex.exec(replyHtml)) !== null) {
             if (ids.indexOf(m[1]) === -1) ids.push(m[1]);
         }
-        if (ids.length === 0) return replyHtml;
-        const products = await fetchProductsByIds(ids);
-        const pMap = {};
-        if (products && products.length > 0) {
-            products.forEach(function(p) { pMap[String(p.id)] = p; });
+        if (ids.length > 0) {
+            const products = await fetchProductsByIds(ids);
+            const pMap = {};
+            if (products && products.length > 0) {
+                products.forEach(function(p) { pMap[String(p.id)] = p; });
+            }
+            const missIds = ids.filter(function(id) { return !pMap[id]; });
+            const cMap = {};
+            if (missIds.length > 0) {
+                const cats = await fetchCategoriesByIds(missIds);
+                if (cats && cats.length > 0) {
+                    cats.forEach(function(c) { cMap[String(c.id)] = c; });
+                }
+            }
+            ids.forEach(function(id) {
+                const urlPattern = new RegExp('(鏈接[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?', 'g');
+                const p = pMap[id];
+                if (p) {
+                    const img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
+                    const card = buildProductCard(p.id, img, p.name_zh, p.name_en, p.price);
+                    replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) { return card; });
+                    return;
+                }
+                const c = cMap[id];
+                if (c) {
+                    const card = buildCategoryCard(c.id, c.image_url || '', c.name_zh, c.name_en, c.description);
+                    replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) { return card; });
+                }
+            });
         }
-        // 商品 id 搵唔到嘅，可能係分類 id，去 categories 表補查
-        const missIds = ids.filter(function(id) { return !pMap[id]; });
-        const cMap = {};
-        if (missIds.length > 0) {
-            const cats = await fetchCategoriesByIds(missIds);
-            if (cats && cats.length > 0) {
-                cats.forEach(function(c) { cMap[String(c.id)] = c; });
+        // --- 第 2 部分：/products.html?category=X 或 /products?category=X（分類ID或分類名）---
+        const cRegex = /\/products(?:\.html)?\?category=([^)\s]+)/g;
+        const catKeys = [];
+        let cm;
+        while ((cm = cRegex.exec(replyHtml)) !== null) {
+            if (catKeys.indexOf(cm[1]) === -1) catKeys.push(cm[1]);
+        }
+        if (catKeys.length > 0) {
+            // 數字 ID 批量查
+            const idKeys = catKeys.filter(function(k) { return /^\d+$/.test(k); });
+            const cMap2 = {};
+            if (idKeys.length > 0) {
+                const cats = await fetchCategoriesByIds(idKeys);
+                if (cats && cats.length > 0) {
+                    cats.forEach(function(c) { cMap2[String(c.id)] = c; });
+                }
+            }
+            for (var ci = 0; ci < catKeys.length; ci++) {
+                var key = catKeys[ci];
+                var c = null;
+                if (/^\d+$/.test(key)) {
+                    c = cMap2[key] || null;
+                } else {
+                    c = await fetchCategoryByName(decodeURIComponent(key));
+                }
+                if (!c) continue;
+                var card = buildCategoryCard(c.id, c.image_url || '', c.name_zh, c.name_en, c.description);
+                var pattern = new RegExp('(鏈接[：: ]*|\\()?/?products(?:\\.html)?\\?category=' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\))?', 'g');
+                replyHtml = replyHtml.replace(pattern, function(match, prefix, suffix) { return card; });
             }
         }
-        // 每個 id 替換為卡片
-        ids.forEach(function(id) {
-            const urlPattern = new RegExp('(鏈接[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?', 'g');
-            const p = pMap[id];
-            if (p) {
-                const img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
-                const card = buildProductCard(p.id, img, p.name_zh, p.name_en, p.price);
-                replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) { return card; });
-                return;
-            }
-            const c = cMap[id];
-            if (c) {
-                const card = buildCategoryCard(c.id, c.image_url || '', c.name_zh, c.name_en, c.description);
-                // 分類卡片取代商品鏈接，跳去分類產品頁
-                const catPattern = new RegExp('(鏈接[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?', 'g');
-                replyHtml = replyHtml.replace(catPattern, function(match, prefix, suffix) { return card; });
-            }
-        });
         return replyHtml;
     }
 
