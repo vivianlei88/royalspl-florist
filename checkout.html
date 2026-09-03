@@ -389,6 +389,25 @@
         document.getElementById('pmWallet').classList.toggle('selected', method === 'wallet');
         document.getElementById('fpsPanel').classList.toggle('active', method === 'fps');
         document.getElementById('cardPanel').classList.toggle('active', method === 'card' || method === 'wallet');
+        // wallet 模式：隱藏信用卡表單，顯示 Apple Pay / Google Pay 按鈕
+        const cardEl = document.getElementById('card-element');
+        const divider = document.querySelector('.stripe-or-divider');
+        const walletBtn = document.getElementById('apple-pay-btn');
+        const payBtn = document.getElementById('paymentBtn');
+        if (method === 'wallet') {
+            if (cardEl) cardEl.style.display = 'none';
+            if (divider) divider.style.display = 'none';
+            if (walletBtn) walletBtn.style.display = 'block';
+            if (payBtn) payBtn.style.display = 'none';
+            initWalletButton();
+        } else if (method === 'card') {
+            if (cardEl) cardEl.style.display = 'block';
+            if (divider) divider.style.display = 'flex';
+            if (walletBtn) walletBtn.style.display = 'none';
+            if (payBtn) payBtn.style.display = 'block';
+        } else {
+            if (payBtn) payBtn.style.display = 'block';
+        }
         updatePaymentBtn();
         if ((method === 'card' || method === 'wallet') && !stripeLoaded) {
             loadStripeElement();
@@ -445,6 +464,178 @@
         } catch (e) {
             console.error('Stripe 載入失敗:', e);
             document.getElementById('card-element').innerHTML = '<p class="pm-note">Stripe 暫時無法使用，請選擇轉數快 FPS 付款。</p>';
+        }
+    }
+
+    // ========== Apple Pay / Google Pay 按鈕 ==========
+    let walletButtonMounted = false;
+    let walletPaymentRequest = null;
+
+    async function initWalletButton() {
+        const walletContainer = document.getElementById('apple-pay-btn');
+        if (!walletContainer) return;
+        if (walletButtonMounted) return;
+
+        // 確保 Stripe 已加載
+        if (!stripePromise || !stripeClientSecret) {
+            if (!stripeLoaded) {
+                await loadStripeElement();
+            }
+            if (!stripePromise) {
+                walletContainer.innerHTML = '<p class="pm-note">Stripe 尚未配置，請選擇信用卡或轉數快付款。</p>';
+                return;
+            }
+        }
+
+        try {
+            const stripe = stripePromise;
+            const total = getTotal();
+            const amountCents = Math.round(total * 100);
+
+            walletPaymentRequest = stripe.paymentRequest({
+                country: 'HK',
+                currency: 'hkd',
+                total: {
+                    label: 'RoyalSpl Florist',
+                    amount: amountCents
+                },
+                requestPayerName: true,
+                requestPayerEmail: true,
+                requestPayerPhone: false
+            });
+
+            const elements = stripe.elements();
+            const walletButton = elements.create('paymentRequestButton', {
+                paymentRequest: walletPaymentRequest,
+                style: {
+                    paymentRequestButton: {
+                        type: 'buy',
+                        theme: 'dark',
+                        height: '48px'
+                    }
+                }
+            });
+
+            const result = await walletPaymentRequest.canMakePayment();
+            if (result) {
+                walletButton.mount('#apple-pay-btn');
+                walletButtonMounted = true;
+
+                // 付款成功回調
+                walletPaymentRequest.on('paymentmethod', async (ev) => {
+                    try {
+                        // 先創建訂單
+                        const orderResult = await createOrderForWallet(ev.paymentMethod);
+                        if (!orderResult.success) {
+                            ev.complete('fail');
+                            showToast(orderResult.error || '訂單創建失敗');
+                            return;
+                        }
+
+                        // 確認付款
+                        const { error: confirmError } = await stripe.confirmCardPayment(
+                            stripeClientSecret,
+                            { payment_method: ev.paymentMethod.id },
+                            { handleActions: false }
+                        );
+
+                        if (confirmError) {
+                            ev.complete('fail');
+                            showToast('付款失敗：' + (confirmError.message || '請重試'));
+                            return;
+                        }
+
+                        ev.complete('success');
+
+                        // 付款成功 → 更新訂單狀態
+                        await supabaseClient
+                            .from('orders')
+                            .update({ status: 'paid', updated_at: new Date().toISOString() })
+                            .eq('id', orderResult.orderId);
+
+                        // 清空購物車
+                        if (isBuyNow) {
+                            sessionStorage.removeItem('royalspl_buynow');
+                        } else {
+                            localStorage.removeItem('royalspl_cart');
+                        }
+
+                        window.location.href = 'order-success.html?order_id=' + orderResult.orderId;
+                    } catch (err) {
+                        console.error('Wallet 付款錯誤:', err);
+                        ev.complete('fail');
+                        showToast('付款處理失敗，請重試');
+                    }
+                });
+            } else {
+                walletContainer.innerHTML = '<p class="pm-note" style="text-align:center;padding:20px;">您的設備或瀏覽器不支援 Apple Pay / Google Pay<br>請改用信用卡付款，或在 iPhone（Safari）/ 安卓（Chrome）手機上打開此頁面</p>';
+            }
+        } catch (e) {
+            console.error('Wallet 按鈕初始化失敗:', e);
+            walletContainer.innerHTML = '<p class="pm-note">Apple Pay / Google Pay 暫時無法使用，請選擇信用卡付款。</p>';
+        }
+    }
+
+    // 為 Wallet 付款創建訂單（復用 submitOrderCard 的訂單創建邏輯）
+    async function createOrderForWallet(paymentMethod) {
+        let orderExtra = {};
+        try { orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}'); } catch(e) {}
+        if (cart.length === 0) return { success: false, error: '購物車為空' };
+        if (!validateForm()) return { success: false, error: '請填寫配送資料' };
+
+        let customerEmail = (orderExtra.customerEmail || '').trim();
+        if (!customerEmail && paymentMethod && paymentMethod.billing_details && paymentMethod.billing_details.email) {
+            customerEmail = paymentMethod.billing_details.email;
+        }
+
+        const orderCode = 'RS' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100);
+        const productImages = cart.map(item => item.image || '').filter(Boolean);
+        const productNames = cart.map(item => item.name).join(', ');
+
+        try {
+            const { data: newOrder, error: orderError } = await supabaseClient
+                .from('orders')
+                .insert({
+                    order_code: orderCode,
+                    customer_email: customerEmail,
+                    customer_name: orderExtra.contactName || (paymentMethod && paymentMethod.billing_details ? paymentMethod.billing_details.name : ''),
+                    customer_phone: orderExtra.contactPhone || '',
+                    recipient_name: document.getElementById('recipientName').value.trim(),
+                    recipient_phone: document.getElementById('recipientPhone').value.trim(),
+                    recipient_address: document.getElementById('recipientAddress').value.trim(),
+                    delivery_date: document.getElementById('deliveryDate').value,
+                    delivery_time_slot: selectedTimeSlot,
+                    delivery_hour: selectedHour,
+                    delivery_area: getEffectiveArea(),
+                    delivery_fee: getDeliveryFee(),
+                    subtotal: getSubtotal(),
+                    total_amount: getTotal(),
+                    status: 'unpaid',
+                    payment_method: 'wallet',
+                    product_names: productNames,
+                    product_images: productImages,
+                    items: cart.map(item => ({
+                        productId: item.productId, name: item.name, nameEn: item.nameEn || '',
+                        price: item.price, quantity: item.quantity, image: item.image || '', addons: item.addons || []
+                    })),
+                    remarks: orderExtra.remarks || '',
+                    card_message: orderExtra.cardMessage || ''
+                })
+                .select();
+
+            if (orderError) return { success: false, error: orderError.message };
+            if (newOrder && newOrder[0]) {
+                // 保存待支付訂單資訊
+                localStorage.setItem('pending_order', JSON.stringify({
+                    id: newOrder[0].id, orderCode: orderCode, items: cart,
+                    subtotal: getSubtotal(), deliveryFee: getDeliveryFee(), total: getTotal(),
+                    paymentMethod: 'wallet'
+                }));
+                return { success: true, orderId: newOrder[0].id, orderCode: orderCode };
+            }
+            return { success: false, error: '訂單創建失敗' };
+        } catch (e) {
+            return { success: false, error: e.message };
         }
     }
 
@@ -607,9 +798,13 @@
     }
 
     async function submitOrder() {
-        // 分流：轉數快 FPS 走手動確認流程；信用卡/Apple Pay 走 Stripe 內嵌即時扣款
+        // 分流：轉數快 FPS 走手動確認流程；信用卡走 Stripe 內嵌；wallet 由 Apple Pay/Google Pay 按鈕直接處理
         if (selectedPaymentMethod === 'fps') {
             return await submitOrderFps();
+        }
+        if (selectedPaymentMethod === 'wallet') {
+            showToast('請點擊上方 Apple Pay / Google Pay 按鈕完成付款');
+            return;
         }
         return await submitOrderCard();
     }
