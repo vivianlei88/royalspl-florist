@@ -123,10 +123,11 @@
         .toast { position: fixed; top: 20px; right: 20px; background: #1A1A1A; color: white; padding: 18px 28px; border-radius: 8px; z-index: 9999; font-size: 16px; opacity: 0; transition: all 0.3s; }
         .toast.show { opacity: 1; }
         .empty-state { text-align: center; padding: 60px; color: #888; font-size: 17px; }
-        .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 15px; }
-        .stat-card { background: white; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .stat-card-value { font-size: 24px; font-weight: 700; color: #1A1A1A; white-space: nowrap; }
-        .stat-card-label { font-size: 13px; color: #666; text-align: right; }
+        .stat-table { background: white; border-radius: 8px; padding: 16px 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); margin-bottom: 15px; }
+        .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        .stat-label-row { border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 8px; }
+        .stat-label { font-size: 12px; color: #888; text-align: center; font-weight: 500; }
+        .stat-value { font-size: 22px; font-weight: 700; color: #1A1A1A; text-align: center; white-space: nowrap; }
         .ga4-iframe { width: 100%; height: 420px; border: none; border-radius: 8px; background: white; }
         .analytics-section { background: white; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
         .analytics-section h3 { font-size: 15px; font-weight: 600; margin: 0 0 10px 0; color: #1A1A1A; }
@@ -405,13 +406,9 @@
 
     function renderAnalyticsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">數據分析</h2><a class="btn btn-secondary" href="https://analytics.google.com/analytics/web/#/p8546886826/reports" target="_blank">在 GA4 中打開</a></div>';
-        c.innerHTML += '<div class="stat-cards" id="statCards">';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localProducts">--</div><div class="stat-card-label">商品數量</div></div>';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localOrders">--</div><div class="stat-card-label">總訂單數</div></div>';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localPaidOrders">--</div><div class="stat-card-label">已付款訂單</div></div>';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localSales">--</div><div class="stat-card-label">總銷售額</div></div>';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localAvgOrder">--</div><div class="stat-card-label">平均客單價</div></div>';
-        c.innerHTML += '<div class="stat-card"><div class="stat-card-value" id="localViews">--</div><div class="stat-card-label">瀏覽量</div></div>';
+        c.innerHTML += '<div class="stat-table">';
+        c.innerHTML += '<div class="stat-row stat-label-row"><div class="stat-label">商品數量</div><div class="stat-label">總訂單數</div><div class="stat-label">已付款訂單</div><div class="stat-label">總銷售額</div><div class="stat-label">平均客單價</div><div class="stat-label">瀏覽量</div></div>';
+        c.innerHTML += '<div class="stat-row"><div class="stat-value" id="localProducts">--</div><div class="stat-value" id="localOrders">--</div><div class="stat-value" id="localPaidOrders">--</div><div class="stat-value" id="localSales">--</div><div class="stat-value" id="localAvgOrder">--</div><div class="stat-value" id="localViews">--</div></div>';
         c.innerHTML += '</div>';
         c.innerHTML += '<div class="analytics-section"><h3>訂單狀態分佈</h3>';
         c.innerHTML += '<div class="analytics-row"><span class="label">待確認付款（FPS）</span><span class="value" id="statPendingFps">--</span></div>';
