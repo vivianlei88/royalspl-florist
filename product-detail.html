@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>商品詳情 | RoyalSpl Florist Hong Kong</title>
@@ -474,6 +484,20 @@
         });
         localStorage.setItem('royalspl_cart', JSON.stringify(cart));
         updateCartBadge();
+        
+        // GA4 + Google Ads: add_to_cart 事件
+        if (typeof gtag === 'function') {
+            gtag('event', 'add_to_cart', {
+                currency: 'HKD',
+                value: parseFloat(currentProduct.price) * quantity,
+                items: [{
+                    item_id: currentProduct.id,
+                    item_name: currentProduct.name_zh,
+                    price: parseFloat(currentProduct.price),
+                    quantity: quantity
+                }]
+            });
+        }
         
         var toast = document.createElement('div');
         toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;';

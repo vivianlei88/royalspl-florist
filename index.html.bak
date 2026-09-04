@@ -1,16 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-<!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-6V4WKR9VS6');
-  gtag('config', 'AW-16678811911');
-</script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RoyalSpl Florist Hong Kong | 香港花店</title>
@@ -325,40 +315,6 @@
     async function loadFeaturedProducts() {
         var container = document.getElementById('featuredProducts');
         try {
-            // 優先讀後台精選花藝（featured_products 表），按後台排序顯示
-            var fpResult = await supabaseClient.from('featured_products').select('*').eq('is_active', true).order('sort_order', { ascending: true });
-            if (fpResult.error) throw fpResult.error;
-            var fpList = fpResult.data || [];
-            if (fpList.length > 0) {
-                var ids = [];
-                for (var i = 0; i < fpList.length; i++) { if (fpList[i].product_id) { ids.push(fpList[i].product_id); } }
-                if (ids.length > 0) {
-                    var pResult = await supabaseClient.from('products').select('*').in('id', ids);
-                    if (pResult.error) throw pResult.error;
-                    var pMap = {};
-                    for (var m = 0; m < (pResult.data || []).length; m++) { pMap[pResult.data[m].id] = pResult.data[m]; }
-                    var ordered = [];
-                    for (var n = 0; n < fpList.length; n++) {
-                        var prod = pMap[fpList[n].product_id];
-                        if (prod && prod.is_active) { ordered.push(prod); }
-                    }
-                    if (ordered.length > 0) {
-                        // 輪播：每次刷新顯示下一組 6 個商品（2行x3個）
-                        var GROUP_SIZE = 6;
-                        var totalGroups = Math.ceil(ordered.length / GROUP_SIZE);
-                        var curPage = parseInt(localStorage.getItem('royalspl_featured_page') || '0', 10);
-                        if (isNaN(curPage) || curPage < 0) { curPage = 0; }
-                        var start = curPage * GROUP_SIZE;
-                        featuredProductsData = ordered.slice(start, start + GROUP_SIZE);
-                        // 更新頁索引，下次刷新顯示下一組
-                        var nextPage = (curPage + 1) % totalGroups;
-                        localStorage.setItem('royalspl_featured_page', String(nextPage));
-                        renderFeaturedProducts();
-                        return;
-                    }
-                }
-            }
-            // 若無精選花藝設定，fallback：顯示前 6 件商品
             var result = await supabaseClient.from('products').select('*').eq('is_active', true).limit(6).order('id', { ascending: true });
             if (result.error) throw result.error;
             featuredProductsData = result.data || [];
@@ -449,6 +405,6 @@
         }).catch(function() {});
     })();
     </script>
-        <script src="js/ai-chat-v2.js"></script>
+        <script src="js/ai-chat.js"></script>
 </body>
 </html>

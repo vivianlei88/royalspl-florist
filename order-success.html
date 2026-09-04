@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>支付成功 - RoyalSpl Florist</title>
@@ -103,6 +113,24 @@
                                 html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">付款成功</h2><p>親愛的顧客，您的訂單已付款成功！</p><p><strong>訂單號：</strong>' + order.orderCode + '</p><p><strong>付款金額：</strong>HK$' + order.total + '</p><p>我們會盡快安排配送，配送日期：' + (order.recipient?.date || '') + ' ' + (order.recipient?.timeSlot || '') + '</p><p style="color:#888;font-size:12px;margin-top:30px;">如有任何疑問，請聯繫我們。</p></div>'
                             })
                         }).catch(e => console.warn('發送付款成功郵件失敗:', e));
+                    }
+                    
+                    // GA4 + Google Ads: purchase 事件（只在真正付款成功時觸發，FPS待確認不觸發）
+                    if (typeof gtag === 'function' && !isFps) {
+                        var purchaseItems = (order.items || []).map(function(item) {
+                            return {
+                                item_id: item.productId,
+                                item_name: item.name,
+                                price: item.price,
+                                quantity: item.quantity
+                            };
+                        });
+                        gtag('event', 'purchase', {
+                            transaction_id: order.orderCode,
+                            currency: 'HKD',
+                            value: order.total,
+                            items: purchaseItems
+                        });
                     }
                     
                     // 清除待支付订单

@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>您的花禮 | RoyalSpl Florist Hong Kong</title>
@@ -292,6 +302,26 @@
             customerEmail: customerEmail,
             couponCode: couponCode
         }));
+        
+        // GA4 + Google Ads: begin_checkout 事件
+        if (typeof gtag === 'function') {
+            var cartTotal = 0;
+            var cartItems = cart.map(function(item) {
+                cartTotal += item.price * item.quantity;
+                return {
+                    item_id: item.productId,
+                    item_name: item.name,
+                    price: item.price,
+                    quantity: item.quantity
+                };
+            });
+            gtag('event', 'begin_checkout', {
+                currency: 'HKD',
+                value: cartTotal,
+                items: cartItems
+            });
+        }
+        
         window.location.href = 'checkout.html';
     }
     const menuBtn = document.getElementById('menuBtn');
