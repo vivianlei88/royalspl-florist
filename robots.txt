@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /account.html
+Disallow: /orders.html
+Disallow: /order-detail.html
+Disallow: /checkout.html
+Disallow: /payment.html
+Disallow: /buynow.html
+Disallow: /order-success.html
+Disallow: /login.html
+
+Sitemap: https://www.royalspl.shop/sitemap.xml
