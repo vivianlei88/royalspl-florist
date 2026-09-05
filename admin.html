@@ -416,6 +416,8 @@
     }
 
     function showAdminUI() {
+        if (window.adminUIShown) return;
+        window.adminUIShown = true;
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('adminPage').style.display = 'block';
         const name = localStorage.getItem('admin_name') || '';
@@ -568,10 +570,10 @@
         c.innerHTML = '<div class="page-header"><h2 class="page-title">網站數據分析</h2><a class="btn btn-primary" href="https://lookerstudio.google.com/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/ZdB8F" target="_blank">在 Looker Studio 中打開</a></div>';
         c.innerHTML += '<div class="analytics-section" style="padding:0;overflow:hidden;">';
         c.innerHTML += '<div class="analytics-tabs" style="background:#1A1A1A;border-radius:8px 8px 0 0;width:100%;overflow:hidden;">';
-        c.innerHTML += '<button class="analytics-tab active" onclick="switchAnalyticsTab(0)">瀏覽量</button>';
-        c.innerHTML += '<button class="analytics-tab" onclick="switchAnalyticsTab(1)">流量來源</button>';
-        c.innerHTML += '<button class="analytics-tab" onclick="switchAnalyticsTab(2)">SEO搜索</button>';
-        c.innerHTML += '<button class="analytics-tab" onclick="switchAnalyticsTab(3)">網頁分佈</button>';
+        c.innerHTML += '<button class="analytics-tab active" style="color:white;background:rgba(255,255,255,0.15);" onclick="switchAnalyticsTab(0)">瀏覽量</button>';
+        c.innerHTML += '<button class="analytics-tab" style="color:#ccc;" onclick="switchAnalyticsTab(1)">流量來源</button>';
+        c.innerHTML += '<button class="analytics-tab" style="color:#ccc;" onclick="switchAnalyticsTab(2)">SEO搜索</button>';
+        c.innerHTML += '<button class="analytics-tab" style="color:#ccc;" onclick="switchAnalyticsTab(3)">網頁分佈</button>';
         c.innerHTML += '</div>';
         c.innerHTML += '<div class="analytics-tab-content active" id="analyticsTab0"><iframe class="ga4-iframe" src="https://datastudio.google.com/embed/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/ZdB8F" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>';
         c.innerHTML += '<div class="analytics-tab-content" id="analyticsTab1"><iframe class="ga4-iframe" src="https://datastudio.google.com/embed/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/p_xn1r5os46d" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>';
