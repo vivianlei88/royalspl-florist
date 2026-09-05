@@ -468,12 +468,36 @@
     }
 
     function showAddAdminForm() {
-        const email = prompt('請輸入管理員電郵:');
-        if (!email) return;
-        const name = prompt('請輸入管理員姓名（可選）:') || '';
-        supabaseClient.from('admin_users').insert({ email: email.trim(), name: name.trim() }).then(function(result) {
-            if (result.error) alert('新增失敗: ' + result.error.message);
-            else { alert('新增成功'); renderAdminsPage(document.getElementById('mainContent')); }
+        // 創建彈窗
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = '<div style="background:white;padding:30px;border-radius:10px;width:400px;box-shadow:0 10px 40px rgba(0,0,0,0.2);">' +
+            '<h3 style="margin:0 0 20px 0;font-size:18px;">新增管理員</h3>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;color:#333;">姓名</label>' +
+            '<input type="text" id="newAdminName" placeholder="請輸入姓名" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:20px;"><label style="display:block;margin-bottom:5px;font-size:14px;color:#333;">電郵 *</label>' +
+            '<input type="email" id="newAdminEmail" placeholder="請輸入電郵" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:#f0f0f0;border:none;border-radius:5px;cursor:pointer;font-size:14px;">取消</button>' +
+            '<button onclick="submitNewAdmin()" style="padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">確定</button>' +
+            '</div></div>';
+        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        document.body.appendChild(modal);
+        document.getElementById('newAdminEmail').focus();
+    }
+
+    function submitNewAdmin() {
+        var name = document.getElementById('newAdminName').value.trim();
+        var email = document.getElementById('newAdminEmail').value.trim();
+        if (!email) { alert('請輸入電郵'); return; }
+        supabaseClient.from('admin_users').insert({ email: email, name: name || null }).then(function(result) {
+            if (result.error) {
+                alert('新增失敗: ' + result.error.message);
+            } else {
+                alert('新增成功');
+                document.querySelector('div[style*="position:fixed"][style*="z-index:99999"]').remove();
+                renderAdminsPage(document.getElementById('mainContent'));
+            }
         });
     }
 
