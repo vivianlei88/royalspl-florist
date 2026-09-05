@@ -84,7 +84,7 @@
             let html = `
                 <h1 class="article-title">${post.title}</h1>
                 <p class="article-date">${new Date(post.created_at).toLocaleDateString('zh-HK')}</p>
-                ${post.image_url ? `<img src="${post.image_url}" class="article-cover">` : ''}
+                ${post.image_url ? `<img src="${post.image_url}" class="article-cover" alt="${post.title}">` : ''}
             `;
             try {
                 const blocks = JSON.parse(post.content);
@@ -94,7 +94,52 @@
             } catch {
                 html += `<div class="block">${post.content}</div>`;
             }
+            // 添加相關商品推薦區域
+            html += `
+                <div class="related-products-section" style="margin-top:50px;padding-top:30px;border-top:1px solid #eee;">
+                    <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;color:#1A1A1A;">相關花藝推薦</h2>
+                    <div id="relatedProducts" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;">
+                        <p style="color:#999;">加載中...</p>
+                    </div>
+                </div>
+            `;
             container.innerHTML = html;
+            // 加載相關商品
+            loadRelatedProducts();
+        }
+
+        async function loadRelatedProducts() {
+            try {
+                const { data: products, error } = await supabaseClient
+                    .from('products')
+                    .select('*')
+                    .eq('status', 'active')
+                    .limit(4);
+                if (error) throw error;
+                const container = document.getElementById('relatedProducts');
+                if (!container || !products || products.length === 0) {
+                    if (container) container.innerHTML = '<p style="color:#999;">暫無相關商品</p>';
+                    return;
+                }
+                let html = '';
+                products.forEach(p => {
+                    const img = p.images && p.images.length > 0 ? p.images[0] : (p.image_url || '');
+                    html += `
+                        <a href="product-detail.html?id=${p.id}" style="text-decoration:none;color:inherit;display:block;">
+                            <div style="border-radius:8px;overflow:hidden;background:#f9f9f9;">
+                                ${img ? `<img src="${img}" alt="${p.name_zh}" style="width:100%;height:180px;object-fit:cover;">` : '<div style="width:100%;height:180px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:40px;">🌸</div>'}
+                                <div style="padding:12px;">
+                                    <div style="font-size:14px;font-weight:600;color:#1A1A1A;margin-bottom:5px;">${p.name_zh || p.name_en || ''}</div>
+                                    <div style="font-size:14px;color:#888;">HK$${p.price}</div>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('加載相關商品失敗:', e);
+            }
         }
 
         function renderBlock(block) {

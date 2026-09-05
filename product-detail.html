@@ -256,6 +256,24 @@
     function renderProductDetail(product) {
         var container = document.getElementById('detailContainer');
         var specs = product.specs || {};
+        
+        // 動態設置 SEO：title、meta description、Open Graph
+        var productTitle = (product.name_zh || product.name_en || '花藝產品') + ' | HK$' + product.price + ' | RoyalSpl Florist 香港花店';
+        var productDesc = (product.description_zh || product.description || 'RoyalSpl Florist 精心設計的花藝產品').substring(0, 150);
+        document.title = productTitle;
+        var metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.setAttribute('content', productDesc);
+        var ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle) ogTitle.setAttribute('content', productTitle);
+        var ogDesc = document.querySelector('meta[property="og:description"]');
+        if (ogDesc) ogDesc.setAttribute('content', productDesc);
+        var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
+        if (productImages.length > 0) {
+            var ogImage = document.querySelector('meta[property="og:image"]');
+            if (ogImage) ogImage.setAttribute('content', productImages[0]);
+            var twitterImage = document.querySelector('meta[name="twitter:image"]');
+            if (twitterImage) twitterImage.setAttribute('content', productImages[0]);
+        }
         var tags = product.tags || [];
         var scentNotes = product.scent_notes || [];
         var stockClass = product.stock === '現貨' ? 'status-in-stock' : 'status-pre-order';
@@ -276,7 +294,7 @@
             if (productImages.length > 1) {
                 html += '<div class="detail-thumbs">';
                 for (var ti = 0; ti < productImages.length; ti++) {
-                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')"><img src="' + productImages[ti] + '"></div>';
+                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')"><img src="' + productImages[ti] + '" alt="' + product.name_zh + ' 細圖 ' + (ti+1) + '"></div>';
                 }
                 html += '</div>';
             }
@@ -353,7 +371,7 @@
             var html = '';
             for (var i = 0; i < allAddons.length; i++) {
                 var a = allAddons[i];
-                var img = a.image_url ? '<img src="' + a.image_url + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji">🎁<\/span>';
+                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + a.name + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji">🎁<\/span>';
                 html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()"><\/span>' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><\/label>';
             }
             addonList.innerHTML = html;
