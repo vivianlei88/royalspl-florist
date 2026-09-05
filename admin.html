@@ -567,12 +567,7 @@
     }
 
     function renderAnalyticsPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">數據分析</h2><a class="btn btn-secondary" href="https://lookerstudio.google.com/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/ZdB8F" target="_blank">在 Looker Studio 中打開</a></div>';
-        c.innerHTML += '<div class="stat-table">';
-        c.innerHTML += '<div class="stat-row stat-label-row"><div class="stat-label">商品數量</div><div class="stat-label">總訂單數</div><div class="stat-label">已付款訂單</div><div class="stat-label">總銷售額</div><div class="stat-label">平均客單價</div><div class="stat-label">瀏覽量</div></div>';
-        c.innerHTML += '<div class="stat-row"><div class="stat-value" id="localProducts">--</div><div class="stat-value" id="localOrders">--</div><div class="stat-value" id="localPaidOrders">--</div><div class="stat-value" id="localSales">--</div><div class="stat-value" id="localAvgOrder">--</div><div class="stat-value" id="localViews">--</div></div>';
-        c.innerHTML += '</div>';
-        c.innerHTML += '<div class="analytics-section" style="padding:0;overflow:hidden;">';
+        c.innerHTML = '<div class="analytics-section" style="padding:0;overflow:hidden;">';
         c.innerHTML += '<div class="analytics-tabs">';
         c.innerHTML += '<button class="analytics-tab active" onclick="switchAnalyticsTab(0)">瀏覽量</button>';
         c.innerHTML += '<button class="analytics-tab" onclick="switchAnalyticsTab(1)">流量來源</button>';
@@ -584,7 +579,6 @@
         c.innerHTML += '<div class="analytics-tab-content" id="analyticsTab2"><iframe class="ga4-iframe" src="https://datastudio.google.com/embed/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/p_g0c98os46d" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>';
         c.innerHTML += '<div class="analytics-tab-content" id="analyticsTab3"><iframe class="ga4-iframe" src="https://datastudio.google.com/embed/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/p_vnaicps46d" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>';
         c.innerHTML += '</div>';
-        loadLocalStats();
     }
     function switchAnalyticsTab(index) {
         document.querySelectorAll('.analytics-tab').forEach(function(tab, i) {
