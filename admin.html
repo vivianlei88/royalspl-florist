@@ -527,6 +527,8 @@
     });
 
     function switchPage(page) {
+        if (window.currentPage === page) return;
+        window.currentPage = page;
         document.querySelectorAll('.sidebar-item').forEach(function(el) { el.classList.remove('active'); });
         document.querySelector('[data-page="' + page + '"]').classList.add('active');
         var c = document.getElementById('mainContent');
