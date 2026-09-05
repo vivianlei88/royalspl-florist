@@ -580,10 +580,40 @@
         c.innerHTML += '<div class="analytics-tab-content" id="analyticsTab2"><iframe class="ga4-iframe" src="https://datastudio.google.com/embed/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/p_g0c98os46d" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>';
         c.innerHTML += '<div class="analytics-tab-content" id="analyticsTab3"><iframe class="ga4-iframe" src="https://datastudio.google.com/embed/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/p_vnaicps46d" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>';
         c.innerHTML += '</div>';
+        // 強制設置標籤頁黑色背景
+        setTimeout(function() {
+            var tabs = document.querySelector('.analytics-tabs');
+            if (tabs) {
+                tabs.style.background = '#1A1A1A';
+                tabs.style.borderRadius = '8px 8px 0 0';
+                tabs.style.width = '100%';
+                tabs.style.overflow = 'hidden';
+            }
+            var tabBtns = document.querySelectorAll('.analytics-tab');
+            tabBtns.forEach(function(btn) {
+                if (btn.classList.contains('active')) {
+                    btn.style.color = 'white';
+                    btn.style.background = 'rgba(255,255,255,0.15)';
+                    btn.style.borderBottomColor = 'white';
+                } else {
+                    btn.style.color = '#ccc';
+                    btn.style.background = 'none';
+                }
+            });
+        }, 50);
     }
     function switchAnalyticsTab(index) {
         document.querySelectorAll('.analytics-tab').forEach(function(tab, i) {
             tab.classList.toggle('active', i === index);
+            if (i === index) {
+                tab.style.color = 'white';
+                tab.style.background = 'rgba(255,255,255,0.15)';
+                tab.style.borderBottomColor = 'white';
+            } else {
+                tab.style.color = '#ccc';
+                tab.style.background = 'none';
+                tab.style.borderBottomColor = 'transparent';
+            }
         });
         document.querySelectorAll('.analytics-tab-content').forEach(function(content, i) {
             content.classList.toggle('active', i === index);
