@@ -364,9 +364,14 @@
     // ==================== Google 登錄 ====================
     async function googleLogin() {
         try {
+            // 先清除可能存在的前台 session
+            await supabaseClient.auth.signOut();
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
-                options: { redirectTo: window.location.href.split('#')[0].split('?')[0] }
+                options: {
+                    redirectTo: 'https://www.royalspl.shop/admin.html',
+                    queryParams: { prompt: 'select_account' }
+                }
             });
             if (error) alert('Google 登錄失敗: ' + error.message);
         } catch (e) { alert('Google 登錄失敗: ' + e.message); }
@@ -375,9 +380,20 @@
     async function checkGoogleAuth() {
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
+            console.log('Admin checkGoogleAuth session:', session ? session.user.email : 'no session');
             if (session && session.user) {
                 const userEmail = session.user.email;
-                const { data: adminData } = await supabaseClient.from('admin_users').select('*').eq('email', userEmail).limit(1);
+                // 查詢管理員表
+                const { data: adminData, error: adminError } = await supabaseClient
+                    .from('admin_users')
+                    .select('*')
+                    .eq('email', userEmail)
+                    .limit(1);
+                console.log('Admin check result:', adminData, adminError);
+                if (adminError) {
+                    console.error('查詢管理員表失敗:', adminError);
+                    // RLS 可能阻止查詢，用 service role 或者直接放鬆驗證
+                }
                 if (adminData && adminData.length > 0) {
                     localStorage.setItem('royalspl_admin', 'true');
                     localStorage.setItem('admin_email', userEmail);
@@ -386,12 +402,16 @@
                     showAdminUI();
                     return true;
                 } else {
+                    // 不是管理員，登出
                     await supabaseClient.auth.signOut();
-                    alert('此帳號 (' + userEmail + ') 沒有管理員權限');
+                    localStorage.removeItem('royalspl_admin');
+                    alert('此帳號 (' + userEmail + ') 沒有管理員權限，請聯繫管理員添加');
                     return false;
                 }
             }
-        } catch (e) { console.error('檢查 Google 登錄狀態失敗:', e); }
+        } catch (e) {
+            console.error('檢查 Google 登錄狀態失敗:', e);
+        }
         return false;
     }
 
