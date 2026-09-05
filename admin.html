@@ -563,7 +563,8 @@
     }
 
     function renderAnalyticsPage(c) {
-        c.innerHTML = '<div class="analytics-section" style="padding:0;overflow:hidden;">';
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">網站數據分析</h2><a class="btn btn-primary" href="https://lookerstudio.google.com/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/ZdB8F" target="_blank">在 Looker Studio 中打開</a></div>';
+        c.innerHTML += '<div class="analytics-section" style="padding:0;overflow:hidden;">';
         c.innerHTML += '<div class="analytics-tabs">';
         c.innerHTML += '<button class="analytics-tab active" onclick="switchAnalyticsTab(0)">瀏覽量</button>';
         c.innerHTML += '<button class="analytics-tab" onclick="switchAnalyticsTab(1)">流量來源</button>';
