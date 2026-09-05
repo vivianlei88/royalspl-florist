@@ -369,7 +369,7 @@
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: 'https://www.royalspl.shop/admin.html',
+                    redirectTo: 'https://www.royalspl.shop/admin',
                     queryParams: { prompt: 'select_account' }
                 }
             });
@@ -2583,23 +2583,49 @@ async function saveProduct() {
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('Admin page loaded, URL:', window.location.href);
+        
         // 監聽 Google 登錄狀態變化
         supabaseClient.auth.onAuthStateChange(function(event, session) {
+            console.log('Auth state change:', event, session ? session.user.email : 'no user');
             if (event === 'SIGNED_IN' && session) {
                 checkGoogleAuth();
             }
-        });
-        
-        // 先檢查是否已有 Google 登錄會話
-        checkGoogleAuth().then(function(loggedIn) {
-            if (!loggedIn && localStorage.getItem('royalspl_admin') === 'true') {
-                // 帳號密碼登錄的情況
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('adminPage').style.display = 'block';
-                switchPage('analytics');
-                checkVisitorNotifications();
+            if (event === 'SIGNED_OUT') {
+                localStorage.removeItem('royalspl_admin');
+                localStorage.removeItem('admin_email');
+                document.getElementById('loginPage').style.display = 'block';
+                document.getElementById('adminPage').style.display = 'none';
             }
         });
+        
+        // 檢查是否是 OAuth 回調（URL 中有 # 或 ?code=）
+        var isOAuthCallback = window.location.hash.indexOf('access_token') >= 0 || 
+                              window.location.search.indexOf('code=') >= 0 ||
+                              window.location.hash.indexOf('refresh_token') >= 0;
+        
+        if (isOAuthCallback) {
+            console.log('OAuth callback detected, waiting for session...');
+            // 等待 Supabase 處理回調
+            setTimeout(function() {
+                checkGoogleAuth().then(function(loggedIn) {
+                    if (!loggedIn) {
+                        console.log('OAuth callback login failed');
+                    }
+                });
+            }, 1000);
+        } else {
+            // 正常頁面加載，檢查登錄狀態
+            checkGoogleAuth().then(function(loggedIn) {
+                if (!loggedIn && localStorage.getItem('royalspl_admin') === 'true') {
+                    // 帳號密碼登錄的情況
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('adminPage').style.display = 'block';
+                    switchPage('analytics');
+                    checkVisitorNotifications();
+                }
+            });
+        }
     });
     </script>
         <script>
