@@ -366,7 +366,7 @@
         try {
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
-                options: { redirectTo: window.location.origin + '/admin.html' }
+                options: { redirectTo: window.location.href.split('#')[0].split('?')[0] }
             });
             if (error) alert('Google 登錄失敗: ' + error.message);
         } catch (e) { alert('Google 登錄失敗: ' + e.message); }
@@ -2563,7 +2563,14 @@ async function saveProduct() {
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // 先檢查 Google 登錄狀態
+        // 監聽 Google 登錄狀態變化
+        supabaseClient.auth.onAuthStateChange(function(event, session) {
+            if (event === 'SIGNED_IN' && session) {
+                checkGoogleAuth();
+            }
+        });
+        
+        // 先檢查是否已有 Google 登錄會話
         checkGoogleAuth().then(function(loggedIn) {
             if (!loggedIn && localStorage.getItem('royalspl_admin') === 'true') {
                 // 帳號密碼登錄的情況
