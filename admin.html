@@ -266,6 +266,7 @@
                     <div class="sidebar-item sidebar-subitem" data-page="template" onclick="switchPage('template')">模板預覽</div>
                     <div class="sidebar-item sidebar-subitem" data-page="aichat" onclick="switchPage('aichat')">AI客服管理</div>
                     <div class="sidebar-item sidebar-subitem" data-page="admins" onclick="switchPage('admins')">管理員管理</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="seo" onclick="switchPage('seo')">SEO管理</div>
                 </div>
             </div>
         </div>
@@ -510,6 +511,141 @@
             else { alert('刪除成功'); renderAdminsPage(document.getElementById('mainContent')); }
         });
     }
+    // ==================== SEO 管理頁面 ====================
+    const seoPages = [
+        { url: 'index.html', name: '首頁', type: 'page' },
+        { url: 'products.html', name: '所有花藝', type: 'page' },
+        { url: 'categories.html', name: '設計風格', type: 'page' },
+        { url: 'blog.html', name: '部落格', type: 'page' },
+        { url: 'contact.html', name: '聯絡我們', type: 'page' },
+        { url: 'faq.html', name: '常見問題', type: 'page' },
+        { url: 'privacy.html', name: '私隱政策', type: 'page' },
+        { url: 'cart.html', name: '購物車', type: 'page' },
+        { url: 'product-detail.html', name: '商品詳情頁', type: 'dynamic' },
+        { url: 'blog-detail.html', name: '部落格文章頁', type: 'dynamic' }
+    ];
+
+    async function renderSEOPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">SEO管理</h2><button class="btn btn-secondary" onclick="refreshSEOCheck()">重新檢查</button></div>';
+        c.innerHTML += '<div id="seoScoreCard" style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;"><div><div style="font-size:14px;color:#888;margin-bottom:5px;">SEO 健康評分</div><div id="seoScore" style="font-size:36px;font-weight:700;color:#1A1A1A;">--</div></div><div id="seoSummary" style="font-size:14px;color:#666;line-height:1.8;"></div></div></div>';
+        c.innerHTML += '<div id="seoPageList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 100px;gap:10px;font-weight:600;font-size:14px;"><div>頁面</div><div>Title</div><div>Description</div><div>狀態</div><div>操作</div></div><div id="seoPageItems">加載中...</div></div>';
+        await loadSEOData();
+    }
+
+    async function loadSEOData() {
+        try {
+            const { data: overrides, error } = await supabaseClient.from('seo_overrides').select('*');
+            if (error) throw error;
+            const overrideMap = {};
+            (overrides || []).forEach(o => { overrideMap[o.page_url] = o; });
+            let totalScore = 0;
+            let checked = 0;
+            let optimized = 0;
+            let html = '';
+            seoPages.forEach(page => {
+                const override = overrideMap[page.url];
+                const title = override?.title || '';
+                const desc = override?.description || '';
+                let score = 0;
+                if (title.length > 0 && title.length <= 60) score += 40;
+                else if (title.length > 0) score += 20;
+                if (desc.length >= 50 && desc.length <= 160) score += 40;
+                else if (desc.length > 0) score += 20;
+                if (page.type === 'page') score += 20;
+                totalScore += score;
+                checked++;
+                if (title && desc.length >= 50) optimized++;
+                const statusColor = score >= 80 ? '#52C41A' : score >= 50 ? '#FAAD14' : '#EA6668';
+                const statusText = score >= 80 ? '良好' : score >= 50 ? '需改進' : '缺失';
+                html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 100px;gap:10px;padding:15px 20px;border-bottom:1px solid #eee;align-items:center;">';
+                html += '<div><div style="font-weight:600;font-size:14px;">' + page.name + '</div><div style="font-size:12px;color:#999;">' + page.url + '</div></div>';
+                html += '<div style="font-size:13px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + title.replace(/"/g, '&quot;') + '">' + (title || '<span style="color:#ccc;">未設置</span>') + '</div>';
+                html += '<div style="font-size:13px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + desc.replace(/"/g, '&quot;') + '">' + (desc || '<span style="color:#ccc;">未設置</span>') + '</div>';
+                html += '<div style="color:' + statusColor + ';font-size:13px;font-weight:600;">' + statusText + '</div>';
+                html += '<div><button class="btn btn-small btn-secondary" onclick="editSEO(\'' + page.url + '\',\'' + page.name + '\')">編輯</button></div>';
+                html += '</div>';
+            });
+            document.getElementById('seoPageItems').innerHTML = html;
+            const avgScore = Math.round(totalScore / checked);
+            document.getElementById('seoScore').textContent = avgScore + '/100';
+            document.getElementById('seoScore').style.color = avgScore >= 80 ? '#52C41A' : avgScore >= 50 ? '#FAAD14' : '#EA6668';
+            document.getElementById('seoSummary').innerHTML = '共 ' + checked + ' 個頁面<br>已優化: ' + optimized + ' 個<br>需改進: ' + (checked - optimized) + ' 個';
+        } catch (e) {
+            document.getElementById('seoPageItems').innerHTML = '<div style="padding:30px;text-align:center;color:#999;">加載失敗，請確保已在 Supabase 創建 seo_overrides 表</div>';
+        }
+    }
+
+    function editSEO(pageUrl, pageName) {
+        supabaseClient.from('seo_overrides').select('*').eq('page_url', pageUrl).single().then(({ data, error }) => {
+            showSEOEditor(pageUrl, pageName, data?.title || '', data?.description || '');
+        }).catch(() => {
+            showSEOEditor(pageUrl, pageName, '', '');
+        });
+    }
+
+    function showSEOEditor(pageUrl, pageName, title, desc) {
+        const modal = document.createElement('div');
+        modal.id = 'seoEditModal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;justify-content:center;align-items:center;';
+        modal.innerHTML = '<div style="background:white;border-radius:12px;padding:30px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
+            '<h3 style="font-size:20px;font-weight:600;margin:0;">編輯 SEO - ' + pageName + '</h3>' +
+            '<button onclick="closeSEOEditor()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999;">&times;</button></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;">Meta Title <span id="titleCount" style="color:#999;font-weight:400;">(' + title.length + '/60)</span></label>' +
+            '<input type="text" id="seoTitleInput" value="' + title.replace(/"/g, '&quot;') + '" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:14px;" oninput="updateSEOPreview()" placeholder="建議 50-60 字"></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;">Meta Description <span id="descCount" style="color:#999;font-weight:400;">(' + desc.length + '/160)</span></label>' +
+            '<textarea id="seoDescInput" rows="3" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:14px;resize:vertical;" oninput="updateSEOPreview()" placeholder="建議 120-160 字">' + desc + '</textarea></div>' +
+            '<div style="margin-bottom:20px;"><label style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;">Google 搜索預覽</label>' +
+            '<div style="border:1px solid #eee;border-radius:8px;padding:15px;background:#fafafa;">' +
+            '<div id="previewTitle" style="color:#1a0dab;font-size:18px;margin-bottom:3px;cursor:pointer;">' + (title || '示例標題') + '</div>' +
+            '<div style="color:#006621;font-size:13px;margin-bottom:3px;">https://www.royalspl.shop/' + pageUrl + '</div>' +
+            '<div id="previewDesc" style="color:#545454;font-size:13px;">' + (desc || '示例描述，會顯示在 Google 搜索結果中...') + '</div></div></div>' +
+            '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+            '<button class="btn btn-secondary" onclick="closeSEOEditor()">取消</button>' +
+            '<button class="btn btn-primary" onclick="saveSEO(\'' + pageUrl + '\')">保存</button></div></div>';
+        document.body.appendChild(modal);
+    }
+
+    function updateSEOPreview() {
+        const title = document.getElementById('seoTitleInput')?.value || '';
+        const desc = document.getElementById('seoDescInput')?.value || '';
+        const tc = document.getElementById('titleCount');
+        const dc = document.getElementById('descCount');
+        if (tc) tc.textContent = '(' + title.length + '/60)';
+        if (dc) dc.textContent = '(' + desc.length + '/160)';
+        const pt = document.getElementById('previewTitle');
+        const pd = document.getElementById('previewDesc');
+        if (pt) pt.textContent = title || '示例標題';
+        if (pd) pd.textContent = desc || '示例描述，會顯示在 Google 搜索結果中...';
+    }
+
+    function closeSEOEditor() {
+        const modal = document.getElementById('seoEditModal');
+        if (modal) modal.remove();
+    }
+
+    async function saveSEO(pageUrl) {
+        const title = document.getElementById('seoTitleInput').value.trim();
+        const desc = document.getElementById('seoDescInput').value.trim();
+        try {
+            const { data: existing } = await supabaseClient.from('seo_overrides').select('id').eq('page_url', pageUrl).single();
+            if (existing) {
+                await supabaseClient.from('seo_overrides').update({ title: title, description: desc, updated_at: new Date().toISOString() }).eq('page_url', pageUrl);
+            } else {
+                await supabaseClient.from('seo_overrides').insert({ page_url: pageUrl, title: title, description: desc });
+            }
+            alert('保存成功！');
+            closeSEOEditor();
+            renderSEOPage(document.getElementById('mainContent'));
+        } catch (e) {
+            alert('保存失敗: ' + e.message);
+        }
+    }
+
+    function refreshSEOCheck() {
+        renderSEOPage(document.getElementById('mainContent'));
+    }
+
     function toggleSettingsMenu() {
         var submenu = document.getElementById('settingsSubmenu');
         var arrow = document.getElementById('settingsArrow');
@@ -552,6 +688,7 @@
         else if (page === 'template') { renderTemplatePage(c); }
         else if (page === 'aichat') { renderAIChatPage(c); }
         else if (page === 'admins') { renderAdminsPage(c); }
+        else if (page === 'seo') { renderSEOPage(c); }
     }
     function checkVisitorNotifications() {
         setInterval(async function() {
