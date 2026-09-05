@@ -397,8 +397,12 @@
                 if (adminData && adminData.length > 0) {
                     localStorage.setItem('royalspl_admin', 'true');
                     localStorage.setItem('admin_email', userEmail);
-                    localStorage.setItem('admin_name', adminData[0].name || userEmail);
-                    localStorage.setItem('admin_avatar', session.user.user_metadata?.avatar_url || '');
+                    var googleName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || adminData[0].name || userEmail;
+                    var googleAvatar = session.user.user_metadata?.avatar_url || adminData[0].avatar_url || '';
+                    localStorage.setItem('admin_name', googleName);
+                    localStorage.setItem('admin_avatar', googleAvatar);
+                    // 自動更新數據庫中的名字和頭像
+                    supabaseClient.from('admin_users').update({ name: googleName, avatar_url: googleAvatar }).eq('email', userEmail).then(function() {});
                     showAdminUI();
                     return true;
                 } else {
@@ -418,15 +422,15 @@
     function showAdminUI() {
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('adminPage').style.display = 'block';
-        const email = localStorage.getItem('admin_email') || '';
+        const name = localStorage.getItem('admin_name') || '';
         const avatar = localStorage.getItem('admin_avatar') || '';
         const userInfo = document.getElementById('userInfo');
-        if (userInfo && email) {
+        if (userInfo && name) {
             userInfo.style.display = 'flex';
             const userAvatar = document.getElementById('userAvatar');
             const userEmail = document.getElementById('userEmail');
             if (userAvatar && avatar) userAvatar.src = avatar;
-            if (userEmail) userEmail.textContent = email;
+            if (userEmail) userEmail.textContent = name;
         }
         if (typeof switchPage === 'function') switchPage('analytics');
         if (typeof checkVisitorNotifications === 'function') checkVisitorNotifications();
