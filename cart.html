@@ -94,6 +94,34 @@
     <meta name="twitter:title" content="購物車 | RoyalSpl Florist 香港花店">
     <meta name="twitter:description" content="查看您的購物車，確認花藝訂單，前往結賬。RoyalSpl Florist 香港花店。">
     <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+
+<script>
+// 動態應用後台設置的 SEO Meta 標籤
+(function() {
+    var pageUrl = window.location.pathname.split('/').pop() || 'index.html';
+    if (pageUrl === '') pageUrl = 'index.html';
+    fetch('https://gefqlrmozxbgfhxgngtg.supabase.co/rest/v1/seo_overrides?page_url=eq.' + encodeURIComponent(pageUrl), {
+        headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y'
+        }
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data && data.length > 0) {
+            var seo = data[0];
+            if (seo.title) document.title = seo.title;
+            if (seo.description) {
+                var meta = document.querySelector('meta[name="description"]');
+                if (meta) meta.setAttribute('content', seo.description);
+                else {
+                    var m = document.createElement('meta');
+                    m.name = 'description';
+                    m.content = seo.description;
+                    document.head.appendChild(m);
+                }
+            }
+        }
+    }).catch(function() {});
+})();
+</script>
 </head>
 <body>
     <header class="header">
