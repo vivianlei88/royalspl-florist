@@ -628,7 +628,7 @@
 
             // 6. 獲取當前 sitemap.xml 的 SHA
             const fileResp = await fetch('https://api.github.com/repos/' + repoOwner + '/' + repoName + '/contents/sitemap.xml', {
-                headers: { 'Authorization': 'token ' + githubToken, 'Accept': 'application/vnd.github.v3+json' }
+                headers: { 'Authorization': 'Bearer ' + githubToken, 'Accept': 'application/vnd.github.v3+json' }
             });
             const fileData = await fileResp.json();
             const sha = fileData.sha;
@@ -636,7 +636,7 @@
             // 7. 提交到 GitHub
             const commitResp = await fetch('https://api.github.com/repos/' + repoOwner + '/' + repoName + '/contents/sitemap.xml', {
                 method: 'PUT',
-                headers: { 'Authorization': 'token ' + githubToken, 'Content-Type': 'application/json' },
+                headers: { 'Authorization': 'Bearer ' + githubToken, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: 'feat: 自動更新 sitemap.xml (' + totalUrls + ' 個URL)',
                     content: btoa(unescape(encodeURIComponent(xml))),
