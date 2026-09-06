@@ -122,7 +122,7 @@
     <meta name="twitter:title" content="商品詳情 | RoyalSpl Florist 香港花店">
     <meta name="twitter:description" content="查看 RoyalSpl Florist 花藝產品詳情，包括花材介紹、價格、配送信息。香港頂級花藝設計，新鮮花材，品質保證。">
     <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
-    <script type="application/ld+json">
+    <script type="application/ld+json" id="productJsonLd">
     {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -253,7 +253,41 @@
         }
     }
 
+    function updateProductJsonLd(product) {
+        try {
+            const script = document.getElementById('productJsonLd');
+            if (!script) return;
+            const productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
+            const data = {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": product.name_zh || product.name_en || "RoyalSpl Florist 花藝產品",
+                "image": productImages.length > 0 ? productImages : ["https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg"],
+                "description": product.description_zh || product.description || "RoyalSpl Florist 精心設計的花藝產品，使用新鮮花材，香港配送。",
+                "brand": {
+                    "@type": "Brand",
+                    "name": "RoyalSpl Florist"
+                },
+                "offers": {
+                    "@type": "Offer",
+                    "url": "https://www.royalspl.shop/product-detail.html?id=" + (product.id || ""),
+                    "priceCurrency": "HKD",
+                    "price": product.price || 0,
+                    "availability": product.status === 'active' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                    "seller": {
+                        "@type": "Organization",
+                        "name": "RoyalSpl Florist Hong Kong"
+                    }
+                }
+            };
+            script.textContent = JSON.stringify(data);
+        } catch (e) {
+            console.error('更新商品結構化數據失敗:', e);
+        }
+    }
+
     function renderProductDetail(product) {
+        updateProductJsonLd(product);
         var container = document.getElementById('detailContainer');
         var specs = product.specs || {};
         
