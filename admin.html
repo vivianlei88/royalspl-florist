@@ -1093,30 +1093,61 @@
 
     function showAIWriterModal(type, targetId) {
         var modal = document.createElement('div');
+        modal.id = 'aiWriterModal';
         modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
-        modal.innerHTML = '<div style="background:white;padding:30px;border-radius:10px;width:500px;box-shadow:0 10px 40px rgba(0,0,0,0.2);">' +
+        modal.innerHTML = '<div style="background:white;padding:30px;border-radius:10px;width:550px;box-shadow:0 10px 40px rgba(0,0,0,0.2);">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
             '<h3 style="margin:0;font-size:18px;">✦ AI 寫作助手</h3>' +
-            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button></div>' +
-            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;color:#333;">輸入你想要 AI 生成的內容</label>' +
-            '<textarea id="aiWriterPrompt" rows="4" placeholder="例如：寫一篇關於玫瑰花語的文章" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea></div>' +
-            '<div id="aiWriterResult" style="margin-bottom:15px;display:none;"><label style="display:block;margin-bottom:5px;font-size:14px;color:#333;">AI 生成結果</label>' +
-            '<textarea id="aiWriterContent" rows="8" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea></div>' +
+            '<button onclick="closeAIWriterModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999;line-height:1;">×</button></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:8px;font-size:14px;color:#333;font-weight:600;">輸入關鍵詞（用逗號分隔）</label>' +
+            '<input type="text" id="aiWriterKeywords" placeholder="例如：玫瑰花,花語,情人節,送花意義" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:8px;font-size:13px;color:#666;">快捷關鍵詞（點擊添加）</label>' +
+            '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+            '<span onclick="addKeyword(\'玫瑰花\')" style="padding:5px 12px;background:#f0f0f0;border-radius:15px;cursor:pointer;font-size:12px;">玫瑰花</span>' +
+            '<span onclick="addKeyword(\'花語\')" style="padding:5px 12px;background:#f0f0f0;border-radius:15px;cursor:pointer;font-size:12px;">花語</span>' +
+            '<span onclick="addKeyword(\'情人節\')" style="padding:5px 12px;background:#f0f0f0;border-radius:15px;cursor:pointer;font-size:12px;">情人節</span>' +
+            '<span onclick="addKeyword(\'生日花束\')" style="padding:5px 12px;background:#f0f0f0;border-radius:15px;cursor:pointer;font-size:12px;">生日花束</span>' +
+            '<span onclick="addKeyword(\'母親節\')" style="padding:5px 12px;background:#f0f0f0;border-radius:15px;cursor:pointer;font-size:12px;">母親節</span>' +
+            '<span onclick="addKeyword(\'香港花店\')" style="padding:5px 12px;background:#f0f0f0;border-radius:15px;cursor:pointer;font-size:12px;">香港花店</span>' +
+            '<span onclick="addKeyword(\'鮮花配送\')" style="padding:5px 12px;background:#f0f0f0;border-radius:15px;cursor:pointer;font-size:12px;">鮮花配送</span>' +
+            '<span onclick="addKeyword(\'永生花\')" style="padding:5px 12px;background:#f0f0f0;border-radius:15px;cursor:pointer;font-size:12px;">永生花</span>' +
+            '</div></div>' +
+            '<div id="aiWriterResult" style="margin-bottom:15px;display:none;"><label style="display:block;margin-bottom:8px;font-size:14px;color:#333;font-weight:600;">AI 生成結果（可編輯）</label>' +
+            '<textarea id="aiWriterContent" rows="8" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;resize:vertical;line-height:1.6;"></textarea></div>' +
             '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
-            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:#f0f0f0;border:none;border-radius:5px;cursor:pointer;font-size:14px;">取消</button>' +
-            '<button id="aiWriterInsertBtn" onclick="insertAIContent(\'' + targetId + '\')" style="display:none;padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">插入內容</button>' +
-            '<button id="aiWriterGenerateBtn" onclick="generateAIContent(\'' + type + '\')" style="padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">生成</button></div></div>';
-        modal.onclick = function(e) { if (e.target === modal) document.getElementById('blogLangModal').remove(); };
+            '<button onclick="closeAIWriterModal()" style="padding:10px 20px;background:#f0f0f0;border:none;border-radius:5px;cursor:pointer;font-size:14px;">取消</button>' +
+            '<button id="aiWriterInsertBtn" onclick="insertAIContent(\'' + targetId + '\')" style="display:none;padding:10px 20px;background:#52C41A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">插入內容</button>' +
+            '<button id="aiWriterGenerateBtn" onclick="generateAIContent(\'' + type + '\')" style="padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">生成文案</button></div></div>';
+        modal.onclick = function(e) { if (e.target === modal) closeAIWriterModal(); };
         document.body.appendChild(modal);
     }
 
+    function closeAIWriterModal() {
+        var modal = document.getElementById('aiWriterModal');
+        if (modal) modal.remove();
+    }
+
+    function addKeyword(kw) {
+        var input = document.getElementById('aiWriterKeywords');
+        if (input) {
+            if (input.value.trim()) {
+                input.value += ',' + kw;
+            } else {
+                input.value = kw;
+            }
+        }
+    }
+
     async function generateAIContent(type) {
-        const prompt = document.getElementById('aiWriterPrompt').value;
-        if (!prompt) { alert('請輸入內容要求'); return; }
+        const keywords = document.getElementById('aiWriterKeywords').value.trim();
+        if (!keywords) { alert('請輸入關鍵詞'); return; }
         const btn = document.getElementById('aiWriterGenerateBtn');
         btn.textContent = '生成中...';
         btn.disabled = true;
         try {
+            // 把關鍵詞轉換成完整的寫作指令
+            const kwList = keywords.split(/[,，]/).map(k => k.trim()).filter(k => k);
+            const prompt = '請用以下關鍵詞寫一段流暢、有吸引力的繁體中文文案：' + kwList.join('、') + '。要求：語言優美、適合花店品牌、段落清晰、約200-300字。';
             const resp = await fetch('/ai-write', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1127,24 +1158,36 @@
                 document.getElementById('aiWriterResult').style.display = 'block';
                 document.getElementById('aiWriterContent').value = result.content;
                 document.getElementById('aiWriterInsertBtn').style.display = 'inline-block';
-                btn.style.display = 'none';
+                btn.textContent = '重新生成';
+                btn.disabled = false;
             } else {
                 alert('生成失敗: ' + (result.error || '未知錯誤'));
+                btn.textContent = '生成文案';
+                btn.disabled = false;
             }
-        } catch (e) { alert('生成失敗: ' + e.message); }
-        btn.textContent = '生成';
-        btn.disabled = false;
+        } catch (e) {
+            alert('生成失敗: ' + e.message);
+            btn.textContent = '生成文案';
+            btn.disabled = false;
+        }
     }
 
     function insertAIContent(targetId) {
         const content = document.getElementById('aiWriterContent').value;
         const target = document.getElementById(targetId);
         if (target && content) {
-            target.value = content;
+            // 支持 textarea 和 contenteditable
+            if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+                target.value = content;
+            } else if (target.isContentEditable) {
+                target.innerHTML = content.replace(/\n/g, '<br>');
+            } else {
+                target.innerHTML = content.replace(/\n/g, '<br>');
+            }
             target.style.borderColor = '#52C41A';
-            setTimeout(function() { target.style.borderColor = '#ddd'; }, 1000);
+            setTimeout(function() { target.style.borderColor = ''; }, 1000);
         }
-        document.querySelector('div[style*="position:fixed"]').remove();
+        closeAIWriterModal();
     }
 
     function showBlogImportModal() {
