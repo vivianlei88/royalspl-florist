@@ -198,5 +198,14 @@
 
         document.addEventListener('DOMContentLoaded', loadOrders);
     </script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title })
+        }).catch(function() {});
+    })();
+    </script>
 </body>
 </html>
