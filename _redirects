@@ -1,0 +1,1 @@
+/post/*    /blog-detail.html?slug=:splat    200
