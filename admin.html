@@ -531,11 +531,11 @@
 
     async function renderSEOPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">SEO管理</h2></div>';
-        c.innerHTML += '<div style="display:flex;gap:10px;margin-bottom:20px;">' +
-            '<button class="btn ' + (currentSEOTab === 'pages' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'pages\')">頁面SEO檢查</button>' +
-            '<button class="btn ' + (currentSEOTab === 'keywords' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'keywords\')">關鍵詞排名</button>' +
-            '<button class="btn ' + (currentSEOTab === 'products' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'products\')">商品SEO檢查</button>' +
-            '<button class="btn ' + (currentSEOTab === 'sitemap' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'sitemap\')">Sitemap生成</button>' +
+        c.innerHTML += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">' +
+            '<button class="btn ' + (currentSEOTab === 'pages' ? 'btn-primary' : 'btn-secondary') + '" style="width:100%;" onclick="switchSEOTab(\'pages\')">頁面SEO檢查</button>' +
+            '<button class="btn ' + (currentSEOTab === 'keywords' ? 'btn-primary' : 'btn-secondary') + '" style="width:100%;" onclick="switchSEOTab(\'keywords\')">關鍵詞排名</button>' +
+            '<button class="btn ' + (currentSEOTab === 'products' ? 'btn-primary' : 'btn-secondary') + '" style="width:100%;" onclick="switchSEOTab(\'products\')">商品SEO檢查</button>' +
+            '<button class="btn ' + (currentSEOTab === 'sitemap' ? 'btn-primary' : 'btn-secondary') + '" style="width:100%;" onclick="switchSEOTab(\'sitemap\')">Sitemap生成</button>' +
             '</div>';
         c.innerHTML += '<div id="seoTabContent"></div>';
         if (currentSEOTab === 'pages') renderSEOPagesTab();
