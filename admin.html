@@ -223,6 +223,7 @@
         .sidebar-submenu.show { display: block; }
         .sidebar-group:hover .sidebar-submenu { display: block !important; }
         .sidebar-group:hover .settings-arrow { content: '◀'; }
+        .sidebar-submenu-bottom { top: auto !important; bottom: 0; }
         .sidebar-subitem { 
             padding: 14px 20px !important; 
             font-size: 14px !important; 
@@ -276,7 +277,7 @@
                     <span>設置</span>
                     <span class="settings-arrow" id="settingsArrow">▶</span>
                 </div>
-                <div class="sidebar-submenu" id="settingsSubmenu">
+                <div class="sidebar-submenu sidebar-submenu-bottom" id="settingsSubmenu">
                     <div class="sidebar-item sidebar-subitem" data-page="homepage" onclick="switchPage('homepage')">首頁管理</div>
                     <div class="sidebar-item sidebar-subitem" data-page="template" onclick="switchPage('template')">模板預覽</div>
                     <div class="sidebar-item sidebar-subitem" data-page="aichat" onclick="switchPage('aichat')">AI客服管理</div>
