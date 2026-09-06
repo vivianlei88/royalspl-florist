@@ -535,11 +535,127 @@
             '<button class="btn ' + (currentSEOTab === 'pages' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'pages\')">頁面SEO檢查</button>' +
             '<button class="btn ' + (currentSEOTab === 'keywords' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'keywords\')">關鍵詞排名</button>' +
             '<button class="btn ' + (currentSEOTab === 'products' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'products\')">商品SEO檢查</button>' +
+            '<button class="btn ' + (currentSEOTab === 'sitemap' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'sitemap\')">Sitemap生成</button>' +
             '</div>';
         c.innerHTML += '<div id="seoTabContent"></div>';
         if (currentSEOTab === 'pages') renderSEOPagesTab();
         else if (currentSEOTab === 'keywords') renderSEOKeywordsTab();
-        else renderSEOProductsTab();
+        else if (currentSEOTab === 'products') renderSEOProductsTab();
+        else renderSEOSitemapTab();
+    }
+
+    async function renderSEOSitemapTab() {
+        const container = document.getElementById('seoTabContent');
+        container.innerHTML = '<div style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="font-size:14px;color:#888;margin-bottom:10px;">Sitemap 自動生成與提交</div>' +
+            '<div style="font-size:13px;color:#666;line-height:1.8;">' +
+            '點擊按鈕自動從數據庫讀取所有商品、分類、部落格文章，生成最新的 sitemap.xml，並自動提交到 GitHub。<br>' +
+            '提交後 Cloudflare Pages 會自動部署，大約1分鐘生效。' +
+            '</div></div>';
+        container.innerHTML += '<div style="background:white;border-radius:8px;padding:30px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<button class="btn btn-primary" style="font-size:16px;padding:15px 40px;" onclick="generateAndSubmitSitemap()">生成並提交 Sitemap</button>' +
+            '<div id="sitemapResult" style="margin-top:20px;font-size:14px;"></div></div>';
+    }
+
+    async function generateAndSubmitSitemap() {
+        const resultDiv = document.getElementById('sitemapResult');
+        resultDiv.innerHTML = '<div style="color:#666;">正在生成 sitemap，請稍候...</div>';
+        try {
+            // 1. 獲取 GitHub Token
+            const { data: tokenData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'github_token').single();
+            if (!tokenData) throw new Error('未找到 GitHub Token');
+            const githubToken = tokenData.setting_value;
+            const repoOwner = 'vivianlei88';
+            const repoName = 'royalspl-florist';
+
+            // 2. 讀取所有商品
+            const { data: products } = await supabaseClient.from('products').select('id, updated_at').eq('status', 'active');
+            // 3. 讀取所有分類
+            const { data: categories } = await supabaseClient.from('categories').select('id, updated_at');
+            // 4. 讀取所有已發布部落格
+            const { data: posts } = await supabaseClient.from('blog_posts').select('id, updated_at').eq('status', 'published');
+
+            // 5. 生成 sitemap XML
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+            
+            const baseUrl = 'https://www.royalspl.shop/';
+            const staticPages = ['', 'products.html', 'categories.html', 'blog.html', 'contact.html', 'faq.html', 'privacy.html'];
+            const today = new Date().toISOString().split('T')[0];
+            
+            staticPages.forEach(page => {
+                xml += '  <url>\n';
+                xml += '    <loc>' + baseUrl + page + '</loc>\n';
+                xml += '    <lastmod>' + today + '</lastmod>\n';
+                xml += '    <changefreq>weekly</changefreq>\n';
+                xml += '    <priority>' + (page === '' ? '1.0' : '0.8') + '</priority>\n';
+                xml += '  </url>\n';
+            });
+            
+            (products || []).forEach(p => {
+                const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
+                xml += '  <url>\n';
+                xml += '    <loc>' + baseUrl + 'product-detail.html?id=' + p.id + '</loc>\n';
+                xml += '    <lastmod>' + lastmod + '</lastmod>\n';
+                xml += '    <changefreq>weekly</changefreq>\n';
+                xml += '    <priority>0.7</priority>\n';
+                xml += '  </url>\n';
+            });
+            
+            (categories || []).forEach(c => {
+                const lastmod = c.updated_at ? c.updated_at.split('T')[0] : today;
+                xml += '  <url>\n';
+                xml += '    <loc>' + baseUrl + 'categories.html?id=' + c.id + '</loc>\n';
+                xml += '    <lastmod>' + lastmod + '</lastmod>\n';
+                xml += '    <changefreq>weekly</changefreq>\n';
+                xml += '    <priority>0.6</priority>\n';
+                xml += '  </url>\n';
+            });
+            
+            (posts || []).forEach(p => {
+                const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
+                xml += '  <url>\n';
+                xml += '    <loc>' + baseUrl + 'blog-detail.html?id=' + p.id + '</loc>\n';
+                xml += '    <lastmod>' + lastmod + '</lastmod>\n';
+                xml += '    <changefreq>monthly</changefreq>\n';
+                xml += '    <priority>0.5</priority>\n';
+                xml += '  </url>\n';
+            });
+            
+            xml += '</urlset>';
+
+            const totalUrls = staticPages.length + (products || []).length + (categories || []).length + (posts || []).length;
+
+            // 6. 獲取當前 sitemap.xml 的 SHA
+            const fileResp = await fetch('https://api.github.com/repos/' + repoOwner + '/' + repoName + '/contents/sitemap.xml', {
+                headers: { 'Authorization': 'token ' + githubToken, 'Accept': 'application/vnd.github.v3+json' }
+            });
+            const fileData = await fileResp.json();
+            const sha = fileData.sha;
+
+            // 7. 提交到 GitHub
+            const commitResp = await fetch('https://api.github.com/repos/' + repoOwner + '/' + repoName + '/contents/sitemap.xml', {
+                method: 'PUT',
+                headers: { 'Authorization': 'token ' + githubToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: 'feat: 自動更新 sitemap.xml (' + totalUrls + ' 個URL)',
+                    content: btoa(unescape(encodeURIComponent(xml))),
+                    sha: sha
+                })
+            });
+
+            if (commitResp.ok) {
+                resultDiv.innerHTML = '<div style="color:#52C41A;font-weight:600;">✅ Sitemap 生成並提交成功！</div>' +
+                    '<div style="color:#666;margin-top:10px;">共 ' + totalUrls + ' 個 URL（靜態頁面 ' + staticPages.length + ' / 商品 ' + (products || []).length + ' / 分類 ' + (categories || []).length + ' / 部落格 ' + (posts || []).length + '）</div>' +
+                    '<div style="color:#999;margin-top:5px;font-size:12px;">Cloudflare Pages 正在自動部署，大約1分鐘後生效</div>';
+            } else {
+                const err = await commitResp.json();
+                throw new Error('GitHub 提交失敗: ' + (err.message || commitResp.status));
+            }
+        } catch (e) {
+            resultDiv.innerHTML = '<div style="color:#EA6668;font-weight:600;">❌ 生成失敗</div>' +
+                '<div style="color:#666;margin-top:10px;">' + e.message + '</div>';
+        }
     }
 
     async function renderSEOProductsTab() {
