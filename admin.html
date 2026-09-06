@@ -257,6 +257,17 @@
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
             <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
+            <div class="sidebar-group">
+                <div class="sidebar-item sidebar-group-header" onclick="toggleContentMenu()">
+                    <span>📝 文案內容</span>
+                    <span class="settings-arrow" id="contentArrow">▼</span>
+                </div>
+                <div class="sidebar-submenu" id="contentSubmenu">
+                    <div class="sidebar-item sidebar-subitem" data-page="blog" onclick="switchPage('blog')">部落格文章</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="faq" onclick="switchPage('faq')">常見問題</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="privacy" onclick="switchPage('privacy')">私隱政策</div>
+                </div>
+            </div>
             <div class="sidebar-item" data-page="seo" onclick="switchPage('seo')">SEO管理</div>
             <div class="sidebar-group">
                 <div class="sidebar-item sidebar-group-header" onclick="toggleSettingsMenu()">
@@ -444,6 +455,333 @@
         localStorage.removeItem('admin_avatar');
         try { await supabaseClient.auth.signOut(); } catch (e) {}
         location.reload();
+    }
+
+
+    // ==================== 部落格文章管理 ====================
+    let currentBlogId = null;
+
+    async function renderBlogPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-primary" onclick="editBlogPost(null)">新增文章</button></div></div>';
+        c.innerHTML += '<div class="form-container" style="max-width:100%;"><div style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:3fr 1fr 1fr 0.8fr 120px;gap:10px;font-weight:600;font-size:14px;">' +
+            '<div>標題</div><div>分類</div><div>狀態</div><div>建立日期</div><div>操作</div></div>' +
+            '<div id="blogList">載入中...</div></div></div>';
+        await loadBlogList();
+    }
+
+    async function loadBlogList() {
+        try {
+            const { data, error } = await supabaseClient.from('blog_posts').select('id,title,category,is_published,created_at').order('id', { ascending: false });
+            if (error) throw error;
+            const container = document.getElementById('blogList');
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div style="padding:30px;text-align:center;color:#999;">暫無文章</div>';
+                return;
+            }
+            let html = '';
+            data.forEach(function(post) {
+                const date = post.created_at ? post.created_at.split('T')[0] : '-';
+                const status = post.is_published ? '<span style="color:#52C41A;">已發布</span>' : '<span style="color:#FAAD14;">草稿</span>';
+                html += '<div style="display:grid;grid-template-columns:3fr 1fr 1fr 0.8fr 120px;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
+                    '<div style="font-size:14px;font-weight:600;">' + (post.title || '未命名') + '</div>' +
+                    '<div style="font-size:13px;color:#666;">' + (post.category || '-') + '</div>' +
+                    '<div style="font-size:13px;">' + status + '</div>' +
+                    '<div style="font-size:13px;color:#999;">' + date + '</div>' +
+                    '<div style="display:flex;gap:5px;"><button class="btn btn-small btn-secondary" onclick="editBlogPost(' + post.id + ')">編輯</button>' +
+                    '<button class="btn btn-small btn-danger" onclick="deleteBlogPost(' + post.id + ')">刪除</button></div></div>';
+            });
+            container.innerHTML = html;
+        } catch (e) {
+            document.getElementById('blogList').innerHTML = '<div style="padding:30px;text-align:center;color:red;">載入失敗: ' + e.message + '</div>';
+        }
+    }
+
+    async function editBlogPost(id) {
+        currentBlogId = id;
+        const c = document.getElementById('mainContent');
+        let post = { title: '', content: '', title_en: '', content_en: '', excerpt: '', category: '', image_url: '', seo_title: '', seo_description: '', slug: '', is_published: false };
+        if (id) {
+            try {
+                const { data, error } = await supabaseClient.from('blog_posts').select('*').eq('id', id).single();
+                if (error) throw error;
+                post = data;
+            } catch (e) { alert('載入失敗: ' + e.message); return; }
+        }
+        c.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'blog\')">← 返回列表</button><h2 class="page-title">' + (id ? '編輯文章' : '新增文章') + '</h2>' +
+            '<button class="btn btn-primary" onclick="saveBlogPost()">' + (post.is_published ? '保存並發布' : '保存草稿') + '</button></div>';
+        c.innerHTML += '<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">標題（中文）</label>' +
+            '<input type="text" id="blogTitle" value="' + (post.title || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">標題（英文）<button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="translateBlogField(\'title\')">AI翻譯</button></label>' +
+            '<input type="text" id="blogTitleEn" value="' + (post.title_en || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">內容（中文）<button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="showAIWriterModal(\'blog\',\'blogContent\')">✦ AI寫作</button></label>' +
+            '<textarea id="blogContent" rows="15" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;">' + (post.content || '') + '</textarea></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">內容（英文）<button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="translateBlogField(\'content\')">AI翻譯</button></label>' +
+            '<textarea id="blogContentEn" rows="10" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;">' + (post.content_en || '') + '</textarea></div>' +
+            '</div>' +
+            '<div style="display:flex;flex-direction:column;gap:15px;">' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">文章設置</div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">分類（手動輸入）</label>' +
+            '<input type="text" id="blogCategory" value="' + (post.category || '').replace(/"/g, '&quot;') + '" placeholder="如：花語知識" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">摘要</label>' +
+            '<textarea id="blogExcerpt" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + (post.excerpt || '') + '</textarea></div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">封面圖URL</label>' +
+            '<input type="text" id="blogImage" value="' + (post.image_url || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">URL Slug（舊網址兼容）</label>' +
+            '<input type="text" id="blogSlug" value="' + (post.slug || '').replace(/"/g, '&quot;') + '" placeholder="文章標題" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
+            '<label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="checkbox" id="blogPublished" ' + (post.is_published ? 'checked' : '') + '> 發布文章</label>' +
+            '</div>' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">SEO 設置</div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Title</label>' +
+            '<input type="text" id="blogSeoTitle" value="' + (post.seo_title || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
+            '<div><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Description</label>' +
+            '<textarea id="blogSeoDesc" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + (post.seo_description || '') + '</textarea></div>' +
+            '</div></div></div>';
+    }
+
+    async function saveBlogPost() {
+        const data = {
+            title: document.getElementById('blogTitle').value.trim(),
+            title_en: document.getElementById('blogTitleEn').value.trim(),
+            content: document.getElementById('blogContent').value,
+            content_en: document.getElementById('blogContentEn').value,
+            excerpt: document.getElementById('blogExcerpt').value.trim(),
+            category: document.getElementById('blogCategory').value.trim(),
+            image_url: document.getElementById('blogImage').value.trim(),
+            slug: document.getElementById('blogSlug').value.trim(),
+            seo_title: document.getElementById('blogSeoTitle').value.trim(),
+            seo_description: document.getElementById('blogSeoDesc').value.trim(),
+            is_published: document.getElementById('blogPublished').checked,
+            updated_at: new Date().toISOString()
+        };
+        if (!data.title) { alert('請輸入標題'); return; }
+        try {
+            if (currentBlogId) {
+                await supabaseClient.from('blog_posts').update(data).eq('id', currentBlogId);
+            } else {
+                await supabaseClient.from('blog_posts').insert(data);
+            }
+            alert('保存成功');
+            switchPage('blog');
+        } catch (e) { alert('保存失敗: ' + e.message); }
+    }
+
+    async function deleteBlogPost(id) {
+        if (!confirm('確定刪除這篇文章？')) return;
+        try {
+            await supabaseClient.from('blog_posts').delete().eq('id', id);
+            loadBlogList();
+        } catch (e) { alert('刪除失敗: ' + e.message); }
+    }
+
+    async function translateBlogField(field) {
+        const sourceId = field === 'title' ? 'blogTitle' : 'blogContent';
+        const targetId = field === 'title' ? 'blogTitleEn' : 'blogContentEn';
+        const text = document.getElementById(sourceId).value;
+        if (!text) { alert('請先輸入中文內容'); return; }
+        const btn = event.target;
+        btn.textContent = '翻譯中...';
+        btn.disabled = true;
+        try {
+            const resp = await fetch('/ai-write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'translate', topic: text, language: 'en' })
+            });
+            const result = await resp.json();
+            if (result.success) {
+                document.getElementById(targetId).value = result.content.replace(/^標題：|^Title：?\s*/i, '').trim();
+            } else {
+                alert('翻譯失敗: ' + (result.error || '未知錯誤'));
+            }
+        } catch (e) { alert('翻譯失敗: ' + e.message); }
+        btn.textContent = 'AI翻譯';
+        btn.disabled = false;
+    }
+
+    function showAIWriterModal(type, targetId) {
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = '<div style="background:white;padding:30px;border-radius:10px;width:500px;box-shadow:0 10px 40px rgba(0,0,0,0.2);">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
+            '<h3 style="margin:0;font-size:18px;">✦ AI 寫作助手</h3>' +
+            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;color:#333;">輸入你想要 AI 生成的內容</label>' +
+            '<textarea id="aiWriterPrompt" rows="4" placeholder="例如：寫一篇關於玫瑰花語的文章" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea></div>' +
+            '<div id="aiWriterResult" style="margin-bottom:15px;display:none;"><label style="display:block;margin-bottom:5px;font-size:14px;color:#333;">AI 生成結果</label>' +
+            '<textarea id="aiWriterContent" rows="8" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea></div>' +
+            '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:#f0f0f0;border:none;border-radius:5px;cursor:pointer;font-size:14px;">取消</button>' +
+            '<button id="aiWriterInsertBtn" onclick="insertAIContent(\'' + targetId + '\')" style="display:none;padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">插入內容</button>' +
+            '<button id="aiWriterGenerateBtn" onclick="generateAIContent(\'' + type + '\')" style="padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">生成</button></div></div>';
+        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        document.body.appendChild(modal);
+    }
+
+    async function generateAIContent(type) {
+        const prompt = document.getElementById('aiWriterPrompt').value;
+        if (!prompt) { alert('請輸入內容要求'); return; }
+        const btn = document.getElementById('aiWriterGenerateBtn');
+        btn.textContent = '生成中...';
+        btn.disabled = true;
+        try {
+            const resp = await fetch('/ai-write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: type, topic: prompt, language: 'zh-Hant' })
+            });
+            const result = await resp.json();
+            if (result.success) {
+                document.getElementById('aiWriterResult').style.display = 'block';
+                document.getElementById('aiWriterContent').value = result.content;
+                document.getElementById('aiWriterInsertBtn').style.display = 'inline-block';
+                btn.style.display = 'none';
+            } else {
+                alert('生成失敗: ' + (result.error || '未知錯誤'));
+            }
+        } catch (e) { alert('生成失敗: ' + e.message); }
+        btn.textContent = '生成';
+        btn.disabled = false;
+    }
+
+    function insertAIContent(targetId) {
+        const content = document.getElementById('aiWriterContent').value;
+        const target = document.getElementById(targetId);
+        if (target && content) {
+            target.value = content;
+            target.style.borderColor = '#52C41A';
+            setTimeout(function() { target.style.borderColor = '#ddd'; }, 1000);
+        }
+        document.querySelector('div[style*="position:fixed"]').remove();
+    }
+
+    function showBlogImportModal() {
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = '<div style="background:white;padding:30px;border-radius:10px;width:500px;box-shadow:0 10px 40px rgba(0,0,0,0.2);">' +
+            '<h3 style="margin:0 0 20px 0;font-size:18px;">匯入部落格 CSV</h3>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;color:#333;">選擇 CSV 檔案</label>' +
+            '<input type="file" id="blogCsvFile" accept=".csv" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<div id="blogImportProgress" style="margin-bottom:15px;font-size:13px;color:#666;display:none;"></div>' +
+            '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:#f0f0f0;border:none;border-radius:5px;cursor:pointer;font-size:14px;">取消</button>' +
+            '<button onclick="importBlogCSV()" style="padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">開始匯入</button></div></div>';
+        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        document.body.appendChild(modal);
+    }
+
+    async function importBlogCSV() {
+        const fileInput = document.getElementById('blogCsvFile');
+        if (!fileInput.files[0]) { alert('請選擇 CSV 檔案'); return; }
+        const progress = document.getElementById('blogImportProgress');
+        progress.style.display = 'block';
+        progress.textContent = '讀取檔案中...';
+        try {
+            const text = await fileInput.files[0].text();
+            const lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+            const headers = lines[0].split(',').map(function(h) { return h.trim().replace(/^"|"$/g, ''); });
+            let imported = 0, skipped = 0;
+            for (let i = 1; i < lines.length; i++) {
+                try {
+                    const values = parseCSVLine(lines[i]);
+                    const row = {};
+                    headers.forEach(function(h, idx) { row[h] = (values[idx] || '').trim(); });
+                    const title = row.title || row.Title || '';
+                    if (!title) { skipped++; continue; }
+                    const slug = row.slug || title;
+                    const exists = await supabaseClient.from('blog_posts').select('id').eq('slug', slug).limit(1);
+                    if (exists.data && exists.data.length > 0) { skipped++; continue; }
+                    await supabaseClient.from('blog_posts').insert({
+                        title: title,
+                        content: row.contentText || row.content || '',
+                        excerpt: row.excerpt || '',
+                        slug: slug,
+                        category: '匯入文章',
+                        is_published: true
+                    });
+                    imported++;
+                    progress.textContent = '匯入中... ' + imported + ' / ' + (lines.length - 1);
+                } catch (e) { skipped++; }
+            }
+            progress.textContent = '✅ 匯入完成！成功 ' + imported + ' 篇，跳過 ' + skipped + ' 篇';
+            setTimeout(function() { document.querySelector('div[style*="position:fixed"]').remove(); loadBlogList(); }, 2000);
+        } catch (e) {
+            progress.textContent = '❌ 匯入失敗: ' + e.message;
+        }
+    }
+
+    function parseCSVLine(line) {
+        const result = [];
+        let current = '', inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') { inQuotes = !inQuotes; }
+            else if (char === ',' && !inQuotes) { result.push(current); current = ''; }
+            else { current += char; }
+        }
+        result.push(current);
+        return result;
+    }
+
+
+    // ==================== 常見問題 / 私隱政策編輯 ====================
+    async function renderFaqPage(c) {
+        await renderContentEditorPage(c, 'faq', '常見問題', 'faq');
+    }
+
+    async function renderPrivacyPage(c) {
+        await renderContentEditorPage(c, 'privacy', '私隱政策', 'privacy');
+    }
+
+    async function renderContentEditorPage(c, type, title, aiType) {
+        let content = '', seo_title = '', seo_description = '';
+        try {
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', type + '_content').maybeSingle();
+            if (data) content = data.setting_value || '';
+            const { data: seoData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', type + '_seo_title').maybeSingle();
+            if (seoData) seo_title = seoData.setting_value || '';
+            const { data: seoDescData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', type + '_seo_desc').maybeSingle();
+            if (seoDescData) seo_description = seoDescData.setting_value || '';
+        } catch (e) {}
+
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">' + title + '</h2><button class="btn btn-primary" onclick="saveContentPage(\'' + type + '\')">保存</button></div>';
+        c.innerHTML += '<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">頁面內容 <button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="showAIWriterModal(\'' + aiType + '\',\'contentEditor\')">✦ AI寫作</button></label>' +
+            '<textarea id="contentEditor" rows="25" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;">' + content + '</textarea></div>' +
+            '</div>' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);height:fit-content;">' +
+            '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">SEO 設置</div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Title</label>' +
+            '<input type="text" id="contentSeoTitle" value="' + seo_title.replace(/"/g, '&quot;') + '" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
+            '<div><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Description</label>' +
+            '<textarea id="contentSeoDesc" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + seo_description + '</textarea></div>' +
+            '</div></div>';
+    }
+
+    async function saveContentPage(type) {
+        const content = document.getElementById('contentEditor').value;
+        const seo_title = document.getElementById('contentSeoTitle').value.trim();
+        const seo_desc = document.getElementById('contentSeoDesc').value.trim();
+        try {
+            await upsertSetting(type + '_content', content);
+            await upsertSetting(type + '_seo_title', seo_title);
+            await upsertSetting(type + '_seo_desc', seo_desc);
+            alert('保存成功');
+        } catch (e) { alert('保存失敗: ' + e.message); }
+    }
+
+    async function upsertSetting(key, value) {
+        const { data } = await supabaseClient.from('site_settings').select('id').eq('setting_key', key).maybeSingle();
+        if (data) {
+            await supabaseClient.from('site_settings').update({ setting_value: value }).eq('setting_key', key);
+        } else {
+            await supabaseClient.from('site_settings').insert({ setting_key: key, setting_value: value });
+        }
     }
 
     // ==================== 管理員管理頁面 ====================
@@ -1056,6 +1394,15 @@
         else if (page === 'aichat') { renderAIChatPage(c); }
         else if (page === 'admins') { renderAdminsPage(c); }
         else if (page === 'seo') { renderSEOPage(c); }
+        else if (page === 'blog') { renderBlogPage(c); }
+        else if (page === 'faq') { renderFaqPage(c); }
+        else if (page === 'privacy') { renderPrivacyPage(c); }
+    }
+    function toggleContentMenu() {
+        var m = document.getElementById('contentMenu');
+        var a = document.getElementById('contentMenuArrow');
+        if (m.style.display === 'none') { m.style.display = 'block'; a.textContent = '▼'; }
+        else { m.style.display = 'none'; a.textContent = '▶'; }
     }
     function checkVisitorNotifications() {
         setInterval(async function() {

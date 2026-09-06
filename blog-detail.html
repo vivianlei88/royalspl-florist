@@ -84,17 +84,22 @@
         async function loadArticle() {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
-            if (!id) {
+            const slug = params.get('slug');
+            if (!id && !slug) {
                 window.location.href = 'blog.html';
                 return;
             }
 
-            const { data: post, error } = await supabaseClient
+            let query = supabaseClient
                 .from('blog_posts')
-                .select('title, content, image_url, created_at')
-                .eq('id', id)
-                .eq('is_published', true)
-                .single();
+                .select('title, content, image_url, created_at, title_en, content_en, excerpt, category')
+                .eq('is_published', true);
+            if (id) {
+                query = query.eq('id', id);
+            } else {
+                query = query.eq('slug', decodeURIComponent(slug));
+            }
+            const { data: post, error } = await query.single();
 
             if (error || !post) {
                 document.getElementById('articleContent').innerHTML = '<p>文章不存在或未發佈</p>';

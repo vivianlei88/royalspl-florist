@@ -35,6 +35,10 @@ export async function onRequestPost(context) {
             case 'flower_care':
                 prompt = `${systemPrompt}\n\n请写一篇关于「${topic || '花材護理'}」的花材护理知识文章，用繁体中文，包含护理步骤、注意事项、小贴士，200-400字。`;
                 break;
+            case 'translate':
+                prompt = `请将以下内容翻译成英文，保持原意，语言自然流畅。只输出翻译结果，不要添加任何解释。\n\n内容：\n${topic || ''}`;
+                systemPrompt = 'You are a professional translator. Translate the given Chinese text to natural English. Only output the translation.';
+                break;
             default:
                 prompt = `${systemPrompt}\n\n请写一段关于「${topic || ''}」的文案，用繁体中文，简洁优雅。`;
         }
