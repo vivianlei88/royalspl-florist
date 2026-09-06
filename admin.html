@@ -462,7 +462,7 @@
     let currentBlogId = null;
 
     async function renderBlogPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-primary" onclick="editBlogPost(null)">新增文章</button></div></div>';
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-primary" onclick="showBlogLanguageModal()">新增文章</button></div></div>';
         c.innerHTML += '<div class="form-container" style="max-width:100%;"><div style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
             '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:3fr 1fr 1fr 0.8fr 120px;gap:10px;font-weight:600;font-size:14px;">' +
             '<div>標題</div><div>分類</div><div>狀態</div><div>建立日期</div><div>操作</div></div>' +
@@ -497,8 +497,34 @@
         }
     }
 
-    async function editBlogPost(id) {
+    function showBlogLanguageModal() {
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = '<div style="background:white;padding:30px;border-radius:10px;width:400px;box-shadow:0 10px 40px rgba(0,0,0,0.2);">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">' +
+            '<h3 style="margin:0;font-size:18px;">建立文章</h3>' +
+            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button></div>' +
+            '<p style="color:#666;margin-bottom:20px;font-size:14px;">這篇文章使用什麼語言？</p>' +
+            '<div style="margin-bottom:25px;">' +
+            '<label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px;cursor:pointer;"><input type="radio" name="blogLang" value="zh" checked> <span>🇨🇳 中文</span></label>' +
+            '<label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #ddd;border-radius:8px;cursor:pointer;"><input type="radio" name="blogLang" value="en"> <span>🇬🇧 英語</span></label>' +
+            '</div>' +
+            '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:none;border:none;color:#0066FF;cursor:pointer;font-size:14px;">取消</button>' +
+            '<button onclick="createBlogWithLang()" style="padding:10px 25px;background:#0066FF;color:white;border:none;border-radius:20px;cursor:pointer;font-size:14px;font-weight:600;">建立文章</button></div></div>';
+        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        document.body.appendChild(modal);
+    }
+
+    function createBlogWithLang() {
+        var lang = document.querySelector('input[name="blogLang"]:checked').value;
+        document.querySelector('div[style*="position:fixed"]').remove();
+        editBlogPost(null, lang);
+    }
+
+    async function editBlogPost(id, defaultLang) {
         currentBlogId = id;
+        window.blogEditLang = defaultLang || 'zh';
         const c = document.getElementById('mainContent');
         let post = { title: '', content: '', title_en: '', content_en: '', excerpt: '', category: '', image_url: '', seo_title: '', seo_description: '', slug: '', is_published: false };
         if (id) {
@@ -508,64 +534,158 @@
                 post = data;
             } catch (e) { alert('載入失敗: ' + e.message); return; }
         }
-        c.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'blog\')">← 返回列表</button><h2 class="page-title">' + (id ? '編輯文章' : '新增文章') + '</h2>' +
-            '<button class="btn btn-primary" onclick="saveBlogPost()">' + (post.is_published ? '保存並發布' : '保存草稿') + '</button></div>';
-        c.innerHTML += '<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">' +
-            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">標題（中文）</label>' +
-            '<input type="text" id="blogTitle" value="' + (post.title || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>' +
-            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">標題（英文）<button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="translateBlogField(\'title\')">AI翻譯</button></label>' +
-            '<input type="text" id="blogTitleEn" value="' + (post.title_en || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>' +
-            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">內容（中文）<button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="showAIWriterModal(\'blog\',\'blogContent\')">✦ AI寫作</button></label>' +
-            '<textarea id="blogContent" rows="15" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;">' + (post.content || '') + '</textarea></div>' +
-            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">內容（英文）<button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="translateBlogField(\'content\')">AI翻譯</button></label>' +
-            '<textarea id="blogContentEn" rows="10" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;">' + (post.content_en || '') + '</textarea></div>' +
+        const lang = window.blogEditLang;
+        const titleVal = lang === 'en' ? (post.title_en || '') : (post.title || '');
+        const contentVal = lang === 'en' ? (post.content_en || '') : (post.content || '');
+        const langLabel = lang === 'en' ? '🇬🇧 English' : '🇨🇳 中文';
+        
+        c.innerHTML = '<div style="display:flex;min-height:100vh;">' +
+            // 左側圖標工具欄
+            '<div style="width:60px;background:#fafafa;border-right:1px solid #eee;display:flex;flex-direction:column;align-items:center;padding-top:20px;gap:5px;">' +
+            '<div style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchBlogSidePanel(\'none\')" title="返回"><span style="font-size:20px;">←</span></div>' +
+            '<div id="blogIconAI" style="cursor:pointer;padding:12px;border-radius:8px;background:#e8f0fe;" onclick="showAIWriterModal(\'blog\',\'blogEditorContent\')" title="AI工具"><span style="font-size:20px;">✦</span></div>' +
+            '<div id="blogIconSettings" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchBlogSidePanel(\'settings\')" title="設定"><span style="font-size:20px;">⚙</span></div>' +
+            '<div id="blogIconSEO" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchBlogSidePanel(\'seo\')" title="SEO"><span style="font-size:20px;">🔍</span></div>' +
+            '<div id="blogIconTranslate" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="translateBlogAll()" title="翻譯"><span style="font-size:20px;">🌐</span></div>' +
             '</div>' +
-            '<div style="display:flex;flex-direction:column;gap:15px;">' +
-            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">文章設置</div>' +
-            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">分類（手動輸入）</label>' +
+            // 中間編輯區
+            '<div style="flex:1;display:flex;flex-direction:column;">' +
+            // 頂部工具欄
+            '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid #eee;background:white;">' +
+            '<div style="display:flex;align-items:center;gap:15px;">' +
+            '<button class="btn btn-small btn-secondary" onclick="showAIWriterModal(\'blog\',\'blogEditorContent\')" style="color:#0066FF;border:none;background:none;font-size:16px;">✦</button>' +
+            '<span style="color:#999;">|</span>' +
+            '<span style="font-size:14px;color:#666;">段落</span>' +
+            '<span style="font-size:14px;color:#666;">18</span>' +
+            '<span style="font-weight:bold;cursor:pointer;">B</span>' +
+            '<span style="font-style:italic;cursor:pointer;">I</span>' +
+            '<span style="text-decoration:underline;cursor:pointer;">U</span>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:15px;">' +
+            '<button onclick="switchBlogLang()" style="border:none;background:none;cursor:pointer;font-size:14px;padding:5px 10px;border-radius:5px;">' + langLabel + '</button>' +
+            '<button class="btn btn-small btn-secondary" onclick="saveBlogPost()">保存</button>' +
+            '<button class="btn btn-small btn-primary" onclick="saveBlogPost(true)">發布</button>' +
+            '</div></div>' +
+            // 編輯區
+            '<div style="flex:1;padding:40px 80px;background:#f5f0e8;overflow-y:auto;">' +
+            '<input type="text" id="blogEditorTitle" placeholder="新增標題" value="' + titleVal.replace(/"/g, '&quot;') + '" style="width:100%;border:none;background:transparent;font-size:32px;font-weight:bold;text-align:center;margin-bottom:30px;outline:none;color:#333;">' +
+            '<textarea id="blogEditorContent" placeholder="在此撰寫內容..." style="width:100%;min-height:400px;border:none;background:transparent;font-size:16px;line-height:1.8;outline:none;resize:none;color:#333;">' + contentVal + '</textarea>' +
+            '</div></div>' +
+            // 右側設置面板
+            '<div id="blogSidePanel" style="width:320px;background:white;border-left:1px solid #eee;padding:20px;display:none;overflow-y:auto;">' +
+            '<div id="blogPanelSettings">' +
+            '<h3 style="font-size:16px;margin-bottom:15px;">文章設定</h3>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">分類</label>' +
             '<input type="text" id="blogCategory" value="' + (post.category || '').replace(/"/g, '&quot;') + '" placeholder="如：花語知識" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
-            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">摘要</label>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">摘要</label>' +
             '<textarea id="blogExcerpt" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + (post.excerpt || '') + '</textarea></div>' +
-            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">封面圖URL</label>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">封面圖URL</label>' +
             '<input type="text" id="blogImage" value="' + (post.image_url || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
-            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">URL Slug（舊網址兼容）</label>' +
-            '<input type="text" id="blogSlug" value="' + (post.slug || '').replace(/"/g, '&quot;') + '" placeholder="文章標題" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">URL Slug</label>' +
+            '<input type="text" id="blogSlug" value="' + (post.slug || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
             '<label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="checkbox" id="blogPublished" ' + (post.is_published ? 'checked' : '') + '> 發布文章</label>' +
             '</div>' +
-            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">SEO 設置</div>' +
-            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Title</label>' +
+            '<div id="blogPanelSEO" style="display:none;">' +
+            '<h3 style="font-size:16px;margin-bottom:15px;">SEO 設定</h3>' +
+            '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Title</label>' +
             '<input type="text" id="blogSeoTitle" value="' + (post.seo_title || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
             '<div><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Description</label>' +
-            '<textarea id="blogSeoDesc" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + (post.seo_description || '') + '</textarea></div>' +
+            '<textarea id="blogSeoDesc" rows="4" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + (post.seo_description || '') + '</textarea></div>' +
             '</div></div></div>';
     }
 
-    async function saveBlogPost() {
+    function switchBlogSidePanel(panel) {
+        var sidePanel = document.getElementById('blogSidePanel');
+        var settingsPanel = document.getElementById('blogPanelSettings');
+        var seoPanel = document.getElementById('blogPanelSEO');
+        var iconSettings = document.getElementById('blogIconSettings');
+        var iconSEO = document.getElementById('blogIconSEO');
+        if (panel === 'none') {
+            sidePanel.style.display = 'none';
+            if (iconSettings) iconSettings.style.background = 'transparent';
+            if (iconSEO) iconSEO.style.background = 'transparent';
+        } else if (panel === 'settings') {
+            sidePanel.style.display = 'block';
+            settingsPanel.style.display = 'block';
+            seoPanel.style.display = 'none';
+            if (iconSettings) iconSettings.style.background = '#e8f0fe';
+            if (iconSEO) iconSEO.style.background = 'transparent';
+        } else if (panel === 'seo') {
+            sidePanel.style.display = 'block';
+            settingsPanel.style.display = 'none';
+            seoPanel.style.display = 'block';
+            if (iconSettings) iconSettings.style.background = 'transparent';
+            if (iconSEO) iconSEO.style.background = '#e8f0fe';
+        }
+    }
+
+    function switchBlogLang() {
+        var titleEl = document.getElementById('blogEditorTitle');
+        var contentEl = document.getElementById('blogEditorContent');
+        if (window.blogEditLang === 'zh') {
+            window.blogEditLang = 'en';
+            event.target.textContent = '🇬🇧 English';
+        } else {
+            window.blogEditLang = 'zh';
+            event.target.textContent = '🇨🇳 中文';
+        }
+    }
+
+    async function translateBlogAll() {
+        if (!confirm('確定將中文內容翻譯成英文？這會覆蓋現有英文內容。')) return;
+        const title = document.getElementById('blogEditorTitle').value;
+        const content = document.getElementById('blogEditorContent').value;
+        if (!title && !content) { alert('請先輸入中文內容'); return; }
+        alert('翻譯中...請稍候');
+        try {
+            if (title) {
+                const resp = await fetch('/ai-write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'translate', topic: title, language: 'en' }) });
+                const result = await resp.json();
+                if (result.success) {
+                    if (window.blogEditLang === 'en') document.getElementById('blogEditorTitle').value = result.content.trim();
+                }
+            }
+            if (content) {
+                const resp2 = await fetch('/ai-write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'translate', topic: content, language: 'en' }) });
+                const result2 = await resp2.json();
+                if (result2.success) {
+                    if (window.blogEditLang === 'en') document.getElementById('blogEditorContent').value = result2.content;
+                }
+            }
+            alert('翻譯完成！');
+        } catch (e) { alert('翻譯失敗: ' + e.message); }
+    }
+
+    async function saveBlogPost(publish) {
+        const lang = window.blogEditLang || 'zh';
+        const currentTitle = document.getElementById('blogEditorTitle').value.trim();
+        const currentContent = document.getElementById('blogEditorContent').value;
         const data = {
-            title: document.getElementById('blogTitle').value.trim(),
-            title_en: document.getElementById('blogTitleEn').value.trim(),
-            content: document.getElementById('blogContent').value,
-            content_en: document.getElementById('blogContentEn').value,
-            excerpt: document.getElementById('blogExcerpt').value.trim(),
-            category: document.getElementById('blogCategory').value.trim(),
-            image_url: document.getElementById('blogImage').value.trim(),
-            slug: document.getElementById('blogSlug').value.trim(),
-            seo_title: document.getElementById('blogSeoTitle').value.trim(),
-            seo_description: document.getElementById('blogSeoDesc').value.trim(),
-            is_published: document.getElementById('blogPublished').checked,
+            excerpt: document.getElementById('blogExcerpt') ? document.getElementById('blogExcerpt').value.trim() : '',
+            category: document.getElementById('blogCategory') ? document.getElementById('blogCategory').value.trim() : '',
+            image_url: document.getElementById('blogImage') ? document.getElementById('blogImage').value.trim() : '',
+            slug: document.getElementById('blogSlug') ? document.getElementById('blogSlug').value.trim() : '',
+            seo_title: document.getElementById('blogSeoTitle') ? document.getElementById('blogSeoTitle').value.trim() : '',
+            seo_description: document.getElementById('blogSeoDesc') ? document.getElementById('blogSeoDesc').value.trim() : '',
+            is_published: publish ? true : (document.getElementById('blogPublished') ? document.getElementById('blogPublished').checked : false),
             updated_at: new Date().toISOString()
         };
-        if (!data.title) { alert('請輸入標題'); return; }
+        if (lang === 'zh') {
+            data.title = currentTitle;
+            data.content = currentContent;
+        } else {
+            data.title_en = currentTitle;
+            data.content_en = currentContent;
+        }
+        if (!currentTitle) { alert('請輸入標題'); return; }
         try {
             if (currentBlogId) {
                 await supabaseClient.from('blog_posts').update(data).eq('id', currentBlogId);
             } else {
+                if (!data.slug && data.title) data.slug = data.title;
                 await supabaseClient.from('blog_posts').insert(data);
             }
-            alert('保存成功');
+            alert(publish ? '發布成功' : '保存成功');
             switchPage('blog');
         } catch (e) { alert('保存失敗: ' + e.message); }
     }
