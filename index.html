@@ -321,10 +321,13 @@
     
     async function loadHomepageSettings() {
         try {
-            var result = await supabaseClient.from('homepage_settings').select('*').order('id', { ascending: true }).limit(1);
-            if (result.error) throw result.error;
+            console.log('開始載入首頁設置...');
+            var result = await supabaseClient.from('homepage_settings').select('*').limit(1);
+            console.log('查詢結果:', result);
+            if (result.error) { console.error('查詢錯誤:', result.error); throw result.error; }
             var settings = result.data && result.data[0];
-            if (!settings) return;
+            if (!settings) { console.log('沒有設置數據'); return; }
+            console.log('設置數據:', settings);
             
             var heroContent = document.querySelector('.hero-content');
             var hasAnyText = false;
