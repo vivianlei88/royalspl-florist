@@ -501,26 +501,28 @@
 
     function showBlogLanguageModal() {
         var modal = document.createElement('div');
+        modal.id = 'blogLangModal';
         modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
         modal.innerHTML = '<div style="background:white;padding:30px;border-radius:10px;width:400px;box-shadow:0 10px 40px rgba(0,0,0,0.2);">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">' +
             '<h3 style="margin:0;font-size:18px;">建立文章</h3>' +
-            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button></div>' +
+            '<button onclick="document.getElementById(\'blogLangModal\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button></div>' +
             '<p style="color:#666;margin-bottom:20px;font-size:14px;">這篇文章使用什麼語言？</p>' +
             '<div style="margin-bottom:25px;">' +
             '<label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px;cursor:pointer;"><input type="radio" name="blogLang" value="zh" checked> <span>🇨🇳 中文</span></label>' +
             '<label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #ddd;border-radius:8px;cursor:pointer;"><input type="radio" name="blogLang" value="en"> <span>🇬🇧 英語</span></label>' +
             '</div>' +
             '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
-            '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:none;border:none;color:#0066FF;cursor:pointer;font-size:14px;">取消</button>' +
+            '<button onclick="document.getElementById(\'blogLangModal\').remove()" style="padding:10px 20px;background:none;border:none;color:#0066FF;cursor:pointer;font-size:14px;">取消</button>' +
             '<button onclick="createBlogWithLang()" style="padding:10px 25px;background:#0066FF;color:white;border:none;border-radius:20px;cursor:pointer;font-size:14px;font-weight:600;">建立文章</button></div></div>';
-        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        modal.onclick = function(e) { if (e.target === modal) document.getElementById('blogLangModal').remove(); };
         document.body.appendChild(modal);
     }
 
     function createBlogWithLang() {
         var lang = document.querySelector('input[name="blogLang"]:checked').value;
-        document.querySelector('div[style*="position:fixed"]').remove();
+        var modal = document.getElementById('blogLangModal');
+        if (modal) modal.remove();
         editBlogPost(null, lang);
     }
 
@@ -544,7 +546,7 @@
         c.innerHTML = '<div style="display:flex;min-height:100vh;">' +
             // 左側圖標工具欄
             '<div style="width:60px;background:#fafafa;border-right:1px solid #eee;display:flex;flex-direction:column;align-items:center;padding-top:20px;gap:5px;">' +
-            '<div style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchBlogSidePanel(\'none\')" title="返回"><span style="font-size:20px;">←</span></div>' +
+            '<div style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchPage(\'blog\')" title="返回列表"><span style="font-size:20px;">←</span></div>' +
             '<div id="blogIconAI" style="cursor:pointer;padding:12px;border-radius:8px;background:#e8f0fe;" onclick="showAIWriterModal(\'blog\',\'blogEditorContent\')" title="AI工具"><span style="font-size:20px;">✦</span></div>' +
             '<div id="blogIconSettings" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchBlogSidePanel(\'settings\')" title="設定"><span style="font-size:20px;">⚙</span></div>' +
             '<div id="blogIconSEO" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchBlogSidePanel(\'seo\')" title="SEO"><span style="font-size:20px;">🔍</span></div>' +
@@ -778,7 +780,7 @@
             '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:#f0f0f0;border:none;border-radius:5px;cursor:pointer;font-size:14px;">取消</button>' +
             '<button id="aiWriterInsertBtn" onclick="insertAIContent(\'' + targetId + '\')" style="display:none;padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">插入內容</button>' +
             '<button id="aiWriterGenerateBtn" onclick="generateAIContent(\'' + type + '\')" style="padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">生成</button></div></div>';
-        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        modal.onclick = function(e) { if (e.target === modal) document.getElementById('blogLangModal').remove(); };
         document.body.appendChild(modal);
     }
 
@@ -830,7 +832,7 @@
             '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
             '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:#f0f0f0;border:none;border-radius:5px;cursor:pointer;font-size:14px;">取消</button>' +
             '<button onclick="importBlogCSV()" style="padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">開始匯入</button></div></div>';
-        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        modal.onclick = function(e) { if (e.target === modal) document.getElementById('blogLangModal').remove(); };
         document.body.appendChild(modal);
     }
 
@@ -984,7 +986,7 @@
             '<button onclick="this.closest(\'div[style*=position:fixed]\').remove()" style="padding:10px 20px;background:#f0f0f0;border:none;border-radius:5px;cursor:pointer;font-size:14px;">取消</button>' +
             '<button onclick="submitNewAdmin()" style="padding:10px 20px;background:#1A1A1A;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">確定</button>' +
             '</div></div>';
-        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        modal.onclick = function(e) { if (e.target === modal) document.getElementById('blogLangModal').remove(); };
         document.body.appendChild(modal);
         document.getElementById('newAdminEmail').focus();
     }
