@@ -464,7 +464,7 @@
     async function renderBlogPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-primary" onclick="showBlogLanguageModal()">新增文章</button></div></div>';
         c.innerHTML += '<div class="form-container" style="max-width:100%;"><div style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:3fr 1fr 1fr 0.8fr 120px;gap:10px;font-weight:600;font-size:14px;">' +
+            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2.2fr 1.5fr 1fr 1fr 120px;gap:10px;font-weight:600;font-size:14px;">' +
             '<div>標題</div><div>分類</div><div>狀態</div><div>建立日期</div><div>操作</div></div>' +
             '<div id="blogList">載入中...</div></div></div>';
         await loadBlogList();
@@ -483,7 +483,7 @@
             data.forEach(function(post) {
                 const date = post.created_at ? post.created_at.split('T')[0] : '-';
                 const status = post.is_published ? '<span style="color:#52C41A;">已發布</span>' : '<span style="color:#FAAD14;">草稿</span>';
-                html += '<div style="display:grid;grid-template-columns:3fr 1fr 1fr 0.8fr 120px;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
+                html += '<div style="display:grid;grid-template-columns:2.2fr 1.5fr 1fr 1fr 120px;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
                     '<div style="font-size:14px;font-weight:600;">' + (post.title || '未命名') + '</div>' +
                     '<div style="font-size:13px;color:#666;">' + (post.category || '-') + '</div>' +
                     '<div style="font-size:13px;">' + status + '</div>' +
