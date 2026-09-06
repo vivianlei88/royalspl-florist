@@ -682,7 +682,7 @@
             '建議描述包含：香港、配送、花束、生日等關鍵詞' +
             '</div></div>';
         container.innerHTML += '<div id="productSEOList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 0.8fr 1.2fr 0.8fr 100px;gap:10px;font-weight:600;font-size:14px;">' +
+            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.3fr 1fr 1.2fr 0.9fr 100px;gap:10px;font-weight:600;font-size:14px;">' +
             '<div>商品名稱</div><div>描述長度</div><div>關鍵詞</div><div>狀態</div><div>操作</div></div>' +
             '<div id="productSEOItems">加載中...</div></div>';
         await loadProductSEOCheck();
@@ -708,7 +708,7 @@
                 if (descLen >= 100 && matchedKw.length >= 2) { status = '良好'; statusColor = '#52C41A'; good++; }
                 else if (descLen >= 50) { status = '需改進'; statusColor = '#FAAD14'; warning++; }
                 else { status = '需優化'; statusColor = '#EA6668'; bad++; }
-                html += '<div style="display:grid;grid-template-columns:2fr 0.8fr 1.2fr 0.8fr 100px;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
+                html += '<div style="display:grid;grid-template-columns:1.3fr 1fr 1.2fr 0.9fr 100px;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
                     '<div><div style="font-size:14px;font-weight:600;">' + (p.name_zh || p.name_en || '未命名') + '</div>' +
                     '<div style="font-size:12px;color:#999;">ID: ' + p.id + '</div></div>' +
                     '<div style="font-size:13px;">' + descLen + ' 字</div>' +
@@ -735,7 +735,7 @@
     async function renderSEOPagesTab() {
         const container = document.getElementById('seoTabContent');
         container.innerHTML = '<div id="seoScoreCard" style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;"><div><div style="font-size:14px;color:#888;margin-bottom:5px;">SEO 健康評分</div><div id="seoScore" style="font-size:36px;font-weight:700;color:#1A1A1A;">--</div></div><div id="seoSummary" style="font-size:14px;color:#666;line-height:1.8;"></div></div></div>';
-        container.innerHTML += '<div id="seoPageList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.5fr 1.5fr 1.5fr 0.8fr 100px;gap:10px;font-weight:600;font-size:14px;"><div>頁面</div><div>Title</div><div>Description</div><div>狀態</div><div>操作</div></div><div id="seoPageItems">加載中...</div></div>';
+        container.innerHTML += '<div id="seoPageList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.2fr 1.2fr 1.2fr 0.9fr 100px;gap:10px;font-weight:600;font-size:14px;"><div>頁面</div><div>Title</div><div>Description</div><div>狀態</div><div>操作</div></div><div id="seoPageItems">加載中...</div></div>';
         await loadSEOData();
     }
 
@@ -746,7 +746,7 @@
             '<div style="font-size:13px;color:#666;">數據來源：Google Search Console，每天更新一次</div></div>' +
             '<button class="btn btn-primary" onclick="updateKeywordRankings()">更新排名數據</button></div>';
         container.innerHTML += '<div id="keywordRankingList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 0.8fr 1fr 1fr 1fr 0.8fr;gap:10px;font-weight:600;font-size:14px;">' +
+            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr 0.9fr;gap:10px;font-weight:600;font-size:14px;">' +
             '<div>關鍵詞</div><div>排名</div><div>曝光量</div><div>點擊量</div><div>點擊率</div><div>趨勢</div></div>' +
             '<div id="keywordRankingItems">加載中...</div></div>';
         await loadKeywordRankings();
@@ -791,7 +791,7 @@
                     else { trend = '→ 0'; trendColor = '#999'; }
                 }
                 const posColor = row.position <= 10 ? '#52C41A' : row.position <= 30 ? '#FAAD14' : '#EA6668';
-                html += '<div style="display:grid;grid-template-columns:2fr 0.8fr 1fr 1fr 1fr 0.8fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
+                html += '<div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr 0.9fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
                     '<div style="font-size:14px;">' + kw + '</div>' +
                     '<div style="font-size:14px;font-weight:600;color:' + posColor + ';">' + (row.position ? row.position.toFixed(0) : '-') + '</div>' +
                     '<div style="font-size:13px;">' + (row.impressions || 0) + '</div>' +
@@ -914,7 +914,7 @@
                 if (title && desc.length >= 50) optimized++;
                 const statusColor = score >= 80 ? '#52C41A' : score >= 50 ? '#FAAD14' : '#EA6668';
                 const statusText = score >= 80 ? '良好' : score >= 50 ? '需改進' : '缺失';
-                html += '<div style="display:grid;grid-template-columns:1.5fr 1.5fr 1.5fr 0.8fr 100px;gap:10px;padding:15px 20px;border-bottom:1px solid #eee;align-items:center;">';
+                html += '<div style="display:grid;grid-template-columns:1.2fr 1.2fr 1.2fr 0.9fr 100px;gap:10px;padding:15px 20px;border-bottom:1px solid #eee;align-items:center;">';
                 html += '<div><div style="font-weight:600;font-size:14px;">' + page.name + '</div><div style="font-size:12px;color:#999;">' + page.url + '</div></div>';
                 html += '<div style="font-size:13px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + title.replace(/"/g, '&quot;') + '">' + (title || '<span style="color:#ccc;">未設置</span>') + '</div>';
                 html += '<div style="font-size:13px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + desc.replace(/"/g, '&quot;') + '">' + (desc || '<span style="color:#ccc;">未設置</span>') + '</div>';
