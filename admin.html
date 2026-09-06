@@ -645,8 +645,21 @@
             });
 
             if (commitResp.ok) {
+                // 自動提交到 Google 和 Bing
+                const sitemapUrl = 'https://www.royalspl.shop/sitemap.xml';
+                let pingResults = [];
+                try {
+                    await fetch('https://www.google.com/ping?sitemap=' + encodeURIComponent(sitemapUrl), { mode: 'no-cors' });
+                    pingResults.push('Google ✅');
+                } catch (e) { pingResults.push('Google ❌'); }
+                try {
+                    await fetch('https://www.bing.com/ping?sitemap=' + encodeURIComponent(sitemapUrl), { mode: 'no-cors' });
+                    pingResults.push('Bing ✅');
+                } catch (e) { pingResults.push('Bing ❌'); }
+                
                 resultDiv.innerHTML = '<div style="color:#52C41A;font-weight:600;">✅ Sitemap 生成並提交成功！</div>' +
                     '<div style="color:#666;margin-top:10px;">共 ' + totalUrls + ' 個 URL（靜態頁面 ' + staticPages.length + ' / 商品 ' + (products || []).length + ' / 分類 ' + (categories || []).length + ' / 部落格 ' + (posts || []).length + '）</div>' +
+                    '<div style="color:#666;margin-top:8px;">已通知搜索引擎：' + pingResults.join('、') + '</div>' +
                     '<div style="color:#999;margin-top:5px;font-size:12px;">Cloudflare Pages 正在自動部署，大約1分鐘後生效</div>';
             } else {
                 const err = await commitResp.json();
