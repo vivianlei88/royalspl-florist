@@ -257,9 +257,9 @@
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
             <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
-            <div class="sidebar-group">
-                <div class="sidebar-item sidebar-group-header" onclick="toggleContentMenu()">
-                    <span>📝 文案內容</span>
+            <div class="sidebar-group" id="contentMenuGroup" onmouseenter="showContentMenu()" onmouseleave="hideContentMenu()">
+                <div class="sidebar-item sidebar-group-header">
+                    <span>文案內容</span>
                     <span class="settings-arrow" id="contentArrow">▶</span>
                 </div>
                 <div class="sidebar-submenu" id="contentSubmenu">
@@ -269,9 +269,9 @@
                 </div>
             </div>
             <div class="sidebar-item" data-page="seo" onclick="switchPage('seo')">SEO管理</div>
-            <div class="sidebar-group">
-                <div class="sidebar-item sidebar-group-header" onclick="toggleSettingsMenu()">
-                    <span>⚙️ 設置</span>
+            <div class="sidebar-group" id="settingsMenuGroup" onmouseenter="showSettingsMenu()" onmouseleave="hideSettingsMenu()">
+                <div class="sidebar-item sidebar-group-header">
+                    <span>設置</span>
                     <span class="settings-arrow" id="settingsArrow">▶</span>
                 </div>
                 <div class="sidebar-submenu" id="settingsSubmenu">
@@ -1351,29 +1351,20 @@
         renderSEOPage(document.getElementById('mainContent'));
     }
 
-    function toggleSettingsMenu() {
+    function showSettingsMenu() {
         var submenu = document.getElementById('settingsSubmenu');
         var arrow = document.getElementById('settingsArrow');
-        submenu.classList.toggle('show');
-        arrow.textContent = submenu.classList.contains('show') ? '◀' : '▶';
+        if (submenu) submenu.classList.add('show');
+        if (arrow) arrow.textContent = '◀';
+    }
+    function hideSettingsMenu() {
+        var submenu = document.getElementById('settingsSubmenu');
+        var arrow = document.getElementById('settingsArrow');
+        if (submenu) submenu.classList.remove('show');
+        if (arrow) arrow.textContent = '▶';
     }
     
-    // 点击其他地方关闭设置菜单
-    document.addEventListener('click', function(e) {
-        var groups = document.querySelectorAll('.sidebar-group');
-        var clickedInGroup = false;
-        groups.forEach(function(g) { if (g.contains(e.target)) clickedInGroup = true; });
-        if (!clickedInGroup) {
-            var settingsSubmenu = document.getElementById('settingsSubmenu');
-            var settingsArrow = document.getElementById('settingsArrow');
-            if (settingsSubmenu) settingsSubmenu.classList.remove('show');
-            if (settingsArrow) settingsArrow.textContent = '▶';
-            var contentSubmenu = document.getElementById('contentSubmenu');
-            var contentArrow = document.getElementById('contentArrow');
-            if (contentSubmenu) contentSubmenu.classList.remove('show');
-            if (contentArrow) contentArrow.textContent = '▶';
-        }
-    });
+
 
     function switchPage(page) {
         if (window.currentPage === page) return;
@@ -1404,11 +1395,17 @@
         else if (page === 'faq') { renderFaqPage(c); }
         else if (page === 'privacy') { renderPrivacyPage(c); }
     }
-    function toggleContentMenu() {
+    function showContentMenu() {
         var submenu = document.getElementById('contentSubmenu');
         var arrow = document.getElementById('contentArrow');
-        submenu.classList.toggle('show');
-        arrow.textContent = submenu.classList.contains('show') ? '◀' : '▶';
+        if (submenu) submenu.classList.add('show');
+        if (arrow) arrow.textContent = '◀';
+    }
+    function hideContentMenu() {
+        var submenu = document.getElementById('contentSubmenu');
+        var arrow = document.getElementById('contentArrow');
+        if (submenu) submenu.classList.remove('show');
+        if (arrow) arrow.textContent = '▶';
     }
     function checkVisitorNotifications() {
         setInterval(async function() {
