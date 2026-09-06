@@ -249,7 +249,7 @@
         </div>
     </div>
     <div id="adminPage" class="admin-container">
-        <div class="topbar"><h1>RoyalSpl 後台管理</h1><div class="topbar-links"><span id="userInfo" style="display:none;align-items:center;gap:8px;margin-right:15px;"><img id="userAvatar" src="" style="width:32px;height:32px;border-radius:50%;"><span id="userEmail" style="font-size:14px;color:#666;"></span></span><a href="index.html">返回前台</a><a onclick="doLogout()">登出</a></div></div>
+        <div class="topbar"><h1>RoyalSpl 後台管理</h1><div class="topbar-links"><span id="userInfo" style="display:none;align-items:center;gap:8px;margin-right:15px;"><img id="userAvatar" src="" style="width:32px;height:32px;border-radius:50%;cursor:pointer;" title=""><span id="userEmail" style="font-size:14px;color:#666;"></span></span><a href="index.html">返回前台</a><a onclick="doLogout()">登出</a></div></div>
         <div class="sidebar">
             <div class="sidebar-item active" data-page="analytics" onclick="switchPage('analytics')">數據分析</div>
             <div class="sidebar-item" data-page="products" onclick="switchPage('products')">商品管理</div>
@@ -430,6 +430,7 @@
             const userAvatar = document.getElementById('userAvatar');
             const userEmail = document.getElementById('userEmail');
             if (userAvatar && avatar) userAvatar.src = avatar;
+            if (userAvatar) userAvatar.title = email || '';
             if (userEmail) userEmail.textContent = name;
         }
         if (typeof switchPage === 'function') switchPage('analytics');
@@ -448,7 +449,7 @@
     // ==================== 管理員管理頁面 ====================
     async function renderAdminsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">管理員管理</h2><button class="btn btn-primary" onclick="showAddAdminForm()">新增管理員</button></div>';
-        c.innerHTML += '<div class="form-container" style="max-width:100%;"><table class="data-table" style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f5f5f5;"><th style="padding:12px;text-align:left;border-bottom:1px solid #ddd;">頭像</th><th style="padding:12px;text-align:left;border-bottom:1px solid #ddd;">姓名</th><th style="padding:12px;text-align:left;border-bottom:1px solid #ddd;">電郵</th><th style="padding:12px;text-align:left;border-bottom:1px solid #ddd;">操作</th></tr></thead><tbody id="adminsTableBody"><tr><td colspan="4" style="padding:20px;text-align:center;color:#888;">載入中...</td></tr></tbody></table></div>';
+        c.innerHTML += '<div class="form-container" style="max-width:100%;"><table class="data-table" style="width:100%;border-collapse:collapse;"><thead><tr style="background:#1A1A1A;color:white;"><th style="padding:12px;text-align:left;width:100px;">頭像</th><th style="padding:12px;text-align:left;width:35%;">姓名</th><th style="padding:12px;text-align:left;width:35%;">電郵</th><th style="padding:12px;text-align:left;width:100px;">操作</th></tr></thead><tbody id="adminsTableBody"><tr><td colspan="4" style="padding:20px;text-align:center;color:#888;">載入中...</td></tr></tbody></table></div>';
         try {
             const { data } = await supabaseClient.from('admin_users').select('*').order('id', { ascending: true });
             const tbody = document.getElementById('adminsTableBody');
@@ -456,10 +457,10 @@
                 let rows = '';
                 data.forEach(function(admin) {
                     rows += '<tr>';
-                    rows += '<td style="padding:12px;border-bottom:1px solid #ddd;">' + (admin.avatar_url ? '<img src="' + admin.avatar_url + '" style="width:36px;height:36px;border-radius:50%;">' : '<div style="width:36px;height:36px;border-radius:50%;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:14px;color:#666;">' + (admin.name || admin.email || '?').charAt(0).toUpperCase() + '</div>') + '</td>';
-                    rows += '<td style="padding:12px;border-bottom:1px solid #ddd;">' + (admin.name || '-') + '</td>';
-                    rows += '<td style="padding:12px;border-bottom:1px solid #ddd;">' + admin.email + '</td>';
-                    rows += '<td style="padding:12px;border-bottom:1px solid #ddd;"><button class="btn btn-danger btn-small" onclick="deleteAdmin(' + admin.id + ', \'' + admin.email + '\')">刪除</button></td>';
+                    rows += '<td style="padding:12px;border-bottom:1px solid #ddd;width:100px;">' + (admin.avatar_url ? '<img src="' + admin.avatar_url + '" style="width:36px;height:36px;border-radius:50%;">' : '<div style="width:36px;height:36px;border-radius:50%;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:14px;color:#666;">' + (admin.name || admin.email || '?').charAt(0).toUpperCase() + '</div>') + '</td>';
+                    rows += '<td style="padding:12px;border-bottom:1px solid #ddd;width:35%;">' + (admin.name || '-') + '</td>';
+                    rows += '<td style="padding:12px;border-bottom:1px solid #ddd;width:35%;">' + admin.email + '</td>';
+                    rows += '<td style="padding:12px;border-bottom:1px solid #ddd;width:100px;"><button class="btn btn-danger btn-small" onclick="deleteAdmin(' + admin.id + ', \'' + admin.email + '\')">刪除</button></td>';
                     rows += '</tr>';
                 });
                 tbody.innerHTML = rows;
