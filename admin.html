@@ -530,6 +530,7 @@
     async function editBlogPost(id, defaultLang) {
         currentBlogId = id;
         window.blogEditLang = defaultLang || 'zh';
+        window.currentPage = 'blog-edit';
         const c = document.getElementById('mainContent');
         let post = { title: '', content: '', title_en: '', content_en: '', excerpt: '', category: '', image_url: '', seo_title: '', seo_description: '', slug: '', is_published: false };
         if (id) {
@@ -729,7 +730,8 @@
                 await supabaseClient.from('blog_posts').insert(data);
             }
             alert(publish ? '發布成功' : '保存成功');
-            switchPage('blog');
+            window.currentPage = 'blog';
+            renderBlogPage(document.getElementById('mainContent'));
         } catch (e) { alert('保存失敗: ' + e.message); }
     }
 
