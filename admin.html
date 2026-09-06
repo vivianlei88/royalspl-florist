@@ -260,7 +260,7 @@
             <div class="sidebar-group">
                 <div class="sidebar-item sidebar-group-header" onclick="toggleContentMenu()">
                     <span>📝 文案內容</span>
-                    <span class="settings-arrow" id="contentArrow">▼</span>
+                    <span class="settings-arrow" id="contentArrow">▶</span>
                 </div>
                 <div class="sidebar-submenu" id="contentSubmenu">
                     <div class="sidebar-item sidebar-subitem" data-page="blog" onclick="switchPage('blog')">部落格文章</div>
@@ -1360,12 +1360,18 @@
     
     // 点击其他地方关闭设置菜单
     document.addEventListener('click', function(e) {
-        var group = document.querySelector('.sidebar-group');
-        if (group && !group.contains(e.target)) {
-            var submenu = document.getElementById('settingsSubmenu');
-            var arrow = document.getElementById('settingsArrow');
-            if (submenu) submenu.classList.remove('show');
-            if (arrow) arrow.textContent = '▶';
+        var groups = document.querySelectorAll('.sidebar-group');
+        var clickedInGroup = false;
+        groups.forEach(function(g) { if (g.contains(e.target)) clickedInGroup = true; });
+        if (!clickedInGroup) {
+            var settingsSubmenu = document.getElementById('settingsSubmenu');
+            var settingsArrow = document.getElementById('settingsArrow');
+            if (settingsSubmenu) settingsSubmenu.classList.remove('show');
+            if (settingsArrow) settingsArrow.textContent = '▶';
+            var contentSubmenu = document.getElementById('contentSubmenu');
+            var contentArrow = document.getElementById('contentArrow');
+            if (contentSubmenu) contentSubmenu.classList.remove('show');
+            if (contentArrow) contentArrow.textContent = '▶';
         }
     });
 
@@ -1399,10 +1405,10 @@
         else if (page === 'privacy') { renderPrivacyPage(c); }
     }
     function toggleContentMenu() {
-        var m = document.getElementById('contentMenu');
-        var a = document.getElementById('contentMenuArrow');
-        if (m.style.display === 'none') { m.style.display = 'block'; a.textContent = '▼'; }
-        else { m.style.display = 'none'; a.textContent = '▶'; }
+        var submenu = document.getElementById('contentSubmenu');
+        var arrow = document.getElementById('contentArrow');
+        submenu.classList.toggle('show');
+        arrow.textContent = submenu.classList.contains('show') ? '◀' : '▶';
     }
     function checkVisitorNotifications() {
         setInterval(async function() {
