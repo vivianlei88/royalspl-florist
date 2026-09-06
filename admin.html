@@ -1341,7 +1341,7 @@
 
     async function loadProductSEOCheck() {
         try {
-            const { data: products, error } = await supabaseClient.from('products').select('id, name_zh, name_en, description_zh, description, status').order('id');
+            const { data: products, error } = await supabaseClient.from('products').select('id, name_zh, name_en, description, is_active').order('id');
             if (error) throw error;
             const container = document.getElementById('productSEOItems');
             if (!products || products.length === 0) {
@@ -1352,7 +1352,7 @@
             let html = '';
             let good = 0, warning = 0, bad = 0;
             products.forEach(p => {
-                const desc = (p.description_zh || p.description || '').trim();
+                const desc = (p.description || '').trim();
                 const descLen = desc.length;
                 const matchedKw = keywords.filter(kw => desc.includes(kw));
                 let status, statusColor;
