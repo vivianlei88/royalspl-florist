@@ -629,10 +629,19 @@
         const desc = document.getElementById('seoDescInput').value.trim();
         try {
             const { data: existing } = await supabaseClient.from('seo_overrides').select('id').eq('page_url', pageUrl).single();
+            let result;
             if (existing) {
-                await supabaseClient.from('seo_overrides').update({ title: title, description: desc, updated_at: new Date().toISOString() }).eq('page_url', pageUrl);
+                result = await supabaseClient.from('seo_overrides').update({ title: title, description: desc, updated_at: new Date().toISOString() }).eq('page_url', pageUrl).select();
             } else {
-                await supabaseClient.from('seo_overrides').insert({ page_url: pageUrl, title: title, description: desc });
+                result = await supabaseClient.from('seo_overrides').insert({ page_url: pageUrl, title: title, description: desc }).select();
+            }
+            if (result.error) {
+                alert('保存失敗: ' + result.error.message);
+                return;
+            }
+            if (!result.data || result.data.length === 0) {
+                alert('保存失敗：數據未寫入，請檢查 Supabase RLS 權限設置');
+                return;
             }
             alert('保存成功！');
             closeSEOEditor();
