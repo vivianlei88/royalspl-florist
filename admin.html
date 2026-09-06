@@ -258,6 +258,10 @@
                 <span id="visitorBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#ff4444;color:white;font-size:10px;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;">0</span>
                 <span id="visitorTip" style="display:none;position:absolute;top:40px;right:0;background:#1A1A1A;color:white;padding:10px 15px;border-radius:8px;font-size:12px;white-space:nowrap;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.3);max-width:350px;"></span>
             </div>
+            <div style="position:relative;display:inline-flex;align-items:center;margin-right:15px;">
+                <span id="chatBell" style="font-size:20px;cursor:pointer;position:relative;" title="客服消息" onclick="openChatPanel()">💬</span>
+                <span id="chatBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#ff4444;color:white;font-size:10px;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;">0</span>
+            </div>
             <span id="userInfo" style="display:none;align-items:center;gap:8px;margin-right:15px;"><img id="userAvatar" src="" style="width:32px;height:32px;border-radius:50%;cursor:pointer;" title=""><span id="userEmail" style="font-size:14px;color:#666;"></span></span><a href="index.html">返回前台</a><a onclick="doLogout()">登出</a></div></div>
         <div class="sidebar">
             <div class="sidebar-item active" data-page="analytics" onclick="switchPage('analytics')">數據分析</div>
@@ -445,6 +449,7 @@
         loadAdminProfile();
         if (typeof switchPage === 'function') switchPage('analytics');
         startVisitorTracking();
+        startChatTracking();
     }
 
     async function loadAdminProfile() {
@@ -550,6 +555,223 @@
         loadOnlineVisitors();
         if (visitorTimer) clearInterval(visitorTimer);
         visitorTimer = setInterval(loadOnlineVisitors, 5000);
+    }
+
+    // ==================== 客服系統 ====================
+    var chatTimer = null;
+    var currentChatSession = null;
+    var lastChatCheckTime = new Date().toISOString();
+
+    async function checkNewChatMessages() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('chat_messages')
+                .select('*, chat_sessions!inner(session_id, current_page)')
+                .eq('sender_type', 'visitor')
+                .eq('is_read', false)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            
+            const unread = data || [];
+            const badge = document.getElementById('chatBadge');
+            if (badge) {
+                if (unread.length > 0) {
+                    badge.style.display = 'block';
+                    badge.textContent = unread.length > 99 ? '99+' : unread.length;
+                    // 瀏覽器通知
+                    if (unread.length > 0 && Notification.permission === 'granted') {
+                        const latest = unread[0];
+                        new Notification('新客服消息', {
+                            body: (latest.content || '').substring(0, 50),
+                            icon: 'https://www.royalspl.shop/favicon.ico'
+                        });
+                    }
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        } catch (e) {
+            console.error('檢查客服消息失敗:', e);
+        }
+    }
+
+    function startChatTracking() {
+        checkNewChatMessages();
+        if (chatTimer) clearInterval(chatTimer);
+        chatTimer = setInterval(checkNewChatMessages, 5000);
+        // 請求瀏覽器通知權限
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    function openChatPanel() {
+        // 關閉可能存在的舊面板
+        var old = document.getElementById('chatPanelModal');
+        if (old) old.remove();
+        
+        var modal = document.createElement('div');
+        modal.id = 'chatPanelModal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = '<div style="background:white;border-radius:12px;width:90%;max-width:900px;height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,0.3);overflow:hidden;">' +
+            '<div style="background:#1A1A1A;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;">' +
+            '<span style="font-size:16px;font-weight:600;">💬 客服中心</span>' +
+            '<button onclick="closeChatPanel()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;">×</button></div>' +
+            '<div style="display:flex;flex:1;overflow:hidden;">' +
+            '<div id="chatSessionList" style="width:280px;border-right:1px solid #eee;overflow-y:auto;background:#f9f9f9;">加載中...</div>' +
+            '<div id="chatDetail" style="flex:1;display:flex;flex-direction:column;">' +
+            '<div style="padding:15px;border-bottom:1px solid #eee;background:#f5f5f5;" id="chatSessionInfo">請選擇左側會話</div>' +
+            '<div id="chatMessages" style="flex:1;overflow-y:auto;padding:20px;background:#fafafa;"></div>' +
+            '<div style="padding:15px;border-top:1px solid #eee;display:flex;gap:10px;">' +
+            '<input type="text" id="adminReplyInput" placeholder="輸入人工回覆..." style="flex:1;padding:10px 15px;border:1px solid #ddd;border-radius:8px;font-size:14px;" onkeypress="if(event.key==='Enter')sendAdminReply()">' +
+            '<button onclick="sendAdminReply()" style="padding:10px 25px;background:#1A1A1A;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">發送</button></div></div></div></div>';
+        modal.onclick = function(e) { if (e.target === modal) closeChatPanel(); };
+        document.body.appendChild(modal);
+        loadChatSessions();
+    }
+
+    function closeChatPanel() {
+        var modal = document.getElementById('chatPanelModal');
+        if (modal) modal.remove();
+        currentChatSession = null;
+    }
+
+    async function loadChatSessions() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('chat_sessions')
+                .select('*')
+                .order('last_message_at', { ascending: false })
+                .limit(50);
+            if (error) throw error;
+            
+            const container = document.getElementById('chatSessionList');
+            if (!container) return;
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div style="padding:30px;text-align:center;color:#999;font-size:13px;">暫無會話</div>';
+                return;
+            }
+            
+            let html = '';
+            for (var i = 0; i < data.length; i++) {
+                var s = data[i];
+                // 獲取該會話的未讀消息數
+                const { data: unreadData } = await supabaseClient
+                    .from('chat_messages')
+                    .select('id')
+                    .eq('session_id', s.session_id)
+                    .eq('sender_type', 'visitor')
+                    .eq('is_read', false);
+                var unreadCount = (unreadData || []).length;
+                
+                html += '<div onclick="selectChatSession(\'' + s.session_id + '\')" style="padding:15px;border-bottom:1px solid #eee;cursor:pointer;background:' + (currentChatSession === s.session_id ? '#e8e8e8' : 'white') + ';" onmouseover="this.style.background=\'#f0f0f0\'" onmouseout="this.style.background=\'' + (currentChatSession === s.session_id ? '#e8e8e8' : 'white') + '\'">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">' +
+                    '<span style="font-size:14px;font-weight:600;">訪客 ' + (s.session_id.substring(5, 13) || '') + '</span>' +
+                    (unreadCount > 0 ? '<span style="background:#ff4444;color:white;font-size:10px;padding:2px 6px;border-radius:10px;">' + unreadCount + '</span>' : '') +
+                    '</div>' +
+                    '<div style="font-size:11px;color:#999;margin-bottom:3px;">' + (s.current_page || '未知頁面').substring(0, 30) + '</div>' +
+                    '<div style="font-size:11px;color:#bbb;">' + new Date(s.last_message_at).toLocaleString('zh-HK') + '</div></div>';
+            }
+            container.innerHTML = html;
+        } catch (e) {
+            console.error('加載會話列表失敗:', e);
+        }
+    }
+
+    async function selectChatSession(sessionId) {
+        currentChatSession = sessionId;
+        loadChatSessions(); // 刷新高亮
+        
+        try {
+            // 獲取會話信息
+            const { data: sessionData } = await supabaseClient
+                .from('chat_sessions')
+                .select('*')
+                .eq('session_id', sessionId)
+                .single();
+            
+            var infoDiv = document.getElementById('chatSessionInfo');
+            if (infoDiv && sessionData) {
+                infoDiv.innerHTML = '<div style="font-size:14px;font-weight:600;">訪客 ' + sessionId.substring(5, 13) + '</div>' +
+                    '<div style="font-size:12px;color:#666;margin-top:3px;">📍 當前頁面: ' + (sessionData.current_page || '未知') + '</div>' +
+                    '<div style="font-size:11px;color:#999;margin-top:2px;">IP: ' + (sessionData.visitor_ip || '未知') + (sessionData.visitor_region ? ' | ' + sessionData.visitor_region : '') + '</div>';
+            }
+            
+            // 標記消息為已讀
+            await supabaseClient
+                .from('chat_messages')
+                .update({ is_read: true })
+                .eq('session_id', sessionId)
+                .eq('sender_type', 'visitor');
+            
+            // 加載消息
+            loadChatMessages(sessionId);
+        } catch (e) {
+            console.error('選擇會話失敗:', e);
+        }
+    }
+
+    async function loadChatMessages(sessionId) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('chat_messages')
+                .select('*')
+                .eq('session_id', sessionId)
+                .order('created_at', { ascending: true });
+            if (error) throw error;
+            
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:#999;padding:30px;">暫無消息</div>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(function(m) {
+                var isUser = m.sender_type === 'visitor';
+                var isAdmin = m.sender_type === 'admin';
+                var bgColor = isUser ? '#1A1A1A' : (isAdmin ? '#2563eb' : '#f0f0f0');
+                var textColor = isUser || isAdmin ? 'white' : '#333';
+                var align = isUser ? 'flex-end' : 'flex-start';
+                var label = isUser ? '訪客' : (isAdmin ? '管理員' : 'AI客服');
+                
+                html += '<div style="display:flex;justify-content:' + align + ';margin-bottom:12px;">' +
+                    '<div style="max-width:70%;">' +
+                    '<div style="font-size:11px;color:#999;margin-bottom:3px;">' + label + ' · ' + new Date(m.created_at).toLocaleTimeString('zh-HK') + '</div>' +
+                    '<div style="background:' + bgColor + ';color:' + textColor + ';padding:10px 15px;border-radius:12px;font-size:13px;line-height:1.5;word-break:break-word;">' + (m.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div></div></div>';
+            });
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        } catch (e) {
+            console.error('加載消息失敗:', e);
+        }
+    }
+
+    async function sendAdminReply() {
+        var input = document.getElementById('adminReplyInput');
+        if (!input || !currentChatSession) return;
+        var content = input.value.trim();
+        if (!content) return;
+        
+        try {
+            await supabaseClient.from('chat_messages').insert({
+                session_id: currentChatSession,
+                sender_type: 'admin',
+                sender_name: '管理員',
+                content: content,
+                is_read: true
+            });
+            // 標記會話有管理員回復
+            await supabaseClient.from('chat_sessions').update({ admin_replied: true }).eq('session_id', currentChatSession);
+            input.value = '';
+            loadChatMessages(currentChatSession);
+            checkNewChatMessages(); // 刷新未讀數
+        } catch (e) {
+            alert('發送失敗: ' + e.message);
+        }
     }
 
     async function doLogout() {

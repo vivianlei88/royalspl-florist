@@ -6,6 +6,11 @@
     let currentProduct = null;
     let pageContext = null; // 客人停留頁面上下文
     let userInfo = { email: null, orders: [] };
+    let chatSessionId = localStorage.getItem('royalspl_chat_session') || '';
+    if (!chatSessionId) {
+        chatSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('royalspl_chat_session', chatSessionId);
+    }
     let chatConfig = {
         welcome_message: '您好！我是 RoyalSpl AI 客服，有什么可以帮您？🌸',
         whatsapp_number: '85265036907',
@@ -16,6 +21,46 @@
 
     const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+
+    // 保存會話到數據庫
+    async function saveChatSession() {
+        try {
+            const pageUrl = window.location.href;
+            const pageTitle = document.title;
+            // 檢查會話是否存在
+            const checkResp = await fetch(SUPABASE_URL + '/rest/v1/chat_sessions?session_id=eq.' + encodeURIComponent(chatSessionId) + '&select=id&limit=1', {
+                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+            });
+            const checkData = await checkResp.json();
+            if (checkData && checkData.length > 0) {
+                // 更新會話的當前頁面
+                await fetch(SUPABASE_URL + '/rest/v1/chat_sessions?session_id=eq.' + encodeURIComponent(chatSessionId), {
+                    method: 'PATCH',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ current_page: pageTitle + ' | ' + pageUrl, last_message_at: new Date().toISOString() })
+                });
+            } else {
+                // 創建新會話
+                await fetch(SUPABASE_URL + '/rest/v1/chat_sessions', {
+                    method: 'POST',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                    body: JSON.stringify({ session_id: chatSessionId, current_page: pageTitle + ' | ' + pageUrl })
+                });
+            }
+        } catch(e) { console.error('保存會話失敗:', e); }
+    }
+
+    // 保存消息到數據庫
+    async function saveChatMessage(content, senderType, senderName) {
+        try {
+            await saveChatSession();
+            await fetch(SUPABASE_URL + '/rest/v1/chat_messages', {
+                method: 'POST',
+                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ session_id: chatSessionId, sender_type: senderType, sender_name: senderName || '', content: content })
+            });
+        } catch(e) { console.error('保存消息失敗:', e); }
+    }
 
     // 加载配置
     async function loadConfig() {
@@ -232,8 +277,10 @@
 
         if (pendingImage) {
             addMessage('[图片] ' + message, 'user');
+            saveChatMessage('[图片] ' + message, 'visitor', '訪客');
         } else {
             addMessage(message, 'user');
+            saveChatMessage(message, 'visitor', '訪客');
         }
         input.value = '';
         const imgToSend = pendingImage;
@@ -260,6 +307,7 @@
             if (data.reply) {
                 // 处理回复：商品/訂單鏈接渲染成淘寶風格卡片，其餘鏈接可點擊
                 await displayAiReply(data.reply);
+                saveChatMessage(data.reply, 'ai', 'AI客服');
                 chatHistory.push({ role: 'user', content: message });
                 chatHistory.push({ role: 'assistant', content: data.reply });
 
