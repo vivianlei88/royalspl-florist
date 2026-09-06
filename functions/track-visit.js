@@ -1,4 +1,7 @@
 // 訪客追踪 Function：獲取訪客IP、解析地理位置、存入數據庫
+const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+
 export async function onRequestPost(context) {
     const { request, env } = context;
     
@@ -42,11 +45,11 @@ export async function onRequestPost(context) {
         // 3. 判斷新老訪客（通過IP是否曾經訪問過）
         let isNewVisitor = false;
         try {
-            const checkResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/visitor_logs?ip=eq.${encodeURIComponent(ip)}&select=id&limit=1`, {
+            const checkResponse = await fetch(`${SUPABASE_URL}/rest/v1/visitor_logs?ip=eq.${encodeURIComponent(ip)}&select=id&limit=1`, {
                 method: 'GET',
                 headers: {
-                    'apikey': env.SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -57,11 +60,11 @@ export async function onRequestPost(context) {
         }
         
         // 4. 存入數據庫
-        const insertResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/visitor_logs`, {
+        const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/visitor_logs`, {
             method: 'POST',
             headers: {
-                'apikey': env.SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                 'Content-Type': 'application/json',
                 'Prefer': 'return=minimal'
             },
