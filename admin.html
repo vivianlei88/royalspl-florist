@@ -442,20 +442,52 @@
         window.adminUIShown = true;
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('adminPage').style.display = 'block';
-        const name = localStorage.getItem('admin_name') || '';
-        const avatar = localStorage.getItem('admin_avatar') || '';
-        const email = localStorage.getItem('admin_email') || '';
-        const userInfo = document.getElementById('userInfo');
-        if (userInfo && name) {
-            userInfo.style.display = 'flex';
-            const userAvatar = document.getElementById('userAvatar');
-            const userEmail = document.getElementById('userEmail');
-            if (userAvatar && avatar) userAvatar.src = avatar;
-            if (userAvatar) userAvatar.title = email || '';
-            if (userEmail) userEmail.textContent = name;
-        }
+        loadAdminProfile();
         if (typeof switchPage === 'function') switchPage('analytics');
         startVisitorTracking();
+    }
+
+    async function loadAdminProfile() {
+        try {
+            const email = localStorage.getItem('admin_email') || '';
+            let name = localStorage.getItem('admin_name') || '';
+            let avatar = localStorage.getItem('admin_avatar') || '';
+            
+            // 從數據庫獲取最新的管理員信息
+            if (email) {
+                const { data, error } = await supabaseClient
+                    .from('admin_users')
+                    .select('name, avatar_url, email')
+                    .eq('email', email)
+                    .limit(1);
+                if (!error && data && data.length > 0) {
+                    name = data[0].name || name;
+                    avatar = data[0].avatar_url || avatar;
+                    localStorage.setItem('admin_name', name);
+                    localStorage.setItem('admin_avatar', avatar);
+                }
+            }
+            
+            const userInfo = document.getElementById('userInfo');
+            if (userInfo) {
+                userInfo.style.display = 'flex';
+                const userAvatar = document.getElementById('userAvatar');
+                const userEmail = document.getElementById('userEmail');
+                if (userAvatar) {
+                    if (avatar) {
+                        userAvatar.src = avatar;
+                        userAvatar.style.display = 'block';
+                    } else {
+                        // 沒有頭像時顯示默認頭像
+                        userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="%23666"/><text x="20" y="26" font-size="18" text-anchor="middle" fill="white">👤</text></svg>';
+                    }
+                    userAvatar.title = email || '';
+                }
+                if (userEmail) userEmail.textContent = name || email || '管理員';
+            }
+        } catch (e) {
+            console.error('載入管理員資料失敗:', e);
+        }
     }
 
     // ==================== 在線訪客追踪 ====================
