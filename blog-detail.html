@@ -44,6 +44,31 @@
     <meta name="twitter:title" content="花藝文章 | RoyalSpl Florist 香港花店">
     <meta name="twitter:description" content="閱讀 RoyalSpl Florist 花藝文章，深入了解花藝知識、送花禮儀和節日花禮推薦。">
     <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <script type="application/ld+json" id="blogJsonLd">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "RoyalSpl Florist 花藝部落格",
+      "description": "RoyalSpl Florist 花藝部落格，分享花語知識、送花貼士、花藝保養技巧。",
+      "image": "https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg",
+      "author": {
+        "@type": "Organization",
+        "name": "RoyalSpl Florist"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "RoyalSpl Florist Hong Kong",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg"
+        }
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.royalspl.shop/blog-detail.html"
+      }
+    }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -79,7 +104,49 @@
             renderArticle(post);
         }
 
+        function updateBlogJsonLd(post) {
+            try {
+                const script = document.getElementById('blogJsonLd');
+                if (!script) return;
+                const data = {
+                    "@context": "https://schema.org",
+                    "@type": "BlogPosting",
+                    "headline": post.title || "RoyalSpl Florist 花藝部落格",
+                    "description": (post.excerpt || post.title || "RoyalSpl Florist 花藝部落格").substring(0, 200),
+                    "image": post.image_url || "https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg",
+                    "datePublished": post.created_at || new Date().toISOString(),
+                    "dateModified": post.updated_at || post.created_at || new Date().toISOString(),
+                    "author": {
+                        "@type": "Organization",
+                        "name": "RoyalSpl Florist"
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "RoyalSpl Florist Hong Kong",
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": "https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg"
+                        }
+                    },
+                    "mainEntityOfPage": {
+                        "@type": "WebPage",
+                        "@id": "https://www.royalspl.shop/blog-detail.html?id=" + (post.id || "")
+                    }
+                };
+                script.textContent = JSON.stringify(data);
+                // 同時更新頁面 title 和 meta description
+                if (post.title) {
+                    document.title = post.title + ' | RoyalSpl Florist 香港花店';
+                    const metaDesc = document.querySelector('meta[name="description"]');
+                    if (metaDesc) metaDesc.setAttribute('content', (post.excerpt || post.title || '').substring(0, 160));
+                }
+            } catch (e) {
+                console.error('更新部落格結構化數據失敗:', e);
+            }
+        }
+
         function renderArticle(post) {
+            updateBlogJsonLd(post);
             const container = document.getElementById('articleContent');
             let html = `
                 <h1 class="article-title">${post.title}</h1>
