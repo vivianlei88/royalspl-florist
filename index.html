@@ -380,6 +380,8 @@
             
             if (!hasAnyText && heroContent) {
                 heroContent.style.display = 'none';
+            } else if (hasAnyText && heroContent) {
+                heroContent.style.display = '';
             }
             
             if (settings.about_text) {
@@ -388,6 +390,14 @@
             }
         } catch (e) {
             console.error('載入首頁設置失敗:', e);
+            // 出錯時也嘗試顯示圖片
+            try {
+                if (settings && settings.hero_images && settings.hero_images.length > 0) {
+                    initHeroSlides(settings.hero_images);
+                } else if (settings && settings.hero_image) {
+                    initHeroSlides([settings.hero_image]);
+                }
+            } catch(e2) { console.error('顯示Hero圖片失敗:', e2); }
         }
     }
 
@@ -532,6 +542,9 @@
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
     document.addEventListener('DOMContentLoaded', function() {
+        // 先隱藏默認Hero文字，等待數據庫設置載入
+        var heroContent = document.querySelector('.hero-content');
+        if (heroContent) heroContent.style.display = 'none';
         loadHomepageSettings();
         loadCollectionCards();
         loadFeaturedProducts();
