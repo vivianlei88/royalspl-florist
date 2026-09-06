@@ -231,6 +231,7 @@
         .sidebar-subitem:hover { background: #f5f5f5; color: #1a1a1a !important; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsrsasign@10.8.6/lib/jsrsasign-all-min.js"></script>
 </head>
 <body>
     <div id="loginPage" class="login-container">
@@ -525,11 +526,180 @@
         { url: 'blog-detail.html', name: '部落格文章頁', type: 'dynamic' }
     ];
 
+    const seoKeywords = ['香港花店', '香港鮮花配送', '網上花店', '生日花束 香港', '情人節花束', '母親節花束', '港島花店', 'Hong Kong florist', 'flower delivery Hong Kong', 'online florist HK', 'birthday bouquet Hong Kong', "Valentine's Day flowers HK", "Mother's Day bouquet HK", 'Hong Kong Island florist'];
+    let currentSEOTab = 'pages';
+
     async function renderSEOPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">SEO管理</h2><button class="btn btn-secondary" onclick="refreshSEOCheck()">重新檢查</button></div>';
-        c.innerHTML += '<div id="seoScoreCard" style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;"><div><div style="font-size:14px;color:#888;margin-bottom:5px;">SEO 健康評分</div><div id="seoScore" style="font-size:36px;font-weight:700;color:#1A1A1A;">--</div></div><div id="seoSummary" style="font-size:14px;color:#666;line-height:1.8;"></div></div></div>';
-        c.innerHTML += '<div id="seoPageList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 100px;gap:10px;font-weight:600;font-size:14px;"><div>頁面</div><div>Title</div><div>Description</div><div>狀態</div><div>操作</div></div><div id="seoPageItems">加載中...</div></div>';
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">SEO管理</h2></div>';
+        c.innerHTML += '<div style="display:flex;gap:10px;margin-bottom:20px;">' +
+            '<button class="btn ' + (currentSEOTab === 'pages' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'pages\')">頁面SEO檢查</button>' +
+            '<button class="btn ' + (currentSEOTab === 'keywords' ? 'btn-primary' : 'btn-secondary') + '" onclick="switchSEOTab(\'keywords\')">關鍵詞排名</button>' +
+            '</div>';
+        c.innerHTML += '<div id="seoTabContent"></div>';
+        if (currentSEOTab === 'pages') renderSEOPagesTab();
+        else renderSEOKeywordsTab();
+    }
+
+    function switchSEOTab(tab) {
+        currentSEOTab = tab;
+        renderSEOPage(document.getElementById('mainContent'));
+    }
+
+    async function renderSEOPagesTab() {
+        const container = document.getElementById('seoTabContent');
+        container.innerHTML = '<div id="seoScoreCard" style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;"><div><div style="font-size:14px;color:#888;margin-bottom:5px;">SEO 健康評分</div><div id="seoScore" style="font-size:36px;font-weight:700;color:#1A1A1A;">--</div></div><div id="seoSummary" style="font-size:14px;color:#666;line-height:1.8;"></div></div></div>';
+        container.innerHTML += '<div id="seoPageList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);"><div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 100px;gap:10px;font-weight:600;font-size:14px;"><div>頁面</div><div>Title</div><div>Description</div><div>狀態</div><div>操作</div></div><div id="seoPageItems">加載中...</div></div>';
         await loadSEOData();
+    }
+
+    async function renderSEOKeywordsTab() {
+        const container = document.getElementById('seoTabContent');
+        container.innerHTML = '<div style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">' +
+            '<div><div style="font-size:14px;color:#888;margin-bottom:5px;">關鍵詞排名跟踪</div>' +
+            '<div style="font-size:13px;color:#666;">數據來源：Google Search Console，每天更新一次</div></div>' +
+            '<button class="btn btn-primary" onclick="updateKeywordRankings()">更新排名數據</button></div>';
+        container.innerHTML += '<div id="keywordRankingList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:10px;font-weight:600;font-size:14px;">' +
+            '<div>關鍵詞</div><div>排名</div><div>曝光量</div><div>點擊量</div><div>點擊率</div><div>趨勢</div></div>' +
+            '<div id="keywordRankingItems">加載中...</div></div>';
+        await loadKeywordRankings();
+    }
+
+    async function loadKeywordRankings() {
+        try {
+            const { data, error } = await supabaseClient.from('keyword_rankings')
+                .select('*').order('check_date', { ascending: false }).limit(14 * 2);
+            if (error) throw error;
+            const container = document.getElementById('keywordRankingItems');
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div style="padding:30px;text-align:center;color:#999;">暫無數據，點擊「更新排名數據」開始查詢</div>';
+                return;
+            }
+            // 獲取每個關鍵詞最新的排名
+            const latest = {};
+            const previous = {};
+            data.forEach(row => {
+                if (!latest[row.keyword]) {
+                    latest[row.keyword] = row;
+                } else if (!previous[row.keyword]) {
+                    previous[row.keyword] = row;
+                }
+            });
+            let html = '';
+            seoKeywords.forEach(kw => {
+                const row = latest[kw];
+                const prev = previous[kw];
+                if (!row) {
+                    html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;">' +
+                        '<div style="font-size:14px;">' + kw + '</div>' +
+                        '<div colspan="5" style="color:#ccc;font-size:13px;">未查詢</div></div>';
+                    return;
+                }
+                let trend = '-';
+                let trendColor = '#999';
+                if (prev && prev.position && row.position) {
+                    const diff = prev.position - row.position;
+                    if (diff > 0) { trend = '↑ ' + diff; trendColor = '#52C41A'; }
+                    else if (diff < 0) { trend = '↓ ' + Math.abs(diff); trendColor = '#EA6668'; }
+                    else { trend = '→ 0'; trendColor = '#999'; }
+                }
+                const posColor = row.position <= 10 ? '#52C41A' : row.position <= 30 ? '#FAAD14' : '#EA6668';
+                html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
+                    '<div style="font-size:14px;">' + kw + '</div>' +
+                    '<div style="font-size:14px;font-weight:600;color:' + posColor + ';">' + (row.position ? row.position.toFixed(0) : '-') + '</div>' +
+                    '<div style="font-size:13px;">' + (row.impressions || 0) + '</div>' +
+                    '<div style="font-size:13px;">' + (row.clicks || 0) + '</div>' +
+                    '<div style="font-size:13px;">' + (row.ctr ? (row.ctr * 100).toFixed(2) + '%' : '-') + '</div>' +
+                    '<div style="font-size:13px;color:' + trendColor + ';font-weight:600;">' + trend + '</div></div>';
+            });
+            container.innerHTML = html;
+        } catch (e) {
+            document.getElementById('keywordRankingItems').innerHTML = '<div style="padding:30px;text-align:center;color:#999;">加載失敗: ' + e.message + '</div>';
+        }
+    }
+
+    async function getGCPAccessToken() {
+        try {
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'gcp_service_account').single();
+            if (!data) throw new Error('未找到服務帳號密鑰');
+            const sa = JSON.parse(data.setting_value);
+            const header = { alg: 'RS256', typ: 'JWT' };
+            const now = Math.floor(Date.now() / 1000);
+            const payload = {
+                iss: sa.client_email,
+                scope: 'https://www.googleapis.com/auth/webmasters.readonly',
+                aud: sa.token_uri,
+                exp: now + 3600,
+                iat: now
+            };
+            const sHeader = KJUR.jws.JWS.sign('RS256', JSON.stringify(header), JSON.stringify(payload), sa.private_key);
+            const tokenResp = await fetch(sa.token_uri, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + sHeader
+            });
+            const tokenData = await tokenResp.json();
+            return tokenData.access_token;
+        } catch (e) {
+            console.error('獲取Google API token失敗:', e);
+            throw e;
+        }
+    }
+
+    async function updateKeywordRankings() {
+        try {
+            alert('開始更新排名數據，請稍候...');
+            const accessToken = await getGCPAccessToken();
+            const siteUrl = 'https://www.royalspl.shop/';
+            const today = new Date().toISOString().split('T')[0];
+            const startDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            
+            for (let i = 0; i < seoKeywords.length; i++) {
+                const kw = seoKeywords[i];
+                try {
+                    const resp = await fetch('https://www.googleapis.com/webmasters/v3/sites/' + encodeURIComponent(siteUrl) + '/searchAnalytics/query', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            startDate: startDate,
+                            endDate: today,
+                            dimensions: ['query'],
+                            dimensionFilterGroups: [{
+                                filters: [{ dimension: 'query', operator: 'equals', expression: kw }]
+                            }],
+                            rowLimit: 1
+                        })
+                    });
+                    const data = await resp.json();
+                    if (data.rows && data.rows.length > 0) {
+                        const row = data.rows[0];
+                        await supabaseClient.from('keyword_rankings').upsert({
+                            keyword: kw,
+                            position: Math.round(row.position),
+                            impressions: row.impressions,
+                            clicks: row.clicks,
+                            ctr: row.ctr,
+                            check_date: today
+                        }, { onConflict: 'keyword,check_date' });
+                    } else {
+                        await supabaseClient.from('keyword_rankings').upsert({
+                            keyword: kw,
+                            position: null,
+                            impressions: 0,
+                            clicks: 0,
+                            ctr: 0,
+                            check_date: today
+                        }, { onConflict: 'keyword,check_date' });
+                    }
+                } catch (e) {
+                    console.error('查詢關鍵詞 ' + kw + ' 失敗:', e);
+                }
+            }
+            alert('排名數據更新完成！');
+            await loadKeywordRankings();
+        } catch (e) {
+            alert('更新失敗: ' + e.message);
+        }
     }
 
     async function loadSEOData() {
