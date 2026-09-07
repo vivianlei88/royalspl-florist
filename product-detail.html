@@ -311,7 +311,7 @@
         var tags = product.tags || [];
         var scentNotes = product.scent_notes || [];
         var stockClass = product.stock === '現貨' ? 'status-in-stock' : 'status-pre-order';
-        var stockText = product.stock === '現貨' ? '[現貨]' : '[預訂] 預計 ' + (product.delivery_days || 3) + ' 天內發貨';
+        var stockText = product.stock === '現貨' ? '現貨' : '預訂 ' + (product.delivery_days || 3) + ' 天';
         
         var html = '';
         var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
