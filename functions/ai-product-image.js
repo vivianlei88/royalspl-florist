@@ -1,6 +1,6 @@
 export async function onRequestPost(context) {
     try {
-        const { imageUrl, imageBase64, existingData } = await context.request.json();
+        const { imageUrl, imageBase64, existingData, userPrompt } = await context.request.json();
         
         const API_KEY = context.env.DOUBAO_SEED_2_0_MINI_API_KEY;
         const MODEL_ID = 'doubao-seed-2-0-mini-260428';
@@ -32,7 +32,8 @@ export async function onRequestPost(context) {
   "style_tags": "设计风格标签（用逗号分隔，如：韩式,日式,法式田园）"
 }
 
-${existingData ? '已有信息参考：' + JSON.stringify(existingData) : ''}`;
+${existingData ? '已有信息参考：' + JSON.stringify(existingData) : ''}
+${userPrompt ? '用户特别要求：' + userPrompt : ''}`;
         
         const resp = await fetch(`${BASE_URL}/chat/completions`, {
             method: 'POST',
