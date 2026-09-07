@@ -361,11 +361,17 @@
 
     async function loadProduct() {
         var id = getUrlParam('id');
-        if (!id) { window.location.href = 'products.html'; return; }
+        var slug = getUrlParam('slug');
+        if (!id && !slug) { window.location.href = 'products.html'; return; }
         var container = document.getElementById('detailContainer');
         
         try {
-            var result = await supabaseClient.from('products').select('*').eq('id', id).single();
+            var result;
+            if (id) {
+                result = await supabaseClient.from('products').select('*').eq('id', id).single();
+            } else {
+                result = await supabaseClient.from('products').select('*').eq('slug', slug).single();
+            }
             if (result.error) throw result.error;
             if (!result.data) { window.location.href = 'products.html'; return; }
             

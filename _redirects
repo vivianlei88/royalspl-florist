@@ -1,1 +1,5 @@
 /post/*    /blog-detail.html?slug=:splat    200
+
+# WIX 舊產品 URL 301 重定向到新網站（保持谷歌排名權重）
+/product-page/*    /product-detail.html?slug=:splat    301
+/en/product-page/*    /en/product-detail.html?slug=:splat    301
