@@ -3341,7 +3341,8 @@ async function saveProduct() {
                     images: imageArr,
                     variants: d['規格變體JSON'] ? JSON.parse(d['規格變體JSON']) : [],
                     seo_title: d['SEO標題'] || '',
-                    seo_description: d['SEO描述'] || ''
+                    seo_description: d['SEO描述'] || '',
+                    slug: d['slug'] || d['URL Slug'] || d['url_slug'] || ''
                 };
                 // 按SKU判断：已存在则更新，不存在则新增
                 if (pd.sku) {
