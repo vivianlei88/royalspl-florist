@@ -284,6 +284,31 @@
         .stat-card { padding: 15px !important; }
         .stat-number { font-size: 24px !important; }
     }
+    
+    /* 登錄頁面移動端專用 */
+    @media (max-width: 768px) {
+        .login-container {
+            max-width: 95% !important;
+            margin: 30px auto !important;
+            padding: 25px 20px !important;
+        }
+        .login-container h1 { font-size: 22px !important; margin-bottom: 20px !important; }
+        .login-container input {
+            width: 100% !important;
+            padding: 14px !important;
+            font-size: 16px !important;
+            margin-bottom: 15px !important;
+            box-sizing: border-box;
+        }
+        .login-container button {
+            width: 100% !important;
+            padding: 14px !important;
+            font-size: 17px !important;
+            min-height: 48px !important;
+        }
+        #loginPage { display: block !important; }
+    }
+
     </style>
     <style>
         .sidebar-group { position: relative; margin-bottom: 5px; }
@@ -314,6 +339,31 @@
             cursor: pointer;
         }
         .sidebar-subitem:hover { background: #f5f5f5; color: #1a1a1a !important; }
+    
+    /* 登錄頁面移動端專用 */
+    @media (max-width: 768px) {
+        .login-container {
+            max-width: 95% !important;
+            margin: 30px auto !important;
+            padding: 25px 20px !important;
+        }
+        .login-container h1 { font-size: 22px !important; margin-bottom: 20px !important; }
+        .login-container input {
+            width: 100% !important;
+            padding: 14px !important;
+            font-size: 16px !important;
+            margin-bottom: 15px !important;
+            box-sizing: border-box;
+        }
+        .login-container button {
+            width: 100% !important;
+            padding: 14px !important;
+            font-size: 17px !important;
+            min-height: 48px !important;
+        }
+        #loginPage { display: block !important; }
+    }
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsrsasign@10.8.6/lib/jsrsasign-all-min.js"></script>
@@ -323,7 +373,7 @@
         <h1>後台管理登入</h1>
         <input type="text" id="loginUser" placeholder="帳號">
         <input type="password" id="loginPass" placeholder="密碼">
-        <button onclick="if(document.getElementById('loginUser').value.trim()==='admin' && document.getElementById('loginPass').value==='royalspl2024'){localStorage.setItem('royalspl_admin','true');document.getElementById('loginPage').style.display='none';document.getElementById('adminPage').style.display='block';if(typeof switchPage==='function'){switchPage('analytics');}if(typeof checkVisitorNotifications==='function'){checkVisitorNotifications();}}else{document.getElementById('loginError').style.display='block';}">登入</button>
+        <button onclick="doAdminLogin()">登入</button>
         <p class="login-error" id="loginError">帳號或密碼錯誤</p>
         <div style="margin:20px 0;border-top:1px solid #ddd;padding-top:20px;">
             <p style="color:#888;font-size:14px;margin-bottom:15px;">或使用以下方式登錄</p>
@@ -4544,6 +4594,21 @@ async function batchTranslate(type) {
     else if (type === 'blog') loadBlogPosts();
 }
 
+
+function doAdminLogin() {
+    var user = document.getElementById('loginUser').value.trim();
+    var pass = document.getElementById('loginPass').value;
+    if (user === 'admin' && pass === 'royalspl2024') {
+        localStorage.setItem('royalspl_admin', 'true');
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('adminPage').style.display = 'block';
+        if (typeof switchPage === 'function') switchPage('analytics');
+        if (typeof checkVisitorNotifications === 'function') checkVisitorNotifications();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+    }
+}
+
 </body></html>');
         w.document.close();
         w.print();
@@ -5064,6 +5129,21 @@ async function batchTranslate(type) {
     // 重新載入列表
     if (type === 'products') loadProducts();
     else if (type === 'blog') loadBlogPosts();
+}
+
+
+function doAdminLogin() {
+    var user = document.getElementById('loginUser').value.trim();
+    var pass = document.getElementById('loginPass').value;
+    if (user === 'admin' && pass === 'royalspl2024') {
+        localStorage.setItem('royalspl_admin', 'true');
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('adminPage').style.display = 'block';
+        if (typeof switchPage === 'function') switchPage('analytics');
+        if (typeof checkVisitorNotifications === 'function') checkVisitorNotifications();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+    }
 }
 
 </body></html>');
@@ -5970,6 +6050,21 @@ async function batchTranslate(type) {
     // 重新載入列表
     if (type === 'products') loadProducts();
     else if (type === 'blog') loadBlogPosts();
+}
+
+
+function doAdminLogin() {
+    var user = document.getElementById('loginUser').value.trim();
+    var pass = document.getElementById('loginPass').value;
+    if (user === 'admin' && pass === 'royalspl2024') {
+        localStorage.setItem('royalspl_admin', 'true');
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('adminPage').style.display = 'block';
+        if (typeof switchPage === 'function') switchPage('analytics');
+        if (typeof checkVisitorNotifications === 'function') checkVisitorNotifications();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+    }
 }
 
 </body>
