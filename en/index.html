@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+<script>
+(function() {
+    var manualLang = localStorage.getItem('royalspl_lang_manual');
+    if (manualLang) return;
+    var browserLang = (navigator.language || navigator.userLanguage || 'zh').toLowerCase();
+    var isChinese = browserLang.indexOf('zh') === 0;
+    if (isChinese) {
+        var path = window.location.pathname;
+        if (path.indexOf('/en/') === 0) {
+            var targetPath = path.replace('/en/', '/');
+            if (targetPath === '/index.html') targetPath = '/';
+            window.location.replace(targetPath);
+        }
+    }
+})();
+</script>
+
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>

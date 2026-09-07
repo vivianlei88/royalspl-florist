@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+<script>
+(function() {
+    var manualLang = localStorage.getItem('royalspl_lang_manual');
+    if (manualLang) return;
+    var browserLang = (navigator.language || navigator.userLanguage || 'zh').toLowerCase();
+    var isEnglish = browserLang.indexOf('en') === 0;
+    var isChinese = browserLang.indexOf('zh') === 0;
+    if (isEnglish && !isChinese) {
+        var path = window.location.pathname;
+        if (path.indexOf('/en/') !== 0) {
+            var targetPath = (path === '/' || path === '/index.html') ? '/en/' : '/en' + path;
+            window.location.replace(targetPath);
+        }
+    }
+})();
+</script>
+
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
@@ -165,7 +182,7 @@
                 <p class="logo-subtext">HONG KONG</p>
             </a>
             <div class="header-actions">
-                <a href="/en/" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>
+                <a href="/en/" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>
                 <a href="account.html" class="user-icon" aria-label="會員中心">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
