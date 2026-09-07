@@ -279,6 +279,7 @@
                     <div class="sidebar-item sidebar-subitem" data-page="blog" onclick="switchPage('blog')">部落格文章</div>
                     <div class="sidebar-item sidebar-subitem" data-page="faq" onclick="switchPage('faq')">常見問題</div>
                     <div class="sidebar-item sidebar-subitem" data-page="privacy" onclick="switchPage('privacy')">私隱政策</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="edm" onclick="switchPage('edm')">郵件營銷</div>
                 </div>
             </div>
             <div class="sidebar-item" data-page="seo" onclick="switchPage('seo')">SEO管理</div>
@@ -291,6 +292,9 @@
                     <div class="sidebar-item sidebar-subitem" data-page="homepage" onclick="switchPage('homepage')">首頁管理</div>
                     <div class="sidebar-item sidebar-subitem" data-page="template" onclick="switchPage('template')">模板預覽</div>
                     <div class="sidebar-item sidebar-subitem" data-page="aichat" onclick="switchPage('aichat')">AI客服管理</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="media" onclick="switchPage('media')">圖片媒體庫</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="backup" onclick="switchPage('backup')">數據備份</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="logs" onclick="switchPage('logs')">操作日誌</div>
                     <div class="sidebar-item sidebar-subitem" data-page="admins" onclick="switchPage('admins')">管理員管理</div>
                 </div>
             </div>
@@ -1352,6 +1356,260 @@
         } catch (e) { alert('保存失敗: ' + e.message); }
     }
 
+    // ==================== 郵件營銷 EDM ====================
+    async function renderEDMPage(c) {
+        let shop = {};
+        try {
+            var r = await supabaseClient.from('shop_settings').select('*').limit(1);
+            if (r.data && r.data.length > 0) shop = r.data[0];
+        } catch(e) {}
+        
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">郵件營銷 EDM</h2><button class="btn btn-primary" onclick="sendEDM()">發送郵件</button></div>';
+        c.innerHTML += '<div style="display:grid;grid-template-columns:1fr 400px;gap:20px;">';
+        // 左邊：編輯區
+        c.innerHTML += '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">';
+        c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">郵件主題</label>' +
+            '<input type="text" id="edmSubject" placeholder="例如：新品上市！限時優惠8折" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>';
+        c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">收件人</label>' +
+            '<select id="edmRecipients" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;">' +
+            '<option value="all">所有會員</option>' +
+            '<option value="customers">有訂單的客戶</option>' +
+            '<option value="newsletter">訂閱用戶</option></select></div>';
+        c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">郵件內容 <button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="showAIWriterModal(\'blog\',\'edmContent\')">✦ AI寫作</button></label>' +
+            '<textarea id="edmContent" rows="12" placeholder="輸入郵件內容，支援 HTML" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea></div>';
+        c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">按鈕文字（可選）</label>' +
+            '<input type="text" id="edmButtonText" placeholder="例如：立即選購" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>';
+        c.innerHTML += '<div><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">按鈕連結（可選）</label>' +
+            '<input type="text" id="edmButtonUrl" placeholder="https://..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>';
+        c.innerHTML += '</div>';
+        // 右邊：預覽區
+        c.innerHTML += '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);height:fit-content;position:sticky;top:20px;">';
+        c.innerHTML += '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">郵件預覽</div>';
+        c.innerHTML += '<div id="edmPreview" style="border:1px solid #eee;border-radius:8px;overflow:hidden;max-height:600px;overflow-y:auto;">';
+        // 頁頭（自動套取店鋪資料）
+        c.innerHTML += '<div style="background:#1A1A1A;color:white;padding:20px;text-align:center;">' +
+            (shop.shop_logo ? '<img src="' + shop.shop_logo + '" style="max-height:50px;margin-bottom:10px;">' : '') +
+            '<div style="font-size:18px;font-weight:600;">' + (shop.shop_name || 'RoyalSpl Florist') + '</div>' +
+            '<div style="font-size:12px;opacity:0.8;margin-top:5px;">' + (shop.shop_phone || '') + ' | ' + (shop.shop_email || '') + '</div></div>';
+        c.innerHTML += '<div id="edmPreviewBody" style="padding:20px;font-size:14px;line-height:1.6;color:#333;">郵件內容預覽...</div>';
+        c.innerHTML += '<div style="background:#f5f5f5;padding:15px;text-align:center;font-size:12px;color:#999;">' +
+            (shop.shop_address || '') + '<br>© 2026 ' + (shop.shop_name || 'RoyalSpl Florist') + '</div>';
+        c.innerHTML += '</div></div></div>';
+        
+        // 實時預覽
+        setTimeout(function() {
+            var contentEl = document.getElementById('edmContent');
+            if (contentEl) {
+                contentEl.addEventListener('input', updateEDMPreview);
+                document.getElementById('edmSubject').addEventListener('input', updateEDMPreview);
+                document.getElementById('edmButtonText').addEventListener('input', updateEDMPreview);
+                document.getElementById('edmButtonUrl').addEventListener('input', updateEDMPreview);
+            }
+        }, 100);
+    }
+    
+    function updateEDMPreview() {
+        var subject = document.getElementById('edmSubject').value;
+        var content = document.getElementById('edmContent').value;
+        var btnText = document.getElementById('edmButtonText').value;
+        var btnUrl = document.getElementById('edmButtonUrl').value;
+        var body = '<div style="font-size:16px;font-weight:600;margin-bottom:15px;color:#1A1A1A;">' + (subject || '郵件主題') + '</div>';
+        body += '<div style="white-space:pre-wrap;">' + (content || '郵件內容預覽...') + '</div>';
+        if (btnText && btnUrl) {
+            body += '<div style="text-align:center;margin-top:20px;"><a href="' + btnUrl + '" style="display:inline-block;padding:12px 30px;background:#1A1A1A;color:white;text-decoration:none;border-radius:5px;font-weight:600;">' + btnText + '</a></div>';
+        }
+        document.getElementById('edmPreviewBody').innerHTML = body;
+    }
+    
+    async function sendEDM() {
+        var subject = document.getElementById('edmSubject').value.trim();
+        var content = document.getElementById('edmContent').value.trim();
+        var recipients = document.getElementById('edmRecipients').value;
+        if (!subject) { alert('請輸入郵件主題'); return; }
+        if (!content) { alert('請輸入郵件內容'); return; }
+        if (!confirm('確定發送郵件給 ' + recipients + '？')) return;
+        try {
+            var r = await supabaseClient.from('profiles').select('email').not('email', 'is', null);
+            var emails = (r.data || []).map(function(p) { return p.email; }).filter(function(e) { return e; });
+            alert('將發送給 ' + emails.length + ' 位收件人\n（註：需配置郵件服務才能實際發送，目前僅顯示收件人列表）');
+            console.log('EDM recipients:', emails);
+        } catch(e) { alert('發送失敗: ' + e.message); }
+    }
+
+    // ==================== 圖片媒體庫 ====================
+    async function renderMediaPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">圖片媒體庫</h2><label class="btn btn-primary" style="cursor:pointer;">上傳圖片<input type="file" id="mediaUpload" accept="image/*" multiple style="display:none;" onchange="uploadMediaImages(this)"></label></div>';
+        c.innerHTML += '<div id="mediaGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:15px;"></div>';
+        loadMediaImages();
+    }
+    
+    async function loadMediaImages() {
+        var grid = document.getElementById('mediaGrid');
+        if (!grid) return;
+        grid.innerHTML = '<p style="text-align:center;padding:30px;grid-column:1/-1;">載入中...</p>';
+        try {
+            // 從商品、首頁設置等收集所有圖片
+            var images = [];
+            var products = await supabaseClient.from('products').select('image_url,images');
+            (products.data || []).forEach(function(p) {
+                if (p.image_url) images.push({url: p.image_url, source: '商品'});
+                if (p.images) { try { JSON.parse(p.images).forEach(function(img) { images.push({url: img, source: '商品'}); }); } catch(e) {} }
+            });
+            var homepage = await supabaseClient.from('homepage_settings').select('hero_images,about_image');
+            (homepage.data || []).forEach(function(h) {
+                if (h.hero_images) { try { JSON.parse(h.hero_images).forEach(function(img) { images.push({url: img, source: '首頁Banner'}); }); } catch(e) {} }
+                if (h.about_image) images.push({url: h.about_image, source: '關於我們'});
+            });
+            // 去重
+            var seen = {};
+            var unique = images.filter(function(img) {
+                if (seen[img.url]) return false;
+                seen[img.url] = true;
+                return true;
+            });
+            if (unique.length === 0) {
+                grid.innerHTML = '<p style="text-align:center;padding:30px;grid-column:1/-1;color:#999;">暫無圖片</p>';
+                return;
+            }
+            grid.innerHTML = unique.map(function(img, i) {
+                return '<div style="border:1px solid #eee;border-radius:8px;overflow:hidden;background:white;">' +
+                    '<img src="' + img.url + '" style="width:100%;height:150px;object-fit:cover;cursor:pointer;" onclick="copyMediaUrl(\'' + img.url.replace(/'/g, "\\'") + '\')" title="點擊複製連結">' +
+                    '<div style="padding:8px;font-size:12px;color:#666;display:flex;justify-content:space-between;align-items:center;">' +
+                    '<span>' + img.source + '</span>' +
+                    '<button onclick="copyMediaUrl(\'' + img.url.replace(/'/g, "\\'") + '\')" style="background:none;border:none;color:#0066FF;cursor:pointer;font-size:12px;">複製</button>' +
+                    '</div></div>';
+            }).join('');
+        } catch(e) {
+            grid.innerHTML = '<p style="text-align:center;padding:30px;grid-column:1/-1;color:red;">載入失敗: ' + e.message + '</p>';
+        }
+    }
+    
+    function copyMediaUrl(url) {
+        navigator.clipboard.writeText(url).then(function() {
+            showToast('圖片連結已複製');
+        }).catch(function() {
+            prompt('複製圖片連結：', url);
+        });
+    }
+    
+    async function uploadMediaImages(input) {
+        var files = input.files;
+        if (!files || !files.length) return;
+        showToast('上傳中...');
+        // 這裡需要 Supabase Storage，目前先用提示
+        alert('圖片上傳功能需要配置 Supabase Storage\n目前可以先在商品/首頁管理中上傳圖片');
+        input.value = '';
+    }
+
+    // ==================== 數據備份 ====================
+    async function renderBackupPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">數據備份</h2></div>';
+        c.innerHTML += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
+        c.innerHTML += '<div style="background:white;border-radius:8px;padding:25px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">';
+        c.innerHTML += '<h3 style="font-size:16px;margin:0 0 15px 0;">導出數據</h3>';
+        c.innerHTML += '<p style="font-size:14px;color:#666;margin-bottom:20px;">將所有數據導出為 JSON 文件，可用於備份或遷移。</p>';
+        c.innerHTML += '<div style="display:flex;flex-direction:column;gap:10px;">' +
+            '<button class="btn btn-primary" onclick="backupTable(\'products\')">備份商品數據</button>' +
+            '<button class="btn btn-primary" onclick="backupTable(\'orders\')">備份訂單數據</button>' +
+            '<button class="btn btn-primary" onclick="backupTable(\'profiles\')">備份會員數據</button>' +
+            '<button class="btn btn-primary" onclick="backupTable(\'blog_posts\')">備份部落格文章</button>' +
+            '<button class="btn btn-secondary" onclick="backupAllData()" style="background:#52C41A;">一鍵備份全部數據</button>' +
+            '</div></div>';
+        c.innerHTML += '<div style="background:white;border-radius:8px;padding:25px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">';
+        c.innerHTML += '<h3 style="font-size:16px;margin:0 0 15px 0;">備份記錄</h3>';
+        c.innerHTML += '<div id="backupHistory" style="font-size:14px;color:#666;">';
+        c.innerHTML += '<p>暫無備份記錄</p>';
+        c.innerHTML += '</div></div></div>';
+    }
+    
+    async function backupTable(tableName) {
+        try {
+            showToast('正在備份 ' + tableName + '...');
+            var r = await supabaseClient.from(tableName).select('*');
+            var data = r.data || [];
+            var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = tableName + '_backup_' + new Date().toISOString().slice(0,10) + '.json';
+            a.click();
+            showToast('備份成功：' + data.length + ' 條記錄');
+        } catch(e) { alert('備份失敗: ' + e.message); }
+    }
+    
+    async function backupAllData() {
+        var tables = ['products', 'orders', 'profiles', 'blog_posts', 'categories', 'site_settings', 'shop_settings'];
+        var allData = {};
+        for (var i = 0; i < tables.length; i++) {
+            try {
+                var r = await supabaseClient.from(tables[i]).select('*');
+                allData[tables[i]] = r.data || [];
+            } catch(e) { allData[tables[i]] = []; }
+        }
+        var blob = new Blob([JSON.stringify(allData, null, 2)], {type: 'application/json'});
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'full_backup_' + new Date().toISOString().slice(0,10) + '.json';
+        a.click();
+        showToast('全部數據備份成功');
+    }
+
+    // ==================== 操作日誌 ====================
+    async function renderLogsPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">操作日誌</h2><button class="btn btn-secondary" onclick="clearLogs()">清空日誌</button></div>';
+        c.innerHTML += '<div style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">';
+        c.innerHTML += '<table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#1A1A1A;color:white;">' +
+            '<th style="padding:12px;text-align:left;font-size:13px;">時間</th>' +
+            '<th style="padding:12px;text-align:left;font-size:13px;">管理員</th>' +
+            '<th style="padding:12px;text-align:left;font-size:13px;">操作</th>' +
+            '<th style="padding:12px;text-align:left;font-size:13px;">詳情</th>' +
+            '</tr></thead><tbody id="logsTableBody"></tbody></table></div>';
+        loadLogs();
+    }
+    
+    async function loadLogs() {
+        var tbody = document.getElementById('logsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">載入中...</td></tr>';
+        try {
+            var r = await supabaseClient.from('admin_logs').select('*').order('created_at', {ascending: false}).limit(100);
+            var logs = r.data || [];
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">暫無操作日誌</td></tr>';
+                return;
+            }
+            tbody.innerHTML = logs.map(function(log) {
+                return '<tr style="border-bottom:1px solid #eee;">' +
+                    '<td style="padding:10px 12px;font-size:13px;">' + (log.created_at || '').replace('T', ' ').slice(0, 19) + '</td>' +
+                    '<td style="padding:10px 12px;font-size:13px;">' + (log.admin_email || log.admin_name || '未知') + '</td>' +
+                    '<td style="padding:10px 12px;font-size:13px;"><span style="background:#e8f0fe;color:#1a73e8;padding:3px 8px;border-radius:4px;font-size:12px;">' + (log.action || '') + '</span></td>' +
+                    '<td style="padding:10px 12px;font-size:13px;color:#666;">' + (log.details || '') + '</td>' +
+                    '</tr>';
+            }).join('');
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:red;">載入失敗: ' + e.message + '<br>請先在 Supabase 創建 admin_logs 表</td></tr>';
+        }
+    }
+    
+    async function clearLogs() {
+        if (!confirm('確定清空所有操作日誌？')) return;
+        try {
+            await supabaseClient.from('admin_logs').delete().neq('id', -1);
+            showToast('日誌已清空');
+            loadLogs();
+        } catch(e) { alert('清空失敗: ' + e.message); }
+    }
+    
+    async function addAdminLog(action, details) {
+        try {
+            var adminEmail = localStorage.getItem('adminEmail') || 'unknown';
+            await supabaseClient.from('admin_logs').insert({
+                admin_email: adminEmail,
+                action: action,
+                details: details || ''
+            });
+        } catch(e) { console.log('Log error:', e.message); }
+    }
+
     async function upsertSetting(key, value) {
         const { data } = await supabaseClient.from('site_settings').select('id').eq('setting_key', key).maybeSingle();
         if (data) {
@@ -1971,6 +2229,10 @@
         else if (page === 'blog') { renderBlogPage(c); }
         else if (page === 'faq') { renderFaqPage(c); }
         else if (page === 'privacy') { renderPrivacyPage(c); }
+        else if (page === 'edm') { renderEDMPage(c); }
+        else if (page === 'media') { renderMediaPage(c); }
+        else if (page === 'backup') { renderBackupPage(c); }
+        else if (page === 'logs') { renderLogsPage(c); }
     }
     function showContentMenu() {
         var submenu = document.getElementById('contentSubmenu');
@@ -3357,7 +3619,48 @@ async function saveProduct() {
             if (data.success) { await supabaseClient.from('orders').update({ refund_status: 'refunded', status: 'cancelled' }).eq('id', order.id); showToast('退款成功'); loadOrders(); } else { showToast('退款失敗：' + (data.error || '未知錯誤')); }
         } catch (e) { showToast('網絡錯誤'); }
     }
-    function exportOrdersCSV() { if (!allOrders.length) return; var rows = ['order_code,created_at,delivery_date,recipient_name,recipient_phone,customer_email,recipient_address,total_amount,status']; for (var i = 0; i < allOrders.length; i++) { var o = allOrders[i]; rows.push([o.order_code, (o.created_at || '').slice(0,10), o.delivery_date || '', o.recipient_name, o.recipient_phone, o.customer_email || '', o.recipient_address || '', o.total_amount, o.status].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orders.csv'; a.click(); }
+    function exportOrdersCSV() {
+        if (!allOrders || !allOrders.length) { alert('暫無訂單可導出'); return; }
+        var headers = ['訂單編號','下單時間','送貨日期','送貨時段','送貨小時','送貨區域','運費','商品小計','訂單總額','訂單狀態','付款方式','收貨人姓名','收貨人電話','收貨地址','訂購人姓名','訂購人電話','訂購人電郵','備註','心意卡內容','商品名稱','Stripe付款ID','退款狀態','FPS參考號','FPS截圖','用戶ID','訂單ID'];
+        var rows = [headers.join(',')];
+        for (var i = 0; i < allOrders.length; i++) {
+            var o = allOrders[i];
+            var row = [
+                o.order_code || '',
+                (o.created_at || '').replace('T',' ').slice(0,19),
+                o.delivery_date || '',
+                o.delivery_time_slot || '',
+                o.delivery_hour || '',
+                o.delivery_area || '',
+                o.delivery_fee || '',
+                o.subtotal || '',
+                o.total_amount || '',
+                o.status || '',
+                o.payment_method || '',
+                o.recipient_name || '',
+                o.recipient_phone || '',
+                (o.recipient_address || '').replace(/,/g, '，'),
+                o.customer_name || '',
+                o.customer_phone || '',
+                o.customer_email || '',
+                (o.remarks || '').replace(/,/g, '，'),
+                (o.card_message || '').replace(/,/g, '，'),
+                (o.product_names || '').replace(/,/g, '，'),
+                o.stripe_payment_intent_id || '',
+                o.refund_status || '',
+                o.fps_ref || '',
+                o.fps_screenshot || '',
+                o.user_id || '',
+                o.id || ''
+            ];
+            rows.push(row.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','));
+        }
+        var blob = new Blob(['\ufeff' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'orders_' + new Date().toISOString().slice(0,10) + '.csv';
+        a.click();
+    }
 
     // ==================== 模板預覽 ====================
     function renderTemplatePage(c) {
