@@ -1374,12 +1374,20 @@
         };
     }
 
+    var blogCsvFileGlobal = null;
     function handleBlogFile(file) {
         var fileName = document.getElementById('blogFileName');
         if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
             alert('請選擇 CSV 檔案');
             return;
         }
+        blogCsvFileGlobal = file;
+        // 同時把文件設置到 input 元素
+        try {
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('blogCsvFile').files = dt.files;
+        } catch(e) {}
         fileName.style.display = 'block';
         fileName.innerHTML = '✅ 已選擇: <strong>' + file.name + '</strong> (' + (file.size / 1024).toFixed(1) + ' KB)';
     }
@@ -1391,12 +1399,13 @@
 
     async function importBlogCSV() {
         const fileInput = document.getElementById('blogCsvFile');
-        if (!fileInput.files[0]) { alert('請選擇 CSV 檔案'); return; }
+        const file = blogCsvFileGlobal || (fileInput && fileInput.files[0]);
+        if (!file) { alert('請選擇 CSV 檔案'); return; }
         const progress = document.getElementById('blogImportProgress');
         progress.style.display = 'block';
         progress.textContent = '讀取檔案中...';
         try {
-            const text = await fileInput.files[0].text();
+            const text = await file.text();
             const lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
             const headers = lines[0].split(',').map(function(h) { return h.trim().replace(/^"|"$/g, ''); });
             let imported = 0, skipped = 0;
