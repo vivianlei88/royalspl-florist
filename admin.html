@@ -1433,6 +1433,9 @@
         var subject = document.getElementById('edmSubject').value.trim();
         var content = document.getElementById('edmContent').value.trim();
         var recipients = document.getElementById('edmRecipients').value;
+        var btnText = document.getElementById('edmButtonText').value.trim();
+        var btnUrl = document.getElementById('edmButtonUrl').value.trim();
+        
         if (!subject) { alert('請輸入郵件主題'); return; }
         if (!content) { alert('請輸入郵件內容'); return; }
         
@@ -1452,13 +1455,70 @@
             }
             
             if (emails.length === 0) { alert('沒有找到收件人'); return; }
-            if (!confirm('確定發送郵件給 ' + emails.length + ' 位收件人？')) return;
+            if (!confirm('確定發送郵件給 ' + emails.length + ' 位收件人？\n\n' + emails.slice(0,5).join('\n') + (emails.length > 5 ? '\n...' : ''))) return;
             
-            // 顯示收件人列表
-            var emailList = emails.join('\n');
-            alert('將發送給 ' + emails.length + ' 位收件人：\n\n' + emailList.substring(0, 500) + (emails.length > 20 ? '\n...' : '') + '\n\n（註：需配置郵件服務才能實際發送）');
-            console.log('EDM recipients:', emails);
-        } catch(e) { alert('發送失敗: ' + e.message); }
+            // 獲取店鋪資料
+            var shop = {};
+            try {
+                var sr = await supabaseClient.from('shop_settings').select('*').limit(1);
+                if (sr.data && sr.data.length > 0) shop = sr.data[0];
+            } catch(e) {}
+            
+            // 構建完整 HTML 郵件
+            var buttonHtml = '';
+            if (btnText && btnUrl) {
+                buttonHtml = '<div style="text-align:center;margin:25px 0;"><a href="' + btnUrl + '" style="display:inline-block;padding:14px 40px;background:#1A1A1A;color:white;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;">' + btnText + '</a></div>';
+            }
+            
+            var emailHtml = '<div style="max-width:600px;margin:0 auto;font-family:Arial,sans-serif;">' +
+                // 頁頭
+                '<div style="background:#1A1A1A;color:white;padding:30px 20px;text-align:center;">' +
+                (shop.shop_logo ? '<img src="' + shop.shop_logo + '" style="max-height:60px;margin-bottom:15px;">' : '') +
+                '<div style="font-size:24px;font-weight:600;margin:0;">' + (shop.shop_name || 'RoyalSpl Florist') + '</div>' +
+                '<div style="font-size:13px;opacity:0.8;margin-top:8px;">' + (shop.shop_phone || '') + (shop.shop_email ? ' | ' + shop.shop_email : '') + '</div>' +
+                '</div>' +
+                // 內容
+                '<div style="padding:30px 25px;background:white;">' +
+                '<h1 style="font-size:22px;color:#1A1A1A;margin:0 0 20px 0;line-height:1.4;">' + subject + '</h1>' +
+                '<div style="font-size:15px;line-height:1.8;color:#333;white-space:pre-wrap;">' + content.replace(/\n/g, '<br>') + '</div>' +
+                buttonHtml +
+                '</div>' +
+                // 頁腳
+                '<div style="background:#f5f5f5;padding:20px;text-align:center;font-size:12px;color:#999;line-height:1.6;">' +
+                (shop.shop_address ? '<div>' + shop.shop_address + '</div>' : '') +
+                '<div style="margin-top:8px;">© 2026 ' + (shop.shop_name || 'RoyalSpl Florist') + '. All rights reserved.</div>' +
+                '<div style="margin-top:5px;"><a href="https://www.royalspl.shop" style="color:#666;">www.royalspl.shop</a></div>' +
+                '</div></div>';
+            
+            // 顯示發送中
+            var btn = document.querySelector('button[onclick="sendEDM()"]');
+            if (btn) { btn.textContent = '發送中...'; btn.disabled = true; }
+            
+            // 調用發送接口
+            var resp = await fetch('/send-edm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    recipients: emails,
+                    subject: subject,
+                    html: emailHtml
+                })
+            });
+            
+            var result = await resp.json();
+            if (result.success) {
+                alert('發送完成！\n總共：' + result.total + ' 封\n成功：' + result.successCount + ' 封\n失敗：' + result.failCount + ' 封');
+            } else {
+                alert('發送失敗: ' + (result.error || '未知錯誤'));
+            }
+            
+            if (btn) { btn.textContent = '發送郵件'; btn.disabled = false; }
+            
+        } catch(e) {
+            alert('發送失敗: ' + e.message);
+            var btn = document.querySelector('button[onclick="sendEDM()"]');
+            if (btn) { btn.textContent = '發送郵件'; btn.disabled = false; }
+        }
     }
 
     // ==================== 圖片媒體庫 ====================
