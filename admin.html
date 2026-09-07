@@ -874,7 +874,7 @@
     let currentBlogId = null;
 
     async function renderBlogPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-primary" onclick="showBlogLanguageModal()">新增文章</button></div></div>';
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-secondary" onclick="batchTranslate('blog')" style="background:#10b981;color:white;border:none;">🌐 一鍵翻譯為英文</button><button class="btn btn-primary" onclick="showBlogLanguageModal()">新增文章</button></div></div>';
         c.innerHTML += '<div class="form-container" style="max-width:100%;"><div style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
             '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.6fr 1fr 0.8fr 1fr 100px;gap:10px;font-weight:600;font-size:14px;">' +
             '<div>標題</div><div>分類</div><div>狀態</div><div>建立日期</div><div>操作</div></div>' +
