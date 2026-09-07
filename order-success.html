@@ -38,6 +38,130 @@
             .actions { flex-direction: column; }
             .btn { width: 100%; }
         }
+    
+    /* ===== 手機版全面優化 ===== */
+    @media (max-width: 768px) {
+        /* 基礎字體 */
+        body { font-size: 15px; line-height: 1.6; }
+        h1 { font-size: 24px !important; }
+        h2 { font-size: 20px !important; }
+        h3 { font-size: 17px !important; }
+        p { font-size: 15px; }
+        
+        /* 導航欄優化 */
+        .nav-desktop { display: none !important; }
+        .nav-mobile { display: flex !important; }
+        .header { padding: 10px 15px !important; }
+        .logo { font-size: 18px !important; }
+        
+        /* 按鈕優化 */
+        .btn, button, input[type="submit"], input[type="button"] {
+            min-height: 44px !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* 表單優化 */
+        input, select, textarea {
+            font-size: 15px !important;
+            padding: 12px !important;
+            min-height: 44px !important;
+            border-radius: 8px !important;
+        }
+        textarea { min-height: 100px !important; }
+        .form-group { margin-bottom: 15px !important; }
+        .form-row, .form-grid, .checkout-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+        }
+        
+        /* 圖片響應式 */
+        img { max-width: 100%; height: auto; }
+        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
+        
+        /* 容器寬度 */
+        .container, .content-wrapper, .main-content {
+            padding: 15px !important;
+            max-width: 100% !important;
+        }
+        
+        /* 表格橫向滾動 */
+        .table-wrapper, .order-table, .cart-table, table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 500px; font-size: 13px; }
+        th, td { padding: 10px 8px !important; }
+        
+        /* 購物車優化 */
+        .cart-item { flex-direction: column !important; gap: 10px; }
+        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
+        .cart-item-details { width: 100% !important; text-align: center; }
+        .cart-summary { margin-top: 20px !important; }
+        
+        /* 商品詳情頁 */
+        .product-detail-layout { flex-direction: column !important; }
+        .product-gallery { width: 100% !important; }
+        .product-info { width: 100% !important; padding: 15px !important; }
+        .product-price { font-size: 24px !important; }
+        
+        /* 商品卡片 */
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+        .product-card { padding: 10px !important; }
+        .product-name { font-size: 14px !important; }
+        .product-price { font-size: 16px !important; }
+        
+        /* 頁尾 */
+        .footer { padding: 30px 15px !important; }
+        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .footer-column { text-align: center; }
+        
+        /* 模態框 */
+        .modal, .modal-content {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+            padding: 15px !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* 統計卡片 */
+        .stats-grid, .card-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .stat-card, .card { padding: 15px !important; }
+        
+        /* 間距優化 */
+        .section { padding: 30px 15px !important; }
+        .mb-20 { margin-bottom: 15px !important; }
+        .mt-20 { margin-top: 15px !important; }
+        .p-20 { padding: 15px !important; }
+        
+        /* 隱藏桌面端元素 */
+        .desktop-only { display: none !important; }
+        .mobile-only { display: block !important; }
+    }
+    
+    @media (max-width: 480px) {
+        body { font-size: 14px; }
+        h1 { font-size: 22px !important; }
+        h2 { font-size: 18px !important; }
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
+        .container, .content-wrapper { padding: 12px !important; }
+    }
+    /* ===== 手機版優化結束 ===== */
+
     </style>
     <link rel="stylesheet" href="css/ai-chat.css">
 
