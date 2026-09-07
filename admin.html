@@ -148,7 +148,89 @@
         .products-sticky-header { position: sticky; top: 0; background: #FAF8F5; z-index: 100; padding: 12px 0; border-bottom: 1px solid #e0d8cf; margin-bottom: 15px; }
     .products-header-row { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
     .products-search { width: 220px; padding: 10px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; }
-    @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar-item { padding: 15px 10px; font-size: 0; } .main-content { margin-left: 60px; } .form-row, .form-row-3 { grid-template-columns: 1fr; } .products-sticky-header { top: 0; } .products-search { width: 100%; } }
+    @media (max-width: 768px) {
+        /* 側邊欄改為頂部可滾動導航 */
+        .sidebar {
+            width: 100% !important;
+            position: relative !important;
+            height: auto !important;
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 5px 10px;
+            gap: 5px;
+            border-right: none;
+            border-bottom: 1px solid #e0d8cf;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sidebar-item {
+            padding: 10px 14px !important;
+            font-size: 14px !important;
+            white-space: nowrap;
+            flex-shrink: 0;
+            border-radius: 6px;
+        }
+        .sidebar-group {
+            flex-shrink: 0;
+        }
+        .sidebar-submenu {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 0 !important;
+            padding: 12px !important;
+        }
+        .form-row, .form-row-3 {
+            grid-template-columns: 1fr !important;
+        }
+        .products-sticky-header { top: 0; }
+        .products-search { width: 100%; }
+        /* 增大字體 */
+        body { font-size: 15px; }
+        .page-title { font-size: 20px !important; }
+        .form-label { font-size: 14px !important; }
+        .form-input, .form-textarea, .form-select { font-size: 15px !important; padding: 12px !important; }
+        .btn { padding: 12px 18px !important; font-size: 14px !important; }
+        /* 表格橫向滾動 */
+        .table-container, .orders-table, .products-table {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { font-size: 13px !important; min-width: 600px; }
+        th, td { padding: 10px 8px !important; }
+        /* 頁頭優化 */
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .btn-group { flex-wrap: wrap; }
+        /* 卡片優化 */
+        .stat-card, .card { padding: 15px !important; }
+        .stat-number { font-size: 22px !important; }
+        /* 模態框優化 */
+        .modal-content, .modal {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+            padding: 15px !important;
+        }
+        /* 上傳區域優化 */
+        .upload-area { padding: 30px 15px !important; }
+        /* 數據分析 iframe 高度調整 */
+        .ga4-iframe { height: 70vh !important; }
+        /* 隱藏設置箭頭 */
+        .settings-arrow, .content-arrow { display: none; }
+    }
+    @media (max-width: 480px) {
+        .main-content { padding: 10px !important; }
+        .page-title { font-size: 18px !important; }
+        .sidebar-item { padding: 8px 12px !important; font-size: 13px !important; }
+        .form-input, .form-textarea { font-size: 14px !important; }
+        .btn { padding: 10px 14px !important; font-size: 13px !important; }
+        table { font-size: 12px !important; min-width: 550px; }
+        th, td { padding: 8px 6px !important; }
+    }
         .block-editor-wrapper { display: flex; height: calc(100vh - 180px); min-height: 600px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .editor-sidebar { width: 200px; background: #1E1E2D; color: #ccc; display: flex; flex-direction: column; padding: 20px 0; }
         .editor-sidebar-item { padding: 12px 20px; cursor: pointer; font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
