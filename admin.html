@@ -4561,53 +4561,8 @@ async function saveProduct() {
         renderTemplatePreview();
         var w = window.open('', '_blank');
         w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '
-async function batchTranslate(type) {
-    if (!confirm('確定要一鍵翻譯所有' + (type === 'products' ? '商品' : '部落格文章') + '為英文嗎？\n\n注意：只翻譯還沒有英文內容的項目，已有英文的不會覆蓋。\n翻譯需要一些時間，請勿關閉頁面。')) return;
-    
-    var btn = event.target;
-    var originalText = btn.innerHTML;
-    btn.innerHTML = '翻譯中...';
-    btn.disabled = true;
-    
-    try {
-        var resp = await fetch('/batch-translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: type })
-        });
-        var result = await resp.json();
-        
-        if (result.error) {
-            showToast('翻譯失敗：' + result.error);
-        } else {
-            showToast('翻譯完成！成功 ' + result.translated + ' 項，失敗 ' + result.failed + ' 項');
-        }
-    } catch (e) {
-        showToast('翻譯失敗：' + e.message);
-    }
-    
-    btn.innerHTML = originalText;
-    btn.disabled = false;
-    
-    // 重新載入列表
-    if (type === 'products') loadProducts();
-    else if (type === 'blog') loadBlogPosts();
-}
 
 
-function doAdminLogin() {
-    var user = document.getElementById('loginUser').value.trim();
-    var pass = document.getElementById('loginPass').value;
-    if (user === 'admin' && pass === 'royalspl2024') {
-        localStorage.setItem('royalspl_admin', 'true');
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('adminPage').style.display = 'block';
-        if (typeof switchPage === 'function') switchPage('analytics');
-        if (typeof checkVisitorNotifications === 'function') checkVisitorNotifications();
-    } else {
-        document.getElementById('loginError').style.display = 'block';
-    }
-}
 
 </body></html>');
         w.document.close();
@@ -5098,53 +5053,8 @@ function doAdminLogin() {
                         }
                     });
                     win.document.write('
-async function batchTranslate(type) {
-    if (!confirm('確定要一鍵翻譯所有' + (type === 'products' ? '商品' : '部落格文章') + '為英文嗎？\n\n注意：只翻譯還沒有英文內容的項目，已有英文的不會覆蓋。\n翻譯需要一些時間，請勿關閉頁面。')) return;
-    
-    var btn = event.target;
-    var originalText = btn.innerHTML;
-    btn.innerHTML = '翻譯中...';
-    btn.disabled = true;
-    
-    try {
-        var resp = await fetch('/batch-translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: type })
-        });
-        var result = await resp.json();
-        
-        if (result.error) {
-            showToast('翻譯失敗：' + result.error);
-        } else {
-            showToast('翻譯完成！成功 ' + result.translated + ' 項，失敗 ' + result.failed + ' 項');
-        }
-    } catch (e) {
-        showToast('翻譯失敗：' + e.message);
-    }
-    
-    btn.innerHTML = originalText;
-    btn.disabled = false;
-    
-    // 重新載入列表
-    if (type === 'products') loadProducts();
-    else if (type === 'blog') loadBlogPosts();
-}
 
 
-function doAdminLogin() {
-    var user = document.getElementById('loginUser').value.trim();
-    var pass = document.getElementById('loginPass').value;
-    if (user === 'admin' && pass === 'royalspl2024') {
-        localStorage.setItem('royalspl_admin', 'true');
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('adminPage').style.display = 'block';
-        if (typeof switchPage === 'function') switchPage('analytics');
-        if (typeof checkVisitorNotifications === 'function') checkVisitorNotifications();
-    } else {
-        document.getElementById('loginError').style.display = 'block';
-    }
-}
 
 </body></html>');
                     win.document.close();
@@ -6009,17 +5919,7 @@ function doAdminLogin() {
             const root = ReactDOM.createRoot(container);
             root.render(React.createElement(ContentEditor));
         };
-    </script>
-    
-
-
-    <!-- 图片放大预览 -->
-    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
-        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-        <img id="lightboxImg" class="lightbox-img" src="" alt="预览">
-    </div>
-
-async function batchTranslate(type) {
+    async function batchTranslate(type) {
     if (!confirm('確定要一鍵翻譯所有' + (type === 'products' ? '商品' : '部落格文章') + '為英文嗎？\n\n注意：只翻譯還沒有英文內容的項目，已有英文的不會覆蓋。\n翻譯需要一些時間，請勿關閉頁面。')) return;
     
     var btn = event.target;
@@ -6052,7 +5952,6 @@ async function batchTranslate(type) {
     else if (type === 'blog') loadBlogPosts();
 }
 
-
 function doAdminLogin() {
     var user = document.getElementById('loginUser').value.trim();
     var pass = document.getElementById('loginPass').value;
@@ -6066,6 +5965,19 @@ function doAdminLogin() {
         document.getElementById('loginError').style.display = 'block';
     }
 }
+
+    </script>
+    
+
+
+    <!-- 图片放大预览 -->
+    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img id="lightboxImg" class="lightbox-img" src="" alt="预览">
+    </div>
+
+
+
 
 </body>
 </html>
