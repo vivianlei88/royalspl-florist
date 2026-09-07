@@ -3237,7 +3237,7 @@ async function saveProduct() {
             stock: document.getElementById('stock').value,
             delivery_days: parseInt(document.getElementById('deliveryDays').value) || 1,
             is_active: document.getElementById('isActive').value === 'true',
-            slug: document.getElementById('productSlug') ? document.getElementById('productSlug').value.trim() : '', 
+            slug: (document.getElementById('productSlug') && document.getElementById('productSlug').value.trim()) ? document.getElementById('productSlug').value.trim() : null, 
             image_url: uploadedImages.length > 0 ? uploadedImages[0] : null,
             images: uploadedImages,
             linked_addons: selectedAddons
