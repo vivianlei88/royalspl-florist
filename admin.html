@@ -926,7 +926,7 @@
     let currentBlogId = null;
 
     async function renderBlogPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-secondary" onclick="batchTranslate('blog')" style="background:#10b981;color:white;border:none;">🌐 一鍵翻譯為英文</button><button class="btn btn-primary" onclick="showBlogLanguageModal()">新增文章</button></div></div>';
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-secondary" onclick="batchTranslate(&apos;blog&apos;)" style="background:#10b981;color:white;border:none;">🌐 一鍵翻譯為英文</button><button class="btn btn-primary" onclick="showBlogLanguageModal()">新增文章</button></div></div>';
         c.innerHTML += '<div class="form-container" style="max-width:100%;"><div style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
             '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.6fr 1fr 0.8fr 1fr 100px;gap:10px;font-weight:600;font-size:14px;">' +
             '<div>標題</div><div>分類</div><div>狀態</div><div>建立日期</div><div>操作</div></div>' +
@@ -2850,7 +2850,7 @@
         <script>
     // ==================== 商品管理 ====================
     function renderProductsPage(c) {
-        c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate('products')" style="background:#10b981;color:white;border:none;">🌐 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
+        c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;">🌐 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
         loadProducts();
     }
     function showAddForm() {
@@ -4563,13 +4563,7 @@ async function saveProduct() {
     function downloadTemplatePDF() {
         renderTemplatePreview();
         var w = window.open('', '_blank');
-        w.document.write('<html><head><title>訂單收據</title>    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-</head><body>' + document.getElementById('templatePreview').innerHTML + '
-
-
-
-</body></html>');
+        w.document.write('<html><head><title>訂單收據</title></head><body>' + document.getElementById('templatePreview').innerHTML + '</body></html>');
         w.document.close();
         w.print();
     }
@@ -5040,9 +5034,7 @@ async function saveProduct() {
                 };
                 const handlePreview = () => {
                     const win = window.open('', '_blank');
-                    win.document.write('<html><head><title>預覽</title>    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-</head><body>');
+                    win.document.write('<html><head><title>預覽</title></head><body>');
                     win.document.write(`<h1>${title}</h1>`);
                     blocks.forEach(b => {
                         switch (b.type) {
@@ -5059,11 +5051,7 @@ async function saveProduct() {
                             case 'numberedList': win.document.write('<ol>' + b.content.items.map(i => `<li>${i}</li>`).join('') + '</ol>'); break;
                         }
                     });
-                    win.document.write('
-
-
-
-</body></html>');
+                    win.document.write('</body></html>');
                     win.document.close();
                 };
                 const handlePublish = async () => {
