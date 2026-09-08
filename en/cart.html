@@ -413,7 +413,7 @@
                 <div class="cart-section-content"><div class="coupon-input"><input type="text" id="couponInput" placeholder="Enter coupon code" oninput="couponCode = this.value" value="${couponCode}"><button class="coupon-btn" onclick="applyCoupon()">Apply</button></div></div>
             </div>
             <div class="cart-summary">
-                <div class="summary-row"><span>ProductsSubtotal</span><span>HK$${subtotal}</span></div>
+                <div class="summary-row"><span>Subtotal</span><span>HK$${subtotal}</span></div>
                 <div class="summary-row"><span>Shipping</span><span>Calculated at Checkout</span></div>
                 <div class="summary-row total"><span>Total</span><span>HK$${subtotal}</span></div>
                 <button class="checkout-btn" onclick="goCheckout()">前往結帳</button>
@@ -457,7 +457,7 @@
         if (cart.length === 0) {
             const toast = document.createElement('div');
             toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;';
-            toast.textContent = 'Shopping Cart為空，請先添AddProducts';
+            toast.textContent = 'Shopping Cart is empty, please add products first';
             document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500);
             return;
         }
