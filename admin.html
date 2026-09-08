@@ -2888,7 +2888,7 @@
                 return;
             }
 
-            var h = '<table class="data-table"><thead><tr><th>類型</th><th>IP</th><th>國家/地區</th><th>所在頁面</th><th>訪問時間</th><th>操作</th></tr></thead><tbody>';
+            var h = '<table class="data-table" style="table-layout:fixed;width:100%;"><thead><tr><th style="width:14%;">類型</th><th style="width:14%;">IP</th><th style="width:20%;">國家/地區</th><th style="width:26%;">所在頁面</th><th style="width:12%;">訪問時間</th><th style="width:14%;">操作</th></tr></thead><tbody>';
             allVisitors.forEach(function(v) {
                 var location = [v.region, v.city, v.country].filter(Boolean).join(' ') || '未知';
                 var page = v.page_title || v.page_url || '未知頁面';
@@ -2897,11 +2897,11 @@
                 var onlineBadge = isOnline ? '<span style="color:#43e97b;">● 在線</span>' : '<span style="color:#999;">○ 離線</span>';
 
                 h += '<tr>' +
-                    '<td>' + typeBadge + ' ' + onlineBadge + '</td>' +
-                    '<td>' + (v.ip || '未知') + '</td>' +
-                    '<td>📍 ' + location + '</td>' +
-                    '<td><a href="' + (v.page_url || '#') + '" target="_blank" style="color:#667eea;text-decoration:none;">' + page.substring(0, 40) + '</a></td>' +
-                    '<td>' + formatNotificationTime(v.created_at) + '</td>' +
+                    '<td style="word-break:break-word;">' + typeBadge + ' ' + onlineBadge + '</td>' +
+                    '<td style="word-break:break-all;">' + (v.ip || '未知') + '</td>' +
+                    '<td style="word-break:break-word;">📍 ' + location + '</td>' +
+                    '<td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="' + (v.page_url || '#') + '" target="_blank" style="color:#667eea;text-decoration:none;" title="' + page + '">' + page.substring(0, 40) + '</a></td>' +
+                    '<td style="white-space:nowrap;">' + formatNotificationTime(v.created_at) + '</td>' +
                     '<td><button class="btn btn-primary btn-small" onclick="contactVisitor(\'' + (v.session_id || '') + '\', \'' + (v.ip || '') + '\')">💬 聯繫</button></td>' +
                     '</tr>';
             });
