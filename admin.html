@@ -2774,11 +2774,11 @@
 
                 h += '<tr>' +
                     '<td>' + typeBadge + ' ' + onlineBadge + '</td>' +
-                    '<td>' + (v.ip_address || '未知') + '</td>' +
+                    '<td>' + (v.ip || '未知') + '</td>' +
                     '<td>📍 ' + location + '</td>' +
                     '<td><a href="' + (v.page_url || '#') + '" target="_blank" style="color:#667eea;text-decoration:none;">' + page.substring(0, 40) + '</a></td>' +
                     '<td>' + formatNotificationTime(v.created_at) + '</td>' +
-                    '<td><button class="btn btn-primary btn-small" onclick="contactVisitor(\'' + (v.session_id || '') + '\', \'' + (v.ip_address || '') + '\')">💬 聯繫</button></td>' +
+                    '<td><button class="btn btn-primary btn-small" onclick="contactVisitor(\'' + (v.session_id || '') + '\', \'' + (v.ip || '') + '\')">💬 聯繫</button></td>' +
                     '</tr>';
             });
             h += '</tbody></table>';
@@ -2794,9 +2794,13 @@
     }
 
     function contactVisitor(sessionId, ip) {
+        // 如果沒有session_id，使用IP地址創建臨時會話
         if (!sessionId) {
-            showToast('該訪客無會話ID，無法聯繫');
-            return;
+            if (!ip || ip === '未知') {
+                showToast('該訪客無會話ID和IP，無法聯繫');
+                return;
+            }
+            sessionId = 'visitor_' + ip.replace(/\./g, '_');
         }
         openChatPanelWithVisitor(sessionId, ip);
     }
