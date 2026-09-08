@@ -358,7 +358,7 @@
             '喬遷': 'Housewarming', '商務送禮': 'Business Gift', '企業周年': 'Corporate Anniversary',
             '父親節': "Father's Day", '新年': 'New Year', '農曆新年': 'Lunar New Year',
             '教師節': "Teacher's Day", '嬰兒出生': 'New Baby', '升職': 'Promotion',
-            '道歉': 'Apology', '答謝': 'Thank You', '哀悼': 'Condolence',
+            '道歉': 'Apology', '答謝': 'Thank You', '哀悼': 'Condolence', '求婚': 'Proposal', '浪漫': 'Romantic',
             '玫瑰': 'Rose', '鬱金香': 'Tulip', '芍藥': 'Peony', '荷花': 'Lotus', '百合': 'Lily',
             '康乃馨': 'Carnation', '向日葵': 'Sunflower', '滿天星': "Baby's Breath",
             '蘭花': 'Orchid', '牡丹': 'Peony', '進口鮮花': 'Imported Flowers',
@@ -367,8 +367,10 @@
             '進口千代': 'Imported Orchid', '進口蝴蝶蘭': 'Imported Phalaenopsis',
             '薰衣草': 'Lavender', '常春藤': 'Ivy', '菊花': 'Chrysanthemum',
             '非洲菊': 'Gerbera', '劍蘭': 'Gladiolus', '鳶尾花': 'Iris',
+            '風鈴草': 'Canterbury Bells', '鼠尾草': 'Sage', '庭園玫瑰': 'Garden Rose',
             '即日鮮花': 'Same Day Flowers', '日式永生花': 'Japanese Preserved Flowers',
-            '法式田園自然風': 'French Countryside Style', '日式鮮花束': 'Japanese Bouquet',
+            '法式田園自然風': 'French Countryside Style', '法式自然風': 'French Natural Style',
+            '日式鮮花束': 'Japanese Bouquet',
             '新娘花禮': 'Bridal Flowers', '進口牡丹/芍藥花': 'Imported Peony Flowers',
             '韓式花束': 'Korean Bouquet', '歐式古典': 'European Classical',
             '現代簡約': 'Modern Minimalist', '浪漫風': 'Romantic Style',
@@ -472,8 +474,8 @@
             var html = '';
             for (var i = 0; i < allAddons.length; i++) {
                 var a = allAddons[i];
-                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + a.name + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji">🎁<\/span>';
-                html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()"><\/span>' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><\/label>';
+                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + (a.name_en || a.name_zh || '') + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji">🎁<\/span>';
+                html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()"><\/span>' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_en || a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><\/label>';
             }
             addonList.innerHTML = html;
         } catch (err) {
