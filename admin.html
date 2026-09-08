@@ -207,6 +207,46 @@
         .btn-group { flex-wrap: wrap; }
         /* 卡片優化 */
         .stat-card, .card { padding: 15px !important; }
+        /* 頂部導航欄優化 - WIX風格 */
+        .topbar {
+            padding: 10px 12px !important;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .topbar h1 {
+            font-size: 16px !important;
+            flex: 1;
+            min-width: 120px;
+        }
+        .topbar-links {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .topbar-links > div {
+            margin-right: 8px !important;
+        }
+        .topbar-links a {
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+        }
+        #userInfo {
+            margin-right: 8px !important;
+        }
+        #userEmail {
+            display: none !important;
+        }
+        #userAvatar {
+            width: 28px !important;
+            height: 28px !important;
+        }
+        /* 通知面板手機端優化 */
+        #notificationPanel {
+            width: calc(100% - 20px) !important;
+            right: 10px !important;
+            left: 10px !important;
+            max-height: 70vh !important;
+        }
         .stat-number { font-size: 22px !important; }
         /* 模態框優化 */
         .modal-content, .modal {
@@ -386,9 +426,8 @@
     <div id="adminPage" class="admin-container">
         <div class="topbar"><h1>RoyalSpl 後台管理</h1><div class="topbar-links">
             <div style="position:relative;display:inline-flex;align-items:center;margin-right:15px;">
-                <span id="visitorBell" style="font-size:20px;cursor:pointer;position:relative;" title="在線訪客">🔔</span>
+                <span id="visitorBell" style="font-size:20px;cursor:pointer;position:relative;" title="通知中心" onclick="showNotificationPanel()">🔔</span>
                 <span id="visitorBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#ff4444;color:white;font-size:10px;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;">0</span>
-                <span id="visitorTip" style="display:none;position:absolute;top:40px;right:0;background:#1A1A1A;color:white;padding:10px 15px;border-radius:8px;font-size:12px;white-space:nowrap;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.3);max-width:350px;"></span>
             </div>
             <div style="position:relative;display:inline-flex;align-items:center;margin-right:15px;">
                 <span id="chatBell" style="font-size:20px;cursor:pointer;position:relative;" title="客服消息" onclick="openChatPanel()">💬</span>
@@ -402,6 +441,7 @@
             <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
             <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
+            <div class="sidebar-item" data-page="visitors" onclick="switchPage('visitors')">在線訪客</div>
             <div class="sidebar-group" id="contentMenuGroup" onmouseenter="showContentMenu()" onmouseleave="hideContentMenu()">
                 <div class="sidebar-item sidebar-group-header">
                     <span>文案內容</span>
@@ -586,6 +626,8 @@
         if (typeof switchPage === 'function') switchPage('analytics');
         startVisitorTracking();
         startChatTracking();
+        startOrderTracking();
+        updateNotificationBadge();
     }
 
     async function loadAdminProfile() {
@@ -648,40 +690,14 @@
             const visitors = data || [];
             const bell = document.getElementById('visitorBell');
             const badge = document.getElementById('visitorBadge');
-            const tip = document.getElementById('visitorTip');
-            if (!bell || !badge || !tip) return;
+            if (!bell || !badge) return;
             
             if (visitors.length > 0) {
                 badge.style.display = 'block';
                 badge.textContent = visitors.length;
-                const latest = visitors[0];
-                const location = [latest.region, latest.city, latest.country].filter(Boolean).join(' ') || '未知地區';
-                const page = latest.page_title || latest.page_url || '未知頁面';
-                const visitorType = latest.is_new_visitor ? '新訪客' : '回訪客';
-                tip.innerHTML = '<strong>' + visitorType + '</strong>: ' + location + '<br>正在看: ' + page.substring(0, 40);
-                tip.style.display = 'block';
-                setTimeout(function() { if (tip) tip.style.display = 'none'; }, 8000);
             } else {
                 badge.style.display = 'none';
-                tip.style.display = 'none';
             }
-            
-            bell.onmouseenter = function() {
-                if (visitors.length === 0) {
-                    tip.innerHTML = '暫無在線訪客';
-                } else {
-                    let html = '<strong>在線訪客 (' + visitors.length + ')</strong><br>';
-                    visitors.slice(0, 5).forEach(function(v) {
-                        const loc = [v.region, v.city, v.country].filter(Boolean).join(' ') || '未知';
-                        const pg = (v.page_title || v.page_url || '').substring(0, 30);
-                        html += (v.is_new_visitor ? '🆕 ' : '👤 ') + loc + ' - ' + pg + '<br>';
-                    });
-                    if (visitors.length > 5) html += '...還有 ' + (visitors.length - 5) + ' 人';
-                    tip.innerHTML = html;
-                }
-                tip.style.display = 'block';
-            };
-            bell.onmouseleave = function() { tip.style.display = 'none'; };
         } catch (e) {
             console.error('載入訪客失敗:', e);
         }
@@ -690,7 +706,7 @@
     function startVisitorTracking() {
         loadOnlineVisitors();
         if (visitorTimer) clearInterval(visitorTimer);
-        visitorTimer = setInterval(loadOnlineVisitors, 5000);
+        visitorTimer = setInterval(loadOnlineVisitors, 10000);
     }
 
     // ==================== 客服系統 ====================
@@ -722,6 +738,8 @@
                             icon: 'https://www.royalspl.shop/favicon.ico'
                         });
                     }
+                    // 聲音提醒
+                    playNotificationSound();
                 } else {
                     badge.style.display = 'none';
                 }
@@ -734,7 +752,7 @@
     function startChatTracking() {
         checkNewChatMessages();
         if (chatTimer) clearInterval(chatTimer);
-        chatTimer = setInterval(checkNewChatMessages, 5000);
+        chatTimer = setInterval(checkNewChatMessages, 10000);
         // 請求瀏覽器通知權限
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
@@ -2448,6 +2466,7 @@
         else if (page === 'addons') { renderAddonsPage(c); }
         else if (page === 'orders') { renderOrdersPage(c); }
         else if (page === 'members') { renderMembersPage(c); }
+        else if (page === 'visitors') { renderVisitorsPage(c); }
         else if (page === 'template') { renderTemplatePage(c); }
         else if (page === 'aichat') { renderAIChatPage(c); }
         else if (page === 'admins') { renderAdminsPage(c); }
@@ -2483,6 +2502,338 @@
                 }
             } catch (e) {}
         }, 15000);
+    }
+
+    // ==================== 通知聲音 ====================
+    function playNotificationSound() {
+        try {
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            var oscillator = audioCtx.createOscillator();
+            var gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = 880;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        } catch (e) {}
+    }
+
+    // ==================== 訂單提醒 ====================
+    var orderTimer = null;
+    var lastOrderCheckTime = new Date().toISOString();
+    var notifiedOrderIds = [];
+
+    async function checkNewOrders() {
+        try {
+            var { data, error } = await supabaseClient
+                .from('orders')
+                .select('*')
+                .order('updated_at', { ascending: false })
+                .limit(10);
+            if (error) throw error;
+
+            var orders = data || [];
+            var newNotifications = [];
+
+            for (var i = 0; i < orders.length; i++) {
+                var o = orders[i];
+                var orderTime = o.updated_at || o.created_at;
+                if (orderTime > lastOrderCheckTime && notifiedOrderIds.indexOf(o.id) === -1) {
+                    newNotifications.push(o);
+                    notifiedOrderIds.push(o.id);
+                }
+            }
+
+            if (newNotifications.length > 0) {
+                updateNotificationBadge();
+                if (Notification.permission === 'granted') {
+                    var latest = newNotifications[0];
+                    var statusText = getOrderStatusText(latest.status);
+                    new Notification('訂單提醒', {
+                        body: '訂單 ' + latest.order_code + ' 狀態：' + statusText + '，金額：HK$' + latest.total_amount,
+                        icon: 'https://www.royalspl.shop/favicon.ico'
+                    });
+                }
+                playNotificationSound();
+                showToast('📦 新訂單：' + latest.order_code + ' - ' + getOrderStatusText(latest.status));
+            }
+
+            lastOrderCheckTime = new Date().toISOString();
+        } catch (e) {
+            console.error('檢查訂單失敗:', e);
+        }
+    }
+
+    function getOrderStatusText(status) {
+        var map = {
+            'unpaid': '未付款',
+            'pending_payment': '待確認付款',
+            'paid': '已付款',
+            'shipped': '已出貨',
+            'cancelled': '已取消'
+        };
+        return map[status] || status;
+    }
+
+    function startOrderTracking() {
+        checkNewOrders();
+        if (orderTimer) clearInterval(orderTimer);
+        orderTimer = setInterval(checkNewOrders, 10000);
+    }
+
+    async function updateNotificationBadge() {
+        try {
+            var fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+            var visitorResult = await supabaseClient
+                .from('visitor_logs')
+                .select('id')
+                .gte('created_at', fiveMinutesAgo);
+            var visitorCount = (visitorResult.data || []).length;
+
+            var tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+            var orderResult = await supabaseClient
+                .from('orders')
+                .select('id')
+                .gte('created_at', tenMinutesAgo);
+            var orderCount = (orderResult.data || []).length;
+
+            var total = visitorCount + orderCount;
+            var badge = document.getElementById('visitorBadge');
+            if (badge) {
+                if (total > 0) {
+                    badge.style.display = 'block';
+                    badge.textContent = total > 99 ? '99+' : total;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        } catch (e) {}
+    }
+
+    function showNotificationPanel() {
+        var old = document.getElementById('notificationPanel');
+        if (old) { old.remove(); return; }
+
+        var panel = document.createElement('div');
+        panel.id = 'notificationPanel';
+        panel.style.cssText = 'position:fixed;top:50px;right:20px;width:380px;max-height:500px;background:white;border-radius:10px;box-shadow:0 5px 30px rgba(0,0,0,0.2);z-index:99998;overflow-y:auto;';
+        panel.innerHTML = '<div style="padding:15px;border-bottom:1px solid #eee;background:#1A1A1A;color:white;border-radius:10px 10px 0 0;font-weight:600;">🔔 通知中心</div><div id="notificationList" style="padding:10px;">加載中...</div>';
+        document.body.appendChild(panel);
+
+        loadNotificationList();
+
+        setTimeout(function() {
+            document.addEventListener('click', function closePanel(e) {
+                if (!panel.contains(e.target) && e.target.id !== 'visitorBell') {
+                    panel.remove();
+                    document.removeEventListener('click', closePanel);
+                }
+            });
+        }, 100);
+    }
+
+    async function loadNotificationList() {
+        var list = document.getElementById('notificationList');
+        if (!list) return;
+
+        try {
+            var thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+            var visitorResult = await supabaseClient
+                .from('visitor_logs')
+                .select('*')
+                .gte('created_at', thirtyMinutesAgo)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            var orderResult = await supabaseClient
+                .from('orders')
+                .select('*')
+                .gte('created_at', thirtyMinutesAgo)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            var visitors = visitorResult.data || [];
+            var orders = orderResult.data || [];
+
+            var allNotifications = [];
+            visitors.forEach(function(v) {
+                allNotifications.push({ type: 'visitor', time: v.created_at, data: v });
+            });
+            orders.forEach(function(o) {
+                allNotifications.push({ type: 'order', time: o.created_at, data: o });
+            });
+            allNotifications.sort(function(a, b) { return new Date(b.time) - new Date(a.time); });
+
+            if (allNotifications.length === 0) {
+                list.innerHTML = '<div style="padding:30px;text-align:center;color:#999;">暫無通知</div>';
+                return;
+            }
+
+            var html = '';
+            allNotifications.slice(0, 20).forEach(function(n) {
+                if (n.type === 'visitor') {
+                    var v = n.data;
+                    var location = [v.region, v.city, v.country].filter(Boolean).join(' ') || '未知地區';
+                    var page = v.page_title || v.page_url || '未知頁面';
+                    var visitorType = v.is_new_visitor ? '🆕 新訪客' : '👤 回訪客';
+                    html += '<div style="padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;" onclick="switchPage(\'visitors\');document.getElementById(\'notificationPanel\').remove();">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">' +
+                        '<span style="font-weight:600;font-size:13px;">' + visitorType + '</span>' +
+                        '<span style="font-size:11px;color:#999;">' + formatNotificationTime(n.time) + '</span></div>' +
+                        '<div style="font-size:12px;color:#666;">📍 ' + location + '</div>' +
+                        '<div style="font-size:12px;color:#666;">👀 ' + page.substring(0, 30) + '</div></div>';
+                } else {
+                    var o = n.data;
+                    html += '<div style="padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;" onclick="openOrderDetail(' + o.id + ');document.getElementById(\'notificationPanel\').remove();">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">' +
+                        '<span style="font-weight:600;font-size:13px;">📦 訂單 ' + o.order_code + '</span>' +
+                        '<span style="font-size:11px;color:#999;">' + formatNotificationTime(n.time) + '</span></div>' +
+                        '<div style="font-size:12px;color:#666;">狀態：' + getOrderStatusText(o.status) + '</div>' +
+                        '<div style="font-size:12px;color:#666;">金額：HK$' + o.total_amount + ' | 收花人：' + (o.recipient_name || '') + '</div></div>';
+                }
+            });
+            list.innerHTML = html;
+        } catch (e) {
+            list.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">加載失敗</div>';
+        }
+    }
+
+    function formatNotificationTime(isoString) {
+        var d = new Date(isoString);
+        var now = new Date();
+        var diff = (now - d) / 1000;
+        if (diff < 60) return '剛剛';
+        if (diff < 3600) return Math.floor(diff / 60) + '分鐘前';
+        if (diff < 86400) return Math.floor(diff / 3600) + '小時前';
+        return d.toLocaleDateString();
+    }
+
+    // ==================== 在線訪客頁面 ====================
+    function renderVisitorsPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">在線訪客</h2><div class="btn-group"><button class="btn btn-secondary" onclick="refreshVisitors()">刷新</button></div></div>' +
+            '<div id="visitorsStats" style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;"></div>' +
+            '<div id="visitorsTable"></div>';
+        loadVisitorsPage();
+    }
+
+    async function loadVisitorsPage() {
+        var statsEl = document.getElementById('visitorsStats');
+        var tableEl = document.getElementById('visitorsTable');
+        if (!tableEl) return;
+
+        try {
+            var fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+            var todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+
+            var [onlineResult, todayResult, allResult] = await Promise.all([
+                supabaseClient.from('visitor_logs').select('*').gte('created_at', fiveMinutesAgo).order('created_at', { ascending: false }),
+                supabaseClient.from('visitor_logs').select('*').gte('created_at', todayStart.toISOString()).order('created_at', { ascending: false }),
+                supabaseClient.from('visitor_logs').select('*').order('created_at', { ascending: false }).limit(100)
+            ]);
+
+            var onlineVisitors = onlineResult.data || [];
+            var todayVisitors = todayResult.data || [];
+            var allVisitors = allResult.data || [];
+
+            var newVisitors = onlineVisitors.filter(function(v) { return v.is_new_visitor; }).length;
+            var returnVisitors = onlineVisitors.length - newVisitors;
+
+            if (statsEl) {
+                statsEl.innerHTML =
+                    '<div style="flex:1;min-width:150px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:10px;">' +
+                    '<div style="font-size:13px;opacity:0.9;">當前在線</div>' +
+                    '<div style="font-size:32px;font-weight:700;margin-top:5px;">' + onlineVisitors.length + '</div></div>' +
+                    '<div style="flex:1;min-width:150px;background:linear-gradient(135deg,#f093fb,#f5576c);color:white;padding:20px;border-radius:10px;">' +
+                    '<div style="font-size:13px;opacity:0.9;">今日訪客</div>' +
+                    '<div style="font-size:32px;font-weight:700;margin-top:5px;">' + todayVisitors.length + '</div></div>' +
+                    '<div style="flex:1;min-width:150px;background:linear-gradient(135deg,#4facfe,#00f2fe);color:white;padding:20px;border-radius:10px;">' +
+                    '<div style="font-size:13px;opacity:0.9;">新訪客</div>' +
+                    '<div style="font-size:32px;font-weight:700;margin-top:5px;">' + newVisitors + '</div></div>' +
+                    '<div style="flex:1;min-width:150px;background:linear-gradient(135deg,#43e97b,#38f9d7);color:white;padding:20px;border-radius:10px;">' +
+                    '<div style="font-size:13px;opacity:0.9;">回訪客</div>' +
+                    '<div style="font-size:32px;font-weight:700;margin-top:5px;">' + returnVisitors + '</div></div>';
+            }
+
+            if (allVisitors.length === 0) {
+                tableEl.innerHTML = '<div class="empty-state">暫無訪客記錄</div>';
+                return;
+            }
+
+            var h = '<table class="data-table"><thead><tr><th>類型</th><th>IP</th><th>國家/地區</th><th>所在頁面</th><th>訪問時間</th><th>操作</th></tr></thead><tbody>';
+            allVisitors.forEach(function(v) {
+                var location = [v.region, v.city, v.country].filter(Boolean).join(' ') || '未知';
+                var page = v.page_title || v.page_url || '未知頁面';
+                var typeBadge = v.is_new_visitor ? '<span style="background:#f093fb;color:white;padding:3px 8px;border-radius:10px;font-size:11px;">新訪客</span>' : '<span style="background:#43e97b;color:white;padding:3px 8px;border-radius:10px;font-size:11px;">回訪客</span>';
+                var isOnline = new Date(v.created_at) > new Date(fiveMinutesAgo);
+                var onlineBadge = isOnline ? '<span style="color:#43e97b;">● 在線</span>' : '<span style="color:#999;">○ 離線</span>';
+
+                h += '<tr>' +
+                    '<td>' + typeBadge + ' ' + onlineBadge + '</td>' +
+                    '<td>' + (v.ip_address || '未知') + '</td>' +
+                    '<td>📍 ' + location + '</td>' +
+                    '<td><a href="' + (v.page_url || '#') + '" target="_blank" style="color:#667eea;text-decoration:none;">' + page.substring(0, 40) + '</a></td>' +
+                    '<td>' + formatNotificationTime(v.created_at) + '</td>' +
+                    '<td><button class="btn btn-primary btn-small" onclick="contactVisitor(\'' + (v.session_id || '') + '\', \'' + (v.ip_address || '') + '\')">💬 聯繫</button></td>' +
+                    '</tr>';
+            });
+            h += '</tbody></table>';
+            tableEl.innerHTML = h;
+        } catch (e) {
+            tableEl.innerHTML = '<div class="empty-state">加載失敗：' + e.message + '</div>';
+        }
+    }
+
+    function refreshVisitors() {
+        loadVisitorsPage();
+        showToast('已刷新');
+    }
+
+    function contactVisitor(sessionId, ip) {
+        if (!sessionId) {
+            showToast('該訪客無會話ID，無法聯繫');
+            return;
+        }
+        openChatPanelWithVisitor(sessionId, ip);
+    }
+
+    async function openChatPanelWithVisitor(sessionId, ip) {
+        openChatPanel();
+        setTimeout(async function() {
+            try {
+                var { data: existingSession } = await supabaseClient
+                    .from('chat_sessions')
+                    .select('*')
+                    .eq('session_id', sessionId)
+                    .limit(1);
+
+                var session = existingSession && existingSession[0];
+                if (!session) {
+                    var { data: newSession } = await supabaseClient
+                        .from('chat_sessions')
+                        .insert({
+                            session_id: sessionId,
+                            visitor_ip: ip,
+                            current_page: '',
+                            status: 'active',
+                            created_at: new Date().toISOString()
+                        })
+                        .select();
+                    session = newSession && newSession[0];
+                }
+
+                if (session) {
+                    loadChatSessionDetail(session.session_id);
+                    showToast('已連接到訪客會話');
+                }
+            } catch (e) {
+                console.error('連接訪客會話失敗:', e);
+                showToast('連接失敗，請重試');
+            }
+        }, 500);
     }
 
     function renderAnalyticsPage(c) {
