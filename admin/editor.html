@@ -313,7 +313,6 @@
         </div>
         <div class="toolbar-right">
             <button class="btn btn-ai" id="aiTranslateBtn" onclick="openAITranslate()" style="display:none;">✨ AI 翻譯</button>
-            <button class="btn btn-ai" id="batchTranslateBtn" onclick="openBatchTranslate()" style="display:none;background:#ff6b6b;">🔄 批量翻譯全部商品</button>
             <button class="btn btn-secondary" onclick="window.close()">返回後台</button>
             <button class="btn btn-primary" onclick="saveChanges()">💾 保存</button>
         </div>
@@ -430,6 +429,11 @@
             var selector = document.getElementById('productSelector');
             if (selector) {
                 selector.innerHTML = '';
+                // 添加"所有商品"选项
+                var allOpt = document.createElement('option');
+                allOpt.value = 'all';
+                allOpt.textContent = '📦 所有商品（批量翻譯）';
+                selector.appendChild(allOpt);
                 productsList.forEach(function(p) {
                     var opt = document.createElement('option');
                     opt.value = p.id;
@@ -470,7 +474,15 @@
     // 切换商品
     function switchProduct(productId) {
         currentProductId = productId;
-        updatePreview();
+        if (productId === 'all') {
+            // 选择所有商品时，显示提示
+            var frame = document.getElementById('previewFrame');
+            if (frame) {
+                frame.srcdoc = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;color:#666;font-size:18px;"><div style="text-align:center;"><div style="font-size:48px;margin-bottom:20px;">📦</div><div>已選擇「所有商品」</div><div style="font-size:14px;margin-top:10px;color:#999;">點擊上方「✨ AI 翻譯」按鈕，可批量翻譯全部商品</div></div></div>';
+            }
+        } else {
+            updatePreview();
+        }
     }
 
     // 更新预览
@@ -641,21 +653,12 @@
     // 更新AI翻译按钮显示状态
     function updateAITranslateBtn() {
         var btn = document.getElementById('aiTranslateBtn');
-        var batchBtn = document.getElementById('batchTranslateBtn');
         if (btn) {
             // 英文模式下所有页面都显示AI翻译按钮
             if (currentLang === 'en') {
                 btn.style.display = '';
             } else {
                 btn.style.display = 'none';
-            }
-        }
-        if (batchBtn) {
-            // 批量翻译按钮只在商品详情页+英文模式下显示
-            if (currentLang === 'en' && currentPage === 'product-detail') {
-                batchBtn.style.display = '';
-            } else {
-                batchBtn.style.display = 'none';
             }
         }
     }
@@ -1058,6 +1061,14 @@
             } else if (currentPage === 'product-detail') {
                 // 商品详情页：翻译当前商品的所有文字（始终从中文内容翻译）
                 translateType = 'product';
+
+                // 如果选择了"所有商品"，触发批量翻译
+                if (currentProductId === 'all') {
+                    modal.classList.remove('active');
+                    openBatchTranslate();
+                    return;
+                }
+
                 var product = productsList.find(function(p) { return p.id === currentProductId; });
                 if (product) {
                     // 获取商品完整信息
