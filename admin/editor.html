@@ -306,6 +306,30 @@
         </div>
     </div>
 
+    <!-- 分类选择弹窗 -->
+    <div class="ai-modal-overlay" id="categoryModal" style="display:none;">
+        <div class="ai-modal" style="max-width:600px;max-height:80vh;overflow-y:auto;">
+            <div class="ai-modal-title">選擇分類</div>
+            <input type="hidden" id="categoryTargetCard">
+            <div id="categoryList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:15px 0;"></div>
+            <div class="ai-modal-actions">
+                <button class="btn btn-secondary" onclick="closeCategoryModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 商品选择弹窗 -->
+    <div class="ai-modal-overlay" id="productModal" style="display:none;">
+        <div class="ai-modal" style="max-width:700px;max-height:80vh;overflow-y:auto;">
+            <div class="ai-modal-title">選擇商品</div>
+            <div style="margin-bottom:15px;"><input type="text" id="productSearchInput" placeholder="搜索商品..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;" oninput="filterProducts()"></div>
+            <div id="productSelectList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-height:400px;overflow-y:auto;"></div>
+            <div class="ai-modal-actions">
+                <button class="btn btn-secondary" onclick="closeProductModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
@@ -498,13 +522,19 @@
         for (var i = 0; i < collectionCards.length; i++) {
             var card = collectionCards[i];
             var cardTitle = isEn ? (card.title_en || '') : (card.title_zh || '');
+            var catName = card.link_url ? getCategoryNameFromUrl(card.link_url) : '未選擇';
             collectionsHtml +=
                 '<div style="border:1px solid #e5e5e5;border-radius:8px;padding:10px;margin-bottom:10px;">' +
-                '<div style="display:flex;gap:10px;align-items:center;">' +
-                (card.image_url ? '<img src="' + card.image_url + '" style="width:50px;height:50px;object-fit:cover;border-radius:6px;">' : '<div style="width:50px;height:50px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;">🖼️</div>') +
+                '<div style="display:flex;gap:10px;align-items:flex-start;">' +
+                '<div style="position:relative;cursor:pointer;" onclick="uploadCardImage(' + card.id + ')">' +
+                (card.image_url ? '<img src="' + card.image_url + '" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">' : '<div style="width:60px;height:60px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;">📷</div>') +
+                '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;text-align:center;padding:2px 0;border-radius:0 0 6px 6px;">更換</div>' +
+                '<input type="file" id="cardFileInput' + card.id + '" accept="image/*" style="display:none;" onchange="handleCardImageUpload(' + card.id + ', this.files[0])">' +
+                '</div>' +
                 '<div style="flex:1;">' +
                 '<div style="font-size:12px;color:#999;margin-bottom:3px;">卡片 ' + (i + 1) + '</div>' +
-                '<input class="form-input" style="font-size:13px;padding:6px 8px;" value="' + escapeHtml(cardTitle) + '" onchange="updateCollectionCardTitle(' + card.id + ', this.value)">' +
+                '<input class="form-input" style="font-size:13px;padding:6px 8px;margin-bottom:6px;" value="' + escapeHtml(cardTitle) + '" onchange="updateCollectionCardTitle(' + card.id + ', this.value)">' +
+                '<button class="btn btn-secondary btn-small" style="font-size:11px;padding:4px 8px;" onclick="openCategorySelect(' + card.id + ')">📁 分類: ' + escapeHtml(catName) + '</button>' +
                 '</div>' +
                 '</div>' +
                 '</div>';
@@ -527,6 +557,7 @@
         if (featuredProducts.length === 0) {
             featuredHtml = '<p style="font-size:13px;color:#999;text-align:center;padding:20px;">暫無精選商品</p>';
         }
+        featuredHtml += '<button class="btn btn-secondary btn-small" style="width:100%;margin-top:8px;" onclick="openProductSelect()">+ 添加商品</button>';
 
         panel.innerHTML =
             '<div class="panel-section">' +
@@ -539,12 +570,10 @@
             '<div class="panel-section">' +
             '<div class="panel-title">臻選系列（6卡片）</div>' +
             collectionsHtml +
-            '<p style="font-size:11px;color:#999;margin-top:8px;">💡 圖片和分類連結請在後台「首頁管理」設置</p>' +
             '</div>' +
             '<div class="panel-section">' +
             '<div class="panel-title">精選花藝</div>' +
             featuredHtml +
-            '<p style="font-size:11px;color:#999;margin-top:8px;">💡 添加商品請在後台「首頁管理」設置</p>' +
             '</div>' +
             '<div class="panel-section">' +
             '<div class="panel-title">關於我們</div>' +
@@ -552,8 +581,171 @@
             '</div>' +
             '<div class="panel-section">' +
             '<div class="panel-title">提示</div>' +
-            '<p style="font-size:12px;color:#666;line-height:1.6;">• 切換「中文/EN」可編輯對應語言的內容<br>• 點擊「AI 翻譯」可自動將中文翻譯為英文<br>• 編輯完成後點擊「保存」按鈕保存<br>• 臻選系列圖片和精選花藝添加請在後台首頁管理設置</p>' +
+            '<p style="font-size:12px;color:#666;line-height:1.6;">• 切換「中文/EN」可編輯對應語言的內容<br>• 點擊「AI 翻譯」可自動將中文翻譯為英文<br>• 臻選系列點擊圖片可上傳，點擊分類按鈕可選擇<br>• 精選花藝可添加/移除商品</p>' +
             '</div>';
+    }
+
+    // 从URL获取分类名称
+    function getCategoryNameFromUrl(url) {
+        if (!url) return '未選擇';
+        var m = url.match(/category=([^&]+)/);
+        if (m) {
+            try { return decodeURIComponent(m[1]); } catch(e) { return m[1]; }
+        }
+        return '未選擇';
+    }
+
+    // 上传卡片图片
+    function uploadCardImage(cardId) {
+        document.getElementById('cardFileInput' + cardId).click();
+    }
+
+    // 处理卡片图片上传
+    async function handleCardImageUpload(cardId, file) {
+        if (!file) return;
+        var fd = new FormData();
+        fd.append('file', file);
+        try {
+            var res = await fetch('/r2-upload', { method: 'POST', body: fd });
+            var data = await res.json();
+            if (data.url) {
+                await supabaseClient.from('collection_cards').update({ image_url: data.url }).eq('id', cardId);
+                // 更新本地数据
+                for (var i = 0; i < collectionCards.length; i++) {
+                    if (collectionCards[i].id === cardId) {
+                        collectionCards[i].image_url = data.url;
+                        break;
+                    }
+                }
+                renderEditorPanel();
+                showToast('圖片上傳成功');
+            } else {
+                showToast('上傳失敗', 'error');
+            }
+        } catch (e) {
+            showToast('上傳失敗: ' + e.message, 'error');
+        }
+    }
+
+    // 打开分类选择弹窗
+    async function openCategorySelect(cardId) {
+        document.getElementById('categoryTargetCard').value = cardId;
+        var list = document.getElementById('categoryList');
+        try {
+            var catRes = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            var cats = catRes.data || [];
+            var h = '';
+            if (!cats.length) {
+                h = '<div style="grid-column:1/-1;text-align:center;color:#999;padding:20px;">暫無分類</div>';
+            }
+            for (var i = 0; i < cats.length; i++) {
+                var cat = cats[i];
+                h += '<div style="border:1px solid #ddd;border-radius:8px;overflow:hidden;cursor:pointer;background:#fff;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#1A1A1A\'" onmouseout="this.style.borderColor=\'#ddd\'" onclick="pickCategory(' + cardId + ',' + cat.id + ')">';
+                h += (cat.image_url ? '<img src="' + cat.image_url + '" style="width:100%;height:100px;object-fit:cover;">' : '<div style="height:100px;background:#F3EFEA;display:flex;align-items:center;justify-content:center;">無圖</div>');
+                h += '<div style="padding:8px;"><b style="font-size:13px;">' + (cat.name_zh || '') + '</b><br><small style="color:#888;">' + (cat.name_en || '') + '</small></div>';
+                h += '</div>';
+            }
+            list.innerHTML = h;
+            document.getElementById('categoryModal').style.display = 'flex';
+        } catch (e) {
+            showToast('無法讀取分類', 'error');
+        }
+    }
+
+    // 关闭分类选择弹窗
+    function closeCategoryModal() {
+        document.getElementById('categoryModal').style.display = 'none';
+    }
+
+    // 选择分类
+    async function pickCategory(cardId, catId) {
+        try {
+            var catRes = await supabaseClient.from('categories').select('*').eq('id', catId).limit(1);
+            if (catRes.data && catRes.data.length > 0) {
+                var cat = catRes.data[0];
+                var linkUrl = '/products.html?category=' + encodeURIComponent(cat.name_zh || '');
+                await supabaseClient.from('collection_cards').update({ link_url: linkUrl }).eq('id', cardId);
+                // 更新本地数据
+                for (var i = 0; i < collectionCards.length; i++) {
+                    if (collectionCards[i].id === cardId) {
+                        collectionCards[i].link_url = linkUrl;
+                        break;
+                    }
+                }
+                renderEditorPanel();
+                showToast('分類已設置');
+            }
+            closeCategoryModal();
+        } catch (e) {
+            showToast('設置失敗', 'error');
+        }
+    }
+
+    // 打开商品选择弹窗
+    async function openProductSelect() {
+        var list = document.getElementById('productSelectList');
+        document.getElementById('productSearchInput').value = '';
+        try {
+            var prodRes = await supabaseClient.from('products').select('id, name_zh, name_en, price, image_url').eq('is_active', true).order('created_at', { ascending: false }).limit(100);
+            var products = prodRes.data || [];
+            window.editorAllProducts = products;
+            renderProductSelectList(products);
+            document.getElementById('productModal').style.display = 'flex';
+        } catch (e) {
+            showToast('無法讀取商品', 'error');
+        }
+    }
+
+    // 渲染商品选择列表
+    function renderProductSelectList(products) {
+        var list = document.getElementById('productSelectList');
+        var h = '';
+        if (!products.length) {
+            h = '<div style="grid-column:1/-1;text-align:center;color:#999;padding:20px;">暫無商品</div>';
+        }
+        for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            var prodName = currentLang === 'en' ? (p.name_en || p.name_zh || '商品') : (p.name_zh || p.name_en || '商品');
+            h += '<div style="border:1px solid #ddd;border-radius:8px;overflow:hidden;cursor:pointer;background:#fff;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#1A1A1A\'" onmouseout="this.style.borderColor=\'#ddd\'" onclick="addFeaturedProduct(' + p.id + ')">';
+            h += (p.image_url ? '<img src="' + p.image_url + '" style="width:100%;height:120px;object-fit:cover;">' : '<div style="height:120px;background:#F3EFEA;display:flex;align-items:center;justify-content:center;">無圖</div>');
+            h += '<div style="padding:8px;"><b style="font-size:13px;">' + escapeHtml(prodName) + '</b><br><small style="color:#888;">HK$' + (p.price || 0) + '</small></div>';
+            h += '</div>';
+        }
+        list.innerHTML = h;
+    }
+
+    // 搜索过滤商品
+    function filterProducts() {
+        var keyword = document.getElementById('productSearchInput').value.toLowerCase();
+        var filtered = (window.editorAllProducts || []).filter(function(p) {
+            var name = (p.name_zh || '') + ' ' + (p.name_en || '');
+            return name.toLowerCase().indexOf(keyword) >= 0;
+        });
+        renderProductSelectList(filtered);
+    }
+
+    // 关闭商品选择弹窗
+    function closeProductModal() {
+        document.getElementById('productModal').style.display = 'none';
+    }
+
+    // 添加精选商品
+    async function addFeaturedProduct(productId) {
+        try {
+            // 获取当前最大排序
+            var maxOrder = 0;
+            for (var i = 0; i < featuredProducts.length; i++) {
+                if (featuredProducts[i].sort_order > maxOrder) {
+                    maxOrder = featuredProducts[i].sort_order;
+                }
+            }
+            await supabaseClient.from('featured_products').insert({ product_id: productId, sort_order: maxOrder + 1, is_active: true });
+            await loadFeaturedProducts();
+            showToast('商品已添加');
+            closeProductModal();
+        } catch (e) {
+            showToast('添加失敗: ' + e.message, 'error');
+        }
     }
 
     // 更新臻选系列卡片标题
