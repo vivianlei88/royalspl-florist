@@ -270,7 +270,7 @@
             <button class="lang-btn" onclick="switchLang('en')">EN</button>
         </div>
         <div class="toolbar-right">
-            <button class="btn btn-ai" onclick="openAITranslate()">✨ AI 翻譯</button>
+            <button class="btn btn-ai" id="aiTranslateBtn" onclick="openAITranslate()" style="display:none;">✨ AI 翻譯</button>
             <button class="btn btn-secondary" onclick="window.close()">返回後台</button>
             <button class="btn btn-primary" onclick="saveChanges()">💾 保存</button>
         </div>
@@ -330,6 +330,7 @@
         loadProductsList();
         loadCollectionCards();
         loadFeaturedProducts();
+        updateAITranslateBtn();
     });
 
     // 加载商品列表
@@ -413,6 +414,7 @@
         }
         updatePreview();
         renderEditorPanel();
+        updateAITranslateBtn();
     }
 
     // 切换设备
@@ -425,6 +427,19 @@
         });
     }
 
+    // 更新AI翻译按钮显示状态
+    function updateAITranslateBtn() {
+        var btn = document.getElementById('aiTranslateBtn');
+        if (btn) {
+            // 只在首页 + 英文模式下显示AI翻译按钮
+            if (currentPage === 'index' && currentLang === 'en') {
+                btn.style.display = '';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+    }
+
     // 切换语言
     function switchLang(lang) {
         currentLang = lang;
@@ -433,6 +448,7 @@
         });
         updatePreview();
         renderEditorPanel();
+        updateAITranslateBtn();
     }
 
     // 渲染编辑面板
