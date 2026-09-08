@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Login | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
+        .user-icon svg { display: block; }
+        .user-icon:hover { opacity: 0.7; }
+        .cart-icon { display: flex; align-items: center; justify-content: center; }
+        .login-page { max-width: 500px; margin: 0 auto; padding: 60px 20px; }
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-icon { font-size: 60px; margin-bottom: 15px; }
+        .login-title { font-size: 28px; font-weight: 600; margin-bottom: 10px; }
+        .login-subtitle { font-size: 15px; color: #383431; }
+        .tab-buttons { display: flex; margin-bottom: 25px; border-bottom: 2px solid #1A1A1A; }
+        .tab-btn { flex: 1; padding: 15px; background: transparent; border: none; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; color: #383431; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .tab-btn.active { color: #1A1A1A; border-bottom-color: #1A1A1A; }
+        .login-form { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px 15px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; font-family: inherit; background-color: white; }
+        .form-input:focus { outline: none; border-width: 2px; }
+        .login-btn { width: 100%; padding: 15px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; margin-bottom: 15px; transition: all 0.3s; }
+        .login-btn:hover { background-color: #383431; }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .message-box { padding: 12px 15px; border-radius: 5px; font-size: 14px; margin-bottom: 15px; display: none; }
+        .message-box.success { background-color: #e8f5e9; color: #2e7d32; display: block; }
+        .message-box.error { background-color: #ffebee; color: #c62828; display: block; }
+        .back-home { text-align: center; margin-top: 25px; }
+        .back-home-link { font-size: 14px; color: #383431; text-decoration: underline; }
+    
+    /* ===== 手機版全面優化 ===== */
+    @media (max-width: 768px) {
+        /* 基礎字體 */
+        body { font-size: 15px; line-height: 1.6; }
+        h1 { font-size: 24px !important; }
+        h2 { font-size: 20px !important; }
+        h3 { font-size: 17px !important; }
+        p { font-size: 15px; }
+        
+        /* 導航欄優化 */
+        .nav-desktop { display: none !important; }
+        .nav-mobile { display: flex !important; }
+        .header { padding: 10px 15px !important; }
+        .logo { font-size: 18px !important; }
+        
+        /* 按鈕優化 */
+        .btn, button, input[type="submit"], input[type="button"] {
+            min-height: 44px !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* 表單優化 */
+        input, select, textarea {
+            font-size: 15px !important;
+            padding: 12px !important;
+            min-height: 44px !important;
+            border-radius: 8px !important;
+        }
+        textarea { min-height: 100px !important; }
+        .form-group { margin-bottom: 15px !important; }
+        .form-row, .form-grid, .checkout-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+        }
+        
+        /* 圖片響應式 */
+        img { max-width: 100%; height: auto; }
+        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
+        
+        /* 容器寬度 */
+        .container, .content-wrapper, .main-content {
+            padding: 15px !important;
+            max-width: 100% !important;
+        }
+        
+        /* 表格橫向滾動 */
+        .table-wrapper, .order-table, .cart-table, table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 500px; font-size: 13px; }
+        th, td { padding: 10px 8px !important; }
+        
+        /* Shopping Cart優化 */
+        .cart-item { flex-direction: column !important; gap: 10px; }
+        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
+        .cart-item-details { width: 100% !important; text-align: center; }
+        .cart-summary { margin-top: 20px !important; }
+        
+        /* Products詳情頁 */
+        .product-detail-layout { flex-direction: column !important; }
+        .product-gallery { width: 100% !important; }
+        .product-info { width: 100% !important; padding: 15px !important; }
+        .product-price { font-size: 24px !important; }
+        
+        /* Products卡片 */
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+        .product-card { padding: 10px !important; }
+        .product-name { font-size: 14px !important; }
+        .product-price { font-size: 16px !important; }
+        
+        /* 頁尾 */
+        .footer { padding: 30px 15px !important; }
+        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .footer-column { text-align: center; }
+        
+        /* 模態框 */
+        .modal, .modal-content {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+            padding: 15px !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* 統計卡片 */
+        .stats-grid, .card-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .stat-card, .card { padding: 15px !important; }
+        
+        /* 間距優化 */
+        .section { padding: 30px 15px !important; }
+        .mb-20 { margin-bottom: 15px !important; }
+        .mt-20 { margin-top: 15px !important; }
+        .p-20 { padding: 15px !important; }
+        
+        /* 隱藏桌面端元素 */
+        .desktop-only { display: none !important; }
+        .mobile-only { display: block !important; }
+    }
+    
+    @media (max-width: 480px) {
+        body { font-size: 14px; }
+        h1 { font-size: 22px !important; }
+        h2 { font-size: 18px !important; }
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
+        .container, .content-wrapper { padding: 12px !important; }
+    }
+    /* ===== 手機版優化結束 ===== */
+
+    </style>
+    <link rel="stylesheet" href="/css/ai-chat.css">
+
+    <meta name="description" content="Login RoyalSpl Florist Member Account，View OrderHistory、Manage Favorites、Enjoy member benefits。">
+    <link rel="canonical" href="https://www.royalspl.shop/login.html">
+    <meta property="og:title" content="Member Login | RoyalSpl Florist Hong Kong">
+    <meta property="og:description" content="Login RoyalSpl Florist Member Account，View OrderHistory、Manage Favorites、Enjoy member benefits。">
+    <meta property="og:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <meta property="og:url" content="https://www.royalspl.shop/login.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
+    <meta property="og:locale" content="zh_HK">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Member Login | RoyalSpl Florist Hong Kong">
+    <meta name="twitter:description" content="Login RoyalSpl Florist Member Account，View OrderHistory、Manage Favorites、Enjoy member benefits。">
+    <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="/en/index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="/en/account.html" class="user-icon" aria-label="Member Center">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+                <a href="/en/cart.html" class="cart-icon" aria-label="Shopping Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">Menu</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="/en/index.html" class="nav-link"><span class="nav-zh">Home</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="/en/products.html" class="nav-link"><span class="nav-zh">All Flowers</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item"><a href="/en/account.html" class="nav-link"><span class="nav-zh">Member Center</span><span class="nav-en">ACCOUNT</span></a></div>
+            <div class="nav-item"><a href="/en/cart.html" class="nav-link"><span class="nav-zh">Your Cart</span><span class="nav-en">YOUR GIFTS</span></a></div>
+        </nav>
+    </div>
+
+    <main class="login-page">
+        <div class="login-header">
+            <div class="login-icon">👤</div>
+            <h1 class="login-title">Member Center</h1>
+            <p class="login-subtitle">LoginorRegisterYour Account</p>
+        </div>
+        
+        <div class="tab-buttons">
+            <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" id="registerTab" onclick="switchTab('register')">Register</button>
+        </div>
+        
+        <div id="messageBox" class="message-box"></div>
+        
+        <div class="login-form" id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="loginEmail" placeholder="Please enterEmail">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="loginPassword" placeholder="Please enterPassword">
+            </div>
+            <button class="login-btn" id="loginBtn" onclick="handleLogin()">Login</button>
+        </div>
+        
+        <div class="login-form" id="registerForm" style="display:none;">
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-input" id="registerName" placeholder="Please enterName">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="registerEmail" placeholder="Please enterEmail">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="registerPassword" placeholder="Please enterPassword（At least6）">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" class="form-input" id="registerPhone" placeholder="Please enterPhone（Optional）">
+            </div>
+            <button class="login-btn" id="registerBtn" onclick="handleRegister()">Register</button>
+        </div>
+        
+        <div class="back-home">
+            <a href="/en/index.html" class="back-home-link">← Back to Home</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-slogan"><p class="footer-slogan-line1">Bringing You the Finest Floral Experience</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
+        <div class="footer-links">
+            <div class="footer-column"><a href="/en/products.html" class="footer-link">All Flowers</a><a href="products.html?tag=Valentine's Day" class="footer-link">Occasions</a><a href="products.html?tag=Subscribe" class="footer-link">Subscribe to Flowers</a></div>
+            <div class="footer-column"><a href="/en/blog.html" class="footer-link">Blog</a><a href="/en/faq.html" class="footer-link">FAQ</a><a href="/en/contact.html" class="footer-link">Contact Us</a></div>
+        </div>
+        <div class="footer-bottom"><a href="/en/privacy.html" class="privacy-link">Privacy Policy Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+    </footer>
+
+    <script>
+    var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function switchTab(tab) {
+        var loginForm = document.getElementById('loginForm');
+        var registerForm = document.getElementById('registerForm');
+        var loginTab = document.getElementById('loginTab');
+        var registerTab = document.getElementById('registerTab');
+        var messageBox = document.getElementById('messageBox');
+        messageBox.className = 'message-box';
+        messageBox.style.display = 'none';
+        if (tab === 'login') {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+        } else {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+        }
+    }
+
+    function showMessage(type, text) {
+        var box = document.getElementById('messageBox');
+        box.className = 'message-box ' + type;
+        box.textContent = text;
+        box.style.display = 'block';
+    }
+
+    async function handleLogin() {
+        var email = document.getElementById('loginEmail').value.trim();
+        var password = document.getElementById('loginPassword').value;
+        if (!email || !password) { showMessage('error', '請填寫EmailandPassword'); return; }
+        var btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.textContent = 'Login中...';
+        try {
+            var result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+            if (result.error) throw result.error;
+            showMessage('success', '✓ LoginSuccess！');
+            setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+        } catch (err) {
+            showMessage('error', 'Login Failed：' + (err.message || '請檢查EmailandPassword'));
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Login';
+        }
+    }
+
+    async function handleRegister() {
+        var name = document.getElementById('registerName').value.trim();
+        var email = document.getElementById('registerEmail').value.trim();
+        var password = document.getElementById('registerPassword').value;
+        var phone = document.getElementById('registerPhone').value.trim();
+        if (!name || !email || !password) { showMessage('error', '請填寫Name、EmailandPassword'); return; }
+        if (password.length < 6) { showMessage('error', 'PasswordAt least需要6'); return; }
+        var btn = document.getElementById('registerBtn');
+        btn.disabled = true;
+        btn.textContent = 'Register中...';
+        try {
+            var result = await supabaseClient.auth.signUp({ email: email, password: password });
+            if (result.error) throw result.error;
+            if (result.data.user) {
+                await supabaseClient.from('user_profiles').insert({ id: result.data.user.id, name: name, phone: phone });
+            }
+            showMessage('success', '✓ RegisterSuccess！請Login');
+            setTimeout(function() { switchTab('login'); }, 1500);
+        } catch (err) {
+            showMessage('error', 'RegisterFailed：' + (err.message || '請稍after再試'));
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Register';
+        }
+    }
+
+    function updateCartBadge() {
+        var cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+        var badge = document.getElementById('cartBadge');
+        if (badge) { var totalItems = cart.reduce(function(sum, item) { return sum + item.quantity; }, 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; }
+    }
+
+    var menuBtn = document.getElementById('menuBtn');
+    var navCloseBtn = document.getElementById('navCloseBtn');
+    var navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+
+    document.addEventListener('DOMContentLoaded', updateCartBadge);
+    </script>
+    <script src="/js/ai-chat-v2.js"></script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title })
+        }).catch(function() {});
+    })();
+    </script>
+</body>
+</html>

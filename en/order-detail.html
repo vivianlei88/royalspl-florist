@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 750px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin: 20px 0 0 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .shop-header { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        .shop-logo { max-width: 80px; max-height: 80px; object-fit: contain; margin-bottom: 10px; }
+        .shop-name { font-size: 22px; font-weight: 600; color: #1A1A1A; margin-bottom: 5px; }
+        .shop-contact { font-size: 13px; color: #888; }
+        .detail-section { margin-bottom: 25px; }
+        .section-title { font-size: 16px; font-weight: 600; color: #1A1A1A; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #1A1A1A; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: #888; min-width: 100px; }
+        .detail-value { flex: 1; text-align: right; color: #1A1A1A; }
+        .product-item { display: flex; align-items: center; gap: 15px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .product-item:last-child { border-bottom: none; }
+        .product-item img { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; }
+        .product-img-placeholder { width: 100px; height: 100px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+        .product-info { flex: 1; }
+        .product-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+        .product-name-en { font-size: 12px; color: #888; margin-bottom: 4px; }
+        .product-meta { font-size: 13px; color: #666; }
+        .product-price { font-size: 15px; font-weight: 600; color: #1A1A1A; }
+        .total-row { display: flex; justify-content: space-between; padding: 12px 0; font-size: 16px; font-weight: 700; border-top: 2px solid #1A1A1A; margin-top: 10px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 13px; font-weight: 600; }
+        .status-unpaid { background: #fdecea; color: #c0392b; }
+        .status-paid { background: #e8f5e9; color: #27ae60; }
+        .status-shipped { background: #e3f2fd; color: #2980b9; }
+        .status-cancelled { background: #f5f5f5; color: #999; }
+        .pay-btn-area { text-align: center; margin: 20px 0; }
+        .pay-btn { display: inline-block; padding: 12px 40px; background: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; font-family: inherit; }
+        .pay-btn:hover { background: #333; }
+        .pay-btn:disabled { background: #999; cursor: not-allowed; }
+        .back-link { display: inline-block; margin-top: 10px; color: #1A1A1A; }
+        @media (max-width: 600px) {
+            .container { margin: 20px 10px; padding: 15px; }
+            .detail-row { flex-direction: column; gap: 4px; }
+            .detail-value { text-align: left; }
+        }
+    
+    /* ===== 手機版全面優化 ===== */
+    @media (max-width: 768px) {
+        /* 基礎字體 */
+        body { font-size: 15px; line-height: 1.6; }
+        h1 { font-size: 24px !important; }
+        h2 { font-size: 20px !important; }
+        h3 { font-size: 17px !important; }
+        p { font-size: 15px; }
+        
+        /* 導航欄優化 */
+        .nav-desktop { display: none !important; }
+        .nav-mobile { display: flex !important; }
+        .header { padding: 10px 15px !important; }
+        .logo { font-size: 18px !important; }
+        
+        /* 按鈕優化 */
+        .btn, button, input[type="submit"], input[type="button"] {
+            min-height: 44px !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* 表單優化 */
+        input, select, textarea {
+            font-size: 15px !important;
+            padding: 12px !important;
+            min-height: 44px !important;
+            border-radius: 8px !important;
+        }
+        textarea { min-height: 100px !important; }
+        .form-group { margin-bottom: 15px !important; }
+        .form-row, .form-grid, .checkout-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+        }
+        
+        /* 圖片響應式 */
+        img { max-width: 100%; height: auto; }
+        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
+        
+        /* 容器寬度 */
+        .container, .content-wrapper, .main-content {
+            padding: 15px !important;
+            max-width: 100% !important;
+        }
+        
+        /* 表格橫向滾動 */
+        .table-wrapper, .order-table, .cart-table, table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 500px; font-size: 13px; }
+        th, td { padding: 10px 8px !important; }
+        
+        /* Shopping Cart優化 */
+        .cart-item { flex-direction: column !important; gap: 10px; }
+        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
+        .cart-item-details { width: 100% !important; text-align: center; }
+        .cart-summary { margin-top: 20px !important; }
+        
+        /* Products詳情頁 */
+        .product-detail-layout { flex-direction: column !important; }
+        .product-gallery { width: 100% !important; }
+        .product-info { width: 100% !important; padding: 15px !important; }
+        .product-price { font-size: 24px !important; }
+        
+        /* Products卡片 */
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+        .product-card { padding: 10px !important; }
+        .product-name { font-size: 14px !important; }
+        .product-price { font-size: 16px !important; }
+        
+        /* 頁尾 */
+        .footer { padding: 30px 15px !important; }
+        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .footer-column { text-align: center; }
+        
+        /* 模態框 */
+        .modal, .modal-content {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+            padding: 15px !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* 統計卡片 */
+        .stats-grid, .card-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .stat-card, .card { padding: 15px !important; }
+        
+        /* 間距優化 */
+        .section { padding: 30px 15px !important; }
+        .mb-20 { margin-bottom: 15px !important; }
+        .mt-20 { margin-top: 15px !important; }
+        .p-20 { padding: 15px !important; }
+        
+        /* 隱藏桌面端元素 */
+        .desktop-only { display: none !important; }
+        .mobile-only { display: block !important; }
+    }
+    
+    @media (max-width: 480px) {
+        body { font-size: 14px; }
+        h1 { font-size: 22px !important; }
+        h2 { font-size: 18px !important; }
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
+        .container, .content-wrapper { padding: 12px !important; }
+    }
+    /* ===== 手機版優化結束 ===== */
+
+    </style>
+    <link rel="stylesheet" href="/css/ai-chat.css">
+
+    <meta name="description" content="View your RoyalSpl Florist Order Details，IncludingProducts、Delivery InformationandPaymentStatus。">
+    <link rel="canonical" href="https://www.royalspl.shop/order-detail.html">
+    <meta property="og:title" content="Order Details | RoyalSpl Florist Hong Kong">
+    <meta property="og:description" content="View your RoyalSpl Florist Order Details，IncludingProducts、Delivery InformationandPaymentStatus。">
+    <meta property="og:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <meta property="og:url" content="https://www.royalspl.shop/order-detail.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
+    <meta property="og:locale" content="zh_HK">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Order Details | RoyalSpl Florist Hong Kong">
+    <meta name="twitter:description" content="View your RoyalSpl Florist Order Details，IncludingProducts、Delivery InformationandPaymentStatus。">
+    <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+    <div class="container">
+        <div id="shopHeader" class="shop-header"></div>
+        <div style="display:flex;align-items:center;gap:15px;margin-bottom:25px;">
+            <a href="/en/account.html" class="back-btn" style="margin:0;">←</a>
+            <h1 style="margin:0;font-size:20px;">Order Details</h1>
+        </div>
+        <div id="orderDetail"></div>
+        <p style="text-align:center;margin-top:20px;"><a href="/en/account.html" class="back-link">BackMember Center</a></p>
+    </div>
+
+    <script>
+        var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadShopInfo() {
+            try {
+                const { data, error } = await supabaseClient.from('shop_settings').select('*').limit(1);
+                if (data && data.length > 0) {
+                    const shop = data[0];
+                    let html = '';
+                    if (shop.shop_logo) html += '<img src="' + shop.shop_logo + '" class="shop-logo" alt="">';
+                    html += '<div class="shop-name">' + (shop.shop_name || 'RoyalSpl Florist') + '</div>';
+                    const contactParts = [];
+                    if (shop.shop_phone) contactParts.push(shop.shop_phone);
+                    if (shop.shop_address) contactParts.push(shop.shop_address);
+                    if (contactParts.length) html += '<div class="shop-contact">' + contactParts.join(' | ') + '</div>';
+                    document.getElementById('shopHeader').innerHTML = html;
+                } else {
+                    document.getElementById('shopHeader').innerHTML = '<div class="shop-name">RoyalSpl Florist</div>';
+                }
+            } catch (e) {
+                document.getElementById('shopHeader').innerHTML = '<div class="shop-name">RoyalSpl Florist</div>';
+            }
+        }
+
+        async function loadOrderDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+            if (!orderId) { window.location.href = 'account.html'; return; }
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) { window.location.href = 'account.html'; return; }
+            const { data: order, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
+            if (error || !order) { document.getElementById('orderDetail').innerHTML = '<p style="text-align:center;">訂單不存在</p>'; return; }
+            if (order.customer_email !== user.email) {
+                document.getElementById('orderDetail').innerHTML = '<p style="text-align:center;">無權查看此訂單</p>';
+                return;
+            }
+            renderOrderDetail(order);
+        }
+
+        function renderOrderDetail(order) {
+            const statusMap = { unpaid: '未Payment', pending_payment: '待ConfirmPayment', paid: 'AlreadyPayment', shipped: 'Already出貨', cancelled: 'Cancelled' };
+            const statusClass = 'status-' + order.status;
+            
+            let items = [];
+            if (order.items && Array.isArray(order.items) && order.items.length > 0) {
+                items = order.items;
+            } else {
+                const names = (order.product_names || '').split('|').filter(Boolean);
+                let images = [];
+                try {
+                    const parsed = JSON.parse(order.product_images);
+                    images = Array.isArray(parsed) ? parsed : [parsed];
+                } catch(e) {
+                    images = (order.product_images || '').split('|').filter(Boolean);
+                }
+                items = names.map((name, i) => ({
+                    name: name, price: '', quantity: 1, image: images[i] || ''
+                }));
+            }
+
+            let productsHtml = '';
+            items.forEach(item => {
+                const imgHtml = item.image 
+                    ? (item.productId ? '<a href="product-detail.html?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" alt="' + item.name + '"></a>' : '<img src="' + item.image + '" alt="' + item.name + '">')
+                    : '<div class="product-img-placeholder">🌸</div>';
+                const priceHtml = item.price ? 'HK$' + item.price : '-';
+                const subtotal = item.price && item.quantity ? 'HK$' + (item.price * item.quantity) : '';
+                productsHtml += '<div class="product-item">' +
+                    imgHtml +
+                    '<div class="product-info">' +
+                    '<div class="product-name">' + item.name + '</div>' +
+                    (item.nameEn ? '<div class="product-name-en">' + item.nameEn + '</div>' : '') +
+                    '<div class="product-meta">Unit Price：' + priceHtml + ' | Quantity：' + (item.quantity || 1) + '</div>' +
+                    '</div>' +
+                    '<div class="product-price">' + subtotal + '</div>' +
+                    '</div>';
+            });
+
+            const deliveryTime = [order.delivery_date, order.delivery_time_slot, order.delivery_hour].filter(Boolean).join(' ');
+
+            let html = '';
+
+            // 1. Order Items（最上面）
+            html += '<div class="detail-section">';
+            html += '<div class="section-title">Order Items</div>';
+            html += productsHtml || '<p style="color:#999;text-align:center;padding:20px;">暫無Products資訊</p>';
+            html += '</div>';
+
+            // 2. 訂單資訊
+            html += '<div class="detail-section">';
+            html += '<div class="section-title">訂單資訊</div>';
+            html += '<div class="detail-row"><span class="detail-label">Order Number</span><span class="detail-value">' + order.order_code + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Order Status</span><span class="detail-value"><span class="status-badge ' + statusClass + '">' + (statusMap[order.status] || order.status) + '</span></span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Order Time</span><span class="detail-value">' + (order.created_at || '').slice(0, 16).replace('T', ' ') + '</span></div>';
+            html += '</div>';
+
+            // 3. 訂購人資訊
+            html += '<div class="detail-section">';
+            html += '<div class="section-title">訂購人資訊</div>';
+            html += '<div class="detail-row"><span class="detail-label">姓名</span><span class="detail-value">' + (order.customer_name || order.recipient_name || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">' + (order.customer_phone || order.recipient_phone || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">電郵</span><span class="detail-value">' + (order.customer_email || '-') + '</span></div>';
+            html += '</div>';
+
+            // 4. Recipient資訊
+            html += '<div class="detail-section">';
+            html += '<div class="section-title">Recipient資訊</div>';
+            html += '<div class="detail-row"><span class="detail-label">姓名</span><span class="detail-value">' + (order.recipient_name || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">' + (order.recipient_phone || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">地址</span><span class="detail-value">' + (order.recipient_address || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">送貨時間</span><span class="detail-value">' + (deliveryTime || '-') + '</span></div>';
+            html += '</div>';
+
+            // 5. 心意卡內容
+            html += '<div class="detail-section">';
+            html += '<div class="section-title">心意卡內容</div>';
+            html += '<div style="padding:15px;background:#F9F9F9;border-radius:8px;font-size:14px;line-height:1.8;">' + (order.card_message || '<span style="color:#ccc;">無</span>') + '</div>';
+            html += '</div>';
+
+            // 6. 特別事項
+            html += '<div class="detail-section">';
+            html += '<div class="section-title">特別事項</div>';
+            html += '<div style="padding:15px;background:#F9F9F9;border-radius:8px;font-size:14px;line-height:1.8;">' + (order.remarks || '<span style="color:#ccc;">無</span>') + '</div>';
+            html += '</div>';
+
+            // 7. 金額明細
+            html += '<div class="detail-section">';
+            html += '<div class="section-title">金額明細</div>';
+            html += '<div class="detail-row"><span class="detail-label">ProductsSubtotal</span><span class="detail-value">HK$' + (order.subtotal || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Shipping Fee</span><span class="detail-value">' + (order.delivery_fee === 0 ? '免費' : 'HK$' + (order.delivery_fee || '-')) + '</span></div>';
+            html += '<div class="total-row"><span>總金額</span><span>HK$' + (order.total_amount || '-') + '</span></div>';
+            html += '</div>';
+
+            // 未Payment：总金额下面显示立即Pay按钮
+            if (order.status === 'unpaid') {
+                html += '<div class="pay-btn-area" style="margin-top:30px;">';
+                html += '<button class="pay-btn" onclick="payNow(' + order.id + ', this)">立即Pay</button>';
+                html += '</div>';
+            }
+
+            document.getElementById('orderDetail').innerHTML = html;
+        }
+
+        async function payNow(orderId, btn) {
+            btn.disabled = true;
+            btn.textContent = '處理中...';
+            try {
+                const { data: order, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
+                if (error || !order) throw new Error('訂單不存在');
+
+                let items = [];
+                if (order.items && Array.isArray(order.items)) {
+                    items = order.items;
+                } else {
+                    const names = (order.product_names || '').split('|').filter(Boolean);
+                    items = names.map(n => ({ name: n, price: 0, quantity: 1 }));
+                }
+
+                localStorage.setItem('pending_order', JSON.stringify({
+                    id: order.id, orderCode: order.order_code, items: items,
+                    subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount,
+                    recipient: { name: order.recipient_name, phone: order.recipient_phone, address: order.recipient_address, date: order.delivery_date, timeSlot: order.delivery_time_slot, email: order.customer_email }
+                }));
+
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: items, recipientName: order.recipient_name, recipientPhone: order.recipient_phone,
+                        recipientAddress: order.recipient_address, deliveryDate: order.delivery_date,
+                        deliveryTimeSlot: order.delivery_time_slot, deliveryHour: order.delivery_hour,
+                        deliveryArea: order.delivery_area, deliveryFee: order.delivery_fee,
+                        subtotal: order.subtotal, totalAmount: order.total_amount,
+                        orderId: order.id, orderCode: order.order_code
+                    })
+                });
+
+                const data = await response.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    window.location.href = 'payment.html?order_id=' + orderId;
+                }
+            } catch (e) {
+                console.error('Pay失败:', e);
+                alert('Pay處理Failed，Please try again later');
+                btn.disabled = false;
+                btn.textContent = '立即Pay';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadShopInfo();
+            loadOrderDetail();
+        });
+    </script>
+    <script src="/js/ai-chat-v2.js"></script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title })
+        }).catch(function() {});
+    })();
+    </script>
+</body>
+</html>

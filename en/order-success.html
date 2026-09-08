@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaySuccess | RoyalSpl Florist Hong Kong Florist</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Serif TC', serif; background-color: #FAF8F5; color: #1A1A1A; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .success-container { text-align: center; padding: 40px 20px; max-width: 500px; }
+        .success-icon { font-size: 80px; margin-bottom: 25px; animation: bounce 0.6s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .success-title { font-size: 32px; font-weight: 500; margin-bottom: 15px; }
+        .success-desc { font-size: 16px; color: #666; margin-bottom: 10px; line-height: 1.8; }
+        .order-info { background: white; border-radius: 10px; padding: 20px; margin: 25px 0; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .order-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #eee; }
+        .order-row:last-child { border-bottom: none; }
+        .order-label { color: #888; }
+        .order-value { font-weight: 500; }
+        .actions { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
+        .btn { padding: 14px 35px; border-radius: 8px; font-size: 15px; cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; border: none; }
+        .btn-primary { background: #1A1A1A; color: #FAF8F5; }
+        .btn-outline { background: transparent; color: #1A1A1A; border: 1px solid #1A1A1A; }
+        .loading { font-size: 16px; color: #888; }
+        @media (max-width: 480px) {
+            .success-title { font-size: 24px; }
+            .actions { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+    
+    /* ===== 手機版全面優化 ===== */
+    @media (max-width: 768px) {
+        /* 基礎字體 */
+        body { font-size: 15px; line-height: 1.6; }
+        h1 { font-size: 24px !important; }
+        h2 { font-size: 20px !important; }
+        h3 { font-size: 17px !important; }
+        p { font-size: 15px; }
+        
+        /* 導航欄優化 */
+        .nav-desktop { display: none !important; }
+        .nav-mobile { display: flex !important; }
+        .header { padding: 10px 15px !important; }
+        .logo { font-size: 18px !important; }
+        
+        /* 按鈕優化 */
+        .btn, button, input[type="submit"], input[type="button"] {
+            min-height: 44px !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* 表單優化 */
+        input, select, textarea {
+            font-size: 15px !important;
+            padding: 12px !important;
+            min-height: 44px !important;
+            border-radius: 8px !important;
+        }
+        textarea { min-height: 100px !important; }
+        .form-group { margin-bottom: 15px !important; }
+        .form-row, .form-grid, .checkout-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+        }
+        
+        /* 圖片響應式 */
+        img { max-width: 100%; height: auto; }
+        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
+        
+        /* 容器寬度 */
+        .container, .content-wrapper, .main-content {
+            padding: 15px !important;
+            max-width: 100% !important;
+        }
+        
+        /* 表格橫向滾動 */
+        .table-wrapper, .order-table, .cart-table, table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 500px; font-size: 13px; }
+        th, td { padding: 10px 8px !important; }
+        
+        /* Shopping Cart優化 */
+        .cart-item { flex-direction: column !important; gap: 10px; }
+        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
+        .cart-item-details { width: 100% !important; text-align: center; }
+        .cart-summary { margin-top: 20px !important; }
+        
+        /* Products詳情頁 */
+        .product-detail-layout { flex-direction: column !important; }
+        .product-gallery { width: 100% !important; }
+        .product-info { width: 100% !important; padding: 15px !important; }
+        .product-price { font-size: 24px !important; }
+        
+        /* Products卡片 */
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+        .product-card { padding: 10px !important; }
+        .product-name { font-size: 14px !important; }
+        .product-price { font-size: 16px !important; }
+        
+        /* 頁尾 */
+        .footer { padding: 30px 15px !important; }
+        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .footer-column { text-align: center; }
+        
+        /* 模態框 */
+        .modal, .modal-content {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+            padding: 15px !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* 統計卡片 */
+        .stats-grid, .card-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .stat-card, .card { padding: 15px !important; }
+        
+        /* 間距優化 */
+        .section { padding: 30px 15px !important; }
+        .mb-20 { margin-bottom: 15px !important; }
+        .mt-20 { margin-top: 15px !important; }
+        .p-20 { padding: 15px !important; }
+        
+        /* 隱藏桌面端元素 */
+        .desktop-only { display: none !important; }
+        .mobile-only { display: block !important; }
+    }
+    
+    @media (max-width: 480px) {
+        body { font-size: 14px; }
+        h1 { font-size: 22px !important; }
+        h2 { font-size: 18px !important; }
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
+        .container, .content-wrapper { padding: 12px !important; }
+    }
+    /* ===== 手機版優化結束 ===== */
+
+    </style>
+    <link rel="stylesheet" href="/css/ai-chat.css">
+
+    <meta name="description" content="Thank you for your order！RoyalSpl Florist will be arranged for you soonHong KongFlower Delivery。">
+    <link rel="canonical" href="https://www.royalspl.shop/order-success.html">
+    <meta property="og:title" content="PaySuccess | RoyalSpl Florist Hong Kong Florist">
+    <meta property="og:description" content="Thank you for your order！RoyalSpl Florist will be arranged for you soonHong KongFlower Delivery。">
+    <meta property="og:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <meta property="og:url" content="https://www.royalspl.shop/order-success.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
+    <meta property="og:locale" content="zh_HK">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PaySuccess | RoyalSpl Florist Hong Kong Florist">
+    <meta name="twitter:description" content="Thank you for your order！RoyalSpl Florist will be arranged for you soonHong KongFlower Delivery。">
+    <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+    <div class="success-container">
+        <div id="loadingState">
+            <div class="success-icon">⏳</div>
+            <p class="loading">ProcessingConfirmPayResult...</p>
+        </div>
+        
+        <div id="successState" style="display:none;">
+            <div class="success-icon">✅</div>
+            <h1 class="success-title">PaySuccess</h1>
+            <p class="success-desc">Thank you for your order！<br>We will arrange delivery as soon as possible，Order DetailsAlreadySendto your email。</p>
+            
+            <div class="order-info" id="orderInfo">
+            </div>
+            
+            <div class="actions">
+                <a href="/en/account.html" class="btn btn-primary">View Order</a>
+                <a href="/en/products.html" class="btn btn-outline">ContinueShopping</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseClient = supabase.createClient(
+            'https://gefqlrmozxbgfhxgngtg.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y'
+        );
+
+        async function confirmPayment() {
+            // FPS FPS 模式：只顯示「Order Submitted（待ConfirmPayment）」，不更新為AlreadyPayment
+            const urlParams = new URLSearchParams(window.location.search);
+            const isFps = urlParams.get('p') === 'fps';
+            
+            // 从 localStorage 获取待Pay订单
+            const pending = localStorage.getItem('pending_order');
+            if (pending) {
+                const order = JSON.parse(pending);
+                
+                try {
+                    if (!isFps) {
+                        // Credit Card / Apple Pay PaymentSuccess → 更新订单状态为AlreadyPayment
+                        await supabaseClient
+                            .from('orders')
+                            .update({ 
+                                status: 'paid',
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', order.id);
+                    }
+                    // FPS 模式：保持 pending_payment（待ConfirmPayment），後台核對後才轉AlreadyPayment
+                    
+                    // 显示订单信息
+                    document.getElementById('orderInfo').innerHTML = `
+                        <div class="order-row"><span class="order-label">訂單號</span><span class="order-value">${order.orderCode}</span></div>
+                        <div class="order-row"><span class="order-label">Products金額</span><span class="order-value">HK$${order.subtotal}</span></div>
+                        <div class="order-row"><span class="order-label">配送費</span><span class="order-value">${order.deliveryFee === 0 ? '免費' : 'HK$' + order.deliveryFee}</span></div>
+                        <div class="order-row"><span class="order-label">總計</span><span class="order-value" style="font-size:18px;font-weight:700;">HK$${order.total}</span></div>
+                        ${isFps ? '<div class="order-row"><span class="order-label">PaymentStatus</span><span class="order-value" style="color:#c0392b;">待ConfirmPayment（FPS）</span></div>' : ''}
+                    `;
+                    
+                    // 发送Payment完成通知邮件（FPS 模式不重複發）
+                    const userEmail = order.recipient?.email || '';
+                    if (userEmail && !isFps) {
+                        fetch('/send-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                to: userEmail,
+                                subject: '【RoyalSpl Florist】PaymentSuccess通知 ' + order.orderCode,
+                                html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">PaymentSuccess</h2><p>親愛的顧客，您的訂單AlreadyPaymentSuccess！</p><p><strong>訂單號：</strong>' + order.orderCode + '</p><p><strong>Payment金額：</strong>HK$' + order.total + '</p><p>We will arrange delivery as soon as possible，配送日期：' + (order.recipient?.date || '') + ' ' + (order.recipient?.timeSlot || '') + '</p><p style="color:#888;font-size:12px;margin-top:30px;">如有任何疑問，請聯繫我們。</p></div>'
+                            })
+                        }).catch(e => console.warn('SendPaymentSuccess郵件Failed:', e));
+                    }
+                    
+                    // GA4 + Google Ads: purchase 事件（只在真正PaymentSuccess時觸發，FPS待Confirm不觸發）
+                    if (typeof gtag === 'function' && !isFps) {
+                        var purchaseItems = (order.items || []).map(function(item) {
+                            return {
+                                item_id: item.productId,
+                                item_name: item.name,
+                                price: item.price,
+                                quantity: item.quantity
+                            };
+                        });
+                        gtag('event', 'purchase', {
+                            transaction_id: order.orderCode,
+                            currency: 'HKD',
+                            value: order.total,
+                            items: purchaseItems
+                        });
+                    }
+                    
+                    // 清除待Pay订单
+                    localStorage.removeItem('pending_order');
+                    
+                } catch (e) {
+                    console.error('更新订单状态失败:', e);
+                }
+            }
+            
+            // 显示Success状态
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('successState').style.display = 'block';
+            if (isFps) {
+                // FPS 模式：修改標題與描述
+                document.querySelector('.success-icon').textContent = '📋';
+                document.querySelector('.success-title').textContent = 'Order Submitted';
+                document.querySelector('.success-desc').innerHTML = 'Thank you for your order！<br>我們會核對您的FPSPayment（待ConfirmPayment），Confirm後會以電郵通知您。';
+            }
+        }
+        confirmPayment();
+    </script>
+    <script src="/js/ai-chat-v2.js"></script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title })
+        }).catch(function() {});
+    })();
+    </script>
+</body>
+</html>

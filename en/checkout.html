@@ -195,13 +195,13 @@
         table { min-width: 500px; font-size: 13px; }
         th, td { padding: 10px 8px !important; }
         
-        /* Shopping Cart優化 */
+        /* Shopping Cart Optimization */
         .cart-item { flex-direction: column !important; gap: 10px; }
         .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
         .cart-item-details { width: 100% !important; text-align: center; }
         .cart-summary { margin-top: 20px !important; }
         
-        /* Product詳情Page */
+        /* Product DetailsPage */
         .product-detail-layout { flex-direction: column !important; }
         .product-gallery { width: 100% !important; }
         .product-info { width: 100% !important; padding: 15px !important; }
@@ -216,7 +216,7 @@
         .product-name { font-size: 14px !important; }
         .product-price { font-size: 16px !important; }
         
-        /* Page尾 */
+        /* Page Footer */
         .footer { padding: 30px 15px !important; }
         .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
         .footer-column { text-align: center; }
@@ -231,7 +231,7 @@
             overflow-y: auto;
         }
         
-        /* 統計Card */
+        /* Statistics Card */
         .stats-grid, .card-grid {
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 10px !important;
@@ -290,7 +290,7 @@
                 <p class="logo-subtext">HONG KONG</p>
             </a>
             <div class="header-actions">
-                <a href="/en/account.html" class="user-icon" aria-label="MemberMedium心">
+                <a href="/en/account.html" class="user-icon" aria-label="Member Center">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
                 <a href="/en/cart.html" class="cart-icon" aria-label="Shopping Cart">
@@ -309,7 +309,7 @@
         <nav class="nav-drawer-content">
             <div class="nav-item"><a href="/en/index.html" class="nav-link"><span class="nav-zh">Home</span><span class="nav-en">HOME</span></a></div>
             <div class="nav-item"><a href="/en/products.html" class="nav-link"><span class="nav-zh">All Flowers</span><span class="nav-en">THE COLLECTION</span></a></div>
-            <div class="nav-item"><a href="/en/account.html" class="nav-link"><span class="nav-zh">MemberMedium心</span><span class="nav-en">ACCOUNT</span></a></div>
+            <div class="nav-item"><a href="/en/account.html" class="nav-link"><span class="nav-zh">Member Center</span><span class="nav-en">ACCOUNT</span></a></div>
             <div class="nav-item"><a href="/en/cart.html" class="nav-link"><span class="nav-zh">Your Cart</span><span class="nav-en">YOUR GIFTS</span></a></div>
         </nav>
     </div>
@@ -356,7 +356,7 @@
                 </div>
                 <div class="tier-item" data-tier="tier3" data-fee="150" onclick="manualSelectTier('tier3')">
                     <div class="tier-item-header"><span class="tier-item-label">Tier 3</span><span class="tier-item-fee">+HK$150</span></div>
-                    <p class="tier-item-area">Sai Kung Town Medium心/Hong Kong Island Mid-Levels/Southern District/Repulse Bay/Stanley etc.</p>
+                    <p class="tier-item-area">Sai Kung Town Center/Hong Kong Island Mid-Levels/Southern District/Repulse Bay/Stanley etc.</p>
                 </div>
                 <div class="tier-item" data-tier="tier4" data-fee="200" onclick="manualSelectTier('tier4')">
                     <div class="tier-item-header"><span class="tier-item-label">Tier 4</span><span class="tier-item-fee">+HK$200</span></div>
@@ -375,7 +375,7 @@
             <div class="form-group">
                 <label class="form-label">Select Date *</label>
                 <input type="date" class="date-input" id="deliveryDate" onchange="validateDeliveryDate()">
-                <p class="form-error" id="deliveryDateError">請選擇Delivery Date</p>
+                <p class="form-error" id="deliveryDateError">Please select Delivery Date</p>
                 <p class="date-hint" id="dateHint"></p>
             </div>
         </div>
@@ -387,7 +387,7 @@
                     <div class="time-slot-main"><span class="time-slot-name">① All Day Delivery (10:00–18:00)</span><span class="time-slot-fee">Over HK$500 Free，Otherwise HK$90</span></div>
                 </div>
                 <div class="time-slot-option" data-slot="specified_time" data-fee="150" onclick="selectTimeSlot(this)">
-                    <div class="time-slot-main"><span class="time-slot-name">② Specific Time派送</span><span class="time-slot-fee">+HK$150</span></div>
+                    <div class="time-slot-main"><span class="time-slot-name">② Specific Time Delivery</span><span class="time-slot-fee">+HK$150</span></div>
                     <div class="time-slot-expand">
                         <div class="hour-pills">
                             <button class="hour-pill" onclick="event.stopPropagation(); selectHour(this, '10:00-11:00')">10:00-11:00</button>
@@ -462,20 +462,20 @@
                     </div>
                 </div>
                 <div class="fps-steps">
-                    <b>Payment步驟：</b><br>
+                    <b>Payment Steps：</b><br>
                     1. 用銀行 App Scan the QR code above（or Enter FPS ID <b>113431563</b>）轉賬<br>
                     2. 轉賬完成後，Upload Payment Screenshot<br>
                     3. Enter Transaction Reference Number（After bank transfer App 會顯示）<br>
-                    4. Submit訂單後，We will verify payment，Status is「PendingConfirmPayment」
+                    4. After submitting order，We will verify payment，Status is「PendingConfirmPayment」
                 </div>
                 <div class="fps-upload-row">
                     <label class="fps-upload-label">📎 Upload Payment Screenshot
                         <input type="file" class="fps-upload-input" id="fpsScreenshot" accept="image/*" onchange="previewFpsScreenshot(event)">
                     </label>
-                    <img class="fps-preview" id="fpsScreenshotPreview" alt="Payment截圖預覽">
+                    <img class="fps-preview" id="fpsScreenshotPreview" alt="Payment Screenshot Preview">
                 </div>
-                <input type="text" class="fps-ref-input" id="fpsRef" placeholder="Please enter交易Reference Number (例: 20260903123456)">
-                <div class="fps-hint" id="fpsRefError" style="color:#c0392b; display:none;">請Enter Transaction Reference Number，或Upload Payment Screenshot</div>
+                <input type="text" class="fps-ref-input" id="fpsRef" placeholder="Please enter transactionReference Number (例: 20260903123456)">
+                <div class="fps-hint" id="fpsRefError" style="color:#c0392b; display:none;">Please Enter Transaction Reference Number，or Upload Payment Screenshot</div>
             </div>
 
             <!-- Credit Card / Apple Pay / Google Pay Panel -->
@@ -483,7 +483,7 @@
                 <div class="stripe-element-wrap">
                     <div id="card-element"><p class="pm-note">Payment MethodLoading...</p></div>
                 </div>
-                <div class="stripe-or-divider">或Apply Apple Pay / Google Pay</div>
+                <div class="stripe-or-divider">or Apply Apple Pay / Google Pay</div>
                 <div id="apple-pay-btn"></div>
                 <div class="pm-error" id="pmError"></div>
             </div>
@@ -495,7 +495,7 @@
     <footer class="footer">
         <div class="footer-slogan"><p class="footer-slogan-line1">Bringing You the Finest Floral Experience</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
         <div class="footer-links">
-            <div class="footer-column"><a href="/en/products.html" class="footer-link">All Flowers</a><a href="products.html?tag=Valentine's Day" class="footer-link">Occasion場合</a><a href="products.html?tag=訂閱" class="footer-link">Subscribe to Flowers</a></div>
+            <div class="footer-column"><a href="/en/products.html" class="footer-link">All Flowers</a><a href="products.html?tag=Valentine's Day" class="footer-link">Occasion</a><a href="products.html?tag=訂閱" class="footer-link">Subscribe to Flowers</a></div>
             <div class="footer-column"><a href="/en/blog.html" class="footer-link">Blog</a><a href="/en/faq.html" class="footer-link">FAQ</a><a href="/en/contact.html" class="footer-link">Contact Us</a></div>
         </div>
         <div class="footer-bottom"><a href="/en/privacy.html" class="privacy-link">Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
@@ -801,7 +801,7 @@
     const areaNames = {
         tier1: { zh: 'Tier 1 - New Territories及港九鐵路沿線市區', en: 'Urban areas along MTR lines' },
         tier2: { zh: 'Tier 2 - Tuen Mun Suburbs/So Kwun Wat/Sham Tseng/Ting Kau etc.', en: 'Tuen Mun outskirts' },
-        tier3: { zh: 'Tier 3 - Sai Kung Town Medium心/Hong Kong Island Mid-Levels/Southern Districtetc.', en: 'Sai Kung / Mid-Levels / Southern' },
+        tier3: { zh: 'Tier 3 - Sai Kung Town Center/Hong Kong Island Mid-Levels/Southern Districtetc.', en: 'Sai Kung / Mid-Levels / Southern' },
         tier4: { zh: 'Tier 4 - The Peak/Tai Tam/Clear Water Bayetc.', en: 'The Peak / Tai Tam / Clear Water Bay' },
         tier5: { zh: 'Tier 5 - South Lantau/愉景灣/離島etc.', en: 'South Lantau / Discovery Bay' }
     };
@@ -922,12 +922,12 @@
             <h3 class="summary-title">Order Summary</h3>
             ${itemsHtml}
             <div class="summary-divider"></div>
-            <div class="summary-item"><span>ProductSubtotal</span><span>HK$${subtotal}</span></div>
-            <div class="summary-item"><span>Delivery費 ${selectedHour ? '(' + selectedHour + ')' : ''}</span><span>${deliveryFee === 0 ? 'Free' : 'HK$' + deliveryFee}</span></div>
-            ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 HK$${selectedTimeFee}, District費 HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
+            <div class="summary-item"><span>Product Subtotal</span><span>HK$${subtotal}</span></div>
+            <div class="summary-item"><span>Delivery Fee ${selectedHour ? '(' + selectedHour + ')' : ''}</span><span>${deliveryFee === 0 ? 'Free' : 'HK$' + deliveryFee}</span></div>
+            ${area ? `<div class="delivery-fee-formula">Formula: Max(Time Slot Fee HK$${selectedTimeFee}, District Fee HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>Total</span><span>HK$${total}</span></div>
-            <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">Submit訂單（FPS）</button>
+            <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">Place Order</button>
         `;
         // UpdateFPSAmount Due
         const fpsAmount = document.getElementById('fpsAmountDisplay');
