@@ -159,7 +159,7 @@
       "@type": "Product",
       "name": "RoyalSpl Florist Floral Products",
       "image": "https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg",
-      "description": "RoyalSpl Florist 精心設計的Floral Products，使用Fresh Flowers，香港配送。",
+      "description": "RoyalSpl Florist premium floral products, fresh flowers, Hong Kong delivery.",
       "brand": {
         "@type": "Brand",
         "name": "RoyalSpl Florist"
@@ -290,7 +290,7 @@
             renderProductDetail(currentProduct);
         } catch (err) {
             console.error('載入商品失敗:', err);
-            container.innerHTML = '<div style="text-align:center;padding:60px;">❌ 載入失敗</div>';
+            container.innerHTML = '<div style="text-align:center;padding:60px;">❌ Loading failed</div>';
         }
     }
 
@@ -304,7 +304,7 @@
                 "@type": "Product",
                 "name": (product.name_en || product.name_zh) || product.name_en || "RoyalSpl Florist Floral Products",
                 "image": productImages.length > 0 ? productImages : ["https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg"],
-                "description": product.description_en || product.description || "RoyalSpl Florist 精心設計的Floral Products，使用Fresh Flowers，香港配送。",
+                "description": product.description_en || product.description || "RoyalSpl Florist premium floral products, fresh flowers, Hong Kong delivery.",
                 "brand": {
                     "@type": "Brand",
                     "name": "RoyalSpl Florist"
@@ -369,7 +369,7 @@
             if (productImages.length > 1) {
                 html += '<div class="detail-thumbs">';
                 for (var ti = 0; ti < productImages.length; ti++) {
-                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')"><img src="' + productImages[ti] + '" alt="' + (product.name_en || product.name_zh) + ' 細圖 ' + (ti+1) + '"></div>';
+                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')"><img src="' + productImages[ti] + '" alt="' + (product.name_en || product.name_zh) + ' detail image ' + (ti+1) + '"></div>';
                 }
                 html += '</div>';
             }
@@ -386,9 +386,9 @@
         }
         html += '<div class="detail-seo-section" style="margin-top:30px;">';
         // 花材護理知識（默认内容，后续异步更新）
-        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">花材護理知識 <span>+<\/span><\/div><div class="seo-content" id="flowerCareContent">鮮花護理建議：<br>1. 每日更換清水<br>2. 斜剪花腳45度<br>3. 避免陽光直射<br>4. 定期清除枯萎花瓣<\/div><\/div>';
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Flower Care Tips <span>+<\/span><\/div><div class="seo-content" id="flowerCareContent">Flower Care Tips:<br>1. Change water daily<br>2. Trim stems at 45 degrees<br>3. Avoid direct sunlight<br>4. Remove wilted petals regularly<\/div><\/div>';
         // 香港隱私條例（折叠展开）
-        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">香港隱私條例 <span>+<\/span><\/div><div class="seo-content" id="privacyContent">載入中...<\/div><\/div>';
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Hong Kong Privacy Policy <span>+<\/span><\/div><div class="seo-content" id="privacyContent">Loading...<\/div><\/div>';
         html += '<\/div>';
         html += '<\/div>';
         html += '<div class="detail-info-area">';
@@ -399,18 +399,18 @@
         html += '<p class="detail-description">' + (product.description_en || product.description || '') + '<\/p>';
         
         if (scentNotes.length > 0) {
-            html += '<div class="scent-notes"><p class="scent-label">SCENT NOTES 香氣筆記<\/p><div class="scent-pills">';
+            html += '<div class="scent-notes"><p class="scent-label">SCENT NOTES<\/p><div class="scent-pills">';
             for (var j = 0; j < scentNotes.length; j++) { html += '<span class="scent-pill">' + scentNotes[j] + '<\/span>'; }
             html += '<\/div><\/div>';
         }
         
         html += '<div class="specs-matrix">';
-        html += '<div class="spec-row"><span class="spec-label">花材<\/span><span class="spec-value">' + (product.specs_flowers_en || product.specs_flowers || 'N/A') + '<\/span><\/div>';
-        html += '<div class="spec-row"><span class="spec-label">產地<\/span><span class="spec-value">' + (product.specs_origin_en || product.specs_origin || 'N/A') + '<\/span><\/div>';
-        html += '<div class="spec-row"><span class="spec-label">規格<\/span><span class="spec-value">' + (product.specs_size_en || product.specs_size || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Flowers<\/span><span class="spec-value">' + (product.specs_flowers_en || product.specs_flowers || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Origin<\/span><span class="spec-value">' + (product.specs_origin_en || product.specs_origin || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Specifications<\/span><span class="spec-value">' + (product.specs_size_en || product.specs_size || 'N/A') + '<\/span><\/div>';
         html += '<\/div>';
         
-        html += '<div class="addon-section"><p class="addon-label">精選加購配件<\/p><div id="addonList"><\/div><\/div>';
+        html += '<div class="addon-section"><p class="addon-label">Featured Add-ons<\/p><div id="addonList"><\/div><\/div>';
         
         html += '<div class="quantity-selector">';
         html += '<button class="qty-btn" onclick="changeQuantity(-1)">−<\/button>';
@@ -418,7 +418,7 @@
         html += '<button class="qty-btn" onclick="changeQuantity(1)">+<\/button>';
         html += '<\/div>';
         
-        html += '<div class="total-display" id="totalDisplay">總計：HK$' + product.price + '<\/div>';
+        html += '<div class="total-display" id="totalDisplay">Total: HK$' + product.price + '<\/div>';
         html += '<div class="purchase-actions">';
         html += '<button class="add-to-cart-btn" onclick="handleAddToCart()">Add to Cart<\/button>';
         html += '<button class="buy-now-btn" onclick="handleBuyNow()">Buy Now<\/button>';
@@ -437,12 +437,12 @@
         var addonList = document.getElementById('addonList');
         if (!addonList) return;
         var linkedIds = product.linked_addons || [];
-        if (!linkedIds.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
+        if (!linkedIds.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">No add-ons available</p>'; return; }
         try {
             var result = await supabaseClient.from('addons').select('*').in('id', linkedIds).eq('is_active', true);
             if (result.error) throw result.error;
             allAddons = result.data || [];
-            if (!allAddons.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
+            if (!allAddons.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">No add-ons available</p>'; return; }
             var html = '';
             for (var i = 0; i < allAddons.length; i++) {
                 var a = allAddons[i];
@@ -509,7 +509,7 @@
         recordView(currentProduct.id);
         var recommendSection = document.createElement('div');
         recommendSection.className = 'recommend-section';
-        recommendSection.innerHTML = '<div class="recommend-title">你可能也喜歡</div><div class="recommend-grid" id="recommendGrid"><div style="grid-column:1/-1;text-align:center;padding:20px;">載入中...</div></div>';
+        recommendSection.innerHTML = '<div class="recommend-title">You May Also Like</div><div class="recommend-grid" id="recommendGrid"><div style="grid-column:1/-1;text-align:center;padding:20px;">Loading...</div></div>';
         var parentContainer = container ? container.parentNode : document.querySelector('.detail-page');
         if (parentContainer) parentContainer.appendChild(recommendSection);
 
@@ -612,7 +612,7 @@
             }
         });
         var total = (parseFloat(currentProduct.price) + addonTotal) * quantity;
-        document.getElementById('totalDisplay').textContent = '總計：HK$' + total;
+        document.getElementById('totalDisplay').textContent = 'Total: HK$' + total;
     }
 
     function handleAddToCart() {
@@ -656,7 +656,7 @@
         
         var toast = document.createElement('div');
         toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;';
-        toast.textContent = '✓ ' + currentProduct.name_zh + ' 已Add to Cart';
+        toast.textContent = '✓ ' + (currentProduct.name_en || currentProduct.name_zh) + ' added to cart';
         document.body.appendChild(toast);
         setTimeout(function() { toast.remove(); }, 2500);
     }
@@ -752,7 +752,7 @@
                 if (data && data.content) {
                     el.innerHTML = parseMarkdown(data.content);
                 } else {
-                    el.innerHTML = '暫無內容';
+                    el.innerHTML = 'No content';
                 }
             }
         } catch(e) { 
