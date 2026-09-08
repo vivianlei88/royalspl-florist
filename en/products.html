@@ -476,7 +476,8 @@
             for (var i = 0; i < categories.length; i++) {
                 var cat = categories[i];
                 categoryIdMap[cat.name_zh] = cat.id;
-                html += '<button class="filter-pill" data-category="' + cat.name_zh + '" onclick="toggleCategory(\'' + cat.name_zh + '\')">' + cat.name_zh + '<\/button>';
+                var displayName = cat.name_en || cat.name_zh;
+                html += '<button class="filter-pill" data-category="' + cat.name_zh + '" onclick="toggleCategory(\'' + cat.name_zh + '\')">' + displayName + '<\/button>';
             }
             container.innerHTML = html;
             // 分類映射就緒後，若 URL 已帶選定分類則重新渲染（避免競態：products 先載入而 categoryIdMap 未就緒時顯示 0 款）
