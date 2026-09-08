@@ -379,14 +379,14 @@
         container.innerHTML = `
             <div class="cart-items">${itemsHtml}</div>
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">Add a Greeting Card?？<span>${cardSectionOpen ? '−' : '+'}</span></div>
+                <div class="cart-section-title" onclick="toggleSection(this)">Add a Greeting Card?<span>${cardSectionOpen ? '−' : '+'}</span></div>
                 <div class="cart-section-content ${cardSectionOpen ? 'open' : ''}">
                     <div class="card-options">
-                        <button class="card-option ${cardType === 'yes' ? 'active' : ''}" onclick="setCardType('yes')">需要</button>
+                        <button class="card-option ${cardType === 'yes' ? 'active' : ''}" onclick="setCardType('yes')">Yes</button>
                         <button class="card-option ${cardType === 'none' ? 'active' : ''}" onclick="setCardType('none')">Not Needed</button>
                         <button class="card-option ${cardType === 'blank' ? 'active' : ''}" onclick="setCardType('blank')">Add a Blank Card</button>
                     </div>
-                    ${showTextarea ? `<textarea class="card-textarea" placeholder="請輸入祝福語..." oninput="cardMessage = this.value">${cardMessage}</textarea>` : ''}
+                    ${showTextarea ? `<textarea class="card-textarea" placeholder="Enter your greeting message..." oninput="cardMessage = this.value">${cardMessage}</textarea>` : ''}
                 </div>
             </div>
             <div class="cart-section">
@@ -394,19 +394,19 @@
                 <div class="cart-section-content">
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
                         <input type="text" class="card-textarea" placeholder="OrdererName" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactName = this.value" value="${contactName}">
-                        <input type="tel" class="card-textarea" placeholder="Orderer電話" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactPhone = this.value" value="${contactPhone}">
+                        <input type="tel" class="card-textarea" placeholder="Orderer Phone" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactPhone = this.value" value="${contactPhone}">
                     </div>
                 </div>
             </div>
             <div class="cart-section">
-                <div class="cart-section-title" onclick="toggleSection(this)">OrdererEmail（接收OrderNotification）<span>+</span></div>
+                <div class="cart-section-title" onclick="toggleSection(this)">Orderer Email (Receive Order Notification)<span>+</span></div>
                 <div class="cart-section-content">
                     <input type="email" class="card-textarea" placeholder="Enter email address" style="padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;margin-top:0;" oninput="customerEmail = this.value" value="${customerEmail}">
                 </div>
             </div>
             <div class="cart-section">
                 <div class="cart-section-title" onclick="toggleSection(this)">Special Instructions（Optional）<span>+</span></div>
-                <div class="cart-section-content"><textarea class="card-textarea" placeholder="請輸入Special Instructions..." oninput="remarks = this.value">${remarks}</textarea></div>
+                <div class="cart-section-content"><textarea class="card-textarea" placeholder="Enter special instructions..." oninput="remarks = this.value">${remarks}</textarea></div>
             </div>
             <div class="cart-section">
                 <div class="cart-section-title" onclick="toggleSection(this)">Coupon Code<span>+</span></div>
@@ -416,7 +416,7 @@
                 <div class="summary-row"><span>Subtotal</span><span>HK$${subtotal}</span></div>
                 <div class="summary-row"><span>Shipping</span><span>Calculated at Checkout</span></div>
                 <div class="summary-row total"><span>Total</span><span>HK$${subtotal}</span></div>
-                <button class="checkout-btn" onclick="goCheckout()">前往結帳</button>
+                <button class="checkout-btn" onclick="goCheckout()">Checkout</button>
             </div>
         `;
     }
@@ -429,7 +429,7 @@
         const existingTextarea = cardContent ? cardContent.querySelector('.card-textarea') : null;
         cardOptions.forEach(btn => {
             btn.classList.remove('active');
-            if ((type === 'yes' && btn.textContent === '需要') || (type === 'none' && btn.textContent === 'Not Needed') || (type === 'blank' && btn.textContent === 'Add a Blank Card')) { btn.classList.add('active'); }
+            if ((type === 'yes' && btn.textContent === 'Yes') || (type === 'none' && btn.textContent === 'Not Needed') || (type === 'blank' && btn.textContent === 'Add a Blank Card')) { btn.classList.add('active'); }
         });
         const shouldOpen = type === 'yes' || type === 'blank';
         const sectionTitle = document.querySelector('.cart-section-title');
@@ -440,7 +440,7 @@
             if (!existingTextarea) {
                 const textarea = document.createElement('textarea');
                 textarea.className = 'card-textarea';
-                textarea.placeholder = '請輸入祝福語...';
+                textarea.placeholder = 'Enter your greeting message...';
                 textarea.value = cardMessage;
                 textarea.addEventListener('input', function() { cardMessage = this.value; });
                 cardContent.appendChild(textarea);
