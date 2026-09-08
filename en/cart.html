@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
+        .user-icon svg { display: block; }
+        .user-icon:hover { opacity: 0.7; }
+        .cart-icon { display: flex; align-items: center; justify-content: center; }
+        
+        .cart-page { max-width: 900px; margin: 0 auto; padding: 40px 20px 60px; }
+        .cart-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-link { font-size: 16px; color: #383431; cursor: pointer; }
+        .cart-title { font-size: 28px; font-weight: 600; }
+        .cart-items { margin-bottom: 30px; }
+        .cart-item { display: flex; align-items: center; gap: 20px; padding: 20px; background-color: #F3EFEA; border-radius: 10px; margin-bottom: 15px; }
+        .cart-item-emoji { font-size: 50px; }
+        .cart-item-image { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+        .cart-item-info { flex: 1; }
+        .cart-item-name { font-size: 18px; font-weight: 600; margin-bottom: 5px; }
+        .cart-item-name-en { font-family: 'Cormorant Garamond', serif; font-size: 13px; color: #383431; margin-bottom: 8px; }
+        .cart-item-addons { font-size: 12px; color: #383431; margin-bottom: 5px; }
+        .cart-item-price { font-size: 18px; font-weight: 700; }
+        .cart-item-quantity { display: flex; align-items: center; gap: 10px; }
+        .qty-btn { width: 30px; height: 30px; border: 1px solid #1A1A1A; background: transparent; font-size: 16px; cursor: pointer; border-radius: 3px; }
+        .qty-num { font-size: 16px; font-weight: 600; min-width: 25px; text-align: center; }
+        .cart-item-remove { background: none; border: none; color: #ff4444; font-size: 20px; cursor: pointer; padding: 5px; }
+        .cart-section { background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 10px; padding: 20px; margin-bottom: 15px; }
+        .cart-section-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .cart-section-content { display: none; padding-top: 15px; }
+        .cart-section-content.open { display: block; }
+        .card-options { display: flex; gap: 10px; flex-wrap: wrap; }
+        .card-option { padding: 10px 20px; border: 1px solid #1A1A1A; border-radius: 5px; cursor: pointer; font-size: 14px; background: transparent; font-family: inherit; transition: all 0.2s; }
+        .card-option.active { background-color: #1A1A1A; color: #FAF8F5; }
+        .card-textarea { width: 100%; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; margin-top: 10px; background-color: white; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; margin-bottom: 10px; background-color: white; }
+        .coupon-input { display: flex; gap: 10px; }
+        .coupon-input input { flex: 1; padding: 12px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 14px; font-family: inherit; }
+        .coupon-btn { padding: 12px 20px; background-color: #1A1A1A; color: #FAF8F5; border: none; border-radius: 5px; cursor: pointer; font-family: inherit; }
+        .cart-summary { background-color: #1A1A1A; color: #FAF8F5; padding: 30px; border-radius: 10px; margin-top: 30px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 16px; }
+        .summary-row.total { font-size: 24px; font-weight: 700; border-top: 1px solid rgba(250,248,245,0.3); padding-top: 15px; margin-top: 15px; }
+        .checkout-btn { width: 100%; padding: 16px; background-color: #FAF8F5; color: #1A1A1A; border: none; border-radius: 5px; font-size: 18px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 20px; }
+        .checkout-btn:hover { background-color: #F3EFEA; }
+        .empty-cart { text-align: center; padding: 80px 20px; }
+        .empty-cart-emoji { font-size: 80px; margin-bottom: 20px; }
+        .empty-cart-text { font-size: 18px; color: #383431; margin-bottom: 30px; }
+        .continue-shopping-btn { display: inline-block; padding: 15px 40px; background-color: #1A1A1A; color: #FAF8F5; border-radius: 5px; font-size: 16px; cursor: pointer; font-family: inherit; }
+
+    @media (max-width: 768px) {
+        .cart-page { padding: 20px 15px !important; }
+        .cart-item { flex-direction: column !important; align-items: flex-start !important; gap: 15px !important; padding: 15px !important; }
+        .cart-item-image { width: 100% !important; height: 200px !important; }
+        .cart-item-info { width: 100% !important; }
+        .cart-item-quantity { width: 100% !important; justify-content: space-between !important; }
+        .cart-header { flex-direction: column !important; gap: 10px !important; }
+        .cart-title { font-size: 24px !important; }
+        .checkout-btn { width: 100% !important; padding: 15px !important; font-size: 16px !important; }
+        .cart-section { padding: 15px !important; }
+    }
+    @media (max-width: 480px) {
+        .cart-item-image { height: 180px !important; }
+        .cart-item-name { font-size: 16px !important; }
+        .cart-item-price { font-size: 18px !important; }
+    }
+    
+    /* ===== 手機版全面優化 ===== */
+    @media (max-width: 768px) {
+        /* 基礎字體 */
+        body { font-size: 15px; line-height: 1.6; }
+        h1 { font-size: 24px !important; }
+        h2 { font-size: 20px !important; }
+        h3 { font-size: 17px !important; }
+        p { font-size: 15px; }
+        
+        /* 導航欄優化 */
+        .nav-desktop { display: none !important; }
+        .nav-mobile { display: flex !important; }
+        .header { padding: 10px 15px !important; }
+        .logo { font-size: 18px !important; }
+        
+        /* 按鈕優化 */
+        .btn, button, input[type="submit"], input[type="button"] {
+            min-height: 44px !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* 表單優化 */
+        input, select, textarea {
+            font-size: 15px !important;
+            padding: 12px !important;
+            min-height: 44px !important;
+            border-radius: 8px !important;
+        }
+        textarea { min-height: 100px !important; }
+        .form-group { margin-bottom: 15px !important; }
+        .form-row, .form-grid, .checkout-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+        }
+        
+        /* 圖片響應式 */
+        img { max-width: 100%; height: auto; }
+        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
+        
+        /* 容器寬度 */
+        .container, .content-wrapper, .main-content {
+            padding: 15px !important;
+            max-width: 100% !important;
+        }
+        
+        /* 表格橫向滾動 */
+        .table-wrapper, .order-table, .cart-table, table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 500px; font-size: 13px; }
+        th, td { padding: 10px 8px !important; }
+        
+        /* Shopping Cart優化 */
+        .cart-item { flex-direction: column !important; gap: 10px; }
+        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
+        .cart-item-details { width: 100% !important; text-align: center; }
+        .cart-summary { margin-top: 20px !important; }
+        
+        /* Products詳情頁 */
+        .product-detail-layout { flex-direction: column !important; }
+        .product-gallery { width: 100% !important; }
+        .product-info { width: 100% !important; padding: 15px !important; }
+        .product-price { font-size: 24px !important; }
+        
+        /* ProductsCard */
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+        .product-card { padding: 10px !important; }
+        .product-name { font-size: 14px !important; }
+        .product-price { font-size: 16px !important; }
+        
+        /* 頁尾 */
+        .footer { padding: 30px 15px !important; }
+        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .footer-column { text-align: center; }
+        
+        /* 模態框 */
+        .modal, .modal-content {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+            padding: 15px !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* 統計Card */
+        .stats-grid, .card-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .stat-card, .card { padding: 15px !important; }
+        
+        /* 間距優化 */
+        .section { padding: 30px 15px !important; }
+        .mb-20 { margin-bottom: 15px !important; }
+        .mt-20 { margin-top: 15px !important; }
+        .p-20 { padding: 15px !important; }
+        
+        /* 隱藏桌面端素 */
+        .desktop-only { display: none !important; }
+        .mobile-only { display: block !important; }
+    }
+    
+    @media (max-width: 480px) {
+        body { font-size: 14px; }
+        h1 { font-size: 22px !important; }
+        h2 { font-size: 18px !important; }
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
+        .container, .content-wrapper { padding: 12px !important; }
+    }
+    /* ===== 手機版優化結束 ===== */
+
+    </style>
+    <link rel="stylesheet" href="/css/ai-chat.css">
+
+    <meta name="description" content="查看您的Shopping Cart，Confirm花藝Order，Proceed to Checkout。RoyalSpl Florist Hong KongFlorist。">
+    <link rel="canonical" href="https://www.royalspl.shop/cart.html">
+    <meta property="og:title" content="Shopping Cart | RoyalSpl Florist Hong Kong">
+    <meta property="og:description" content="查看您的Shopping Cart，Confirm花藝Order，Proceed to Checkout。RoyalSpl Florist Hong KongFlorist。">
+    <meta property="og:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <meta property="og:url" content="https://www.royalspl.shop/cart.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
+    <meta property="og:locale" content="zh_HK">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Shopping Cart | RoyalSpl Florist Hong Kong">
+    <meta name="twitter:description" content="查看您的Shopping Cart，Confirm花藝Order，Proceed to Checkout。RoyalSpl Florist Hong KongFlorist。">
+    <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+
+<script>
+// 動態應用後台Settings的 SEO Meta 標籤
+(function() {
+    var pageUrl = window.location.pathname.split('/').pop() || 'index.html';
+    if (pageUrl === '') pageUrl = 'index.html';
+    fetch('https://gefqlrmozxbgfhxgngtg.supabase.co/rest/v1/seo_overrides?page_url=eq.' + encodeURIComponent(pageUrl), {
+        headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y'
+        }
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data && data.length > 0) {
+            var seo = data[0];
+            if (seo.title) document.title = seo.title;
+            if (seo.description) {
+                var meta = document.querySelector('meta[name="description"]');
+                if (meta) meta.setAttribute('content', seo.description);
+                else {
+                    var m = document.createElement('meta');
+                    m.name = 'description';
+                    m.content = seo.description;
+                    document.head.appendChild(m);
+                }
+            }
+        }
+    }).catch(function() {});
+})();
+</script>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="/en/index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href=account.html" class="user-icon" aria-label="Member登入">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+                <a href="/en/cart.html" class="cart-icon" aria-label="Shopping Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">選單</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="/en/index.html" class="nav-link"><span class="nav-zh">Home</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="/en/products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item"><a href="login.html" class="nav-link"><span class="nav-zh">Member登入</span><span class="nav-en">MEMBER LOGIN</span></a></div>
+            <div class="nav-item"><a href="/en/cart.html" class="nav-link"><span class="nav-zh">您的花禮</span><span class="nav-en">YOUR GIFTS</span></a></div>
+        </nav>
+    </div>
+
+    <main class="cart-page">
+        <div class="cart-header">
+            <a href="/en/products.html" class="back-link">← Continue Shopping</a>
+            <h1 class="cart-title">您的花禮</h1>
+        </div>
+        <div id="cartContent"></div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
+        <div class="footer-links">
+            <div class="footer-column"><a href="/en/products.html" class="footer-link">所有花藝</a><a href="products.html?tag=Valentine's Day" class="footer-link">節慶Occasion</a><a href="products.html?tag=訂閱" class="footer-link">Subscribe to Flowers</a></div>
+            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">FAQ</a><a href="/en/contact.html" class="footer-link">Contact Us</a></div>
+        </div>
+        <div class="footer-bottom"><a href="privacy.html" class="privacy-link">Privacy Policy Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+    </footer>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+    const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
+    let cardType = 'none';
+    let cardMessage = '';
+    let remarks = '';
+    let contactName = '';
+    let contactPhone = '';
+    let customerEmail = '';
+    let couponCode = '';
+
+    function saveCart() { localStorage.setItem('royalspl_cart', JSON.stringify(cart)); updateCartBadge(); }
+    function updateCartBadge() { const badge = document.getElementById('cartBadge'); if (badge) { const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0); badge.textContent = totalItems; badge.style.display = totalItems > 0 ? 'flex' : 'none'; } }
+    async function syncCartWithDatabase() {
+        if (!cart.length) { renderCart(); return; }
+        const productIds = cart.map(item => item.productId).filter(Boolean);
+        if (!productIds.length) { renderCart(); return; }
+        try {
+            const { data, error } = await supabaseClient.from('products').select('*').in('id', productIds);
+            if (error) throw error;
+            const products = data || [];
+            cart = cart.map(item => {
+                const product = products.find(p => p.id === item.productId);
+                if (product) {
+                    return {
+                        ...item,
+                        name: product.name_zh,
+                        nameEn: product.name_en || '',
+                        price: product.price,
+                        emoji: product.emoji || '🌸',
+                        image: (product.images && product.images[0]) || product.image_url || ''
+                    };
+                }
+                return item;
+            });
+            saveCart();
+        } catch (e) {
+            console.error('同步Shopping CartFailed:', e);
+        }
+        renderCart();
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cartContent');
+        if (!container) return;
+        if (cart.length === 0) {
+            container.innerHTML = `<div class="empty-cart"><p class="empty-cart-emoji">🛒</p><p class="empty-cart-text">您的花禮清單Yes空的</p><a href="/en/products.html" class="continue-shopping-btn">Shop Flowers</a></div>`;
+            return;
+        }
+        let itemsHtml = cart.map((item, index) => {
+            const addons = item.addons || [];
+            const addonsTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
+            const itemTotal = ((item.price || 0) + addonsTotal) * (item.quantity || 1);
+            const addonsHtml = addons.length > 0 ? `<p class="cart-item-addons">+ ${addons.map(a => a.name || '').join(', ')}</p>` : '';
+            const itemImg = item.image ? `<img src="${item.image}" class="cart-item-image">` : `<span class="cart-item-emoji">${item.emoji || '🌸'}</span>`;
+            return `<div class="cart-item">
+                ${itemImg}
+                <div class="cart-item-info">
+                    <p class="cart-item-name">${item.name || 'Products'}</p>
+                    <p class="cart-item-name-en">${item.nameEn || ''}</p>
+                    ${addonsHtml}
+                    <p class="cart-item-price">HK$${itemTotal}</p>
+                </div>
+                <div class="cart-item-quantity">
+                    <button class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
+                    <span class="qty-num">${item.quantity}</span>
+                    <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                </div>
+                <button class="cart-item-remove" onclick="removeItem(${index})">✕</button>
+            </div>`;
+        }).join('');
+        const subtotal = cart.reduce((sum, item) => { const addons = item.addons || []; const addonsTotal = addons.reduce((a, addon) => a + (addon.price || 0), 0); return sum + ((item.price || 0) + addonsTotal) * (item.quantity || 1); }, 0);
+        const cardSectionOpen = cardType === 'yes' || cardType === 'blank';
+        const showTextarea = cardType === 'yes' || cardType === 'blank';
+        container.innerHTML = `
+            <div class="cart-items">${itemsHtml}</div>
+            <div class="cart-section">
+                <div class="cart-section-title" onclick="toggleSection(this)">Add a Greeting Card?？<span>${cardSectionOpen ? '−' : '+'}</span></div>
+                <div class="cart-section-content ${cardSectionOpen ? 'open' : ''}">
+                    <div class="card-options">
+                        <button class="card-option ${cardType === 'yes' ? 'active' : ''}" onclick="setCardType('yes')">需要</button>
+                        <button class="card-option ${cardType === 'none' ? 'active' : ''}" onclick="setCardType('none')">不需要</button>
+                        <button class="card-option ${cardType === 'blank' ? 'active' : ''}" onclick="setCardType('blank')">Add a Blank Card</button>
+                    </div>
+                    ${showTextarea ? `<textarea class="card-textarea" placeholder="請輸入祝福語..." oninput="cardMessage = this.value">${cardMessage}</textarea>` : ''}
+                </div>
+            </div>
+            <div class="cart-section">
+                <div class="cart-section-title" onclick="toggleSection(this)">Contact Information（Optional）<span>+</span></div>
+                <div class="cart-section-content">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <input type="text" class="card-textarea" placeholder="訂購人Name" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactName = this.value" value="${contactName}">
+                        <input type="tel" class="card-textarea" placeholder="訂購人電話" style="flex:1;min-width:150px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;" oninput="contactPhone = this.value" value="${contactPhone}">
+                    </div>
+                </div>
+            </div>
+            <div class="cart-section">
+                <div class="cart-section-title" onclick="toggleSection(this)">訂購人Email（接收Order通知）<span>+</span></div>
+                <div class="cart-section-content">
+                    <input type="email" class="card-textarea" placeholder="Enter email address" style="padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;margin-top:0;" oninput="customerEmail = this.value" value="${customerEmail}">
+                </div>
+            </div>
+            <div class="cart-section">
+                <div class="cart-section-title" onclick="toggleSection(this)">Special Instructions（Optional）<span>+</span></div>
+                <div class="cart-section-content"><textarea class="card-textarea" placeholder="請輸入Special Instructions..." oninput="remarks = this.value">${remarks}</textarea></div>
+            </div>
+            <div class="cart-section">
+                <div class="cart-section-title" onclick="toggleSection(this)">Coupon Code<span>+</span></div>
+                <div class="cart-section-content"><div class="coupon-input"><input type="text" id="couponInput" placeholder="Enter coupon code" oninput="couponCode = this.value" value="${couponCode}"><button class="coupon-btn" onclick="applyCoupon()">套用</button></div></div>
+            </div>
+            <div class="cart-summary">
+                <div class="summary-row"><span>ProductsSubtotal</span><span>HK$${subtotal}</span></div>
+                <div class="summary-row"><span>Shipping</span><span>結帳時計算</span></div>
+                <div class="summary-row total"><span>Total</span><span>HK$${subtotal}</span></div>
+                <button class="checkout-btn" onclick="goCheckout()">前往結帳</button>
+            </div>
+        `;
+    }
+    function changeQty(index, delta) { cart[index].quantity = Math.max(1, (cart[index].quantity || 1) + delta); saveCart(); renderCart(); }
+    function removeItem(index) { cart.splice(index, 1); saveCart(); renderCart(); }
+    function setCardType(type) {
+        cardType = type;
+        const cardOptions = document.querySelectorAll('.card-option');
+        const cardContent = document.querySelector('.cart-section-content');
+        const existingTextarea = cardContent ? cardContent.querySelector('.card-textarea') : null;
+        cardOptions.forEach(btn => {
+            btn.classList.remove('active');
+            if ((type === 'yes' && btn.textContent === '需要') || (type === 'none' && btn.textContent === '不需要') || (type === 'blank' && btn.textContent === 'Add a Blank Card')) { btn.classList.add('active'); }
+        });
+        const shouldOpen = type === 'yes' || type === 'blank';
+        const sectionTitle = document.querySelector('.cart-section-title');
+        if (shouldOpen) {
+            cardContent.classList.add('open');
+            const span = sectionTitle.querySelector('span');
+            if (span) span.textContent = '−';
+            if (!existingTextarea) {
+                const textarea = document.createElement('textarea');
+                textarea.className = 'card-textarea';
+                textarea.placeholder = '請輸入祝福語...';
+                textarea.value = cardMessage;
+                textarea.addEventListener('input', function() { cardMessage = this.value; });
+                cardContent.appendChild(textarea);
+            }
+        } else {
+            cardContent.classList.remove('open');
+            const span = sectionTitle.querySelector('span');
+            if (span) span.textContent = '+';
+            if (existingTextarea) { existingTextarea.remove(); }
+        }
+    }
+    function toggleSection(element) { const content = element.nextElementSibling; content.classList.toggle('open'); const span = element.querySelector('span'); if (span) span.textContent = content.classList.contains('open') ? '−' : '+'; }
+    function goCheckout() {
+        if (cart.length === 0) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;';
+            toast.textContent = 'Shopping Cart為空，請先添AddProducts';
+            document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500);
+            return;
+        }
+        // Save额外订单信息到 localStorage
+        localStorage.setItem('order_extra', JSON.stringify({
+            cardMessage: cardMessage,
+            remarks: remarks,
+            contactName: contactName,
+            contactPhone: contactPhone,
+            customerEmail: customerEmail,
+            couponCode: couponCode
+        }));
+        
+        // GA4 + Google Ads: begin_checkout 事items
+        if (typeof gtag === 'function') {
+            var cartTotal = 0;
+            var cartItems = cart.map(function(item) {
+                cartTotal += item.price * item.quantity;
+                return {
+                    item_id: item.productId,
+                    item_name: item.name,
+                    price: item.price,
+                    quantity: item.quantity
+                };
+            });
+            gtag('event', 'begin_checkout', {
+                currency: 'HKD',
+                value: cartTotal,
+                items: cartItems
+            });
+        }
+        
+        window.location.href = 'checkout.html';
+    }
+    const menuBtn = document.getElementById('menuBtn');
+    const navCloseBtn = document.getElementById('navCloseBtn');
+    const navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+    document.addEventListener('DOMContentLoaded', function() { updateCartBadge(); syncCartWithDatabase(); });
+    </script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_name: document.title || '未知頁面' })
+        }).catch(function() {});
+    })();
+    </script>
+        <script src="/js/ai-chat-v2.js"></script>
+</body>
+</html>
