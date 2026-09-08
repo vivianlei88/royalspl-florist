@@ -455,8 +455,8 @@
     function updateAITranslateBtn() {
         var btn = document.getElementById('aiTranslateBtn');
         if (btn) {
-            // 只在首页 + 英文模式下显示AI翻译按钮
-            if (currentPage === 'index' && currentLang === 'en') {
+            // 英文模式下所有页面都显示AI翻译按钮
+            if (currentLang === 'en') {
                 btn.style.display = '';
             } else {
                 btn.style.display = 'none';
@@ -842,28 +842,73 @@
         content.innerHTML = '<p style="color:#666;">正在生成翻譯，請稍候...</p><div style="text-align:center;margin-top:20px;"><div class="loading-spinner"></div></div>';
 
         try {
-            // 收集需要翻译的内容
-            var items = [
-                { label: '主標題', original: homepageData.hero_title || '', field: 'hero_title_en' },
-                { label: '副標題', original: homepageData.hero_subtitle || '', field: 'hero_subtitle_en' },
-                { label: 'CTA 按鈕文字', original: homepageData.hero_cta_text || '', field: 'hero_cta_text_en' },
-                { label: '關於我們', original: homepageData.about_text || '', field: 'about_text_en' }
-            ];
+            var items = [];
+            var translateType = '';
+
+            if (currentPage === 'index') {
+                // 首页：翻译所有内容
+                translateType = 'homepage';
+                items = [
+                    { label: '主標題', original: homepageData.hero_title || '', field: 'hero_title_en', table: 'homepage_settings' },
+                    { label: '副標題', original: homepageData.hero_subtitle || '', field: 'hero_subtitle_en', table: 'homepage_settings' },
+                    { label: 'CTA 按鈕文字', original: homepageData.hero_cta_text || '', field: 'hero_cta_text_en', table: 'homepage_settings' },
+                    { label: '關於我們', original: homepageData.about_text || '', field: 'about_text_en', table: 'homepage_settings' }
+                ];
+                // 臻选系列6个卡片标题
+                for (var i = 0; i < collectionCards.length; i++) {
+                    var card = collectionCards[i];
+                    items.push({
+                        label: '臻選系列卡片 ' + (i + 1) + ' 標題',
+                        original: card.title_zh || '',
+                        field: 'title_en',
+                        table: 'collection_cards',
+                        id: card.id
+                    });
+                }
+            } else if (currentPage === 'product-detail') {
+                // 商品详情页：翻译当前商品的所有文字
+                translateType = 'product';
+                var product = productsList.find(function(p) { return p.id === currentProductId; });
+                if (product) {
+                    // 获取商品完整信息
+                    var prodRes = await supabaseClient.from('products').select('*').eq('id', currentProductId).limit(1);
+                    if (prodRes.data && prodRes.data.length > 0) {
+                        var fullProduct = prodRes.data[0];
+                        items = [
+                            { label: '商品名稱', original: fullProduct.name_zh || '', field: 'name_en', table: 'products', id: fullProduct.id },
+                            { label: '商品描述', original: fullProduct.description || '', field: 'description_en', table: 'products', id: fullProduct.id },
+                            { label: '香調', original: fullProduct.scent || '', field: 'scent_en', table: 'products', id: fullProduct.id },
+                            { label: '花材', original: fullProduct.flower_materials || '', field: 'flower_materials_en', table: 'products', id: fullProduct.id },
+                            { label: '產地', original: fullProduct.origin || '', field: 'origin_en', table: 'products', id: fullProduct.id },
+                            { label: '規格', original: fullProduct.specifications || '', field: 'specifications_en', table: 'products', id: fullProduct.id }
+                        ];
+                    }
+                }
+            } else {
+                // 其他页面：提示暂不支持
+                content.innerHTML = '<p style="color:#f5576c;">此頁面暫不支持AI翻譯</p>';
+                return;
+            }
+
+            if (items.length === 0) {
+                content.innerHTML = '<p style="color:#f5576c;">沒有可翻譯的內容</p>';
+                return;
+            }
 
             // 调用豆包API翻译
             var allText = items.map(function(item) { return item.original; }).join('\n---\n');
             var translated = await callDoubaoTranslate(allText);
             var translatedParts = translated.split('\n---\n');
 
-            aiTranslatedData = {};
+            aiTranslatedData = { items: items, type: translateType };
             var html = '';
             items.forEach(function(item, i) {
                 var result = translatedParts[i] || '';
-                aiTranslatedData[item.field] = result;
+                item.translated = result;
                 html += '<div class="ai-translate-item">' +
                     '<div class="ai-translate-label">' + item.label + '</div>' +
                     '<div class="ai-translate-original">原文: ' + escapeHtml(item.original) + '</div>' +
-                    '<textarea class="ai-translate-result" data-field="' + item.field + '">' + escapeHtml(result) + '</textarea>' +
+                    '<textarea class="ai-translate-result" data-index="' + i + '">' + escapeHtml(result) + '</textarea>' +
                     '</div>';
             });
 
@@ -886,26 +931,73 @@
     }
 
     // 应用AI翻译
-    function applyAITranslation() {
+    async function applyAITranslation() {
         var textareas = document.querySelectorAll('.ai-translate-result');
+        var items = aiTranslatedData.items || [];
+
+        // 更新翻译结果
         textareas.forEach(function(ta) {
-            var field = ta.getAttribute('data-field');
-            aiTranslatedData[field] = ta.value;
+            var index = parseInt(ta.getAttribute('data-index'));
+            if (items[index]) {
+                items[index].translated = ta.value;
+            }
         });
 
-        // 保存到数据库
-        supabaseClient.from('homepage_settings').update(aiTranslatedData).eq('id', homepageData.id || 1)
-            .then(function(r) {
-                if (r.error) throw r.error;
-                Object.assign(homepageData, aiTranslatedData);
-                closeAIModal();
-                showToast('翻譯已保存！切換到 EN 查看', 'success');
-                // 自动切换到英文
-                switchLang('en');
-            })
-            .catch(function(e) {
-                showToast('保存失敗: ' + e.message, 'error');
-            });
+        try {
+            // 按表分组保存
+            var homepageUpdates = {};
+            var cardUpdates = {};
+            var productUpdates = {};
+
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                if (item.table === 'homepage_settings') {
+                    homepageUpdates[item.field] = item.translated;
+                } else if (item.table === 'collection_cards') {
+                    if (!cardUpdates[item.id]) cardUpdates[item.id] = {};
+                    cardUpdates[item.id][item.field] = item.translated;
+                } else if (item.table === 'products') {
+                    productUpdates[item.field] = item.translated;
+                }
+            }
+
+            // 保存首页设置
+            if (Object.keys(homepageUpdates).length > 0) {
+                await supabaseClient.from('homepage_settings').update(homepageUpdates).eq('id', homepageData.id || 1);
+                Object.assign(homepageData, homepageUpdates);
+            }
+
+            // 保存臻选系列卡片
+            for (var cardId in cardUpdates) {
+                await supabaseClient.from('collection_cards').update(cardUpdates[cardId]).eq('id', parseInt(cardId));
+                // 更新本地数据
+                for (var j = 0; j < collectionCards.length; j++) {
+                    if (collectionCards[j].id == cardId) {
+                        Object.assign(collectionCards[j], cardUpdates[cardId]);
+                        break;
+                    }
+                }
+            }
+
+            // 保存商品
+            if (Object.keys(productUpdates).length > 0 && currentProductId) {
+                await supabaseClient.from('products').update(productUpdates).eq('id', currentProductId);
+                // 更新本地数据
+                for (var k = 0; k < productsList.length; k++) {
+                    if (productsList[k].id === currentProductId) {
+                        Object.assign(productsList[k], productUpdates);
+                        break;
+                    }
+                }
+            }
+
+            closeAIModal();
+            showToast('翻譯已保存！切換到 EN 查看', 'success');
+            // 自动切换到英文
+            switchLang('en');
+        } catch (e) {
+            showToast('保存失敗: ' + e.message, 'error');
+        }
     }
 
     // 关闭AI弹窗
