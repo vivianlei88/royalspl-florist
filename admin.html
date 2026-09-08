@@ -436,9 +436,17 @@
             <span id="userInfo" style="display:none;align-items:center;gap:8px;margin-right:15px;"><img id="userAvatar" src="" style="width:32px;height:32px;border-radius:50%;cursor:pointer;" title=""><span id="userEmail" style="font-size:14px;color:#666;"></span></span><a href="index.html">返回前台</a><a onclick="doLogout()">登出</a></div></div>
         <div class="sidebar">
             <div class="sidebar-item active" data-page="analytics" onclick="switchPage('analytics')">數據分析</div>
-            <div class="sidebar-item" data-page="products" onclick="switchPage('products')">商品管理</div>
-            <div class="sidebar-item" data-page="categories" onclick="switchPage('categories')">商品分類</div>
-            <div class="sidebar-item" data-page="addons" onclick="switchPage('addons')">加購配件</div>
+            <div class="sidebar-group" id="catalogMenuGroup" onmouseenter="showCatalogMenu()" onmouseleave="hideCatalogMenu()">
+                <div class="sidebar-item sidebar-group-header">
+                    <span>商品目錄</span>
+                    <span class="settings-arrow" id="catalogArrow">▶</span>
+                </div>
+                <div class="sidebar-submenu" id="catalogSubmenu">
+                    <div class="sidebar-item sidebar-subitem" data-page="products" onclick="switchPage('products')">商品管理</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="categories" onclick="switchPage('categories')">商品分類</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="addons" onclick="switchPage('addons')">加購配件</div>
+                </div>
+            </div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
             <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
             <div class="sidebar-item" data-page="visitors" onclick="switchPage('visitors')">在線訪客</div>
@@ -2613,6 +2621,18 @@
     function hideContentMenu() {
         var submenu = document.getElementById('contentSubmenu');
         var arrow = document.getElementById('contentArrow');
+        if (submenu) submenu.classList.remove('show');
+        if (arrow) arrow.textContent = '▶';
+    }
+    function showCatalogMenu() {
+        var submenu = document.getElementById('catalogSubmenu');
+        var arrow = document.getElementById('catalogArrow');
+        if (submenu) submenu.classList.add('show');
+        if (arrow) arrow.textContent = '◀';
+    }
+    function hideCatalogMenu() {
+        var submenu = document.getElementById('catalogSubmenu');
+        var arrow = document.getElementById('catalogArrow');
         if (submenu) submenu.classList.remove('show');
         if (arrow) arrow.textContent = '▶';
     }
