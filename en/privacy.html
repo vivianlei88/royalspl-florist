@@ -166,10 +166,10 @@
     </style>
     <link rel="stylesheet" href="/css/ai-chat.css">
 
-    <meta name="description" content="RoyalSpl Florist Privacy Policy，Learn how we collect、Use和保護Your個人信息。">
+    <meta name="description" content="RoyalSpl Florist Privacy Policy - Learn how we collect, use and protect your personal information.">
     <link rel="canonical" href="https://www.royalspl.shop/privacy.html">
     <meta property="og:title" content="Privacy Policy | RoyalSpl Florist Hong Kong">
-    <meta property="og:description" content="RoyalSpl Florist Privacy Policy，Learn how we collect、Use和保護Your個人信息。">
+    <meta property="og:description" content="RoyalSpl Florist Privacy Policy - Learn how we collect, use and protect your personal information.">
     <meta property="og:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
     <meta property="og:url" content="https://www.royalspl.shop/privacy.html">
     <meta property="og:type" content="website">
@@ -177,7 +177,7 @@
     <meta property="og:locale" content="zh_HK">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Privacy Policy | RoyalSpl Florist Hong Kong">
-    <meta name="twitter:description" content="RoyalSpl Florist Privacy Policy，Learn how we collect、Use和保護Your個人信息。">
+    <meta name="twitter:description" content="RoyalSpl Florist Privacy Policy - Learn how we collect, use and protect your personal information.">
     <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
 
 <script>
@@ -239,7 +239,7 @@
         async function loadPrivacy() {
             const { data, error } = await supabaseClient
                 .from('privacy_policy')
-                .select('content')
+                .select('content, content_en')
                 .eq('is_published', true)
                 .limit(1)
                 .maybeSingle();
@@ -247,17 +247,18 @@
             const container = document.getElementById('privacyContent');
 
             if (error) {
-                console.error('載入Privacy PolicyFailed:', error);
-                container.innerHTML = '<div class="empty-state">載入Failed，請稍後再試</div>';
+                console.error('Loading Privacy Policy failed:', error);
+                container.innerHTML = '<div class="empty-state">Loading failed, please try again later</div>';
                 return;
             }
 
-            if (!data || !data.content) {
-                container.innerHTML = '<div class="empty-state">尚無Privacy PolicyContent</div>';
+            if (!data || (!data.content_en && !data.content)) {
+                container.innerHTML = '<div class="empty-state">No Privacy Policy content yet</div>';
                 return;
             }
 
-            container.innerHTML = parseMarkdown(data.content);
+            const content = data.content_en || data.content;
+            container.innerHTML = parseMarkdown(content);
         }
 
         document.addEventListener('DOMContentLoaded', loadPrivacy);
