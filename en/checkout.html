@@ -316,25 +316,25 @@
 
     <main class="checkout-page">
         <div class="checkout-header">
-            <a href="/en/cart.html" class="back-link">← BackShopping Cart</a>
+            <a href="/en/cart.html" class="back-link">← Back to Shopping Cart</a>
             <h1 class="checkout-title">Checkout</h1>
         </div>
 
         <div class="checkout-section">
-            <h2 class="checkout-section-title">RecipientInformation</h2>
+            <h2 class="checkout-section-title">Recipient Information</h2>
             <div class="form-group">
-                <label class="form-label">RecipientName *</label>
-                <input type="text" class="form-input" id="recipientName" placeholder="Please enterRecipientName">
+                <label class="form-label">Recipient Name *</label>
+                <input type="text" class="form-input" id="recipientName" placeholder="Please enterRecipient Name">
                 <p class="form-error" id="recipientNameError">Please fill in recipient infoName</p>
             </div>
             <div class="form-group">
-                <label class="form-label">RecipientPhone *</label>
-                <input type="tel" class="form-input" id="recipientPhone" placeholder="Please enterPhoneNumber">
+                <label class="form-label">Recipient Phone *</label>
+                <input type="tel" class="form-input" id="recipientPhone" placeholder="Please enter Phone Number">
                 <p class="form-error" id="recipientPhoneError">Please fill inValidPhoneNumber</p>
             </div>
             <div class="form-group">
-                <label class="form-label">RecipientAddress *</label>
-                <input type="text" class="form-input address-input" id="recipientAddress" placeholder="Please enterSend FlowersAddress（Medium/EnglishAll available）" oninput="autoDetectArea(this.value)">
+                <label class="form-label">Recipient Address *</label>
+                <input type="text" class="form-input address-input" id="recipientAddress" placeholder="Please enter Delivery Address（Medium/EnglishAll available）" oninput="autoDetectArea(this.value)">
                 <p class="form-error" id="recipientAddressError">Please fill inSend FlowersAddress</p>
             </div>
             <div class="delivery-tier-banner" id="autoDetectBanner">
@@ -344,11 +344,11 @@
         </div>
 
         <div class="checkout-section">
-            <h2 class="checkout-section-title">DeliveryDistrictand additional fees</h2>
+            <h2 class="checkout-section-title">Delivery District and additional fees</h2>
             <div class="tier-list" id="tierList">
                 <div class="tier-item" data-tier="tier1" data-fee="90" onclick="manualSelectTier('tier1')">
-                    <div class="tier-item-header"><span class="tier-item-label">Tier 1</span><span class="tier-item-fee">OverHK$500Free，NothenHK$90</span></div>
-                    <p class="tier-item-area">New Territories及港九鐵路沿線市區屋苑/Commercial Building</p>
+                    <div class="tier-item-header"><span class="tier-item-label">Tier 1</span><span class="tier-item-fee">Over HK$500 Free，Otherwise HK$90</span></div>
+                    <p class="tier-item-area">New Territories and Urban Areas along KCR/Commercial Building</p>
                 </div>
                 <div class="tier-item" data-tier="tier2" data-fee="100" onclick="manualSelectTier('tier2')">
                     <div class="tier-item-header"><span class="tier-item-label">Tier 2</span><span class="tier-item-fee">+HK$100</span></div>
@@ -356,7 +356,7 @@
                 </div>
                 <div class="tier-item" data-tier="tier3" data-fee="150" onclick="manualSelectTier('tier3')">
                     <div class="tier-item-header"><span class="tier-item-label">Tier 3</span><span class="tier-item-fee">+HK$150</span></div>
-                    <p class="tier-item-area">西貢市Medium心/Hong Kong IslandMid-Levels/Southern District/淺水灣/Stanleyetc.</p>
+                    <p class="tier-item-area">Sai Kung Town Medium心/Hong Kong Island Mid-Levels/Southern District/Repulse Bay/Stanley etc.</p>
                 </div>
                 <div class="tier-item" data-tier="tier4" data-fee="200" onclick="manualSelectTier('tier4')">
                     <div class="tier-item-header"><span class="tier-item-label">Tier 4</span><span class="tier-item-fee">+HK$200</span></div>
@@ -384,7 +384,7 @@
             <h2 class="checkout-section-title">Delivery Time Slot</h2>
             <div class="time-slot-options" id="timeSlotOptions">
                 <div class="time-slot-option selected" data-slot="full_day" data-fee="90" onclick="selectTimeSlot(this)">
-                    <div class="time-slot-main"><span class="time-slot-name">① All Day Delivery (10:00–18:00)</span><span class="time-slot-fee">OverHK$500Free，NothenHK$90</span></div>
+                    <div class="time-slot-main"><span class="time-slot-name">① All Day Delivery (10:00–18:00)</span><span class="time-slot-fee">Over HK$500 Free，Otherwise HK$90</span></div>
                 </div>
                 <div class="time-slot-option" data-slot="specified_time" data-fee="150" onclick="selectTimeSlot(this)">
                     <div class="time-slot-main"><span class="time-slot-name">② Specific Time派送</span><span class="time-slot-fee">+HK$150</span></div>
@@ -794,14 +794,14 @@
     const areaKeywords = {
         tier5: { zh: ['愉景灣','Ma Wan','離島','機場','Disneyland','大嶼山','長洲','南丫島','坪洲','東涌','梅窩','昂坪'], en: ['discovery bay','ma wan','lantau','cheung chau','lamma island','peng chau','tung chung','mui wo','airport','disneyland'] },
         tier4: { zh: ['The Peak','Tai Tam','Clear Water Bay','Hong Kong科技大學','科大','石澳'], en: ['the peak','tai tam','clear water bay','hkust','shek o'] },
-        tier3: { zh: ['西貢','Mid-Levels','Southern District','淺水灣','Stanley','薄扶林','Hong Kong仔','鴨脷洲','黃竹坑'], en: ['sai kung','mid-levels','repluse bay','repulse bay','stanley','pokfulam','aberdeen','ap lei chau'] },
+        tier3: { zh: ['西貢','Mid-Levels','Southern District','Repulse Bay','Stanley','薄扶林','Hong Kong仔','鴨脷洲','黃竹坑'], en: ['sai kung','mid-levels','repluse bay','repulse bay','stanley','pokfulam','aberdeen','ap lei chau'] },
         tier2: { zh: ['屯門','So Kwun Wat','Sham Tseng','汀九','黃金海岸','小欖','青龍頭'], en: ['tuen mun','so kwun wat','sham tseng','ting kau','gold coast'] },
         tier1: { zh: ['旺角','尖沙咀','Medium環','銅鑼灣','灣仔','Kowloon塘','沙田','荃灣','觀塘','將軍澳','北角','太古','紅磡','深水埗','大埔','元朗','青衣','葵芳','油麻地','黃大仙','Kowloon灣','藍田','馬鞍山'], en: ['mong kok','tsim sha tsui','central','causeway bay','wan chai','sha tin','tsuen wan','kwun tong','north point','hung hom','tai po','yuen long'] }
     };
     const areaNames = {
         tier1: { zh: 'Tier 1 - New Territories及港九鐵路沿線市區', en: 'Urban areas along MTR lines' },
         tier2: { zh: 'Tier 2 - Tuen Mun Suburbs/So Kwun Wat/Sham Tseng/Ting Kau etc.', en: 'Tuen Mun outskirts' },
-        tier3: { zh: 'Tier 3 - 西貢市Medium心/Hong Kong IslandMid-Levels/Southern Districtetc.', en: 'Sai Kung / Mid-Levels / Southern' },
+        tier3: { zh: 'Tier 3 - Sai Kung Town Medium心/Hong Kong Island Mid-Levels/Southern Districtetc.', en: 'Sai Kung / Mid-Levels / Southern' },
         tier4: { zh: 'Tier 4 - The Peak/Tai Tam/Clear Water Bayetc.', en: 'The Peak / Tai Tam / Clear Water Bay' },
         tier5: { zh: 'Tier 5 - South Lantau/愉景灣/離島etc.', en: 'South Lantau / Discovery Bay' }
     };
