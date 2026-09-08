@@ -121,19 +121,19 @@
         table { min-width: 500px; font-size: 13px; }
         th, td { padding: 10px 8px !important; }
         
-        /* Shopping Cart優化 */
+        /* Shopping Cart Optimization */
         .cart-item { flex-direction: column !important; gap: 10px; }
         .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
         .cart-item-details { width: 100% !important; text-align: center; }
         .cart-summary { margin-top: 20px !important; }
         
-        /* Products詳情頁 */
+        /* Product Detail Page */
         .product-detail-layout { flex-direction: column !important; }
         .product-gallery { width: 100% !important; }
         .product-info { width: 100% !important; padding: 15px !important; }
         .product-price { font-size: 24px !important; }
         
-        /* Products卡片 */
+        /* Products Card */
         .products-grid, .featured-grid, .collections-grid {
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px !important;
@@ -210,7 +210,7 @@
 <body>
     <div class="payment-page" id="paymentPage">
         <a href="/en/cart.html" class="back-link">← Back to Cart</a>
-        <h1 class="payment-title">OrderPay</h1>
+        <h1 class="payment-title">Order Payment</h1>
         
         <div class="order-summary-card" id="orderSummary">
             <p class="order-code" id="orderCode"></p>
@@ -223,15 +223,15 @@
             <div class="payment-method selected" onclick="selectPayment(this, 'fps')">
                 <div class="payment-method-icon">💳</div>
                 <div class="payment-method-info">
-                    <div class="payment-method-name">FPS FPS</div>
-                    <div class="payment-method-desc">SupportsHong KongBank Instant Transfer</div>
+                    <div class="payment-method-name">FPS</div>
+                    <div class="payment-method-desc">Supports Hong Kong Bank Instant Transfer</div>
                 </div>
                 <div class="payment-method-check"></div>
             </div>
             <div class="payment-method" onclick="selectPayment(this, 'credit_card')">
                 <div class="payment-method-icon">💳</div>
                 <div class="payment-method-info">
-                    <div class="payment-method-name">Credit Card / 借記卡</div>
+                    <div class="payment-method-name">Credit Card / Debit Card</div>
                     <div class="payment-method-desc">Visa, Mastercard, UnionPay</div>
                 </div>
                 <div class="payment-method-check"></div>
@@ -246,8 +246,8 @@
             </div>
         </div>
 
-        <button class="pay-btn" id="payBtn" onclick="confirmPayment()">ConfirmPay</button>
-        <p class="payment-note">ClickConfirmPayafter，If not completedPay，Order將保留為「未Payment」Status，Available atMember CenterContinuePay</p>
+        <button class="pay-btn" id="payBtn" onclick="confirmPayment()">Confirm Payment</button>
+        <p class="payment-note">ClickConfirm Paymentafter，If payment is not completed，Order will be kept as"Unpaid" status，Available at Member Center to continue payment</p>
     </div>
 
     <div class="success-page" id="successPage" style="display:none;">
@@ -390,7 +390,7 @@
                 console.error('Pay失败:', e);
                 alert('Pay處理Failed，Please try again later');
                 btn.disabled = false;
-                btn.textContent = 'ConfirmPay';
+                btn.textContent = 'Confirm Payment';
             }
         }
 
