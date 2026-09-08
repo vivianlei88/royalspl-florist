@@ -1032,13 +1032,20 @@
                     var prodRes = await supabaseClient.from('products').select('*').eq('id', currentProductId).limit(1);
                     if (prodRes.data && prodRes.data.length > 0) {
                         var fullProduct = prodRes.data[0];
+                        // 香调是数组，需要转为字符串
+                        var scentStr = '';
+                        if (fullProduct.scent_notes && Array.isArray(fullProduct.scent_notes)) {
+                            scentStr = fullProduct.scent_notes.join(', ');
+                        } else if (fullProduct.scent) {
+                            scentStr = fullProduct.scent;
+                        }
                         items = [
                             { label: '商品名稱', original: fullProduct.name_zh || '', field: 'name_en', table: 'products', id: fullProduct.id },
                             { label: '商品描述', original: fullProduct.description || '', field: 'description_en', table: 'products', id: fullProduct.id },
-                            { label: '香調', original: fullProduct.scent || '', field: 'scent_en', table: 'products', id: fullProduct.id },
-                            { label: '花材', original: fullProduct.flower_materials || '', field: 'flower_materials_en', table: 'products', id: fullProduct.id },
-                            { label: '產地', original: fullProduct.origin || '', field: 'origin_en', table: 'products', id: fullProduct.id },
-                            { label: '規格', original: fullProduct.specifications || '', field: 'specifications_en', table: 'products', id: fullProduct.id }
+                            { label: '香調', original: scentStr, field: 'scent_notes_en', table: 'products', id: fullProduct.id, isArray: true },
+                            { label: '花材', original: fullProduct.specs_flowers || fullProduct.flower_materials || '', field: 'specs_flowers_en', table: 'products', id: fullProduct.id },
+                            { label: '產地', original: fullProduct.specs_origin || fullProduct.origin || '', field: 'specs_origin_en', table: 'products', id: fullProduct.id },
+                            { label: '規格', original: fullProduct.specs_size || fullProduct.specifications || '', field: 'specs_size_en', table: 'products', id: fullProduct.id }
                         ];
                     }
                 }
@@ -1109,13 +1116,18 @@
 
             for (var i = 0; i < items.length; i++) {
                 var item = items[i];
+                var value = item.translated;
+                // 处理数组类型字段（如香调）
+                if (item.isArray && typeof value === 'string') {
+                    value = value.split(/[,，、]/).map(function(s) { return s.trim(); }).filter(function(s) { return s; });
+                }
                 if (item.table === 'homepage_settings') {
-                    homepageUpdates[item.field] = item.translated;
+                    homepageUpdates[item.field] = value;
                 } else if (item.table === 'collection_cards') {
                     if (!cardUpdates[item.id]) cardUpdates[item.id] = {};
-                    cardUpdates[item.id][item.field] = item.translated;
+                    cardUpdates[item.id][item.field] = value;
                 } else if (item.table === 'products') {
-                    productUpdates[item.field] = item.translated;
+                    productUpdates[item.field] = value;
                 }
             }
 
