@@ -283,15 +283,9 @@
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var allProducts = [];
-    var selectedTags = [];
-    var selectedCategory = '';
-    var categoryIdMap = {};
-    var searchKeyword = '';
-    var currentSort = 'default';
 
     // 标签翻译映射
     var tagTranslations = {
-        // 场景用途
         '戀愛': 'Love', '生日': 'Birthday', '情人節': "Valentine's Day", '母親節': "Mother's Day",
         '中秋節': 'Mid-Autumn Festival', '畢業季': 'Graduation', '聖誕節': 'Christmas',
         '婚禮': 'Wedding', '紀念日': 'Anniversary', '探病': 'Get Well', '開張': 'Grand Opening',
@@ -299,7 +293,6 @@
         '父親節': "Father's Day", '新年': 'New Year', '農曆新年': 'Lunar New Year',
         '教師節': "Teacher's Day", '嬰兒出生': 'New Baby', '升職': 'Promotion',
         '道歉': 'Apology', '答謝': 'Thank You', '哀悼': 'Condolence',
-        // 核心花材
         '玫瑰': 'Rose', '鬱金香': 'Tulip', '芍藥': 'Peony', '荷花': 'Lotus', '百合': 'Lily',
         '康乃馨': 'Carnation', '向日葵': 'Sunflower', '滿天星': "Baby's Breath",
         '蘭花': 'Orchid', '牡丹': 'Peony', '進口鮮花': 'Imported Flowers',
@@ -308,13 +301,11 @@
         '進口千代': 'Imported Orchid', '進口蝴蝶蘭': 'Imported Phalaenopsis',
         '薰衣草': 'Lavender', '常春藤': 'Ivy', '菊花': 'Chrysanthemum',
         '非洲菊': 'Gerbera', '劍蘭': 'Gladiolus', '鳶尾花': 'Iris',
-        // 设计风格
         '即日鮮花': 'Same Day Flowers', '日式永生花': 'Japanese Preserved Flowers',
         '法式田園自然風': 'French Countryside Style', '日式鮮花束': 'Japanese Bouquet',
         '新娘花禮': 'Bridal Flowers', '進口牡丹/芍藥花': 'Imported Peony Flowers',
         '韓式花束': 'Korean Bouquet', '歐式古典': 'European Classical',
         '現代簡約': 'Modern Minimalist', '浪漫風': 'Romantic Style',
-        // 价格区间
         'HK$300內': 'Under HK$300', 'HK$300-600': 'HK$300-600',
         'HK$800+': 'HK$800+', 'HK$1200+': 'HK$1200+',
         'HK$600-800': 'HK$600-800', 'HK$1000+': 'HK$1000+',
@@ -324,6 +315,13 @@
     function translateTag(tag) {
         return tagTranslations[tag] || tag;
     }
+
+
+    var selectedTags = [];
+    var selectedCategory = '';
+    var categoryIdMap = {};
+    var searchKeyword = '';
+    var currentSort = 'default';
 
     var tagDimensions = {
         '場景用途': [],
@@ -445,9 +443,9 @@
         if (searchKeyword) {
             var keyword = searchKeyword.toLowerCase();
             filtered = filtered.filter(function(p) {
-                return ((p.name_en || p.name_zh) && (p.name_en || p.name_zh).indexOf(searchKeyword) > -1) ||
+                return (p.name_zh && p.name_zh.indexOf(searchKeyword) > -1) ||
                        (p.name_en && p.name_en.toLowerCase().indexOf(keyword) > -1) ||
-                       ((p.description_en || p.description) && (p.description_en || p.description).indexOf(searchKeyword) > -1) ||
+                       (p.description && p.description.indexOf(searchKeyword) > -1) ||
                        (p.tags && p.tags.some(function(tag) { return tag.indexOf(searchKeyword) > -1; }));
             });
         }
@@ -474,13 +472,13 @@
             var productImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
             html += '<a href="product-detail.html?id=' + p.id + '" class="product-card">';
             if (productImg) {
-                html += '<div class="product-card-img"><img src="' + productImg + '" alt="' + (p.name_en || p.name_zh) + '"><\/div>';
+                html += '<div class="product-card-img"><img src="' + productImg + '" alt="' + p.name_zh + '"><\/div>';
             } else {
                 html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
             }
             html += '<div class="product-status ' + stockClass + '">' + stockText + '<\/div>';
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
-            html += '<h3 class="product-name">' + (p.name_en || p.name_zh) + '<\/h3>';
+            html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
             html += '<p class="product-price">HK$' + p.price + '<\/p>';
             html += '<div class="product-tags">';
             for (var j = 0; j < Math.min(tags.length, 4); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }
@@ -499,7 +497,7 @@
             renderProducts();
         } catch (err) {
             console.error('載入商品失敗:', err);
-            grid.innerHTML = '<div style="text-align:center;padding:60px;grid-column:1/-1;">❌ Load Failed</div>';
+            grid.innerHTML = '<div style="text-align:center;padding:60px;grid-column:1/-1;">❌ 載入失敗</div>';
         }
     }
 
