@@ -426,7 +426,7 @@
     <div id="adminPage" class="admin-container">
         <div class="topbar"><h1>RoyalSpl 後台管理</h1><div class="topbar-links">
             <div style="position:relative;display:inline-flex;align-items:center;margin-right:15px;">
-                <span id="visitorBell" style="font-size:20px;cursor:pointer;position:relative;" title="通知中心" onclick="showNotificationPanel()">🔔</span>
+                <span id="visitorBell" style="font-size:20px;cursor:pointer;position:relative;" title="通知中心" onclick="showNotificationPanel(event)">🔔</span>
                 <span id="visitorBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#ff4444;color:white;font-size:10px;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;">0</span>
             </div>
             <div style="position:relative;display:inline-flex;align-items:center;margin-right:15px;">
@@ -2613,13 +2613,14 @@
         } catch (e) {}
     }
 
-    function showNotificationPanel() {
+    function showNotificationPanel(event) {
+        if (event) event.stopPropagation();
         var old = document.getElementById('notificationPanel');
         if (old) { old.remove(); return; }
 
         var panel = document.createElement('div');
         panel.id = 'notificationPanel';
-        panel.style.cssText = 'position:fixed;top:50px;right:20px;width:380px;max-height:500px;background:white;border-radius:10px;box-shadow:0 5px 30px rgba(0,0,0,0.2);z-index:99998;overflow-y:auto;';
+        panel.style.cssText = 'position:fixed;top:50px;right:20px;width:380px;max-height:500px;background:white;border-radius:10px;box-shadow:0 5px 30px rgba(0,0,0,0.3);z-index:999999;overflow-y:auto;';
         panel.innerHTML = '<div style="padding:15px;border-bottom:1px solid #eee;background:#1A1A1A;color:white;border-radius:10px 10px 0 0;font-weight:600;">🔔 通知中心</div><div id="notificationList" style="padding:10px;">加載中...</div>';
         document.body.appendChild(panel);
 
