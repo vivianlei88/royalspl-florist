@@ -424,7 +424,7 @@
     // 加载商品列表
     async function loadProductsList() {
         try {
-            var r = await supabaseClient.from('products').select('id, name_zh, name_en').eq('is_active', true).order('created_at', { ascending: false }).limit(50);
+            var r = await supabaseClient.from('products').select('id, name_zh, name_en, description, description_en, scent_notes, scent_notes_en, specs_flowers, specs_flowers_en, specs_origin, specs_origin_en, specs_size, specs_size_en').eq('is_active', true).order('created_at', { ascending: false }).limit(50);
             productsList = r.data || [];
             var selector = document.getElementById('productSelector');
             if (selector) {
@@ -1255,9 +1255,11 @@
             var res = await supabaseClient.from('products').select('id, name_zh, description, scent_notes, specs_flowers, specs_origin, specs_size, name_en, description_en, scent_notes_en, specs_flowers_en, specs_origin_en, specs_size_en').eq('is_active', true).order('id', { ascending: true });
             var allProducts = res.data || [];
 
-            // 只翻译没有英文内容的商品
+            // 只翻译没有英文内容的商品（检查所有英文字段）
             var productsToTranslate = allProducts.filter(function(p) {
-                return !p.name_en || !p.description_en;
+                var scentEmpty = !p.scent_notes_en || (Array.isArray(p.scent_notes_en) && p.scent_notes_en.length === 0);
+                return !p.name_en || !p.description_en || scentEmpty || 
+                       !p.specs_flowers_en || !p.specs_origin_en || !p.specs_size_en;
             });
 
             var total = productsToTranslate.length;
