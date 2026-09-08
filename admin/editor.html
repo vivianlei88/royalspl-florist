@@ -321,11 +321,15 @@
     var productsList = [];
     var homepageData = {};
     var aiTranslatedData = {};
+    var collectionCards = [];
+    var featuredProducts = [];
 
     // 页面加载时初始化
     document.addEventListener('DOMContentLoaded', function() {
         loadHomepageData();
         loadProductsList();
+        loadCollectionCards();
+        loadFeaturedProducts();
     });
 
     // 加载商品列表
@@ -348,6 +352,36 @@
             }
         } catch (e) {
             console.error('加载商品列表失败:', e);
+        }
+    }
+
+    // 加载臻选系列卡片
+    async function loadCollectionCards() {
+        try {
+            var r = await supabaseClient.from('collection_cards').select('*').order('sort_order', { ascending: true });
+            collectionCards = r.data || [];
+            // 如果当前是首页，重新渲染编辑面板
+            if (currentPage === 'index') {
+                renderEditorPanel();
+            }
+        } catch (e) {
+            console.error('加载臻选系列失败:', e);
+            collectionCards = [];
+        }
+    }
+
+    // 加载精选花艺
+    async function loadFeaturedProducts() {
+        try {
+            var r = await supabaseClient.from('featured_products').select('*, products(id, name_zh, name_en, price, image_url)').order('sort_order', { ascending: true });
+            featuredProducts = r.data || [];
+            // 如果当前是首页，重新渲染编辑面板
+            if (currentPage === 'index') {
+                renderEditorPanel();
+            }
+        } catch (e) {
+            console.error('加载精选花艺失败:', e);
+            featuredProducts = [];
         }
     }
 
@@ -443,6 +477,41 @@
         var ctaTextVal = isEn ? (homepageData.hero_cta_text_en || '') : (homepageData.hero_cta_text || '');
         var aboutVal = isEn ? (homepageData.about_text_en || '') : (homepageData.about_text || '');
 
+        // 臻选系列卡片HTML
+        var collectionsHtml = '';
+        for (var i = 0; i < collectionCards.length; i++) {
+            var card = collectionCards[i];
+            var cardTitle = isEn ? (card.title_en || '') : (card.title_zh || '');
+            collectionsHtml +=
+                '<div style="border:1px solid #e5e5e5;border-radius:8px;padding:10px;margin-bottom:10px;">' +
+                '<div style="display:flex;gap:10px;align-items:center;">' +
+                (card.image_url ? '<img src="' + card.image_url + '" style="width:50px;height:50px;object-fit:cover;border-radius:6px;">' : '<div style="width:50px;height:50px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;">🖼️</div>') +
+                '<div style="flex:1;">' +
+                '<div style="font-size:12px;color:#999;margin-bottom:3px;">卡片 ' + (i + 1) + '</div>' +
+                '<input class="form-input" style="font-size:13px;padding:6px 8px;" value="' + escapeHtml(cardTitle) + '" onchange="updateCollectionCardTitle(' + card.id + ', this.value)">' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+        }
+
+        // 精选花艺商品HTML
+        var featuredHtml = '';
+        for (var j = 0; j < featuredProducts.length; j++) {
+            var fp = featuredProducts[j];
+            var prodName = isEn ? (fp.products && fp.products.name_en ? fp.products.name_en : (fp.products && fp.products.name_zh ? fp.products.name_zh : '商品')) : (fp.products && fp.products.name_zh ? fp.products.name_zh : (fp.products && fp.products.name_en ? fp.products.name_en : '商品'));
+            var prodImg = fp.products && fp.products.image_url ? fp.products.image_url : '';
+            featuredHtml +=
+                '<div style="display:flex;align-items:center;gap:10px;padding:8px;border:1px solid #e5e5e5;border-radius:8px;margin-bottom:8px;">' +
+                '<span style="font-size:12px;color:#999;width:20px;">' + (j + 1) + '</span>' +
+                (prodImg ? '<img src="' + prodImg + '" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">' : '<div style="width:40px;height:40px;background:#f0f0f0;border-radius:6px;"></div>') +
+                '<span style="flex:1;font-size:13px;">' + escapeHtml(prodName) + '</span>' +
+                '<button onclick="removeFeaturedProduct(' + fp.id + ')" style="background:none;border:none;color:#ff4d4f;cursor:pointer;font-size:16px;padding:4px 8px;">×</button>' +
+                '</div>';
+        }
+        if (featuredProducts.length === 0) {
+            featuredHtml = '<p style="font-size:13px;color:#999;text-align:center;padding:20px;">暫無精選商品</p>';
+        }
+
         panel.innerHTML =
             '<div class="panel-section">' +
             '<div class="panel-title">Hero Banner</div>' +
@@ -452,13 +521,55 @@
             '<div class="form-group"><label class="form-label">CTA 連結</label><input class="form-input" id="heroCtaLink" value="' + escapeHtml(homepageData.hero_cta_link || '') + '"></div>' +
             '</div>' +
             '<div class="panel-section">' +
+            '<div class="panel-title">臻選系列（6卡片）</div>' +
+            collectionsHtml +
+            '<p style="font-size:11px;color:#999;margin-top:8px;">💡 圖片和分類連結請在後台「首頁管理」設置</p>' +
+            '</div>' +
+            '<div class="panel-section">' +
+            '<div class="panel-title">精選花藝</div>' +
+            featuredHtml +
+            '<p style="font-size:11px;color:#999;margin-top:8px;">💡 添加商品請在後台「首頁管理」設置</p>' +
+            '</div>' +
+            '<div class="panel-section">' +
             '<div class="panel-title">關於我們</div>' +
             '<div class="form-group"><label class="form-label">關於我們文字</label><textarea class="form-textarea" id="aboutText">' + escapeHtml(aboutVal) + '</textarea></div>' +
             '</div>' +
             '<div class="panel-section">' +
             '<div class="panel-title">提示</div>' +
-            '<p style="font-size:12px;color:#666;line-height:1.6;">• 切換「中文/EN」可編輯對應語言的內容<br>• 點擊「AI 翻譯」可自動將中文翻譯為英文<br>• 編輯完成後點擊「保存」按鈕保存<br>• 臻選系列和精選花藝請在後台首頁管理中設置</p>' +
+            '<p style="font-size:12px;color:#666;line-height:1.6;">• 切換「中文/EN」可編輯對應語言的內容<br>• 點擊「AI 翻譯」可自動將中文翻譯為英文<br>• 編輯完成後點擊「保存」按鈕保存<br>• 臻選系列圖片和精選花藝添加請在後台首頁管理設置</p>' +
             '</div>';
+    }
+
+    // 更新臻选系列卡片标题
+    async function updateCollectionCardTitle(cardId, value) {
+        var field = currentLang === 'en' ? 'title_en' : 'title_zh';
+        try {
+            await supabaseClient.from('collection_cards').update({ [field]: value }).eq('id', cardId);
+            // 更新本地数据
+            for (var i = 0; i < collectionCards.length; i++) {
+                if (collectionCards[i].id === cardId) {
+                    collectionCards[i][field] = value;
+                    break;
+                }
+            }
+            showToast('已保存');
+        } catch (e) {
+            showToast('保存失敗', 'error');
+        }
+    }
+
+    // 移除精选花艺商品
+    async function removeFeaturedProduct(fpId) {
+        if (!confirm('確定要移除此商品嗎？')) return;
+        try {
+            await supabaseClient.from('featured_products').delete().eq('id', fpId);
+            // 更新本地数据
+            featuredProducts = featuredProducts.filter(function(fp) { return fp.id !== fpId; });
+            renderEditorPanel();
+            showToast('已移除');
+        } catch (e) {
+            showToast('移除失敗', 'error');
+        }
     }
 
     // 加载首页数据
