@@ -320,7 +320,7 @@
         const container = document.getElementById('cartContent');
         if (!container) return;
         if (cart.length === 0) {
-            container.innerHTML = `<div class="empty-cart"><p class="empty-cart-emoji">🛒</p><p class="empty-cart-text">Not SelectedProducts</p><a href="/en/products.html" class="continue-shopping-btn">Shop Flowers</a></div>`;
+            container.innerHTML = `<div class="empty-cart"><p class="empty-cart-emoji">🛒</p><p class="empty-cart-text">No Products Selected</p><a href="/en/products.html" class="continue-shopping-btn">Shop Flowers</a></div>`;
             return;
         }
         let itemsHtml = cart.map((item, index) => {
