@@ -254,11 +254,13 @@
         <select class="page-selector" id="pageSelector" onchange="switchPage(this.value)">
             <option value="index">首頁 Home</option>
             <option value="products">商品列表 Products</option>
+            <option value="product-detail">商品詳情 Product Detail</option>
             <option value="blog">部落格 Blog</option>
             <option value="faq">常見問題 FAQ</option>
             <option value="contact">聯絡我們 Contact</option>
             <option value="privacy">私隱政策 Privacy</option>
         </select>
+        <select class="page-selector" id="productSelector" style="display:none;" onchange="switchProduct(this.value)"></select>
         <div class="device-switcher">
             <button class="device-btn active" onclick="switchDevice('desktop')" title="電腦版">🖥️</button>
             <button class="device-btn" onclick="switchDevice('mobile')" title="手機版">📱</button>
@@ -315,20 +317,67 @@
     var currentPage = 'index';
     var currentDevice = 'desktop';
     var currentLang = 'zh';
+    var currentProductId = null;
+    var productsList = [];
     var homepageData = {};
     var aiTranslatedData = {};
 
     // 页面加载时初始化
     document.addEventListener('DOMContentLoaded', function() {
         loadHomepageData();
+        loadProductsList();
     });
+
+    // 加载商品列表
+    async function loadProductsList() {
+        try {
+            var r = await supabaseClient.from('products').select('id, name_zh, name_en').eq('is_active', true).order('created_at', { ascending: false }).limit(50);
+            productsList = r.data || [];
+            var selector = document.getElementById('productSelector');
+            if (selector) {
+                selector.innerHTML = '';
+                productsList.forEach(function(p) {
+                    var opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = (p.name_zh || p.name_en || '商品') + ' (#' + p.id + ')';
+                    selector.appendChild(opt);
+                });
+                if (productsList.length > 0) {
+                    currentProductId = productsList[0].id;
+                }
+            }
+        } catch (e) {
+            console.error('加载商品列表失败:', e);
+        }
+    }
+
+    // 切换商品
+    function switchProduct(productId) {
+        currentProductId = productId;
+        updatePreview();
+    }
+
+    // 更新预览
+    function updatePreview() {
+        var iframe = document.getElementById('previewIframe');
+        var prefix = currentLang === 'en' ? '/en/' : '/';
+        if (currentPage === 'product-detail' && currentProductId) {
+            iframe.src = prefix + 'product-detail.html?id=' + currentProductId;
+        } else {
+            iframe.src = prefix + currentPage + '.html';
+        }
+    }
 
     // 切换页面
     function switchPage(page) {
         currentPage = page;
-        var iframe = document.getElementById('previewIframe');
-        var prefix = currentLang === 'en' ? '/en/' : '/';
-        iframe.src = prefix + page + '.html';
+        var productSelector = document.getElementById('productSelector');
+        if (page === 'product-detail') {
+            productSelector.style.display = 'inline-block';
+        } else {
+            productSelector.style.display = 'none';
+        }
+        updatePreview();
         renderEditorPanel();
     }
 
@@ -348,9 +397,7 @@
         document.querySelectorAll('.lang-btn').forEach(function(btn, i) {
             btn.classList.toggle('active', (i === 0 && lang === 'zh') || (i === 1 && lang === 'en'));
         });
-        var iframe = document.getElementById('previewIframe');
-        var prefix = lang === 'en' ? '/en/' : '/';
-        iframe.src = prefix + currentPage + '.html';
+        updatePreview();
         renderEditorPanel();
     }
 
@@ -359,9 +406,33 @@
         var panel = document.getElementById('editorPanel');
         if (currentPage === 'index') {
             renderHomepageEditor(panel);
+        } else if (currentPage === 'product-detail') {
+            renderProductDetailEditor(panel);
         } else {
             panel.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:40px;margin-bottom:10px;">📝</p><p>此頁面暫不支持可視化編輯</p><p style="font-size:12px;margin-top:10px;">請在後台對應頁面進行設置</p></div>';
         }
+    }
+
+    // 渲染商品详情编辑器
+    function renderProductDetailEditor(panel) {
+        var product = productsList.find(function(p) { return p.id === currentProductId; });
+        var productName = product ? (currentLang === 'en' ? (product.name_en || product.name_zh) : (product.name_zh || product.name_en)) : '未選擇商品';
+
+        panel.innerHTML =
+            '<div class="panel-section">' +
+            '<div class="panel-title">商品詳情頁</div>' +
+            '<div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;">' +
+            '<div style="font-size:13px;color:#666;margin-bottom:5px;">當前預覽商品</div>' +
+            '<div style="font-size:16px;font-weight:600;">' + escapeHtml(productName) + '</div>' +
+            '<div style="font-size:12px;color:#999;margin-top:5px;">ID: ' + (currentProductId || '-') + '</div>' +
+            '</div>' +
+            '<div style="font-size:13px;color:#666;line-height:1.8;">' +
+            '• 上方下拉菜單可選擇不同商品預覽<br>' +
+            '• 商品名稱、描述、價格、圖片等請在後台「商品管理」中編輯<br>' +
+            '• 切換「中文/EN」可預覽對應語言的商品頁面<br>' +
+            '• 切換「電腦版/手機版」可預覽不同設備的顯示效果' +
+            '</div>' +
+            '</div>';
     }
 
     // 渲染首页编辑器
