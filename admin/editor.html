@@ -994,11 +994,6 @@
 
     // 打开AI翻译
     async function openAITranslate() {
-        if (currentLang !== 'zh') {
-            showToast('請先切換到中文，AI 會自動翻譯為英文', 'error');
-            return;
-        }
-
         var modal = document.getElementById('aiModal');
         var content = document.getElementById('aiTranslateContent');
         modal.classList.add('active');
@@ -1009,7 +1004,7 @@
             var translateType = '';
 
             if (currentPage === 'index') {
-                // 首页：翻译所有内容
+                // 首页：翻译所有内容（始终从中文内容翻译）
                 translateType = 'homepage';
                 items = [
                     { label: '主標題', original: homepageData.hero_title || '', field: 'hero_title_en', table: 'homepage_settings' },
@@ -1029,7 +1024,7 @@
                     });
                 }
             } else if (currentPage === 'product-detail') {
-                // 商品详情页：翻译当前商品的所有文字
+                // 商品详情页：翻译当前商品的所有文字（始终从中文内容翻译）
                 translateType = 'product';
                 var product = productsList.find(function(p) { return p.id === currentProductId; });
                 if (product) {
@@ -1155,9 +1150,9 @@
             }
 
             closeAIModal();
-            showToast('翻譯已保存！切換到 EN 查看', 'success');
-            // 自动切换到英文
-            switchLang('en');
+            showToast('翻譯已保存！', 'success');
+            // 刷新预览页面以显示翻译后的内容
+            updatePreview();
         } catch (e) {
             showToast('保存失敗: ' + e.message, 'error');
         }
