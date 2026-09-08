@@ -442,6 +442,11 @@
                 });
                 if (productsList.length > 0) {
                     currentProductId = productsList[0].id;
+                    // 默认选中第一个商品（index=1，因为index=0是"所有商品"）
+                    selector.selectedIndex = 1;
+                } else {
+                    currentProductId = 'all';
+                    selector.selectedIndex = 0;
                 }
             }
         } catch (e) {
