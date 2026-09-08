@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網站編輯器 | RoyalSpl Florist</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; overflow: hidden; height: 100vh; }
+
+        /* 顶部工具栏 */
+        .editor-toolbar {
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            position: relative;
+            z-index: 100;
+        }
+        .editor-logo { font-size: 18px; font-weight: 700; color: #1a1a1a; }
+        .toolbar-divider { width: 1px; height: 24px; background: #e0e0e0; }
+        .page-selector {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+            cursor: pointer;
+            min-width: 180px;
+        }
+        .device-switcher {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .device-btn {
+            padding: 8px 16px;
+            border: none;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .device-btn.active { background: #1a1a1a; color: #fff; }
+        .device-btn:hover:not(.active) { background: #f5f5f5; }
+        .lang-switcher {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .lang-btn {
+            padding: 8px 16px;
+            border: none;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .lang-btn.active { background: #1a1a1a; color: #fff; }
+        .lang-btn:hover:not(.active) { background: #f5f5f5; }
+        .toolbar-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #1a1a1a; color: #fff; }
+        .btn-primary:hover { background: #333; }
+        .btn-secondary { background: #f5f5f5; color: #1a1a1a; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .btn-ai { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+        .btn-ai:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* 主内容区 */
+        .editor-main {
+            display: flex;
+            height: calc(100vh - 56px);
+        }
+
+        /* 左侧编辑面板 */
+        .editor-panel {
+            width: 360px;
+            background: #fff;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .panel-section { margin-bottom: 25px; }
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1a1a1a;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus { outline: none; border-color: #667eea; }
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .form-textarea:focus { outline: none; border-color: #667eea; }
+
+        /* 预览区域 */
+        .preview-area {
+            flex: 1;
+            background: #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: auto;
+        }
+        .preview-frame {
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .preview-frame.desktop { width: 100%; height: 100%; max-width: 1400px; }
+        .preview-frame.mobile { width: 375px; height: 667px; }
+        .preview-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* AI翻译弹窗 */
+        .ai-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .ai-modal-overlay.active { display: flex; }
+        .ai-modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+        }
+        .ai-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ai-translate-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .ai-translate-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .ai-translate-original {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .ai-translate-result {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            min-height: 40px;
+        }
+        .ai-modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #43e97b; color: #1a1a1a; }
+        .toast.error { background: #f5576c; color: #fff; }
+    </style>
+</head>
+<body>
+    <!-- 顶部工具栏 -->
+    <div class="editor-toolbar">
+        <div class="editor-logo">RoyalSpl Editor</div>
+        <div class="toolbar-divider"></div>
+        <select class="page-selector" id="pageSelector" onchange="switchPage(this.value)">
+            <option value="index">首頁 Home</option>
+            <option value="products">商品列表 Products</option>
+            <option value="blog">部落格 Blog</option>
+            <option value="faq">常見問題 FAQ</option>
+            <option value="contact">聯絡我們 Contact</option>
+            <option value="privacy">私隱政策 Privacy</option>
+        </select>
+        <div class="device-switcher">
+            <button class="device-btn active" onclick="switchDevice('desktop')" title="電腦版">🖥️</button>
+            <button class="device-btn" onclick="switchDevice('mobile')" title="手機版">📱</button>
+        </div>
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="switchLang('zh')">中文</button>
+            <button class="lang-btn" onclick="switchLang('en')">EN</button>
+        </div>
+        <div class="toolbar-right">
+            <button class="btn btn-ai" onclick="openAITranslate()">✨ AI 翻譯</button>
+            <button class="btn btn-secondary" onclick="window.close()">返回後台</button>
+            <button class="btn btn-primary" onclick="saveChanges()">💾 保存</button>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="editor-main">
+        <!-- 左侧编辑面板 -->
+        <div class="editor-panel" id="editorPanel">
+            <!-- 动态加载编辑内容 -->
+        </div>
+
+        <!-- 预览区域 -->
+        <div class="preview-area">
+            <div class="preview-frame desktop" id="previewFrame">
+                <iframe id="previewIframe" src="/index.html" sandbox="allow-same-origin allow-scripts"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI翻译弹窗 -->
+    <div class="ai-modal-overlay" id="aiModal">
+        <div class="ai-modal">
+            <div class="ai-modal-title">✨ AI 自動翻譯</div>
+            <div id="aiTranslateContent">
+                <p style="color:#666;">正在生成翻譯，請稍候...</p>
+                <div style="text-align:center;margin-top:20px;"><div class="loading-spinner"></div></div>
+            </div>
+            <div class="ai-modal-actions">
+                <button class="btn btn-secondary" onclick="closeAIModal()">取消</button>
+                <button class="btn btn-primary" onclick="applyAITranslation()">應用翻譯</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+    var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    var currentPage = 'index';
+    var currentDevice = 'desktop';
+    var currentLang = 'zh';
+    var homepageData = {};
+    var aiTranslatedData = {};
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        loadHomepageData();
+    });
+
+    // 切换页面
+    function switchPage(page) {
+        currentPage = page;
+        var iframe = document.getElementById('previewIframe');
+        var prefix = currentLang === 'en' ? '/en/' : '/';
+        iframe.src = prefix + page + '.html';
+        renderEditorPanel();
+    }
+
+    // 切换设备
+    function switchDevice(device) {
+        currentDevice = device;
+        var frame = document.getElementById('previewFrame');
+        frame.className = 'preview-frame ' + device;
+        document.querySelectorAll('.device-btn').forEach(function(btn, i) {
+            btn.classList.toggle('active', (i === 0 && device === 'desktop') || (i === 1 && device === 'mobile'));
+        });
+    }
+
+    // 切换语言
+    function switchLang(lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-btn').forEach(function(btn, i) {
+            btn.classList.toggle('active', (i === 0 && lang === 'zh') || (i === 1 && lang === 'en'));
+        });
+        var iframe = document.getElementById('previewIframe');
+        var prefix = lang === 'en' ? '/en/' : '/';
+        iframe.src = prefix + currentPage + '.html';
+        renderEditorPanel();
+    }
+
+    // 渲染编辑面板
+    function renderEditorPanel() {
+        var panel = document.getElementById('editorPanel');
+        if (currentPage === 'index') {
+            renderHomepageEditor(panel);
+        } else {
+            panel.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:40px;margin-bottom:10px;">📝</p><p>此頁面暫不支持可視化編輯</p><p style="font-size:12px;margin-top:10px;">請在後台對應頁面進行設置</p></div>';
+        }
+    }
+
+    // 渲染首页编辑器
+    function renderHomepageEditor(panel) {
+        var isEn = currentLang === 'en';
+        var titleVal = isEn ? (homepageData.hero_title_en || '') : (homepageData.hero_title || '');
+        var subtitleVal = isEn ? (homepageData.hero_subtitle_en || '') : (homepageData.hero_subtitle || '');
+        var ctaTextVal = isEn ? (homepageData.hero_cta_text_en || '') : (homepageData.hero_cta_text || '');
+        var aboutVal = isEn ? (homepageData.about_text_en || '') : (homepageData.about_text || '');
+
+        panel.innerHTML =
+            '<div class="panel-section">' +
+            '<div class="panel-title">Hero Banner</div>' +
+            '<div class="form-group"><label class="form-label">主標題</label><input class="form-input" id="heroTitle" value="' + escapeHtml(titleVal) + '"></div>' +
+            '<div class="form-group"><label class="form-label">副標題</label><input class="form-input" id="heroSubtitle" value="' + escapeHtml(subtitleVal) + '"></div>' +
+            '<div class="form-group"><label class="form-label">CTA 按鈕文字</label><input class="form-input" id="heroCtaText" value="' + escapeHtml(ctaTextVal) + '"></div>' +
+            '<div class="form-group"><label class="form-label">CTA 連結</label><input class="form-input" id="heroCtaLink" value="' + escapeHtml(homepageData.hero_cta_link || '') + '"></div>' +
+            '</div>' +
+            '<div class="panel-section">' +
+            '<div class="panel-title">關於我們</div>' +
+            '<div class="form-group"><label class="form-label">關於我們文字</label><textarea class="form-textarea" id="aboutText">' + escapeHtml(aboutVal) + '</textarea></div>' +
+            '</div>' +
+            '<div class="panel-section">' +
+            '<div class="panel-title">提示</div>' +
+            '<p style="font-size:12px;color:#666;line-height:1.6;">• 切換「中文/EN」可編輯對應語言的內容<br>• 點擊「AI 翻譯」可自動將中文翻譯為英文<br>• 編輯完成後點擊「保存」按鈕保存<br>• 臻選系列和精選花藝請在後台首頁管理中設置</p>' +
+            '</div>';
+    }
+
+    // 加载首页数据
+    async function loadHomepageData() {
+        try {
+            var r = await supabaseClient.from('homepage_settings').select('*').limit(1);
+            if (r.data && r.data.length > 0) {
+                homepageData = r.data[0];
+                renderEditorPanel();
+            }
+        } catch (e) {
+            showToast('加載失敗: ' + e.message, 'error');
+        }
+    }
+
+    // 保存修改
+    async function saveChanges() {
+        if (currentPage !== 'index') {
+            showToast('此頁面暫不支持保存', 'error');
+            return;
+        }
+
+        var isEn = currentLang === 'en';
+        var updateData = {};
+
+        if (isEn) {
+            updateData.hero_title_en = document.getElementById('heroTitle').value;
+            updateData.hero_subtitle_en = document.getElementById('heroSubtitle').value;
+            updateData.hero_cta_text_en = document.getElementById('heroCtaText').value;
+            updateData.about_text_en = document.getElementById('aboutText').value;
+        } else {
+            updateData.hero_title = document.getElementById('heroTitle').value;
+            updateData.hero_subtitle = document.getElementById('heroSubtitle').value;
+            updateData.hero_cta_text = document.getElementById('heroCtaText').value;
+            updateData.about_text = document.getElementById('aboutText').value;
+        }
+        updateData.hero_cta_link = document.getElementById('heroCtaLink').value;
+
+        try {
+            var r = await supabaseClient.from('homepage_settings').update(updateData).eq('id', homepageData.id || 1);
+            if (r.error) throw r.error;
+            Object.assign(homepageData, updateData);
+            showToast('保存成功！', 'success');
+            // 刷新预览
+            var iframe = document.getElementById('previewIframe');
+            iframe.src = iframe.src;
+        } catch (e) {
+            showToast('保存失敗: ' + e.message, 'error');
+        }
+    }
+
+    // 打开AI翻译
+    async function openAITranslate() {
+        if (currentLang !== 'zh') {
+            showToast('請先切換到中文，AI 會自動翻譯為英文', 'error');
+            return;
+        }
+
+        var modal = document.getElementById('aiModal');
+        var content = document.getElementById('aiTranslateContent');
+        modal.classList.add('active');
+        content.innerHTML = '<p style="color:#666;">正在生成翻譯，請稍候...</p><div style="text-align:center;margin-top:20px;"><div class="loading-spinner"></div></div>';
+
+        try {
+            // 收集需要翻译的内容
+            var items = [
+                { label: '主標題', original: homepageData.hero_title || '', field: 'hero_title_en' },
+                { label: '副標題', original: homepageData.hero_subtitle || '', field: 'hero_subtitle_en' },
+                { label: 'CTA 按鈕文字', original: homepageData.hero_cta_text || '', field: 'hero_cta_text_en' },
+                { label: '關於我們', original: homepageData.about_text || '', field: 'about_text_en' }
+            ];
+
+            // 调用豆包API翻译
+            var allText = items.map(function(item) { return item.original; }).join('\n---\n');
+            var translated = await callDoubaoTranslate(allText);
+            var translatedParts = translated.split('\n---\n');
+
+            aiTranslatedData = {};
+            var html = '';
+            items.forEach(function(item, i) {
+                var result = translatedParts[i] || '';
+                aiTranslatedData[item.field] = result;
+                html += '<div class="ai-translate-item">' +
+                    '<div class="ai-translate-label">' + item.label + '</div>' +
+                    '<div class="ai-translate-original">原文: ' + escapeHtml(item.original) + '</div>' +
+                    '<textarea class="ai-translate-result" data-field="' + item.field + '">' + escapeHtml(result) + '</textarea>' +
+                    '</div>';
+            });
+
+            content.innerHTML = html;
+        } catch (e) {
+            content.innerHTML = '<p style="color:#f5576c;">翻譯失敗: ' + e.message + '</p>';
+        }
+    }
+
+    // 调用豆包API翻译
+    async function callDoubaoTranslate(text) {
+        var response = await fetch('/api/ai-translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, target_lang: 'en' })
+        });
+        if (!response.ok) throw new Error('API調用失敗');
+        var data = await response.json();
+        return data.translated || data.result || '';
+    }
+
+    // 应用AI翻译
+    function applyAITranslation() {
+        var textareas = document.querySelectorAll('.ai-translate-result');
+        textareas.forEach(function(ta) {
+            var field = ta.getAttribute('data-field');
+            aiTranslatedData[field] = ta.value;
+        });
+
+        // 保存到数据库
+        supabaseClient.from('homepage_settings').update(aiTranslatedData).eq('id', homepageData.id || 1)
+            .then(function(r) {
+                if (r.error) throw r.error;
+                Object.assign(homepageData, aiTranslatedData);
+                closeAIModal();
+                showToast('翻譯已保存！切換到 EN 查看', 'success');
+                // 自动切换到英文
+                switchLang('en');
+            })
+            .catch(function(e) {
+                showToast('保存失敗: ' + e.message, 'error');
+            });
+    }
+
+    // 关闭AI弹窗
+    function closeAIModal() {
+        document.getElementById('aiModal').classList.remove('active');
+    }
+
+    // 工具函数
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showToast(message, type) {
+        var toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast show ' + (type || '');
+        setTimeout(function() { toast.className = 'toast'; }, 3000);
+    }
+    </script>
+</body>
+</html>
