@@ -313,6 +313,7 @@
         </div>
         <div class="toolbar-right">
             <button class="btn btn-ai" id="aiTranslateBtn" onclick="openAITranslate()" style="display:none;">✨ AI 翻譯</button>
+            <button class="btn btn-ai" id="batchTranslateBtn" onclick="openBatchTranslate()" style="display:none;background:#ff6b6b;">🔄 批量翻譯全部商品</button>
             <button class="btn btn-secondary" onclick="window.close()">返回後台</button>
             <button class="btn btn-primary" onclick="saveChanges()">💾 保存</button>
         </div>
@@ -344,6 +345,28 @@
             <div class="ai-modal-actions">
                 <button class="btn btn-secondary" onclick="closeAIModal()">取消</button>
                 <button class="btn btn-primary" onclick="applyAITranslation()">應用翻譯</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量翻译弹窗 -->
+    <div class="ai-modal-overlay" id="batchTranslateModal" style="display:none;">
+        <div class="ai-modal" style="max-width:600px;">
+            <div class="ai-modal-title">🔄 批量翻譯全部商品</div>
+            <div id="batchTranslateContent">
+                <p style="color:#666;margin-bottom:15px;">將自動翻譯所有商品的英文名稱、描述、香調、花材、產地、規格。</p>
+                <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;">
+                    <p style="font-size:14px;margin-bottom:8px;">📊 翻譯進度</p>
+                    <div id="batchProgressText" style="font-size:13px;color:#666;margin-bottom:8px;">準備就緒</div>
+                    <div style="width:100%;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
+                        <div id="batchProgressBar" style="width:0%;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);transition:width 0.3s;"></div>
+                    </div>
+                </div>
+                <div id="batchResult" style="max-height:200px;overflow-y:auto;font-size:13px;"></div>
+            </div>
+            <div class="ai-modal-actions">
+                <button class="btn btn-secondary" onclick="closeBatchTranslateModal()">取消</button>
+                <button class="btn btn-primary" id="startBatchBtn" onclick="startBatchTranslate()">開始翻譯</button>
             </div>
         </div>
     </div>
@@ -618,12 +641,21 @@
     // 更新AI翻译按钮显示状态
     function updateAITranslateBtn() {
         var btn = document.getElementById('aiTranslateBtn');
+        var batchBtn = document.getElementById('batchTranslateBtn');
         if (btn) {
             // 英文模式下所有页面都显示AI翻译按钮
             if (currentLang === 'en') {
                 btn.style.display = '';
             } else {
                 btn.style.display = 'none';
+            }
+        }
+        if (batchBtn) {
+            // 批量翻译按钮只在商品详情页+英文模式下显示
+            if (currentLang === 'en' && currentPage === 'product-detail') {
+                batchBtn.style.display = '';
+            } else {
+                batchBtn.style.display = 'none';
             }
         }
     }
@@ -1173,6 +1205,190 @@
     // 关闭AI弹窗
     function closeAIModal() {
         document.getElementById('aiModal').classList.remove('active');
+    }
+
+    // 打开批量翻译弹窗
+    function openBatchTranslate() {
+        document.getElementById('batchTranslateModal').style.display = 'flex';
+        document.getElementById('batchProgressText').textContent = '準備就緒，點擊「開始翻譯」開始';
+        document.getElementById('batchProgressBar').style.width = '0%';
+        document.getElementById('batchResult').innerHTML = '';
+        document.getElementById('startBatchBtn').disabled = false;
+        document.getElementById('startBatchBtn').textContent = '開始翻譯';
+    }
+
+    // 关闭批量翻译弹窗
+    function closeBatchTranslateModal() {
+        document.getElementById('batchTranslateModal').style.display = 'none';
+    }
+
+    // 开始批量翻译
+    var batchTranslateRunning = false;
+    async function startBatchTranslate() {
+        if (batchTranslateRunning) return;
+        batchTranslateRunning = true;
+        document.getElementById('startBatchBtn').disabled = true;
+        document.getElementById('startBatchBtn').textContent = '翻譯中...';
+
+        var resultDiv = document.getElementById('batchResult');
+        var progressText = document.getElementById('batchProgressText');
+        var progressBar = document.getElementById('batchProgressBar');
+
+        try {
+            // 获取所有商品
+            var res = await supabaseClient.from('products').select('id, name_zh, description, scent_notes, specs_flowers, specs_origin, specs_size, name_en, description_en, scent_notes_en, specs_flowers_en, specs_origin_en, specs_size_en').eq('is_active', true).order('id', { ascending: true });
+            var allProducts = res.data || [];
+
+            // 只翻译没有英文内容的商品
+            var productsToTranslate = allProducts.filter(function(p) {
+                return !p.name_en || !p.description_en;
+            });
+
+            var total = productsToTranslate.length;
+            if (total === 0) {
+                progressText.textContent = '所有商品都已有英文內容，無需翻譯';
+                resultDiv.innerHTML = '<p style="color:#52c41a;">✅ 所有商品都已翻譯完成！</p>';
+                batchTranslateRunning = false;
+                document.getElementById('startBatchBtn').textContent = '完成';
+                return;
+            }
+
+            progressText.textContent = '共 ' + total + ' 個商品需要翻譯';
+            resultDiv.innerHTML = '';
+
+            var successCount = 0;
+            var failCount = 0;
+
+            for (var i = 0; i < total; i++) {
+                var product = productsToTranslate[i];
+                var progress = Math.round(((i + 1) / total) * 100);
+                progressBar.style.width = progress + '%';
+                progressText.textContent = '正在翻譯第 ' + (i + 1) + '/' + total + ' 個商品：' + (product.name_zh || '');
+
+                try {
+                    // 翻译单个商品
+                    var translated = await translateSingleProduct(product);
+                    if (translated) {
+                        successCount++;
+                        resultDiv.innerHTML += '<p style="color:#52c41a;margin:4px 0;">✅ ' + (product.name_zh || '商品#' + product.id) + ' - 翻譯成功</p>';
+                    } else {
+                        failCount++;
+                        resultDiv.innerHTML += '<p style="color:#ff4d4f;margin:4px 0;">❌ ' + (product.name_zh || '商品#' + product.id) + ' - 翻譯失敗</p>';
+                    }
+                } catch (e) {
+                    failCount++;
+                    resultDiv.innerHTML += '<p style="color:#ff4d4f;margin:4px 0;">❌ ' + (product.name_zh || '商品#' + product.id) + ' - 錯誤: ' + e.message + '</p>';
+                }
+
+                // 滚动到底部
+                resultDiv.scrollTop = resultDiv.scrollHeight;
+
+                // 每个商品之间延迟1秒，避免API限流
+                if (i < total - 1) {
+                    await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+                }
+            }
+
+            progressText.textContent = '翻譯完成！成功 ' + successCount + ' 個，失敗 ' + failCount + ' 個';
+            resultDiv.innerHTML += '<p style="color:#1890ff;margin-top:10px;font-weight:600;">🎉 批量翻譯完成！成功 ' + successCount + ' 個，失敗 ' + failCount + ' 個</p>';
+            document.getElementById('startBatchBtn').textContent = '完成';
+
+            // 刷新商品列表和预览
+            await loadProductsList();
+            updatePreview();
+
+        } catch (e) {
+            progressText.textContent = '批量翻譯出錯';
+            resultDiv.innerHTML += '<p style="color:#ff4d4f;">❌ 錯誤: ' + e.message + '</p>';
+            document.getElementById('startBatchBtn').textContent = '重試';
+            document.getElementById('startBatchBtn').disabled = false;
+        }
+
+        batchTranslateRunning = false;
+    }
+
+    // 翻译单个商品
+    async function translateSingleProduct(product) {
+        try {
+            // 准备要翻译的内容
+            var scentStr = '';
+            if (product.scent_notes && Array.isArray(product.scent_notes)) {
+                scentStr = product.scent_notes.join(', ');
+            }
+
+            var items = [
+                { label: '商品名稱', original: product.name_zh || '', field: 'name_en' },
+                { label: '商品描述', original: product.description || '', field: 'description_en' },
+                { label: '香調', original: scentStr, field: 'scent_notes_en', isArray: true },
+                { label: '花材', original: product.specs_flowers || '', field: 'specs_flowers_en' },
+                { label: '產地', original: product.specs_origin || '', field: 'specs_origin_en' },
+                { label: '規格', original: product.specs_size || '', field: 'specs_size_en' }
+            ];
+
+            // 过滤掉空内容
+            items = items.filter(function(item) { return item.original && item.original.trim(); });
+            if (items.length === 0) return false;
+
+            // 构建翻译请求
+            var textToTranslate = items.map(function(item, i) {
+                return (i + 1) + '. ' + item.label + ': ' + item.original;
+            }).join('\n');
+
+            // 调用AI翻译API
+            var response = await fetch('/api/ai-translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: textToTranslate, source_lang: 'zh', target_lang: 'en' })
+            });
+
+            if (!response.ok) throw new Error('API请求失败');
+            var data = await response.json();
+            var translatedText = data.translated || data.result || '';
+            if (!translatedText) throw new Error('翻譯結果為空');
+
+            // 解析翻译结果
+            var lines = translatedText.split('\n').filter(function(line) { return line.trim(); });
+            var updates = {};
+
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var translated = '';
+
+                // 尝试匹配 "1. 商品名稱: 翻译结果" 格式
+                var pattern = new RegExp('^\\s*' + (i + 1) + '[.、:：]\\s*(.*)$');
+                for (var j = 0; j < lines.length; j++) {
+                    var match = lines[j].match(pattern);
+                    if (match) {
+                        translated = match[1].trim();
+                        break;
+                    }
+                }
+
+                // 如果没匹配到，尝试按顺序取
+                if (!translated && lines[i]) {
+                    translated = lines[i].replace(/^\s*\d+[.、:：]\s*/, '').trim();
+                }
+
+                if (translated) {
+                    // 处理数组类型字段（香调）
+                    if (item.isArray) {
+                        updates[item.field] = translated.split(/[,，、]/).map(function(s) { return s.trim(); }).filter(function(s) { return s; });
+                    } else {
+                        updates[item.field] = translated;
+                    }
+                }
+            }
+
+            if (Object.keys(updates).length === 0) return false;
+
+            // 保存到数据库
+            await supabaseClient.from('products').update(updates).eq('id', product.id);
+            return true;
+
+        } catch (e) {
+            console.error('翻译商品失败:', product.id, e);
+            return false;
+        }
     }
 
     // 工具函数
