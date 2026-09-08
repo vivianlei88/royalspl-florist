@@ -229,37 +229,37 @@
         </div>
         <div class="filter-section">
             <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="🔍 搜索花藝..." class="search-input">
+                <input type="text" id="searchInput" placeholder="🔍 Search flowers..." class="search-input">
             </div>
             <div class="filter-dimensions">
                 <div class="filter-group">
-                    <label class="filter-label">場景用途</label>
+                    <label class="filter-label">Occasion</label>
                     <div class="filter-pills" id="filterOccasion"></div>
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">核心花材</label>
+                    <label class="filter-label">Flower Type</label>
                     <div class="filter-pills" id="filterFlower"></div>
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">設計風格</label>
+                    <label class="filter-label">Style</label>
                     <div class="filter-pills" id="filterStyle"></div>
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">價格區間</label>
+                    <label class="filter-label">Price Range</label>
                     <div class="filter-pills" id="filterPrice"></div>
                 </div>
             </div>
             <div class="products-toolbar">
                 <span class="products-count" id="productsCount">載入中...</span>
                 <select class="sort-select" id="sortSelect">
-                    <option value="default">默認排序</option>
-                    <option value="price_asc">價格：低到高</option>
-                    <option value="price_desc">價格：高到低</option>
+                    <option value="default">Default Sort</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
                 </select>
             </div>
         </div>
         <div class="products-grid" id="productsGrid">
-            <div style="text-align:center;padding:60px;grid-column:1/-1;">🌸 正在載入...</div>
+            <div style="text-align:center;padding:60px;grid-column:1/-1;">🌸 Loading...</div>
         </div>
         <div class="no-results" id="noResults" style="display:none;">
             <p class="no-results-emoji">🌸</p>
@@ -288,6 +288,42 @@
     var categoryIdMap = {};
     var searchKeyword = '';
     var currentSort = 'default';
+
+    // 标签翻译映射
+    var tagTranslations = {
+        // 场景用途
+        '戀愛': 'Love', '生日': 'Birthday', '情人節': "Valentine's Day", '母親節': "Mother's Day",
+        '中秋節': 'Mid-Autumn Festival', '畢業季': 'Graduation', '聖誕節': 'Christmas',
+        '婚禮': 'Wedding', '紀念日': 'Anniversary', '探病': 'Get Well', '開張': 'Grand Opening',
+        '喬遷': 'Housewarming', '商務送禮': 'Business Gift', '企業周年': 'Corporate Anniversary',
+        '父親節': "Father's Day", '新年': 'New Year', '農曆新年': 'Lunar New Year',
+        '教師節': "Teacher's Day", '嬰兒出生': 'New Baby', '升職': 'Promotion',
+        '道歉': 'Apology', '答謝': 'Thank You', '哀悼': 'Condolence',
+        // 核心花材
+        '玫瑰': 'Rose', '鬱金香': 'Tulip', '芍藥': 'Peony', '荷花': 'Lotus', '百合': 'Lily',
+        '康乃馨': 'Carnation', '向日葵': 'Sunflower', '滿天星': "Baby's Breath",
+        '蘭花': 'Orchid', '牡丹': 'Peony', '進口鮮花': 'Imported Flowers',
+        '尤加利葉': 'Eucalyptus', '飛燕草': 'Delphinium', '洋桔梗': 'Eustoma',
+        '繡球花': 'Hydrangea', '乒乓': 'Ping Pong', '蕾絲花': 'Lace Flower',
+        '進口千代': 'Imported Orchid', '進口蝴蝶蘭': 'Imported Phalaenopsis',
+        '薰衣草': 'Lavender', '常春藤': 'Ivy', '菊花': 'Chrysanthemum',
+        '非洲菊': 'Gerbera', '劍蘭': 'Gladiolus', '鳶尾花': 'Iris',
+        // 设计风格
+        '即日鮮花': 'Same Day Flowers', '日式永生花': 'Japanese Preserved Flowers',
+        '法式田園自然風': 'French Countryside Style', '日式鮮花束': 'Japanese Bouquet',
+        '新娘花禮': 'Bridal Flowers', '進口牡丹/芍藥花': 'Imported Peony Flowers',
+        '韓式花束': 'Korean Bouquet', '歐式古典': 'European Classical',
+        '現代簡約': 'Modern Minimalist', '浪漫風': 'Romantic Style',
+        // 价格区间
+        'HK$300內': 'Under HK$300', 'HK$300-600': 'HK$300-600',
+        'HK$800+': 'HK$800+', 'HK$1200+': 'HK$1200+',
+        'HK$600-800': 'HK$600-800', 'HK$1000+': 'HK$1000+',
+        'HK$1500+': 'HK$1500+', 'HK$2000+': 'HK$2000+'
+    };
+
+    function translateTag(tag) {
+        return tagTranslations[tag] || tag;
+    }
 
     var tagDimensions = {
         '場景用途': [],
@@ -323,7 +359,8 @@
             if (container) {
                 var html = '';
                 for (var i = 0; i < dim.tags.length; i++) {
-                    html += '<button class="filter-pill" data-tag="' + dim.tags[i] + '" onclick="toggleTag(\'' + dim.tags[i] + '\')">' + dim.tags[i] + '<\/button>';
+                    var tagDisplay = translateTag(dim.tags[i]);
+                    html += '<button class="filter-pill" data-tag="' + dim.tags[i] + '" onclick="toggleTag(\'' + dim.tags[i] + '\')">' + tagDisplay + '<\/button>';
                 }
                 container.innerHTML = html;
             }
@@ -462,7 +499,7 @@
             renderProducts();
         } catch (err) {
             console.error('載入商品失敗:', err);
-            grid.innerHTML = '<div style="text-align:center;padding:60px;grid-column:1/-1;">❌ 載入失敗</div>';
+            grid.innerHTML = '<div style="text-align:center;padding:60px;grid-column:1/-1;">❌ Load Failed</div>';
         }
     }
 

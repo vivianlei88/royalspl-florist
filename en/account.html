@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Center | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; color: #1A1A1A; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin: 20px 0 0 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .auth-container { max-width: 400px; margin: 80px auto; background: white; border-radius: 10px; padding: 40px; box-shadow: 0 5px 30px rgba(0,0,0,0.1); }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 30px; }
+        .auth-tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 600; }
+        .auth-tab.active { border-bottom-color: #1A1A1A; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        .btn-primary { width: 100%; padding: 14px; background: #1A1A1A; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .btn-primary:hover { background: #383431; }
+        .oauth-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .oauth-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border: 1px solid #ddd; border-radius: 5px; background: white; cursor: pointer; font-weight: 500; }
+        .oauth-btn img { width: 20px; height: 20px; }
+        .dashboard { display: none; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .profile-card, .address-card, .points-card, .orders-card { background: white; border-radius: 10px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .profile-address-row { display: flex; gap: 20px; align-items: flex-start; }
+        .profile-address-row .profile-card, .profile-address-row .address-card { flex: 1; margin-bottom: 20px; }
+        @media (max-width: 768px) { .profile-address-row { flex-direction: column; } }
+        .card-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; }
+        .address-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; }
+        .address-item.default { border-color: #1A1A1A; background: #FAFAFA; }
+        .address-actions button { margin-left: 5px; }
+        .btn-small { padding: 6px 12px; font-size: 14px; border-radius: 4px; cursor: pointer; }
+        .btn-edit { background: #f0f0f0; border: none; }
+        .btn-delete { background: #ff4444; color: white; border: none; }
+        .btn-default { background: #e0e0e0; border: none; }
+        .points-value { font-size: 32px; font-weight: 700; color: #1A1A1A; }
+        .hidden { display: none; }
+    
+        .account-order-item { display: flex; gap: 18px; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .account-order-item:last-child { border-bottom: none; }
+        .account-order-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+        .account-order-img-ph { width: 80px; height: 80px; font-size: 32px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .account-order-info { flex: 1; }
+        .account-order-code { font-size: 17px; font-weight: 600; color: #1A1A1A; margin-bottom: 5px; }
+        .account-order-meta { font-size: 14px; color: #383431; }
+        .account-order-price { font-size: 18px; font-weight: 700; color: #1A1A1A; margin-top: 5px; }
+        .account-order-right { text-align: right; flex-shrink: 0; }
+        .account-order-actions { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+        .account-order-btn { padding: 8px 16px; border-radius: 4px; font-size: 14px; text-decoration: none; cursor: pointer; border: none; font-family: inherit; }
+        .account-order-btn-detail { background: transparent; border: 1px solid #1A1A1A; color: #1A1A1A; }
+        .account-order-btn-pay { background: #1A1A1A; color: #FAF8F5; }
+        .account-order-btn-pay:hover { background: #333; }
+        .account-order-empty { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .status-badge-sm { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .status-unpaid { background: #fdecea; color: #c0392b; }
+        .status-paid { background: #e8f5e9; color: #27ae60; }
+        .status-shipped { background: #e3f2fd; color: #2980b9; }
+        .status-cancelled { background: #f5f5f5; color: #999; }
+
+    /* ===== 手機版全面優化 ===== */
+    @media (max-width: 768px) {
+        /* 基礎字體 */
+        body { font-size: 15px; line-height: 1.6; }
+        h1 { font-size: 24px !important; }
+        h2 { font-size: 20px !important; }
+        h3 { font-size: 17px !important; }
+        p { font-size: 15px; }
+        
+        /* 導航欄優化 */
+        .nav-desktop { display: none !important; }
+        .nav-mobile { display: flex !important; }
+        .header { padding: 10px 15px !important; }
+        .logo { font-size: 18px !important; }
+        
+        /* 按鈕優化 */
+        .btn, button, input[type="submit"], input[type="button"] {
+            min-height: 44px !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Form優化 */
+        input, select, textarea {
+            font-size: 15px !important;
+            padding: 12px !important;
+            min-height: 44px !important;
+            border-radius: 8px !important;
+        }
+        textarea { min-height: 100px !important; }
+        .form-group { margin-bottom: 15px !important; }
+        .form-row, .form-grid, .checkout-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+        }
+        
+        /* 圖片響應式 */
+        img { max-width: 100%; height: auto; }
+        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
+        
+        /* 容器寬度 */
+        .container, .content-wrapper, .main-content {
+            padding: 15px !important;
+            max-width: 100% !important;
+        }
+        
+        /* 表格橫向滾動 */
+        .table-wrapper, .order-table, .cart-table, table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 500px; font-size: 13px; }
+        th, td { padding: 10px 8px !important; }
+        
+        /* Shopping Cart優化 */
+        .cart-item { flex-direction: column !important; gap: 10px; }
+        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
+        .cart-item-details { width: 100% !important; text-align: center; }
+        .cart-summary { margin-top: 20px !important; }
+        
+        /* Products詳情頁 */
+        .product-detail-layout { flex-direction: column !important; }
+        .product-gallery { width: 100% !important; }
+        .product-info { width: 100% !important; padding: 15px !important; }
+        .product-price { font-size: 24px !important; }
+        
+        /* Products卡片 */
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+        .product-card { padding: 10px !important; }
+        .product-name { font-size: 14px !important; }
+        .product-price { font-size: 16px !important; }
+        
+        /* 頁尾 */
+        .footer { padding: 30px 15px !important; }
+        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .footer-column { text-align: center; }
+        
+        /* 模態框 */
+        .modal, .modal-content {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+            padding: 15px !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* 統計卡片 */
+        .stats-grid, .card-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .stat-card, .card { padding: 15px !important; }
+        
+        /* 間距優化 */
+        .section { padding: 30px 15px !important; }
+        .mb-20 { margin-bottom: 15px !important; }
+        .mt-20 { margin-top: 15px !important; }
+        .p-20 { padding: 15px !important; }
+        
+        /* 隱藏桌面端元素 */
+        .desktop-only { display: none !important; }
+        .mobile-only { display: block !important; }
+    }
+    
+    @media (max-width: 480px) {
+        body { font-size: 14px; }
+        h1 { font-size: 22px !important; }
+        h2 { font-size: 18px !important; }
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
+        .container, .content-wrapper { padding: 12px !important; }
+    }
+    /* ===== 手機版優化結束 ===== */
+
+    </style>
+    <link rel="stylesheet" href="/css/ai-chat.css">
+
+    <meta name="description" content="RoyalSpl Florist MemberCenter，Manage your account information、ViewOrder History、Manage Favorites。">
+    <link rel="canonical" href="https://www.royalspl.shop/account.html">
+    <meta property="og:title" content="Member Center | RoyalSpl Florist Hong Kong">
+    <meta property="og:description" content="RoyalSpl Florist MemberCenter，Manage your account information、ViewOrder History、Manage Favorites。">
+    <meta property="og:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <meta property="og:url" content="https://www.royalspl.shop/account.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
+    <meta property="og:locale" content="zh_HK">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Member Center | RoyalSpl Florist Hong Kong">
+    <meta name="twitter:description" content="RoyalSpl Florist MemberCenter，Manage your account information、ViewOrder History、Manage Favorites。">
+    <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <a href="/en/index.html" class="logo">
+                <h1 class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="/en/cart.html" class="cart-icon" aria-label="Shopping Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Not Logged In：Login/RegisterForm -->
+        <div id="authSection" class="auth-container">
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">Login</div>
+                <div class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">Register</div>
+            </div>
+            <div id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••">
+                </div>
+                <button class="btn-primary" onclick="handleEmailLogin()">Login</button>
+            </div>
+            <div id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="registerName" placeholder="YourName">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="registerEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="registerPassword" placeholder="At least 6 位">
+                </div>
+                <button class="btn-primary" onclick="handleEmailRegister()">Register</button>
+            </div>
+            <div class="oauth-buttons">
+                <button class="oauth-btn" onclick="handleOAuthLogin('google')">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    Use Google Account Login
+                </button>
+                <button class="oauth-btn" onclick="handleOAuthLogin('apple')">
+                    <span style="font-size:20px;">🍎</span>
+                    Use Apple Account Login
+                </button>
+            </div>
+        </div>
+
+        <!-- Logged In：MemberCenter Dashboard -->
+        <div id="dashboardSection" class="dashboard">
+            <div class="dashboard-header">
+                <div style="display:flex;align-items:center;gap:15px;margin-bottom:20px;">
+                    <a href="/en/index.html" class="back-btn" style="margin:0;width:36px;height:36px;font-size:18px;">←</a>
+                    <h2 style="margin:0;">MemberCenter</h2>
+                </div>
+                <button class="btn-primary" style="width:auto;padding:10px 20px;" onclick="handleLogout()">Logout</button>
+            </div>
+
+            <!-- Personal Information + CommonRecipientAddress Side by Side -->
+            <div class="profile-address-row">
+            <div class="profile-card">
+                <div class="card-title">Personal Information</div>
+                <div id="profileInfo">
+                    <p><strong>Name：</strong><span id="profileName">-</span></p>
+                    <p><strong>Email：</strong><span id="profileEmail">-</span></p>
+                    <p><strong>Phone：</strong><span id="profilePhone">-</span></p>
+                    <p><strong>Address：</strong><span id="profileAddress">-</span></p>
+                </div>
+                <button class="btn-small" onclick="editProfile()">Edit</button>
+            </div>
+
+            <!-- CommonAddress管理 -->
+            <div class="address-card">
+                <div class="card-title">CommonRecipientAddress</div>
+                <div id="addressList"></div>
+                <button class="btn-small" onclick="showAddAddressForm()">Add NewAddress</button>
+            </div>
+            </div>
+
+            <!-- MemberPoints -->
+            <div class="points-card">
+                <div class="card-title">MemberPoints</div>
+                <div class="points-value" id="pointsValue">0</div>
+            </div>
+
+            <!-- All Orders -->
+            <div class="orders-card">
+                <div class="card-title">All Orders</div>
+                <div id="accountOrdersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        var currentUser = null;
+        var allAddresses = [];
+
+        function switchAuthTab(tab) {
+            document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+            document.getElementById('registerTab').classList.toggle('active', tab === 'register');
+            document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+            document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+        }
+
+        async function handleEmailLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) return alert('LoginFailed：' + error.message);
+            await loadDashboard();
+        }
+
+        async function handleEmailRegister() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const { data, error } = await supabaseClient.auth.signUp({
+                email,
+                password,
+                options: { data: { full_name: name } }
+            });
+            if (error) return alert('RegisterFailed：' + error.message);
+            alert('RegisterSuccess！請檢查信箱完成驗證。');
+            switchAuthTab('login');
+        }
+
+        async function handleOAuthLogin(provider) {
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                provider: provider,
+                options: { redirectTo: window.location.origin + '/account.html' }
+            });
+            if (error) alert('第三方LoginFailed：' + error.message);
+        }
+
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            currentUser = null;
+            showAuth();
+        }
+
+        function showAuth() {
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+        }
+
+        async function loadDashboard() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) { showAuth(); return; }
+            currentUser = user;
+            showDashboard();
+            await loadProfile();
+            await loadAddresses();
+            loadAccountOrders();
+            await loadPoints();
+        }
+
+        async function loadProfile() {
+            // 自动同步用户信息到 profiles 表
+            try {
+                const { data: existing } = await supabaseClient.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
+                if (!existing) {
+                    await supabaseClient.from('profiles').insert({
+                        id: currentUser.id,
+                        full_name: currentUser.user_metadata?.full_name || '',
+                        email: currentUser.email,
+                        member_status: 'active',
+                        last_active: new Date().toISOString()
+                    });
+                } else {
+                    await supabaseClient.from('profiles').update({ last_active: new Date().toISOString() }).eq('id', currentUser.id);
+                }
+            } catch(e) { console.log('同步profile失败:', e); }
+            
+            const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+            if (data) {
+                document.getElementById('profileName').textContent = data.full_name || '-';
+                document.getElementById('profileEmail').textContent = data.email || currentUser.email || '-';
+                document.getElementById('profilePhone').textContent = data.phone || '-';
+                document.getElementById('profileAddress').textContent = data.address || '-';
+            }
+        }
+
+        async function loadAddresses() {
+            const { data, error } = await supabaseClient.from('user_addresses').select('*').eq('user_id', currentUser.id).order('is_default', { ascending: false });
+            allAddresses = data || [];
+            renderAddresses();
+        }
+
+        function renderAddresses() {
+            const container = document.getElementById('addressList');
+            if (!allAddresses.length) {
+                container.innerHTML = '<p>尚未Add NewAddress</p>';
+                return;
+            }
+            let html = '';
+            allAddresses.forEach(addr => {
+                html += `<div class="address-item ${addr.is_default ? 'default' : ''}">
+                    <div>
+                        <strong>${addr.recipient_name || ''}</strong> ${addr.phone || ''}<br>
+                        ${addr.address}
+                        ${addr.is_default ? '<span style="color:#1A1A1A;font-size:12px;">（預設）</span>' : ''}
+                    </div>
+                    <div class="address-actions">
+                        <button class="btn-small btn-edit" onclick="editAddress(${addr.id})">Edit</button>
+                        <button class="btn-small btn-default" onclick="setDefaultAddress(${addr.id})">設為預設</button>
+                        <button class="btn-small btn-delete" onclick="deleteAddress(${addr.id})">Delete</button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function loadPoints() {
+            const { data } = await supabaseClient.from('loyalty_points').select('points').eq('user_id', currentUser.id).maybeSingle();
+            document.getElementById('pointsValue').textContent = data?.points || 0;
+        }
+
+        function showAddAddressForm() {
+            const name = prompt('Recipient人Name：');
+            if (!name) return;
+            const phone = prompt('Phone：');
+            const address = prompt('詳細Address：');
+            if (!address) return;
+            addAddress(name, phone, address);
+        }
+
+        async function addAddress(name, phone, address) {
+            await supabaseClient.from('user_addresses').insert({
+                user_id: currentUser.id,
+                recipient_name: name,
+                phone: phone,
+                address: address,
+                is_default: allAddresses.length === 0
+            });
+            await loadAddresses();
+        }
+
+        function editAddress(id) {
+            const addr = allAddresses.find(a => a.id === id);
+            if (!addr) return;
+            const name = prompt('Recipient人Name：', addr.recipient_name || '');
+            if (!name) return;
+            const phone = prompt('Phone：', addr.phone || '');
+            const address = prompt('詳細Address：', addr.address);
+            if (!address) return;
+            updateAddress(id, name, phone, address);
+        }
+
+        async function updateAddress(id, name, phone, address) {
+            await supabaseClient.from('user_addresses').update({
+                recipient_name: name,
+                phone: phone,
+                address: address
+            }).eq('id', id);
+            await loadAddresses();
+        }
+
+        async function setDefaultAddress(id) {
+            try {
+                // 先把所有Address设为非默认
+                const { error: err1 } = await supabaseClient.from('user_addresses').update({ is_default: false }).eq('user_id', currentUser.id);
+                if (err1) { console.error('清除默认失败:', err1); alert('SettingsFailed：' + err1.message); return; }
+                // 再把选中的Address设为默认
+                const { error: err2 } = await supabaseClient.from('user_addresses').update({ is_default: true }).eq('id', id);
+                if (err2) { console.error('设置默认失败:', err2); alert('SettingsFailed：' + err2.message); return; }
+                await loadAddresses();
+                // SuccessNotice
+                const toast = document.createElement('div');
+                toast.textContent = '已設為預設Address';
+                toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#FAF8F5;padding:12px 24px;border-radius:5px;z-index:9999;font-size:14px;';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            } catch (e) {
+                console.error('设置默认Address异常:', e);
+                alert('SettingsFailed，請稍後重試');
+            }
+        }
+
+        async function deleteAddress(id) {
+            if (!confirm('確定Delete該Address？')) return;
+            await supabaseClient.from('user_addresses').delete().eq('id', id);
+            await loadAddresses();
+        }
+
+        function editProfile() {
+            const name = prompt('Name：', document.getElementById('profileName').textContent);
+            if (name === null) return;
+            const phone = prompt('Phone：', document.getElementById('profilePhone').textContent);
+            const address = prompt('Address：', document.getElementById('profileAddress').textContent);
+            updateProfile(name, phone, address);
+        }
+
+        async function updateProfile(name, phone, address) {
+            await supabaseClient.from('profiles').update({
+                full_name: name,
+                phone: phone,
+                address: address
+            }).eq('id', currentUser.id);
+            await loadProfile();
+        }
+
+        
+        function getAccountOrderImage(order) {
+            if (order.items && Array.isArray(order.items) && order.items.length > 0 && order.items[0].image) {
+                return order.items[0].image;
+            }
+            try {
+                const parsed = JSON.parse(order.product_images);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+                if (typeof parsed === 'string') return parsed;
+            } catch(e) {}
+            if (order.product_images && typeof order.product_images === 'string' && order.product_images.startsWith('http')) {
+                return order.product_images;
+            }
+            return '';
+        }
+
+        async function loadAccountOrders() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
+            const { data: orders, error } = await supabaseClient.from('orders').select('*').eq('customer_email', user.email).order('created_at', { ascending: false }).limit(5);
+            if (error) { document.getElementById('accountOrdersList').innerHTML = '<div class="account-order-empty">載入Failed</div>'; return; }
+            renderAccountOrders(orders || []);
+        }
+
+        function renderAccountOrders(orders) {
+            const container = document.getElementById('accountOrdersList');
+            if (!container) return;
+            if (!orders.length) { container.innerHTML = '<div class="account-order-empty">尚無訂單</div>'; return; }
+            const statusMap = { unpaid: '未付款', pending_payment: '待Confirm付款', paid: '已付款', shipped: '已出貨', cancelled: '已Cancel' };
+            let html = '';
+            orders.forEach(order => {
+                const img = getAccountOrderImage(order);
+                const imgHtml = img ? '<img src="' + img + '" class="account-order-img" alt="">' : '<div class="account-order-img-ph">🌸</div>';
+                const createdDate = (order.created_at || '').slice(0, 10);
+                html += '<div class="account-order-item">';
+                html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;">' + imgHtml + '</a>';
+                html += '<div class="account-order-info">';
+                html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;"><div class="account-order-code">' + order.order_code + '</div></a>';
+                html += '<div class="account-order-meta">成立：' + createdDate + ' | 送貨：' + (order.delivery_date || '-') + '</div>';
+                html += '<div class="account-order-price">HK$' + order.total_amount + '</div>';
+                html += '</div>';
+                html += '<div class="account-order-right">';
+                html += '<span class="status-badge-sm status-' + order.status + '">' + (statusMap[order.status] || order.status) + '</span>';
+                html += '<div class="account-order-actions">';
+                html += '<a href="order-detail.html?id=' + order.id + '" class="account-order-btn account-order-btn-detail">詳情</a>';
+                if (order.status === 'unpaid') {
+                    html += '<button class="account-order-btn account-order-btn-pay" onclick="payAccountOrder(' + order.id + ', this)">支付</button>';
+                }
+                html += '</div></div></div>';
+            });
+            container.innerHTML = html;
+        }
+
+        async function payAccountOrder(orderId, btn) {
+            btn.disabled = true;
+            btn.textContent = '處理中...';
+            try {
+                const { data: order, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
+                if (error || !order) throw new Error('訂單不存在');
+                let items = [];
+                if (order.items && Array.isArray(order.items)) {
+                    items = order.items;
+                } else {
+                    const names = (order.product_names || '').split('|').filter(Boolean);
+                    items = names.map(n => ({ name: n, price: 0, quantity: 1 }));
+                }
+                localStorage.setItem('pending_order', JSON.stringify({
+                    id: order.id, orderCode: order.order_code, items: items,
+                    subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount,
+                    recipient: { name: order.recipient_name, phone: order.recipient_phone, address: order.recipient_address, date: order.delivery_date, timeSlot: order.delivery_time_slot, email: order.customer_email }
+                }));
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: items, recipientName: order.recipient_name, recipientPhone: order.recipient_phone,
+                        recipientAddress: order.recipient_address, deliveryDate: order.delivery_date,
+                        deliveryTimeSlot: order.delivery_time_slot, deliveryHour: order.delivery_hour,
+                        deliveryArea: order.delivery_area, deliveryFee: order.delivery_fee,
+                        subtotal: order.subtotal, totalAmount: order.total_amount,
+                        orderId: order.id, orderCode: order.order_code
+                    })
+                });
+                const data = await response.json();
+                if (data.url) { window.location.href = data.url; }
+                else { window.location.href = 'payment.html?order_id=' + orderId; }
+            } catch (e) {
+                console.error('支付失败:', e);
+                alert('支付處理Failed，請稍後重試');
+                btn.disabled = false;
+                btn.textContent = '支付';
+            }
+        }
+
+document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                currentUser = user;
+                await loadDashboard();
+            } else {
+                showAuth();
+            }
+        });
+    </script>
+    <script src="/js/ai-chat-v2.js"></script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title })
+        }).catch(function() {});
+    })();
+    </script>
+</body>
+</html>

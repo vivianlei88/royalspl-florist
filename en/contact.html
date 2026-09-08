@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 700px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .contact-card { background: white; border-radius: 8px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .shop-logo { max-width: 180px; margin: 0 auto 25px; display: block; }
+        .contact-item { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; }
+        .contact-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .contact-icon { width: 40px; height: 40px; background: #F3EFEA; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .contact-label { font-size: 13px; color: #888; margin-bottom: 4px; }
+        .contact-value { font-size: 17px; color: #1A1A1A; font-weight: 500; word-break: break-all; }
+        .contact-value a { color: #1A1A1A; text-decoration: none; }
+        .contact-value a:hover { text-decoration: underline; }
+        .map-container { border-radius: 8px; overflow: hidden; margin-top: 20px; }
+        .map-container iframe { width: 100%; height: 300px; border: 0; border-radius: 8px; }
+        .empty-state { text-align: center; color: #888; padding: 40px; }
+        .page-title { text-align: center; margin-bottom: 30px; }
+
+    @media (max-width: 768px) {
+        .container { padding: 20px 15px !important; }
+        .page-title { font-size: 28px !important; }
+        .contact-card { padding: 20px !important; }
+        .contact-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
+        .contact-item { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+        .contact-icon { font-size: 24px !important; }
+        .contact-label { font-size: 13px !important; }
+        .contact-value { font-size: 15px !important; }
+        .map-container { height: 250px !important; }
+    }
+    @media (max-width: 480px) {
+        .page-title { font-size: 24px !important; }
+        .contact-card { padding: 15px !important; }
+    }
+    
+    /* ===== 手機版全面優化 ===== */
+    @media (max-width: 768px) {
+        /* 基礎字體 */
+        body { font-size: 15px; line-height: 1.6; }
+        h1 { font-size: 24px !important; }
+        h2 { font-size: 20px !important; }
+        h3 { font-size: 17px !important; }
+        p { font-size: 15px; }
+        
+        /* 導航欄優化 */
+        .nav-desktop { display: none !important; }
+        .nav-mobile { display: flex !important; }
+        .header { padding: 10px 15px !important; }
+        .logo { font-size: 18px !important; }
+        
+        /* 按鈕優化 */
+        .btn, button, input[type="submit"], input[type="button"] {
+            min-height: 44px !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Form優化 */
+        input, select, textarea {
+            font-size: 15px !important;
+            padding: 12px !important;
+            min-height: 44px !important;
+            border-radius: 8px !important;
+        }
+        textarea { min-height: 100px !important; }
+        .form-group { margin-bottom: 15px !important; }
+        .form-row, .form-grid, .checkout-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+        }
+        
+        /* 圖片響應式 */
+        img { max-width: 100%; height: auto; }
+        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
+        
+        /* 容器寬度 */
+        .container, .content-wrapper, .main-content {
+            padding: 15px !important;
+            max-width: 100% !important;
+        }
+        
+        /* 表格橫向滾動 */
+        .table-wrapper, .order-table, .cart-table, table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 500px; font-size: 13px; }
+        th, td { padding: 10px 8px !important; }
+        
+        /* Shopping Cart優化 */
+        .cart-item { flex-direction: column !important; gap: 10px; }
+        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
+        .cart-item-details { width: 100% !important; text-align: center; }
+        .cart-summary { margin-top: 20px !important; }
+        
+        /* Products詳情頁 */
+        .product-detail-layout { flex-direction: column !important; }
+        .product-gallery { width: 100% !important; }
+        .product-info { width: 100% !important; padding: 15px !important; }
+        .product-price { font-size: 24px !important; }
+        
+        /* Products卡片 */
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+        .product-card { padding: 10px !important; }
+        .product-name { font-size: 14px !important; }
+        .product-price { font-size: 16px !important; }
+        
+        /* 頁尾 */
+        .footer { padding: 30px 15px !important; }
+        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .footer-column { text-align: center; }
+        
+        /* 模態框 */
+        .modal, .modal-content {
+            width: 95% !important;
+            max-width: 95% !important;
+            margin: 10px auto !important;
+            padding: 15px !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* 統計卡片 */
+        .stats-grid, .card-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .stat-card, .card { padding: 15px !important; }
+        
+        /* 間距優化 */
+        .section { padding: 30px 15px !important; }
+        .mb-20 { margin-bottom: 15px !important; }
+        .mt-20 { margin-top: 15px !important; }
+        .p-20 { padding: 15px !important; }
+        
+        /* 隱藏桌面端元素 */
+        .desktop-only { display: none !important; }
+        .mobile-only { display: block !important; }
+    }
+    
+    @media (max-width: 480px) {
+        body { font-size: 14px; }
+        h1 { font-size: 22px !important; }
+        h2 { font-size: 18px !important; }
+        .products-grid, .featured-grid, .collections-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
+        .container, .content-wrapper { padding: 12px !important; }
+    }
+    /* ===== 手機版優化結束 ===== */
+
+    </style>
+    <link rel="stylesheet" href="/css/ai-chat.css">
+
+    <meta name="description" content="Contact RoyalSpl Florist Hong Kong Florist，Address：2F, 2-16, Wo Liu Hang St, Fo Tan, Hong Kong。WhatsApp: +852 65036907。">
+    <link rel="canonical" href="https://www.royalspl.shop/contact.html">
+    <meta property="og:title" content="Contact Us | RoyalSpl Florist Hong Kong">
+    <meta property="og:description" content="Contact RoyalSpl Florist Hong Kong Florist，Address：2F, 2-16, Wo Liu Hang St, Fo Tan, Hong Kong。WhatsApp: +852 65036907。">
+    <meta property="og:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+    <meta property="og:url" content="https://www.royalspl.shop/contact.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
+    <meta property="og:locale" content="zh_HK">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Contact Us | RoyalSpl Florist Hong Kong">
+    <meta name="twitter:description" content="Contact RoyalSpl Florist Hong Kong Florist，Address：2F, 2-16, Wo Liu Hang St, Fo Tan, Hong Kong。WhatsApp: +852 65036907。">
+    <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
+
+<script>
+// 動態應用後台Settings的 SEO Meta Tags
+(function() {
+    var pageUrl = window.location.pathname.split('/').pop() || 'index.html';
+    if (pageUrl === '') pageUrl = 'index.html';
+    fetch('https://gefqlrmozxbgfhxgngtg.supabase.co/rest/v1/seo_overrides?page_url=eq.' + encodeURIComponent(pageUrl), {
+        headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y'
+        }
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data && data.length > 0) {
+            var seo = data[0];
+            if (seo.title) document.title = seo.title;
+            if (seo.description) {
+                var meta = document.querySelector('meta[name="description"]');
+                if (meta) meta.setAttribute('content', seo.description);
+                else {
+                    var m = document.createElement('meta');
+                    m.name = 'description';
+                    m.content = seo.description;
+                    document.head.appendChild(m);
+                }
+            }
+        }
+    }).catch(function() {});
+})();
+</script>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+    <div class="container">
+        <a href="/en/index.html" class="back-btn">←</a>
+        <h1 class="page-title">Contact Us</h1>
+        <div id="contactContent"></div>
+    </div>
+    <script>
+        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadContact() {
+            const { data, error } = await supabaseClient
+                .from('contact_settings')
+                .select('*')
+                .eq('is_published', true)
+                .limit(1)
+                .maybeSingle();
+
+            const container = document.getElementById('contactContent');
+
+            if (error) {
+                console.error('載入Contact資料Failed:', error);
+                container.innerHTML = '<div class="empty-state">載入Failed，請稍後再試</div>';
+                return;
+            }
+
+            if (!data) {
+                container.innerHTML = '<div class="empty-state">尚無Contact資料</div>';
+                return;
+            }
+
+            let html = '<div class="contact-card">';
+
+            if (data.shop_logo) {
+                html += `<img src="${data.shop_logo}" alt="RoyalSpl Florist" class="shop-logo">`;
+            }
+
+            if (data.shop_phone) {
+                html += `
+                    <div class="contact-item">
+                        <div class="contact-icon">📞</div>
+                        <div>
+                            <div class="contact-label">Phone</div>
+                            <div class="contact-value"><a href="tel:${data.shop_phone}">${data.shop_phone}</a></div>
+                        </div>
+                    </div>`;
+            }
+
+            if (data.shop_email) {
+                html += `
+                    <div class="contact-item">
+                        <div class="contact-icon">✉️</div>
+                        <div>
+                            <div class="contact-label">Email</div>
+                            <div class="contact-value"><a href="mailto:${data.shop_email}">${data.shop_email}</a></div>
+                        </div>
+                    </div>`;
+            }
+
+            if (data.shop_address) {
+                html += `
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div>
+                            <div class="contact-label">Address</div>
+                            <div class="contact-value">${data.shop_address}</div>
+                        </div>
+                    </div>`;
+            }
+
+            html += '</div>';
+
+            if (data.map_url) {
+                html += `
+                    <div class="map-container">
+                        <iframe src="${data.map_url}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadContact);
+    </script>
+    <script src="/js/ai-chat-v2.js"></script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title })
+        }).catch(function() {});
+    })();
+    </script>
+</body>
+</html>
