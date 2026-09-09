@@ -6183,6 +6183,24 @@ async function saveProduct() {
             });
         }
     });
+
+    // 管理員登入函數（放在這裡確保一定能執行）
+    function doAdminLogin() {
+        var user = document.getElementById('loginUser').value.trim();
+        var pass = document.getElementById('loginPass').value;
+        if (user === 'admin' && pass === 'royalspl2024') {
+            localStorage.setItem('royalspl_admin', 'true');
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminPage').style.display = 'block';
+            if (typeof switchPage === 'function') switchPage('analytics');
+            if (typeof startVisitorTracking === 'function') startVisitorTracking();
+            if (typeof startChatTracking === 'function') startChatTracking();
+            if (typeof startOrderTracking === 'function') startOrderTracking();
+            if (typeof loadGlobalShopInfo === 'function') loadGlobalShopInfo();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
     </script>
         <script>
         const { useState, useEffect, useRef, useCallback, useMemo } = React;
@@ -7534,20 +7552,6 @@ async function saveProduct() {
     // 重新載入列表
     if (type === 'products') loadProducts();
     else if (type === 'blog') loadBlogPosts();
-}
-
-function doAdminLogin() {
-    var user = document.getElementById('loginUser').value.trim();
-    var pass = document.getElementById('loginPass').value;
-    if (user === 'admin' && pass === 'royalspl2024') {
-        localStorage.setItem('royalspl_admin', 'true');
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('adminPage').style.display = 'block';
-        if (typeof switchPage === 'function') switchPage('analytics');
-        if (typeof checkVisitorNotifications === 'function') checkVisitorNotifications();
-    } else {
-        document.getElementById('loginError').style.display = 'block';
-    }
 }
 
     </script>
