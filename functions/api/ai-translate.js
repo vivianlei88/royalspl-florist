@@ -14,8 +14,8 @@ export async function onRequestPost(context) {
             prompt = `請將以下文字翻譯成繁體中文。文字可能包含多個以"\n---\n"分隔的部分，請在輸出中保持相同的分隔符格式。\n\n需要翻譯的文字：\n${text || ''}`;
         }
 
-        // 使用Cloudflare Workers AI（免费额度）
-        const aiResponse = await context.env.AI.run('@cf/google/gemma-4-26b-a4b-it', {
+        // 使用Cloudflare Workers AI（后台专用模型，不用gemma-2-9b-it）
+        const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: prompt }

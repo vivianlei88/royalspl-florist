@@ -35,8 +35,8 @@ export async function onRequestPost(context) {
                 prompt = `${systemPrompt}\n\n请写一段关于「${topic || ''}」的文案，用繁体中文，简洁优雅。`;
         }
         
-        // 使用Cloudflare Workers AI（免费额度）
-        const aiResponse = await context.env.AI.run('@cf/google/gemma-4-26b-a4b-it', {
+        // 使用Cloudflare Workers AI（后台专用模型，不用gemma-2-9b-it）
+        const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
             messages: [{ role: 'user', content: prompt }],
             max_tokens: 1500,
             temperature: 0.7
