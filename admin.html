@@ -2734,9 +2734,33 @@
     }
 
     // ==================== 通知聲音 ====================
+    var notificationAudioCtx = null;
+    var audioUnlocked = false;
+
+    // 用戶首次交互時解鎖AudioContext（手機瀏覽器限制）
+    function unlockAudio() {
+        if (!notificationAudioCtx) {
+            notificationAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (notificationAudioCtx.state === 'suspended') {
+            notificationAudioCtx.resume();
+        }
+        audioUnlocked = true;
+        document.removeEventListener('touchstart', unlockAudio);
+        document.removeEventListener('click', unlockAudio);
+    }
+    document.addEventListener('touchstart', unlockAudio, { once: true });
+    document.addEventListener('click', unlockAudio, { once: true });
+
     function playNotificationSound() {
         try {
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (!notificationAudioCtx) {
+                notificationAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (notificationAudioCtx.state === 'suspended') {
+                notificationAudioCtx.resume();
+            }
+            var audioCtx = notificationAudioCtx;
             // 叮咚聲 - 兩次提示音
             var playDing = function(freq, startTime, duration) {
                 var oscillator = audioCtx.createOscillator();
@@ -2752,7 +2776,9 @@
             };
             playDing(880, 0, 0.25); // 叮
             playDing(1100, 0.25, 0.35); // 咚
-        } catch (e) {}
+        } catch (e) {
+            console.error('播放聲音失敗:', e);
+        }
     }
 
     // 手機端頁面內彈出提示
@@ -2892,7 +2918,7 @@
         var panel = document.createElement('div');
         panel.id = 'notificationPanel';
         panel.style.cssText = 'position:fixed;top:50px;right:20px;width:380px;max-height:500px;background:white;border-radius:10px;box-shadow:0 5px 30px rgba(0,0,0,0.3);z-index:999999;overflow-y:auto;';
-        panel.innerHTML = '<div style="padding:15px;border-bottom:1px solid #eee;background:#1A1A1A;color:white;border-radius:10px 10px 0 0;font-weight:600;">🔔 通知中心</div><div id="notificationList" style="padding:10px;">加載中...</div>';
+        panel.innerHTML = '<div style="padding:15px;border-bottom:1px solid #eee;background:#1A1A1A;color:white;border-radius:10px 10px 0 0;font-weight:600;display:flex;justify-content:space-between;align-items:center;">🔔 通知中心<button onclick="testNotification()" style="background:#444;color:white;border:none;padding:5px 12px;border-radius:5px;font-size:12px;cursor:pointer;">測試提醒</button></div><div id="notificationList" style="padding:10px;">加載中...</div>';
         document.body.appendChild(panel);
 
         loadNotificationList();
@@ -2905,6 +2931,24 @@
                 }
             });
         }, 100);
+    }
+
+    // 測試提醒功能
+    function testNotification() {
+        // 解鎖聲音
+        unlockAudio();
+        // 顯示手機端彈窗
+        if (window.innerWidth <= 768) {
+            showMobileAlert('測試提醒', '這是一條測試提醒，確認彈窗和聲音正常工作', 'order');
+        } else {
+            showToast(' 測試提醒：彈窗和聲音正常');
+        }
+        // 播放聲音
+        playNotificationSound();
+        // 瀏覽器通知
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            new Notification('測試提醒', { body: '這是一條測試提醒', icon: 'https://www.royalspl.shop/favicon.ico' });
+        }
     }
 
     async function loadNotificationList() {
