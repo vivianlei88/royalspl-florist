@@ -445,23 +445,18 @@
         <!-- 手機端頂部核心入口 -->
         <div class="mobile-top-nav" id="mobileTopNav">
             <div class="mobile-nav-item active" onclick="mobileSwitchPage('analytics')">
-                <div class="mobile-nav-icon">📊</div>
                 <div class="mobile-nav-text">首頁</div>
             </div>
             <div class="mobile-nav-item" onclick="mobileSwitchPage('orders')">
-                <div class="mobile-nav-icon">📦</div>
                 <div class="mobile-nav-text">訂單</div>
             </div>
             <div class="mobile-nav-item" onclick="mobileSwitchPage('products')">
-                <div class="mobile-nav-icon">🌸</div>
                 <div class="mobile-nav-text">商品</div>
             </div>
             <div class="mobile-nav-item" onclick="openChatPanel()">
-                <div class="mobile-nav-icon">💬</div>
                 <div class="mobile-nav-text">客服</div>
             </div>
             <div class="mobile-nav-item" onclick="mobileSwitchPage('settings')">
-                <div class="mobile-nav-icon">⚙️</div>
                 <div class="mobile-nav-text">我的</div>
             </div>
         </div>
@@ -2720,11 +2715,9 @@
         var bgColor = type === 'order' ? '#1A1A1A' : '#2D5016';
         box.style.cssText = 'background:white;border-radius:16px;padding:30px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);animation:mobileAlertPop 0.3s ease-out;';
         
-        var icon = type === 'order' ? '📦' : '💬';
         box.innerHTML = `
-            <div style="font-size:60px;margin-bottom:15px;">${icon}</div>
-            <div style="font-size:24px;font-weight:bold;color:${bgColor};margin-bottom:10px;">${title}</div>
-            <div style="font-size:18px;color:#333;line-height:1.6;margin-bottom:25px;">${message}</div>
+            <div style="font-size:24px;font-weight:bold;color:${bgColor};margin-bottom:15px;">${title}</div>
+            <div style="font-size:18px;font-weight:600;color:#333;line-height:1.6;margin-bottom:25px;">${message}</div>
             <button onclick="document.getElementById('mobileAlertOverlay').remove()" style="width:100%;padding:16px;background:${bgColor};color:white;border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;">知道了</button>
         `;
         
@@ -6645,6 +6638,9 @@ function doAdminLogin() {
     <style>
     /* 手機端專用樣式 - 大字體大按鈕 */
     @media (max-width: 768px) {
+        * {
+            font-weight: 600 !important;
+        }
         body {
             font-size: 18px !important;
             padding-top: 0;
@@ -6661,18 +6657,19 @@ function doAdminLogin() {
         }
         .top-bar span, .top-bar a {
             font-size: 16px !important;
+            font-weight: 600 !important;
         }
         /* 頂部核心導航 */
         .mobile-top-nav {
             display: flex !important;
             background: #1A1A1A;
-            padding: 12px 5px;
+            padding: 15px 5px;
             gap: 5px;
         }
         .mobile-nav-item {
             flex: 1;
             text-align: center;
-            padding: 10px 5px;
+            padding: 12px 5px;
             cursor: pointer;
             color: #999;
             border-radius: 8px;
@@ -6681,43 +6678,46 @@ function doAdminLogin() {
             color: white;
             background: rgba(255,255,255,0.1);
         }
-        .mobile-nav-icon {
-            font-size: 28px;
-            margin-bottom: 6px;
-        }
         .mobile-nav-text {
-            font-size: 15px;
-            font-weight: 500;
+            font-size: 17px !important;
+            font-weight: 700 !important;
         }
         .page-title {
             font-size: 24px !important;
             margin-bottom: 15px !important;
+            font-weight: 700 !important;
         }
         .page-header h3 {
             font-size: 22px !important;
+            font-weight: 700 !important;
         }
         .form-label {
             font-size: 17px !important;
             margin-bottom: 8px !important;
+            font-weight: 600 !important;
         }
         .form-input, .form-textarea, .form-select {
             font-size: 18px !important;
             padding: 14px !important;
             min-height: 50px !important;
+            font-weight: 600 !important;
         }
         .btn {
             padding: 14px 24px !important;
             font-size: 17px !important;
             min-height: 50px !important;
             border-radius: 8px !important;
+            font-weight: 700 !important;
         }
         .btn-primary {
             font-size: 18px !important;
             padding: 16px 28px !important;
+            font-weight: 700 !important;
         }
         .data-table th, .data-table td {
             font-size: 16px !important;
             padding: 12px 8px !important;
+            font-weight: 600 !important;
         }
         .card, .stat-card, .dashboard-card {
             padding: 20px !important;
@@ -6725,9 +6725,11 @@ function doAdminLogin() {
         }
         .stat-number {
             font-size: 32px !important;
+            font-weight: 700 !important;
         }
         .stat-label {
             font-size: 16px !important;
+            font-weight: 600 !important;
         }
         /* 表格改為卡片式 */
         .data-table {
@@ -6742,16 +6744,26 @@ function doAdminLogin() {
         }
         .modal-title {
             font-size: 22px !important;
+            font-weight: 700 !important;
         }
         /* 列表項增大 */
         .sidebar-item {
             padding: 15px !important;
             font-size: 17px !important;
+            font-weight: 600 !important;
         }
         /* 快捷按鈕 */
         .quick-action-btn {
             min-height: 60px !important;
             font-size: 18px !important;
+            font-weight: 700 !important;
+        }
+        /* 所有小字體都改為16px */
+        span, p, div, li, td, th, label, small {
+            font-size: 16px !important;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700 !important;
         }
     }
     .mobile-top-nav {
