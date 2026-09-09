@@ -4212,6 +4212,64 @@ async function saveProduct() {
     function renderOrdersTable(orders) {
         var c = document.getElementById('ordersTable');
         if (!orders.length) { c.innerHTML = '<div class="empty-state">暫無訂單</div>'; return; }
+        
+        // 手機端：卡片式顯示
+        if (window.innerWidth <= 768) {
+            var h = '<div style="margin-bottom:15px;font-size:18px;font-weight:600;">訂單：' + orders.length + '</div>';
+            var lastDate = '';
+            for (var i = 0; i < orders.length; i++) {
+                var o = orders[i];
+                var orderDate = (o.created_at || '').slice(0,10);
+                var dateDisplay = orderDate ? orderDate.slice(5).replace('-','月') + '日' : '';
+                
+                // 按日期分組
+                if (dateDisplay !== lastDate) {
+                    h += '<div style="font-size:18px;font-weight:700;color:#1A1A1A;margin:20px 0 12px;padding:0 5px;">' + dateDisplay + '</div>';
+                    lastDate = dateDisplay;
+                }
+                
+                // 商品圖片
+                var productImg = '';
+                if (o.product_images && o.product_images.length > 0) {
+                    productImg = o.product_images[0];
+                } else if (o.items && o.items.length > 0 && o.items[0].image) {
+                    productImg = o.items[0].image;
+                }
+                
+                // 狀態標籤
+                var statusText = getOrderStatusText(o.status);
+                var statusColor = o.status === 'paid' || o.status === 'shipped' ? '#2D5016' : (o.status === 'unpaid' ? '#999' : '#B8860B');
+                var statusBg = o.status === 'paid' || o.status === 'shipped' ? '#E8F5E9' : (o.status === 'unpaid' ? '#F5F5F5' : '#FFF8E1');
+                
+                // 訂單卡片
+                h += '<div onclick="openOrderDetail(' + o.id + ')" style="display:flex;gap:15px;padding:15px;background:white;border-radius:12px;margin-bottom:12px;cursor:pointer;border:1px solid #eee;align-items:center;">';
+                // 左側圖片
+                h += '<div style="width:80px;height:80px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">';
+                if (productImg) {
+                    h += '<img src="' + productImg + '" style="width:100%;height:100%;object-fit:cover;">';
+                } else {
+                    h += '<span style="color:#ccc;font-size:12px;">無圖</span>';
+                }
+                h += '</div>';
+                // 中間信息
+                h += '<div style="flex:1;min-width:0;">';
+                h += '<div style="font-size:18px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">' + (o.recipient_name || o.customer_name || '未知客戶') + '</div>';
+                h += '<div style="font-size:15px;color:#666;margin-bottom:8px;">訂單 ' + o.order_code + ' · ' + (o.items ? o.items.length : 1) + ' 件</div>';
+                h += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+                h += '<span style="padding:4px 12px;border-radius:6px;font-size:14px;font-weight:600;color:' + statusColor + ';background:' + statusBg + ';">' + statusText + '</span>';
+                h += '</div>';
+                h += '</div>';
+                // 右側金額
+                h += '<div style="text-align:right;flex-shrink:0;">';
+                h += '<div style="font-size:20px;font-weight:700;color:#1A1A1A;">HK$' + o.total_amount + '</div>';
+                h += '</div>';
+                h += '</div>';
+            }
+            c.innerHTML = h;
+            return;
+        }
+        
+        // 電腦端：表格顯示
         var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
         for (var i = 0; i < orders.length; i++) {
             var o = orders[i];
