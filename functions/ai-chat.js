@@ -134,13 +134,15 @@ export async function onRequestPost(context) {
             temperature: 0.7
         });
         
+        console.log('AI response:', JSON.stringify(aiResponse));
+        
         if (aiResponse && aiResponse.response) {
             return Response.json({ 
                 reply: aiResponse.response,
                 usage: aiResponse.usage
             });
         } else {
-            return Response.json({ error: 'AI 回复失败' }, { status: 500 });
+            return Response.json({ error: 'AI 回复失败', raw: aiResponse }, { status: 500 });
         }
     } catch(err) {
         return Response.json({ error: err.message }, { status: 500 });
