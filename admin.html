@@ -4448,8 +4448,6 @@ async function saveProduct() {
             v.innerHTML = '';
         }
         v.innerHTML += '<div class="form-container" style="max-width:100%;"><input type="hidden" id="orderDetailId" value="' + o.id + '">';
-        // 商品信息放在最上面（訂單編號之前）
-        v.innerHTML += '<div class="form-group"><label class="form-label">商品</label><div>' + (productHtml || '無產品') + '</div></div>';
         // 店鋪資料 + 操作按鈕
         v.innerHTML += '<div style="margin-bottom:20px;padding:20px;background:#fafafa;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">';
         v.innerHTML += '<div style="text-align:center;flex:1;min-width:200px;">';
@@ -4466,6 +4464,8 @@ async function saveProduct() {
             v.innerHTML += '</div>';
         }
         v.innerHTML += '</div>';
+        // 商品信息放在店鋪資料和訂單編號中間
+        v.innerHTML += '<div class="form-group"><label class="form-label">商品</label><div>' + (productHtml || '無產品') + '</div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂單編號</label><input class="form-input" id="detailOrderCode" value="' + o.order_code + '"></div><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂購人姓名</label><input class="form-input" id="detailCustomerName" value="' + (o.customer_name || o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">訂購人電話</label><input class="form-input" id="detailCustomerPhone" value="' + (o.customer_phone || o.recipient_phone || '') + '"></div></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">訂購人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
