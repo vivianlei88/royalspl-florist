@@ -3579,6 +3579,7 @@
         f.innerHTML += '<div><button type="button" class="btn btn-secondary" onclick="aiFillProductFromImage()" style="background:#6366f1;color:white;border:none;">🤖 AI看圖自動填寫</button><span id="aiFillStatus" style="margin-left:10px;font-size:13px;color:#666;"></span></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="nameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="nameEn"></div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" step="0.01"></div><div class="form-group"><label class="form-label">庫存狀態</label><select class="form-select" id="stock" onchange="toggleDeliveryDays()"><option value="現貨">現貨</option><option value="預訂">預訂</option></select></div></div><input type="hidden" id="category"><input type="hidden" id="category_id"><input type="hidden" id="category_ids" value="[]"><input type="hidden" id="categories" value="[]">';
+        f.innerHTML += '<div class="form-group"><label class="form-label">商品分類（可多選，點擊選擇）</label><div id="categoryDisplay" onclick="openCategorySelector()" style="padding:12px 15px;border:1px solid #ddd;border-radius:8px;cursor:pointer;background:#fafafa;min-height:45px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'#1A1A1A\'" onmouseout="this.style.borderColor=\'#ddd\'">點擊選擇分類</div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group" id="deliveryDaysGroup"><label class="form-label">預計發貨天數</label><input type="number" class="form-input" id="deliveryDays" value="3" min="1"></div><div class="form-group"><label class="form-label">前台顯示</label><select class="form-select" id="isActive"><option value="true">上架</option><option value="false">下架</option></select></div><div class="form-group"><label class="form-label">URL Slug（舊網址）</label><input class="form-input" id="productSlug" placeholder="例如：新娘手捧花-蝴蝶蘭"></div></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">描述（中文）</label><textarea class="form-textarea" id="description"></textarea></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">描述（英文）</label><textarea class="form-textarea" id="descriptionEn" placeholder="English description..."></textarea></div>';
@@ -3605,6 +3606,7 @@
         f.innerHTML += '<div><button type="button" class="btn btn-secondary" onclick="aiFillProductFromImage()" style="background:#6366f1;color:white;border:none;">🤖 AI看圖自動填寫</button><span id="aiFillStatus" style="margin-left:10px;font-size:13px;color:#666;"></span></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="nameZh" value="' + (p.name_zh || '') + '"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="nameEn" value="' + (p.name_en || '') + '"></div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="price" value="' + (p.price || '') + '" step="0.01"></div><div class="form-group"><label class="form-label">庫存狀態</label><select class="form-select" id="stock" onchange="toggleDeliveryDays()"><option value="現貨"' + (p.stock === '現貨' ? ' selected' : '') + '>現貨</option><option value="預訂"' + (p.stock === '預訂' ? ' selected' : '') + '>預訂</option></select></div></div><input type="hidden" id="category"><input type="hidden" id="category_id"><input type="hidden" id="category_ids" value="[]"><input type="hidden" id="categories" value="[]">';
+        f.innerHTML += '<div class="form-group"><label class="form-label">商品分類（可多選，點擊選擇）</label><div id="categoryDisplay" onclick="openCategorySelector()" style="padding:12px 15px;border:1px solid #ddd;border-radius:8px;cursor:pointer;background:#fafafa;min-height:45px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'#1A1A1A\'" onmouseout="this.style.borderColor=\'#ddd\'">點擊選擇分類</div></div>';
         f.innerHTML += '<div class="form-row"><div class="form-group" id="deliveryDaysGroup"><label class="form-label">預計發貨天數</label><input type="number" class="form-input" id="deliveryDays" value="' + (p.delivery_days || 3) + '" min="1"></div><div class="form-group"><label class="form-label">前台顯示</label><select class="form-select" id="isActive"><option value="true">上架</option><option value="false">下架</option></select></div><div class="form-group"><label class="form-label">URL Slug（舊網址）</label><input class="form-input" id="productSlug" value="' + (p.slug || '') + '" placeholder="例如：新娘手捧花-蝴蝶蘭"></div></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">描述（中文）</label><textarea class="form-textarea" id="description">' + (p.description || '') + '</textarea></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">描述（英文）</label><textarea class="form-textarea" id="descriptionEn" placeholder="English description...">' + (p.description_en || '') + '</textarea></div>';
@@ -3925,10 +3927,15 @@
     function setCategoryDisplay(names) {
         var display = document.getElementById('categoryDisplay');
         if (display) {
-            if (Array.isArray(names)) {
-                display.textContent = names.length > 0 ? names.join('、') : '點擊選擇分類';
+            if (Array.isArray(names) && names.length > 0) {
+                var html = '';
+                for (var i = 0; i < names.length; i++) {
+                    html += '<span style="background:#1A1A1A;color:white;padding:4px 12px;border-radius:15px;font-size:13px;font-weight:500;">' + names[i] + '</span>';
+                }
+                html += '<span style="color:#999;font-size:13px;margin-left:5px;">+ 點擊添加更多</span>';
+                display.innerHTML = html;
             } else {
-                display.textContent = names || '點擊選擇分類';
+                display.innerHTML = '<span style="color:#999;font-size:14px;">點擊選擇分類（可多選）</span>';
             }
         }
     }
@@ -4042,7 +4049,7 @@ async function saveProduct() {
     async function bulkDelete() { var ids = getCheckedIds(); if (!ids.length) { showToast('請先勾選'); return; } if (!confirm('刪除 ' + ids.length + ' 個？')) return; await supabaseClient.from('products').delete().in('id', ids); showToast('完成'); loadProducts(); }
     async function deleteProduct(id) { if (!confirm('刪除？')) return; await supabaseClient.from('products').delete().eq('id', id); showToast('已刪除'); loadProducts(); }
     async function toggleActive(id, current) { await supabaseClient.from('products').update({ is_active: !current }).eq('id', id); loadProducts(); }
-    function exportCSV() { if (!allProducts.length) { showToast('無商品'); return; } var rows = ['id,name_zh,name_en,price,category,description,tags,stock,delivery_days,is_active,image_url']; for (var i = 0; i < allProducts.length; i++) { var p = allProducts[i]; rows.push([p.id, p.name_zh, p.name_en, p.price, p.category || '', p.description || '', (p.tags || []).join('|'), p.stock, p.delivery_days || 1, p.is_active !== false, p.image_url || ''].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'products.csv'; a.click(); }
+    function exportCSV() { if (!allProducts.length) { showToast('無商品'); return; } var rows = ['id,sku,name_zh,name_en,price,category,categories,category_ids,description,description_en,tags,stock,delivery_days,is_active,image_url,images']; for (var i = 0; i < allProducts.length; i++) { var p = allProducts[i]; rows.push([p.id, p.sku || '', p.name_zh || '', p.name_en || '', p.price, p.category || '', (p.categories || []).join('|'), (p.category_ids || []).join('|'), (p.description || '').replace(/,/g, '，'), (p.description_en || '').replace(/,/g, '，'), (p.tags || []).join('|'), p.stock, p.delivery_days || 1, p.is_active !== false, p.image_url || '', (p.images || []).join('|')].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'products.csv'; a.click(); }
     function parseCSVLine(line) {
         var result = [];
         var current = '';
@@ -4069,6 +4076,18 @@ async function saveProduct() {
             var lines = text.split(/\r?\n/);
             var header = parseCSVLine(lines[0]).map(function(h){ return h.trim().replace(/^\uFEFF/, ''); });
             var imported = 0;
+            // 预加载所有分类，用于名称转ID
+            var allCats = [];
+            try {
+                var catRes = await supabaseClient.from('categories').select('id,name_zh,name_en').eq('is_active', true);
+                allCats = catRes.data || [];
+            } catch(e) { allCats = []; }
+            var catNameToId = {};
+            allCats.forEach(function(c) {
+                if (c.name_zh) catNameToId[c.name_zh.trim()] = c.id;
+                if (c.name_en) catNameToId[c.name_en.trim()] = c.id;
+            });
+            
             for (var i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 var v = parseCSVLine(lines[i]);
@@ -4081,14 +4100,46 @@ async function saveProduct() {
                 if (!nameZh || !price) continue;
                 var images = d['圖片URLs(|分隔)'] || d.images || d.image_url || '';
                 var imageArr = images ? images.split('|').filter(Boolean) : [];
+                
+                // 处理多分类：支持 category_ids（数字|分隔）、categories（名称|分隔）、category（单分类）
+                var categoryIds = [];
+                var categoryNames = [];
+                var catIdsStr = d['category_ids'] || d['分類ID(|分隔)'] || '';
+                var catNamesStr = d['categories'] || d['分類(|分隔)'] || d.category || '';
+                if (catIdsStr) {
+                    categoryIds = catIdsStr.split('|').map(function(id){ return parseInt(id); }).filter(function(id){ return !isNaN(id); });
+                }
+                if (catNamesStr) {
+                    var names = catNamesStr.split('|').map(function(n){ return n.trim(); }).filter(Boolean);
+                    categoryNames = names;
+                    // 名称转ID
+                    names.forEach(function(n) {
+                        var cid = catNameToId[n];
+                        if (cid && categoryIds.indexOf(cid) === -1) categoryIds.push(cid);
+                    });
+                }
+                // 如果只有category单分类，也加入
+                if (d.category && !catNamesStr && categoryIds.length === 0) {
+                    var singleName = d.category.trim();
+                    if (singleName) {
+                        categoryNames = [singleName];
+                        var singleId = catNameToId[singleName];
+                        if (singleId) categoryIds = [singleId];
+                    }
+                }
+                
                 var pd = {
                     sku: d['SKU'] || d.sku || '',
                     name_zh: nameZh,
                     name_en: d['英文名稱'] || d.name_en || '',
                     price: parseFloat(price),
                     sale_price: d['特價HKD'] ? parseFloat(d['特價HKD']) : null,
-                    category: d.category || '',
+                    category: categoryNames.join(', '),
+                    category_id: categoryIds.length > 0 ? categoryIds[0] : null,
+                    category_ids: categoryIds,
+                    categories: categoryNames,
                     description: d['中文描述'] || d.description || '',
+                    description_en: d['英文描述'] || d.description_en || '',
                     tags: (d['標籤(|分隔)'] || d.tags || '').split('|').filter(Boolean),
                     scent_notes: (d['香調備註(|分隔)'] || d.scent_notes || '').split('|').filter(Boolean),
                     style_spectrum: parseInt(d['香調分數'] || d.style_spectrum) || 0,
