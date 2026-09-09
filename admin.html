@@ -6125,6 +6125,15 @@ async function saveProduct() {
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Admin page loaded, URL:', window.location.href);
         
+        // 註冊 Service Worker（PWA 安裝需要）
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/admin-sw.js').then(function(reg) {
+                console.log('Service Worker 註冊成功', reg);
+            }).catch(function(err) {
+                console.log('Service Worker 註冊失敗', err);
+            });
+        }
+        
         // 加載店舖資訊到全局變量
         loadGlobalShopInfo();
         
