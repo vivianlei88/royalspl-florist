@@ -470,8 +470,9 @@
             return result;
         }
         var scentNotes = product.scent_notes_en || product.scent_notes || [];
-        var stockClass = product.stock === 'In Stock' ? 'status-in-stock' : 'status-pre-order';
-        var stockText = product.stock === 'In Stock' ? 'In Stock' : 'Pre-order ' + (product.delivery_days || 3) + ' days';
+        var isInStock = product.stock === 'In Stock' || product.stock === '現貨' || product.is_preorder === false;
+        var stockClass = isInStock ? 'status-in-stock' : 'status-pre-order';
+        var stockText = isInStock ? 'In Stock' : 'Pre-order ' + (product.delivery_days || product.preorder_days || 3) + ' days';
         
         var html = '';
         var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
