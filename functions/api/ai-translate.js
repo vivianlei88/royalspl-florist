@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
         }
 
         // 使用Cloudflare Workers AI（免费额度）
-        const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+        const aiResponse = await context.env.AI.run('@cf/mistral/mistral-7b-instruct-v0.1', {
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: prompt }
