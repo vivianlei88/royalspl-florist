@@ -4817,8 +4817,7 @@ async function saveProduct() {
         html += '<div style="font-family:serif;padding:40px;max-width:600px;margin:0 auto;">';
         if (shopLogo) { html += '<div style="text-align:center;margin-bottom:15px;"><img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"></div>'; }
         html += '<h1 style="text-align:center;border-bottom:3px solid #1E3A5F;padding-bottom:15px;">' + shopName + '</h1>';
-        html += '<p style="text-align:center;font-size:24px;font-weight:bold;margin:10px 0;">收據</p>';
-        html += '<p style="text-align:center;color:#666;">購物收據 / Official Receipt</p>';
+        html += '<p style="text-align:center;font-size:20px;font-weight:bold;margin:15px 0;color:#1A1A1A;">購物收據 / Official Receipt</p>';
         html += '<table style="width:100%;margin:20px 0;"><tr><td><b>訂單編號：</b>' + o.order_code + '</td><td><b>送貨日期：</b>' + (o.delivery_date || '-') + '</td></tr>';
         html += '<tr><td><b>收件人：</b>' + (o.recipient_name || '-') + '</td><td><b>電話：</b>' + (o.recipient_phone || '-') + '</td></tr>';
         html += '<tr><td colspan="2"><b>地址：</b>' + (o.recipient_address || '-') + '</td></tr></table>';
