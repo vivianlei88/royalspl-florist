@@ -4601,122 +4601,189 @@ async function saveProduct() {
     }
     function hideAddOrderForm() { document.getElementById('addOrderFormContainer').style.display = 'none'; }
     // 手機端新增訂單表單
-    var mobileOrderProducts = [];
+    var mobileOrderProducts = {}; // {productId: quantity}
     function showMobileAddOrderForm() {
-        mobileOrderProducts = [];
+        mobileOrderProducts = {};
         var c = document.getElementById('mobileAddOrderForm');
         if (!c) return;
         c.style.display = 'block';
         document.getElementById('ordersTable').style.display = 'none';
-        var h = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f5f5;z-index:9999;overflow-y:auto;">';
+
+        // 檢查商品是否已加載
+        if (!allProducts || allProducts.length === 0) {
+            c.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f5f5;z-index:9999;display:flex;align-items:center;justify-content:center;"><div style="text-align:center;"><div style="font-size:20px;font-weight:bold;color:#1a1a1a;margin-bottom:15px;">商品加載中...</div><button onclick="hideMobileAddOrderForm()" style="padding:12px 30px;background:#1a1a1a;color:white;border:none;border-radius:8px;font-size:18px;font-weight:bold;">返回</button></div></div>';
+            return;
+        }
+
+        var h = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f0f0f0;z-index:9999;overflow-y:auto;">';
         // 頂部標題欄
-        h += '<div style="background:#1a1a1a;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;">';
-        h += '<button onclick="hideMobileAddOrderForm()" style="background:none;border:none;color:white;font-size:18px;font-weight:bold;cursor:pointer;padding:8px;">← 返回</button>';
-        h += '<span style="font-size:20px;font-weight:bold;">新增訂單</span>';
-        h += '<button onclick="saveMobileNewOrder()" style="background:#4CAF50;color:white;border:none;padding:10px 20px;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;">保存</button>';
+        h += '<div style="background:#1a1a1a;color:white;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;">';
+        h += '<button onclick="hideMobileAddOrderForm()" style="background:none;border:none;color:white;font-size:20px;font-weight:bold;cursor:pointer;padding:10px;">← 返回</button>';
+        h += '<span style="font-size:22px;font-weight:bold;">新增訂單</span>';
+        h += '<button onclick="saveMobileNewOrder()" style="background:#4CAF50;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer;">保存</button>';
         h += '</div>';
         h += '<div style="padding:15px;">';
+
         // 選擇商品
-        h += '<div style="background:white;border-radius:10px;padding:15px;margin-bottom:15px;">';
-        h += '<div style="font-size:18px;font-weight:bold;margin-bottom:12px;color:#1a1a1a;">選擇商品</div>';
-        h += '<div id="mobileProductList" style="max-height:300px;overflow-y:auto;border:1px solid #ddd;border-radius:8px;padding:10px;">';
-        for (var i = 0; i < allProducts.length; i++) {
-            var p = allProducts[i];
-            h += '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eee;" id="mobileProd_' + p.id + '">';
-            h += (p.image_url ? '<img src="' + p.image_url + '" style="width:50px;height:50px;object-fit:cover;border-radius:6px;">' : '<div style="width:50px;height:50px;background:#eee;border-radius:6px;"></div>');
-            h += '<div style="flex:1;min-width:0;"><div style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (p.name_zh || p.name || '') + '</div><div style="font-size:14px;color:#666;">HK$' + p.price + '</div></div>';
-            h += '<button onclick="toggleMobileOrderProduct(' + p.id + ')" id="mobileProdBtn_' + p.id + '" style="padding:8px 16px;background:#f0f0f0;border:1px solid #ccc;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">+ 添加</button>';
-            h += '</div>';
-        }
+        h += '<div style="background:white;border-radius:12px;padding:18px;margin-bottom:15px;">';
+        h += '<div style="font-size:20px;font-weight:bold;margin-bottom:15px;color:#1a1a1a;">🛒 選擇商品</div>';
+        // 搜索框
+        h += '<input type="text" id="mProductSearch" placeholder="搜尋商品..." oninput="filterMobileProducts()" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;margin-bottom:12px;font-weight:600;">';
+        h += '<div id="mobileProductList" style="max-height:350px;overflow-y:auto;border:2px solid #e0e0e0;border-radius:8px;padding:8px;">';
+        h += renderMobileProductList(allProducts);
         h += '</div></div>';
+
         // 已選商品
-        h += '<div style="background:white;border-radius:10px;padding:15px;margin-bottom:15px;" id="mobileSelectedProducts">';
-        h += '<div style="font-size:18px;font-weight:bold;margin-bottom:12px;color:#1a1a1a;">已選商品</div>';
-        h += '<div id="mobileSelectedList" style="color:#999;font-size:15px;">尚未選擇商品</div>';
-        h += '<div id="mobileOrderSummary" style="display:none;margin-top:15px;padding-top:15px;border-top:1px solid #eee;">';
-        h += '<div style="display:flex;justify-content:space-between;font-size:16px;margin-bottom:8px;"><span>小計：</span><span id="mobileSubtotal">HK$0</span></div>';
-        h += '<div style="display:flex;justify-content:space-between;font-size:16px;margin-bottom:8px;"><span>運費：</span><span id="mobileDeliveryFee">HK$0</span></div>';
-        h += '<div style="display:flex;justify-content:space-between;font-size:20px;font-weight:bold;color:#1a1a1a;"><span>總計：</span><span id="mobileTotal">HK$0</span></div>';
+        h += '<div style="background:white;border-radius:12px;padding:18px;margin-bottom:15px;" id="mobileSelectedProducts">';
+        h += '<div style="font-size:20px;font-weight:bold;margin-bottom:15px;color:#1a1a1a;">📋 已選商品</div>';
+        h += '<div id="mobileSelectedList" style="color:#999;font-size:17px;font-weight:600;padding:10px 0;">尚未選擇商品</div>';
+        h += '<div id="mobileOrderSummary" style="display:none;margin-top:15px;padding-top:15px;border-top:2px solid #e0e0e0;">';
+        h += '<div style="display:flex;justify-content:space-between;font-size:18px;font-weight:600;margin-bottom:10px;color:#333;"><span>小計：</span><span id="mobileSubtotal">HK$0</span></div>';
+        h += '<div style="display:flex;justify-content:space-between;font-size:18px;font-weight:600;margin-bottom:10px;color:#333;"><span>運費：</span><span id="mobileDeliveryFee">HK$0</span></div>';
+        h += '<div style="display:flex;justify-content:space-between;font-size:22px;font-weight:bold;color:#1a1a1a;padding-top:10px;border-top:1px solid #ddd;"><span>總計：</span><span id="mobileTotal">HK$0</span></div>';
         h += '</div></div>';
+
         // 客戶資料
-        h += '<div style="background:white;border-radius:10px;padding:15px;margin-bottom:15px;">';
-        h += '<div style="font-size:18px;font-weight:bold;margin-bottom:12px;color:#1a1a1a;">客戶資料</div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">客戶姓名 *</label><input type="text" id="mCustomerName" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;" placeholder="輸入客戶姓名"></div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">客戶電話 *</label><input type="tel" id="mCustomerPhone" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;" placeholder="輸入聯絡電話"></div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">客戶電郵</label><input type="email" id="mCustomerEmail" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;" placeholder="用於發送訂單郵件"></div>';
+        h += '<div style="background:white;border-radius:12px;padding:18px;margin-bottom:15px;">';
+        h += '<div style="font-size:20px;font-weight:bold;margin-bottom:15px;color:#1a1a1a;">👤 客戶資料</div>';
+        h += '<div style="margin-bottom:15px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">客戶姓名 *</label><input type="text" id="mCustomerName" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;" placeholder="輸入客戶姓名"></div>';
+        h += '<div style="margin-bottom:15px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">客戶電話 *</label><input type="tel" id="mCustomerPhone" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;" placeholder="輸入聯絡電話"></div>';
+        h += '<div style="margin-bottom:5px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">客戶電郵</label><input type="email" id="mCustomerEmail" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;" placeholder="用於發送訂單郵件"></div>';
         h += '</div>';
+
         // 收件人資料
-        h += '<div style="background:white;border-radius:10px;padding:15px;margin-bottom:15px;">';
-        h += '<div style="font-size:18px;font-weight:bold;margin-bottom:12px;color:#1a1a1a;">收件人資料</div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">收件人姓名 *</label><input type="text" id="mRecipientName" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;" placeholder="輸入收件人姓名"></div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">收件人電話 *</label><input type="tel" id="mRecipientPhone" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;" placeholder="輸入收件人電話"></div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">送貨地址 *</label><textarea id="mRecipientAddress" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;min-height:80px;" placeholder="輸入完整送貨地址"></textarea></div>';
+        h += '<div style="background:white;border-radius:12px;padding:18px;margin-bottom:15px;">';
+        h += '<div style="font-size:20px;font-weight:bold;margin-bottom:15px;color:#1a1a1a;">📍 收件人資料</div>';
+        h += '<div style="margin-bottom:15px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">收件人姓名 *</label><input type="text" id="mRecipientName" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;" placeholder="輸入收件人姓名"></div>';
+        h += '<div style="margin-bottom:15px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">收件人電話 *</label><input type="tel" id="mRecipientPhone" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;" placeholder="輸入收件人電話"></div>';
+        h += '<div style="margin-bottom:5px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">送貨地址 *</label><textarea id="mRecipientAddress" oninput="updateMobileOrderSummary()" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;min-height:90px;font-weight:600;color:#1a1a1a;" placeholder="輸入完整送貨地址"></textarea></div>';
         h += '</div>';
+
         // 送貨資料
-        h += '<div style="background:white;border-radius:10px;padding:15px;margin-bottom:15px;">';
-        h += '<div style="font-size:18px;font-weight:bold;margin-bottom:12px;color:#1a1a1a;">送貨資料</div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">送貨日期</label><input type="date" id="mDeliveryDate" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;"></div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">送貨時段</label><select id="mDeliveryTime" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;"><option value="全日派送">全日派送</option><option value="上午派送">上午派送</option><option value="下午派送">下午派送</option><option value="夜晚派送">夜晚派送</option><option value="指定時間">指定時間</option></select></div>';
+        h += '<div style="background:white;border-radius:12px;padding:18px;margin-bottom:15px;">';
+        h += '<div style="font-size:20px;font-weight:bold;margin-bottom:15px;color:#1a1a1a;">📅 送貨資料</div>';
+        h += '<div style="margin-bottom:15px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">送貨日期</label><input type="date" id="mDeliveryDate" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;"></div>';
+        h += '<div style="margin-bottom:5px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">送貨時段</label><select id="mDeliveryTime" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;"><option value="全日派送">全日派送</option><option value="上午派送">上午派送</option><option value="下午派送">下午派送</option><option value="夜晚派送">夜晚派送</option><option value="指定時間">指定時間</option></select></div>';
         h += '</div>';
+
         // 其他資料
-        h += '<div style="background:white;border-radius:10px;padding:15px;margin-bottom:15px;">';
-        h += '<div style="font-size:18px;font-weight:bold;margin-bottom:12px;color:#1a1a1a;">其他資料</div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">心意卡內容</label><textarea id="mCardMessage" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;min-height:80px;" placeholder="輸入心意卡賀詞"></textarea></div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">特別事項 / 備註</label><textarea id="mRemarks" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;min-height:80px;" placeholder="輸入特別要求或備註"></textarea></div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">付款方式</label><select id="mPaymentMethod" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;"><option value="">未選擇</option><option value="fps">轉數快 FPS</option><option value="card">信用卡 / Apple Pay</option><option value="cash">現金</option><option value="bank">銀行轉賬</option></select></div>';
-        h += '<div style="margin-bottom:12px;"><label style="display:block;font-size:15px;font-weight:600;margin-bottom:6px;color:#333;">訂單狀態</label><select id="mOrderStatus" style="width:100%;padding:12px;font-size:16px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;"><option value="unpaid">未付款</option><option value="pending_payment">待確認付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select></div>';
+        h += '<div style="background:white;border-radius:12px;padding:18px;margin-bottom:15px;">';
+        h += '<div style="font-size:20px;font-weight:bold;margin-bottom:15px;color:#1a1a1a;">📝 其他資料</div>';
+        h += '<div style="margin-bottom:15px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">心意卡內容</label><textarea id="mCardMessage" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;min-height:90px;font-weight:600;color:#1a1a1a;" placeholder="輸入心意卡賀詞"></textarea></div>';
+        h += '<div style="margin-bottom:15px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">特別事項 / 備註</label><textarea id="mRemarks" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;min-height:90px;font-weight:600;color:#1a1a1a;" placeholder="輸入特別要求或備註"></textarea></div>';
+        h += '<div style="margin-bottom:15px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">付款方式</label><select id="mPaymentMethod" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;"><option value="">未選擇</option><option value="fps">轉數快 FPS</option><option value="card">信用卡 / Apple Pay</option><option value="cash">現金</option><option value="bank">銀行轉賬</option></select></div>';
+        h += '<div style="margin-bottom:5px;"><label style="display:block;font-size:17px;font-weight:bold;margin-bottom:8px;color:#1a1a1a;">訂單狀態</label><select id="mOrderStatus" style="width:100%;padding:14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;"><option value="unpaid">未付款</option><option value="pending_payment">待確認付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select></div>';
         h += '</div>';
+
         // 底部保存按鈕
-        h += '<div style="padding:15px 0 30px 0;"><button onclick="saveMobileNewOrder()" style="width:100%;padding:18px;background:#4CAF50;color:white;border:none;border-radius:10px;font-size:20px;font-weight:bold;cursor:pointer;">保存訂單</button></div>';
+        h += '<div style="padding:15px 0 40px 0;"><button onclick="saveMobileNewOrder()" style="width:100%;padding:20px;background:#4CAF50;color:white;border:none;border-radius:12px;font-size:22px;font-weight:bold;cursor:pointer;">💾 保存訂單</button></div>';
         h += '</div></div>';
         c.innerHTML = h;
+    }
+    function renderMobileProductList(products) {
+        if (!products || products.length === 0) {
+            return '<div style="text-align:center;padding:20px;color:#999;font-size:17px;font-weight:600;">沒有符合的商品</div>';
+        }
+        var html = '';
+        for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            var qty = mobileOrderProducts[p.id] || 0;
+            html += '<div style="display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid #eee;" id="mobileProd_' + p.id + '">';
+            html += (p.image_url ? '<img src="' + p.image_url + '" style="width:55px;height:55px;object-fit:cover;border-radius:8px;flex-shrink:0;">' : '<div style="width:55px;height:55px;background:#eee;border-radius:8px;flex-shrink:0;"></div>');
+            html += '<div style="flex:1;min-width:0;">';
+            html += '<div style="font-size:16px;font-weight:bold;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (p.name_zh || p.name || '') + '</div>';
+            html += '<div style="font-size:16px;font-weight:bold;color:#d32f2f;margin-top:3px;">HK$' + p.price + '</div>';
+            html += '</div>';
+            if (qty > 0) {
+                html += '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">';
+                html += '<button onclick="changeMobileQty(' + p.id + ',-1)" style="width:36px;height:36px;background:#f0f0f0;border:2px solid #ccc;border-radius:6px;font-size:20px;font-weight:bold;cursor:pointer;color:#1a1a1a;">-</button>';
+                html += '<span style="font-size:18px;font-weight:bold;color:#1a1a1a;min-width:24px;text-align:center;">' + qty + '</span>';
+                html += '<button onclick="changeMobileQty(' + p.id + ',1)" style="width:36px;height:36px;background:#4CAF50;border:2px solid #4CAF50;border-radius:6px;font-size:20px;font-weight:bold;cursor:pointer;color:white;">+</button>';
+                html += '</div>';
+            } else {
+                html += '<button onclick="changeMobileQty(' + p.id + ',1)" style="padding:10px 18px;background:#4CAF50;border:2px solid #4CAF50;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;color:white;flex-shrink:0;">+ 添加</button>';
+            }
+            html += '</div>';
+        }
+        return html;
+    }
+    function filterMobileProducts() {
+        var keyword = document.getElementById('mProductSearch').value.toLowerCase();
+        var filtered = allProducts.filter(function(p) {
+            var name = (p.name_zh || p.name || '').toLowerCase();
+            return name.indexOf(keyword) >= 0;
+        });
+        var listEl = document.getElementById('mobileProductList');
+        if (listEl) listEl.innerHTML = renderMobileProductList(filtered);
+    }
+    function changeMobileQty(id, delta) {
+        var current = mobileOrderProducts[id] || 0;
+        var newQty = current + delta;
+        if (newQty <= 0) {
+            delete mobileOrderProducts[id];
+        } else {
+            mobileOrderProducts[id] = newQty;
+        }
+        // 更新商品列表中的按鈕
+        var listEl = document.getElementById('mobileProductList');
+        if (listEl) {
+            var keyword = document.getElementById('mProductSearch') ? document.getElementById('mProductSearch').value.toLowerCase() : '';
+            var filtered = allProducts.filter(function(p) {
+                var name = (p.name_zh || p.name || '').toLowerCase();
+                return name.indexOf(keyword) >= 0;
+            });
+            listEl.innerHTML = renderMobileProductList(filtered);
+        }
+        updateMobileOrderSummary();
     }
     function hideMobileAddOrderForm() {
         var c = document.getElementById('mobileAddOrderForm');
         if (c) { c.style.display = 'none'; c.innerHTML = ''; }
         document.getElementById('ordersTable').style.display = 'block';
     }
-    function toggleMobileOrderProduct(id) {
-        var idx = mobileOrderProducts.indexOf(id);
-        var btn = document.getElementById('mobileProdBtn_' + id);
-        if (idx > -1) {
-            mobileOrderProducts.splice(idx, 1);
-            if (btn) { btn.textContent = '+ 添加'; btn.style.background = '#f0f0f0'; btn.style.color = '#333'; }
-        } else {
-            mobileOrderProducts.push(id);
-            if (btn) { btn.textContent = '✓ 已選'; btn.style.background = '#4CAF50'; btn.style.color = 'white'; }
-        }
-        updateMobileOrderSummary();
-    }
     function updateMobileOrderSummary() {
         var listEl = document.getElementById('mobileSelectedList');
         var summaryEl = document.getElementById('mobileOrderSummary');
         if (!listEl || !summaryEl) return;
-        if (mobileOrderProducts.length === 0) {
-            listEl.innerHTML = '<span style="color:#999;font-size:15px;">尚未選擇商品</span>';
+
+        var productIds = Object.keys(mobileOrderProducts);
+        if (productIds.length === 0) {
+            listEl.innerHTML = '<span style="color:#999;font-size:17px;font-weight:600;padding:10px 0;">尚未選擇商品</span>';
             summaryEl.style.display = 'none';
             return;
         }
+
         var subtotal = 0;
         var html = '';
-        for (var i = 0; i < mobileOrderProducts.length; i++) {
+        for (var i = 0; i < productIds.length; i++) {
+            var pid = parseInt(productIds[i]);
+            var qty = mobileOrderProducts[pid];
             for (var j = 0; j < allProducts.length; j++) {
-                if (allProducts[j].id === mobileOrderProducts[i]) {
+                if (allProducts[j].id === pid) {
                     var p = allProducts[j];
-                    subtotal += parseFloat(p.price);
-                    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">';
-                    html += '<span style="font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (p.name_zh || p.name || '') + '</span>';
-                    html += '<span style="font-size:15px;font-weight:600;margin-left:10px;">HK$' + p.price + '</span>';
+                    var itemTotal = parseFloat(p.price) * qty;
+                    subtotal += itemTotal;
+                    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #eee;">';
+                    html += '<div style="flex:1;min-width:0;">';
+                    html += '<div style="font-size:17px;font-weight:bold;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (p.name_zh || p.name || '') + '</div>';
+                    html += '<div style="font-size:15px;font-weight:600;color:#666;margin-top:3px;">HK$' + p.price + ' × ' + qty + '</div>';
+                    html += '</div>';
+                    html += '<div style="text-align:right;margin-left:10px;">';
+                    html += '<div style="font-size:18px;font-weight:bold;color:#1a1a1a;">HK$' + itemTotal + '</div>';
+                    html += '<button onclick="changeMobileQty(' + p.id + ',-1)" style="margin-top:5px;padding:4px 10px;background:#f0f0f0;border:1px solid #ccc;border-radius:4px;font-size:14px;font-weight:bold;cursor:pointer;color:#1a1a1a;">移除</button>';
+                    html += '</div>';
                     html += '</div>';
                     break;
                 }
             }
         }
         listEl.innerHTML = html;
+
         var addr = document.getElementById('mRecipientAddress') ? document.getElementById('mRecipientAddress').value : '';
         var area = detectDeliveryArea(addr);
         var deliveryFee = areaFees[area] || 90;
         if (area === 'tier1' && subtotal >= 500) { deliveryFee = 0; }
+
         document.getElementById('mobileSubtotal').textContent = 'HK$' + subtotal;
         document.getElementById('mobileDeliveryFee').textContent = deliveryFee === 0 ? '免費' : 'HK$' + deliveryFee;
         document.getElementById('mobileTotal').textContent = 'HK$' + (subtotal + deliveryFee);
@@ -4729,29 +4796,69 @@ async function saveProduct() {
         var recipientName = document.getElementById('mRecipientName').value.trim();
         var recipientPhone = document.getElementById('mRecipientPhone').value.trim();
         var address = document.getElementById('mRecipientAddress').value.trim();
-        if (!recipientName || !recipientPhone || !address || mobileOrderProducts.length === 0) {
+
+        var productIds = Object.keys(mobileOrderProducts);
+        if (!recipientName || !recipientPhone || !address || productIds.length === 0) {
             showToast('請填寫收件人姓名、電話、地址並選擇商品');
             return;
         }
         if (!customerName) customerName = recipientName;
         if (!customerPhone) customerPhone = recipientPhone;
+
         var subtotal = 0;
         var productNames = [];
         var productImages = [];
         var items = [];
-        for (var i = 0; i < mobileOrderProducts.length; i++) {
+        for (var i = 0; i < productIds.length; i++) {
+            var pid = parseInt(productIds[i]);
+            var qty = mobileOrderProducts[pid];
             for (var j = 0; j < allProducts.length; j++) {
-                if (allProducts[j].id === mobileOrderProducts[i]) {
+                if (allProducts[j].id === pid) {
                     var p = allProducts[j];
-                    subtotal += parseFloat(p.price);
-                    productNames.push(p.name_zh || p.name || '');
-                    productImages.push(p.image_url || '');
-                    items.push({ id: p.id, name: p.name_zh || p.name || '', price: p.price, quantity: 1, image: p.image_url || '' });
+                    subtotal += parseFloat(p.price) * qty;
+                    for (var k = 0; k < qty; k++) {
+                        productNames.push(p.name_zh || p.name || '');
+                        productImages.push(p.image_url || '');
+                    }
+                    items.push({ id: p.id, name: p.name_zh || p.name || '', price: p.price, quantity: qty, image: p.image_url || '' });
                     break;
                 }
             }
         }
+
         var area = detectDeliveryArea(address);
+        var deliveryFee = areaFees[area] || 90;
+        if (area === 'tier1' && subtotal >= 500) { deliveryFee = 0; }
+
+        var data = {
+            order_code: 'RS' + Date.now().toString().slice(-8),
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            customer_email: customerEmail,
+            recipient_name: recipientName,
+            recipient_phone: recipientPhone,
+            recipient_address: address,
+            delivery_date: document.getElementById('mDeliveryDate').value,
+            delivery_time_slot: document.getElementById('mDeliveryTime').value,
+            card_message: document.getElementById('mCardMessage').value.trim(),
+            remarks: document.getElementById('mRemarks').value.trim(),
+            payment_method: document.getElementById('mPaymentMethod').value,
+            subtotal: subtotal,
+            delivery_fee: deliveryFee,
+            total_amount: subtotal + deliveryFee,
+            delivery_area: area,
+            product_names: productNames.join('|'),
+            product_images: productImages.join('|'),
+            items: JSON.stringify(items),
+            status: document.getElementById('mOrderStatus').value
+        };
+
+        var result = await supabaseClient.from('orders').insert(data);
+        if (result.error) { showToast('保存失敗：' + result.error.message); return; }
+        showToast('訂單已創建，總計 HK$' + (subtotal + deliveryFee));
+        hideMobileAddOrderForm();
+        loadOrders();
+    }
         var deliveryFee = areaFees[area] || 90;
         if (area === 'tier1' && subtotal >= 500) { deliveryFee = 0; }
         var data = {
