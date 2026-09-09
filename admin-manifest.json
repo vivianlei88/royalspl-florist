@@ -1,0 +1,24 @@
+{
+  "name": "RoyalSpl Florist 後台管理",
+  "short_name": "RoyalSpl後台",
+  "description": "RoyalSpl Florist 花店後台管理系統",
+  "start_url": "/admin.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF8F5",
+  "theme_color": "#1A1A1A",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
