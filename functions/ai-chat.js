@@ -128,11 +128,42 @@ export async function onRequestPost(context) {
         }
         
         // 使用Cloudflare Workers AI（免费额度）
-        const aiResponse = await context.env.AI.run('@cf/google/gemma-4-26b-a4b-it', {
-            messages: messages,
-            max_tokens: 1000,
-            temperature: 0.7
-        });
+        // 尝试多个模型，确保可用性
+        const models = [
+            '@cf/google/gemma-2-9b-it',
+            '@cf/google/gemma-7b-it',
+            '@cf/meta/llama-3.1-8b-instruct',
+            '@cf/mistral/mistral-7b-instruct-v0.1'
+        ];
+        
+        let aiResponse = null;
+        let lastError = null;
+        
+        for (let i = 0; i < models.length; i++) {
+            try {
+                console.log('尝试模型:', models[i]);
+                aiResponse = await context.env.AI.run(models[i], {
+                    messages: messages,
+                    max_tokens: 1000,
+                    temperature: 0.7
+                });
+                if (aiResponse && (aiResponse.response || (aiResponse.choices && aiResponse.choices[0]))) {
+                    console.log('模型成功:', models[i]);
+                    break;
+                }
+            } catch (e) {
+                console.error('模型', models[i], '失败:', e.message);
+                lastError = e;
+                aiResponse = null;
+            }
+        }
+        
+        if (!aiResponse) {
+            return Response.json({ 
+                error: '所有AI模型都调用失败: ' + (lastError ? lastError.message : '未知错误'),
+                reply: '抱歉，AI客服暫時無法使用，請稍後再試或點擊「轉人工客服」聯繫我們。'
+            }, { status: 500 });
+        }
         
         // 兼容两种返回格式：Cloudflare标准格式(response)和OpenAI格式(choices)
         let reply = '';
