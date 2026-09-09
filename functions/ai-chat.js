@@ -34,22 +34,22 @@ export async function onRequestPost(context) {
         // 输出限制
         systemPrompt += '\n\n【輸出限制】只輸出文字回答，不要生成圖片、視頻、代碼塊或Markdown格式，用純文本回答。';
         
-        // 加载全网站内容
+        // 加载全网站内容（精简版，控制在8K上下文内）
         let knowledgeContext = '';
         
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/blog_posts?select=title,content,created_at&is_published=eq.true&order=created_at.desc&limit=10', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/blog_posts?select=title,content,created_at&is_published=eq.true&order=created_at.desc&limit=5', { headers });
             const posts = await r.json();
             if (posts && posts.length > 0) {
-                knowledgeContext += '\n\n【品牌Blog文章】\n' + posts.map(p => '標題:' + p.title + '\n內容:' + (p.content||'').substring(0,300)).join('\n---\n');
+                knowledgeContext += '\n\n【品牌Blog】\n' + posts.map(p => '標題:' + p.title + '\n內容:' + (p.content||'').substring(0,150)).join('\n---\n');
             }
         } catch(e) {}
         
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/faq_items?select=question,answer&is_published=eq.true&order=sort_order.asc&limit=20', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/faq_items?select=question,answer&is_published=eq.true&order=sort_order.asc&limit=10', { headers });
             const faqs = await r.json();
             if (faqs && faqs.length > 0) {
-                knowledgeContext += '\n\n【常見問題FAQ】\n' + faqs.map(f => 'Q:' + f.question + '\nA:' + f.answer).join('\n---\n');
+                knowledgeContext += '\n\n【常見問題】\n' + faqs.map(f => 'Q:' + f.question + '\nA:' + (f.answer||'').substring(0,100)).join('\n---\n');
             }
         } catch(e) {}
         
@@ -63,27 +63,27 @@ export async function onRequestPost(context) {
         } catch(e) {}
         
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/flower_care?select=title,content&is_active=eq.true&limit=10', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/flower_care?select=title,content&is_active=eq.true&limit=5', { headers });
             const care = await r.json();
             if (care && care.length > 0) {
-                knowledgeContext += '\n\n【花材護理知識】\n' + care.map(c => '標題:' + c.title + '\n內容:' + (c.content||'').substring(0,200)).join('\n---\n');
+                knowledgeContext += '\n\n【花材護理】\n' + care.map(c => '標題:' + c.title + '\n內容:' + (c.content||'').substring(0,100)).join('\n---\n');
             }
         } catch(e) {}
         
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name_zh,name_en,description&is_active=eq.true&order=sort_order.asc', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name_zh,name_en&is_active=eq.true&order=sort_order.asc', { headers });
             const cats = await r.json();
             if (cats && cats.length > 0) {
-                knowledgeContext += '\n\n【商品分類】\n' + cats.map(c => 'ID:' + c.id + ' | ' + (c.name_zh||'') + ' ' + (c.name_en||'') + ' | ' + (c.description||'')).join('\n');
+                knowledgeContext += '\n\n【商品分類】\n' + cats.map(c => 'ID:' + c.id + ' | ' + (c.name_zh||'') + ' ' + (c.name_en||'')).join('\n');
             }
         } catch(e) {}
         
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,description,specs_flowers,scent_notes,tags,specs,is_active,image_url&is_active=eq.true&order=created_at.desc&limit=50', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,is_active&is_active=eq.true&order=created_at.desc&limit=30', { headers });
             const products = await r.json();
             if (products && products.length > 0) {
-                knowledgeContext += '\n\n【全部商品列表】\n' + products.map(p => 
-                    'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 分類:' + (p.category||'') + ' | 花材:' + (p.specs_flowers||'') + ' | 香氣:' + (p.scent_notes||'') + ' | 描述:' + (p.description||'').substring(0,100) + ' | 鏈接:/product-detail.html?id=' + p.id
+                knowledgeContext += '\n\n【全部商品】\n' + products.map(p => 
+                    'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 分類:' + (p.category||'') + ' | 花材:' + (p.specs_flowers||'') + ' | 鏈接:/product-detail.html?id=' + p.id
                 ).join('\n');
             }
         } catch(e) {}
