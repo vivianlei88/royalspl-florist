@@ -4500,7 +4500,7 @@ async function saveProduct() {
             // 電腦端：按鈕放在黑色背景上
             v.innerHTML = '<div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:0;padding:15px 20px;background:#1a1a1a;border-radius:10px 10px 0 0;"><button onclick="closeOrderDetail()" style="padding:10px 20px;background:white;color:#1a1a1a;border:none;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">返回列表</button><button onclick="downloadOrderPDF()" style="padding:10px 20px;background:#333;color:white;border:1px solid #555;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">下載 PDF</button><button onclick="copyOrderDetail(' + o.id + ')" style="padding:10px 20px;background:#333;color:white;border:1px solid #555;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">複製轉發</button></div>';
         }
-        v.innerHTML += '<div class="form-container" style="max-width:100%;padding-top:0;"><input type="hidden" id="orderDetailId" value="' + o.id + '">';
+        v.innerHTML += '<div class="form-container" style="max-width:100%;padding-top:0;background:transparent;box-shadow:none;"><input type="hidden" id="orderDetailId" value="' + o.id + '">';
         // 店鋪資料（居中顯示）
         v.innerHTML += '<div style="text-align:center;margin-bottom:20px;padding:20px;background:#fafafa;border-radius:10px;">';
         if (shopLogo) { v.innerHTML += '<img src="' + shopLogo + '" style="max-width:60px;max-height:60px;object-fit:contain;margin-bottom:8px;"><br>'; }
