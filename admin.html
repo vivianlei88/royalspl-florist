@@ -28,6 +28,43 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+    <!-- 管理員登入函數（放在head確保一定能執行） -->
+    <script>
+    function doAdminLogin() {
+        console.log('doAdminLogin called');
+        try {
+            var userEl = document.getElementById('loginUser');
+            var passEl = document.getElementById('loginPass');
+            if (!userEl || !passEl) {
+                alert('登入表單未載入完成，請刷新頁面重試');
+                return;
+            }
+            var user = userEl.value.trim();
+            var pass = passEl.value;
+            console.log('Login attempt:', user);
+            if (user === 'admin' && pass === 'royalspl2024') {
+                localStorage.setItem('royalspl_admin', 'true');
+                var loginPage = document.getElementById('loginPage');
+                var adminPage = document.getElementById('adminPage');
+                if (loginPage) loginPage.style.display = 'none';
+                if (adminPage) adminPage.style.display = 'block';
+                if (typeof switchPage === 'function') switchPage('analytics');
+                if (typeof startVisitorTracking === 'function') startVisitorTracking();
+                if (typeof startChatTracking === 'function') startChatTracking();
+                if (typeof startOrderTracking === 'function') startOrderTracking();
+                if (typeof loadGlobalShopInfo === 'function') loadGlobalShopInfo();
+                console.log('Login success');
+            } else {
+                var errorEl = document.getElementById('loginError');
+                if (errorEl) errorEl.style.display = 'block';
+                console.log('Login failed: wrong password');
+            }
+        } catch(e) {
+            console.error('Login error:', e);
+            alert('登入出錯: ' + e.message);
+        }
+    }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="js/order-pdf.js"></script>
@@ -6162,14 +6199,25 @@ async function saveProduct() {
         
         if (isOAuthCallback) {
             console.log('OAuth callback detected, waiting for session...');
-            // 等待 Supabase 處理回調
-            setTimeout(function() {
+            // 等待 Supabase 處理回調，重試3次
+            var retryCount = 0;
+            function tryAuth() {
                 checkGoogleAuth().then(function(loggedIn) {
-                    if (!loggedIn) {
-                        console.log('OAuth callback login failed');
+                    if (loggedIn) {
+                        console.log('OAuth login success');
+                        // 清除URL中的hash，避免刷新時重複處理
+                        history.replaceState(null, '', window.location.pathname);
+                    } else if (retryCount < 3) {
+                        retryCount++;
+                        console.log('OAuth retry ' + retryCount);
+                        setTimeout(tryAuth, 1500);
+                    } else {
+                        console.log('OAuth callback login failed after retries');
+                        alert('Google 登入失敗，請重試或使用帳號密碼登入');
                     }
                 });
-            }, 1000);
+            }
+            setTimeout(tryAuth, 1500);
         } else {
             // 正常頁面加載，檢查登錄狀態
             checkGoogleAuth().then(function(loggedIn) {
@@ -6184,23 +6232,6 @@ async function saveProduct() {
         }
     });
 
-    // 管理員登入函數（放在這裡確保一定能執行）
-    function doAdminLogin() {
-        var user = document.getElementById('loginUser').value.trim();
-        var pass = document.getElementById('loginPass').value;
-        if (user === 'admin' && pass === 'royalspl2024') {
-            localStorage.setItem('royalspl_admin', 'true');
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('adminPage').style.display = 'block';
-            if (typeof switchPage === 'function') switchPage('analytics');
-            if (typeof startVisitorTracking === 'function') startVisitorTracking();
-            if (typeof startChatTracking === 'function') startChatTracking();
-            if (typeof startOrderTracking === 'function') startOrderTracking();
-            if (typeof loadGlobalShopInfo === 'function') loadGlobalShopInfo();
-        } else {
-            document.getElementById('loginError').style.display = 'block';
-        }
-    }
     </script>
         <script>
         const { useState, useEffect, useRef, useCallback, useMemo } = React;
