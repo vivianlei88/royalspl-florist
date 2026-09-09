@@ -3133,14 +3133,14 @@
             today.setHours(0, 0, 0, 0);
             var todayStr = today.toISOString();
 
-            // 今日访客（按session_id去重）
-            var visitorRes = await supabaseClient.from('visitor_logs').select('session_id').gte('created_at', todayStr);
-            var uniqueSessions = new Set();
+            // 今日访客（按ip去重）
+            var visitorRes = await supabaseClient.from('visitor_logs').select('ip').gte('created_at', todayStr);
+            var uniqueIps = new Set();
             if (visitorRes.data) {
-                visitorRes.data.forEach(function(v) { if (v.session_id) uniqueSessions.add(v.session_id); });
+                visitorRes.data.forEach(function(v) { if (v.ip) uniqueIps.add(v.ip); });
             }
             var todayVisitorsEl = document.getElementById('todayVisitors');
-            if (todayVisitorsEl) todayVisitorsEl.textContent = uniqueSessions.size;
+            if (todayVisitorsEl) todayVisitorsEl.textContent = uniqueIps.size;
 
             // 今日订单和成交金额
             var orderRes = await supabaseClient.from('orders').select('id,total_amount,status').gte('created_at', todayStr);
