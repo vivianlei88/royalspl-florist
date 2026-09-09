@@ -4927,36 +4927,6 @@ async function saveProduct() {
         hideMobileAddOrderForm();
         loadOrders();
     }
-        var deliveryFee = areaFees[area] || 90;
-        if (area === 'tier1' && subtotal >= 500) { deliveryFee = 0; }
-        var data = {
-            order_code: 'RS' + Date.now().toString().slice(-8),
-            customer_name: customerName,
-            customer_phone: customerPhone,
-            customer_email: customerEmail,
-            recipient_name: recipientName,
-            recipient_phone: recipientPhone,
-            recipient_address: address,
-            delivery_date: document.getElementById('mDeliveryDate').value,
-            delivery_time_slot: document.getElementById('mDeliveryTime').value,
-            card_message: document.getElementById('mCardMessage').value.trim(),
-            remarks: document.getElementById('mRemarks').value.trim(),
-            payment_method: document.getElementById('mPaymentMethod').value,
-            subtotal: subtotal,
-            delivery_fee: deliveryFee,
-            total_amount: subtotal + deliveryFee,
-            delivery_area: area,
-            product_names: productNames.join('|'),
-            product_images: productImages.join('|'),
-            items: JSON.stringify(items),
-            status: document.getElementById('mOrderStatus').value
-        };
-        var result = await supabaseClient.from('orders').insert(data);
-        if (result.error) { showToast('保存失敗：' + result.error.message); return; }
-        showToast('訂單已創建，總計 HK$' + (subtotal + deliveryFee));
-        hideMobileAddOrderForm();
-        loadOrders();
-    }
     function toggleOrderProduct(id) { var idx = selectedOrderProducts.indexOf(id); if (idx > -1) { selectedOrderProducts.splice(idx, 1); } else { selectedOrderProducts.push(id); } }
     async function saveNewOrder() {
         var name = document.getElementById('orderRecipientName').value.trim();
