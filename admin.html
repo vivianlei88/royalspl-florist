@@ -442,6 +442,20 @@
                 <span id="chatBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#ff4444;color:white;font-size:10px;padding:2px 5px;border-radius:10px;min-width:16px;text-align:center;">0</span>
             </div>
             <span id="userInfo" style="display:none;align-items:center;gap:8px;margin-right:15px;"><img id="userAvatar" src="" style="width:32px;height:32px;border-radius:50%;cursor:pointer;" title=""><span id="userEmail" style="font-size:14px;color:#666;"></span></span><a href="index.html">返回前台</a><a onclick="doLogout()">登出</a></div></div>
+        <!-- 手機端頂部通知欄 -->
+        <div class="mobile-notification-bar" id="mobileNotificationBar" style="display:none;background:#1a1a1a;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333;">
+            <div style="display:flex;align-items:center;gap:15px;">
+                <div style="position:relative;cursor:pointer;" onclick="showNotificationPanel(event)">
+                    <span style="font-size:22px;">🔔</span>
+                    <span id="mobileVisitorBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#ff4444;color:white;font-size:11px;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;font-weight:bold;">0</span>
+                </div>
+                <div style="position:relative;cursor:pointer;" onclick="openChatPanel()">
+                    <span style="font-size:22px;">💬</span>
+                    <span id="mobileChatBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#ff4444;color:white;font-size:11px;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;font-weight:bold;">0</span>
+                </div>
+            </div>
+            <div style="color:white;font-size:14px;font-weight:600;" id="mobileAdminName">管理員</div>
+        </div>
         <!-- 手機端頂部核心入口 -->
         <div class="mobile-top-nav" id="mobileTopNav">
             <div class="mobile-nav-item active" onclick="mobileSwitchPage('analytics')">
@@ -717,6 +731,11 @@
                 }
                 if (userEmail) userEmail.textContent = name || email || '管理員';
             }
+            // 更新手機端管理員名稱
+            const mobileAdminName = document.getElementById('mobileAdminName');
+            if (mobileAdminName) {
+                mobileAdminName.textContent = name || email || '管理員';
+            }
         } catch (e) {
             console.error('載入管理員資料失敗:', e);
         }
@@ -740,15 +759,24 @@
             
             const visitors = data || [];
             
-            // 更新小鈴鐺徽章（只有電腦端有）
+            // 更新小鈴鐺徽章（電腦端和手機端都更新）
             const bell = document.getElementById('visitorBell');
             const badge = document.getElementById('visitorBadge');
+            const mobileBadge = document.getElementById('mobileVisitorBadge');
             if (bell && badge) {
                 if (visitors.length > 0) {
                     badge.style.display = 'block';
                     badge.textContent = visitors.length;
                 } else {
                     badge.style.display = 'none';
+                }
+            }
+            if (mobileBadge) {
+                if (visitors.length > 0) {
+                    mobileBadge.style.display = 'block';
+                    mobileBadge.textContent = visitors.length;
+                } else {
+                    mobileBadge.style.display = 'none';
                 }
             }
 
@@ -811,6 +839,7 @@
             
             const unread = data || [];
             const badge = document.getElementById('chatBadge');
+            const mobileBadge = document.getElementById('mobileChatBadge');
             if (badge) {
                 if (unread.length > 0) {
                     badge.style.display = 'block';
@@ -831,6 +860,14 @@
                     playNotificationSound();
                 } else {
                     badge.style.display = 'none';
+                }
+            }
+            if (mobileBadge) {
+                if (unread.length > 0) {
+                    mobileBadge.style.display = 'block';
+                    mobileBadge.textContent = unread.length > 99 ? '99+' : unread.length;
+                } else {
+                    mobileBadge.style.display = 'none';
                 }
             }
         } catch (e) {
@@ -2792,10 +2829,42 @@
             };
             playDing(880, 0, 0.25); // 叮
             playDing(1100, 0.25, 0.35); // 咚
+            // 震動（手機端）
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+            }
         } catch (e) {
             console.error('播放聲音失敗:', e);
         }
     }
+    // 用戶首次交互後激活音頻（解決手機端自動播放限制）
+    var audioActivated = false;
+    function activateAudioOnInteraction() {
+        if (audioActivated) return;
+        audioActivated = true;
+        try {
+            if (!notificationAudioCtx) {
+                notificationAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (notificationAudioCtx.state === 'suspended') {
+                notificationAudioCtx.resume();
+            }
+            // 播放一個極短的無聲音頻來解鎖
+            var osc = notificationAudioCtx.createOscillator();
+            var gain = notificationAudioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(notificationAudioCtx.destination);
+            gain.gain.value = 0;
+            osc.start();
+            osc.stop(notificationAudioCtx.currentTime + 0.01);
+        } catch (e) {}
+        // 申請瀏覽器通知權限
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+    document.addEventListener('click', activateAudioOnInteraction, { once: true });
+    document.addEventListener('touchstart', activateAudioOnInteraction, { once: true });
 
     // 手機端頁面內彈出提示
     function showMobileAlert(title, message, type) {
@@ -7383,6 +7452,12 @@ function doAdminLogin() {
         }
         .sidebar {
             display: none !important;
+        }
+        .topbar {
+            display: none !important;
+        }
+        .mobile-notification-bar {
+            display: flex !important;
         }
         .main-content {
             margin-left: 0 !important;
