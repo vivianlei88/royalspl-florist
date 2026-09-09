@@ -4448,6 +4448,8 @@ async function saveProduct() {
             v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button><button class="btn btn-primary" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div>';
         }
         v.innerHTML += '<div class="form-container" style="max-width:100%;"><input type="hidden" id="orderDetailId" value="' + o.id + '">';
+        // 商品信息放在最上面
+        v.innerHTML += '<div class="form-group"><label class="form-label">商品</label><div>' + (productHtml || '無產品') + '</div></div>';
         v.innerHTML += '<div style="text-align:center;margin-bottom:20px;">';
         if (shopLogo) { v.innerHTML += '<img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"><br>'; }
         v.innerHTML += '<h2 style="font-size:22px;font-weight:600;">' + shopName + '</h2>';
@@ -4458,7 +4460,6 @@ async function saveProduct() {
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="detailRecipientName" value="' + (o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="detailRecipientPhone" value="' + (o.recipient_phone || '') + '"></div></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">收件人地址</label><input class="form-input" id="detailRecipientAddress" value="' + (o.recipient_address || '') + '"></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div><div class="form-group"><label class="form-label">送貨時段</label><input class="form-input" id="detailDeliveryTimeSlot" value="' + (o.delivery_time_slot || '') + ' ' + (o.delivery_hour || '') + '"></div></div>';
-        v.innerHTML += '<div class="form-group"><label class="form-label">產品</label><div>' + (productHtml || '無產品') + '</div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">心意卡內容</label><textarea class="form-textarea" id="detailCardMessage">' + (o.card_message || '') + '</textarea></div><div class="form-group"><label class="form-label">特別事項</label><textarea class="form-textarea" id="detailRemarks">' + (o.remarks || '') + '</textarea></div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">商品小計</label><input type="number" class="form-input" id="detailSubtotal" value="' + (o.subtotal || 0) + '" readonly></div><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div></div>';
         // 付款信息（轉數快/信用卡）
