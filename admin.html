@@ -4813,10 +4813,12 @@ async function saveProduct() {
         } catch (e) {}
         var names = (o.product_names || '').split('|').filter(Boolean);
         var images = (o.product_images || '').split('|').filter(Boolean);
-        var html = '<div style="font-family:serif;padding:40px;max-width:600px;margin:0 auto;">';
+        var html = '<html><head><title>收據 ' + o.order_code + ' - ' + shopName + '</title></head><body>';
+        html += '<div style="font-family:serif;padding:40px;max-width:600px;margin:0 auto;">';
         if (shopLogo) { html += '<div style="text-align:center;margin-bottom:15px;"><img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"></div>'; }
         html += '<h1 style="text-align:center;border-bottom:3px solid #1E3A5F;padding-bottom:15px;">' + shopName + '</h1>';
-        html += '<p style="text-align:center;">訂單確認書</p>';
+        html += '<p style="text-align:center;font-size:24px;font-weight:bold;margin:10px 0;">收據</p>';
+        html += '<p style="text-align:center;color:#666;">購物收據 / Official Receipt</p>';
         html += '<table style="width:100%;margin:20px 0;"><tr><td><b>訂單編號：</b>' + o.order_code + '</td><td><b>送貨日期：</b>' + (o.delivery_date || '-') + '</td></tr>';
         html += '<tr><td><b>收件人：</b>' + (o.recipient_name || '-') + '</td><td><b>電話：</b>' + (o.recipient_phone || '-') + '</td></tr>';
         html += '<tr><td colspan="2"><b>地址：</b>' + (o.recipient_address || '-') + '</td></tr></table>';
@@ -4833,7 +4835,7 @@ async function saveProduct() {
         html += '<table style="width:50%;margin-left:auto;margin-top:15px;"><tr><td>運費：</td><td style="text-align:right;">HK$' + (o.delivery_fee || 0) + '</td></tr>';
         html += '<tr style="font-size:20px;font-weight:bold;"><td>總計：</td><td style="text-align:right;">HK$' + (o.total_amount || 0) + '</td></tr></table>';
         if (o.card_message) { html += '<div style="background:#FFF8E1;padding:15px;border-left:4px solid #FFC107;margin:20px 0;"><b>心意卡：</b>' + o.card_message + '</div>'; }
-        html += '<p style="text-align:center;margin-top:30px;color:#666;">感謝您的訂購！</p></div>';
+        html += '<p style="text-align:center;margin-top:30px;color:#666;">感謝您的訂購！</p></div></body></html>';
         var w = window.open('', '_blank');
         w.document.write(html);
         w.document.close();
