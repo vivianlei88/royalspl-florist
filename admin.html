@@ -3486,7 +3486,13 @@
         <script>
     // ==================== 商品管理 ====================
     function renderProductsPage(c) {
-        c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;"> 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
+        var isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            // 手機端：只保留搜尋和新增商品
+            c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row" style="flex-wrap:wrap;gap:10px;"><h2 class="page-title" style="margin:0;font-size:22px;width:100%;">商品管理</h2><input type="text" class="products-search" id="productSearch" placeholder="搜尋商品名稱..." oninput="filterProducts()" style="flex:1;min-width:0;"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
+        } else {
+            c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;"> 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
+        }
         loadProducts();
     }
     function showAddForm() {
@@ -3898,16 +3904,62 @@ async function saveProduct() {
     function renderProductsTable(list) {
         var c = document.getElementById('productsTable');
         if (!c) return;
-        var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAll" onchange="toggleCheckAll()"></th><th>圖片</th><th>SKU</th><th>名稱</th><th>價格</th><th>庫存</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
-        for (var i = 0; i < list.length; i++) {
-            var p = list[i];
-            var img = p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '無圖';
-            var sku = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
-            var eye = p.is_active !== false ? '顯示' : '隱藏';
-            h += '<tr onclick="showEditFormById(' + p.id + ')"><td class="checkbox-col" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><span class="product-name-cell"><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></span></td><td>HK$' + p.price + '</td><td>' + p.stock + '</td><td onclick="event.stopPropagation()"><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td onclick="event.stopPropagation()"><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
+        var isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            // 手機端：卡片式列表（左圖、中間名稱+價格+狀態、右側⋯）
+            var h = '<div style="padding:0 15px;">';
+            h += '<div style="font-size:14px;color:#999;margin:10px 0;">產品：' + list.length + '</div>';
+            for (var i = 0; i < list.length; i++) {
+                var p = list[i];
+                var img = p.image_url ? p.image_url : '';
+                var stockText = p.stock === '現貨' ? '有現貨' : '預訂';
+                var stockColor = p.stock === '現貨' ? '#10b981' : '#f59e0b';
+                h += '<div onclick="showEditFormById(' + p.id + ')" style="display:flex;align-items:center;gap:15px;padding:15px 0;border-bottom:1px solid #eee;cursor:pointer;">';
+                h += '<div style="width:70px;height:70px;border-radius:8px;overflow:hidden;background:#f5f5f5;flex-shrink:0;">';
+                if (img) { h += '<img src="' + img + '" style="width:100%;height:100%;object-fit:cover;">'; }
+                h += '</div>';
+                h += '<div style="flex:1;min-width:0;">';
+                h += '<div style="font-size:16px;font-weight:600;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (p.name_zh || '') + '</div>';
+                h += '<div style="font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:3px;">HK$' + (p.price || 0) + '</div>';
+                h += '<div style="font-size:13px;color:' + stockColor + ';">' + stockText + '</div>';
+                h += '</div>';
+                h += '<div onclick="event.stopPropagation();showProductMobileMenu(' + p.id + ')" style="font-size:24px;color:#999;padding:10px;cursor:pointer;flex-shrink:0;">⋯</div>';
+                h += '</div>';
+            }
+            h += '</div>';
+            c.innerHTML = h;
+        } else {
+            // 電腦端：表格
+            var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAll" onchange="toggleCheckAll()"></th><th>圖片</th><th>SKU</th><th>名稱</th><th>價格</th><th>庫存</th><th>顯示</th><th>操作</th></tr></thead><tbody>';
+            for (var i = 0; i < list.length; i++) {
+                var p = list[i];
+                var img = p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '無圖';
+                var sku = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
+                var eye = p.is_active !== false ? '顯示' : '隱藏';
+                h += '<tr onclick="showEditFormById(' + p.id + ')"><td class="checkbox-col" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><span class="product-name-cell"><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></span></td><td>HK$' + p.price + '</td><td>' + p.stock + '</td><td onclick="event.stopPropagation()"><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td onclick="event.stopPropagation()"><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
+            }
+            h += '</tbody></table>';
+            c.innerHTML = h;
         }
-        h += '</tbody></table>';
-        c.innerHTML = h;
+    }
+    // 手機端商品操作菜單
+    function showProductMobileMenu(id) {
+        var p = null;
+        for (var i = 0; i < allProducts.length; i++) { if (allProducts[i].id === id) { p = allProducts[i]; break; } }
+        if (!p) return;
+        var menu = document.createElement('div');
+        menu.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:flex-end;';
+        menu.onclick = function(e) { if (e.target === menu) document.body.removeChild(menu); };
+        menu.innerHTML = '<div style="width:100%;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:70vh;overflow-y:auto;">' +
+            '<div style="text-align:center;margin-bottom:15px;"><div style="width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 15px;"></div>' +
+            '<h3 style="font-size:18px;font-weight:700;margin:0;">' + (p.name_zh || '') + '</h3></div>' +
+            '<div style="border-top:1px solid #eee;padding-top:10px;">' +
+            '<div onclick="document.body.removeChild(this.closest(\'div\').parentNode;showEditFormById(' + id + ')" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;border-bottom:1px solid #f5f5f5;">編輯商品</div>' +
+            '<div onclick="document.body.removeChild(this.closest(\'div\').parentNode;window.open(\'product-detail.html?id=' + id + '\',\'_blank\')" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;border-bottom:1px solid #f5f5f5;">查看前台</div>' +
+            '<div onclick="document.body.removeChild(this.closest(\'div\').parentNode;toggleActive(' + id + ',' + (p.is_active !== false) + ')" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;border-bottom:1px solid #f5f5f5;">' + (p.is_active !== false ? '下架' : '上架') + '</div>' +
+            '<div onclick="if(confirm(\'刪除？\')){document.body.removeChild(this.closest(\'div\').parentNode);deleteProduct(' + id + ');}" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;color:#ef4444;">刪除商品</div>' +
+            '</div></div>';
+        document.body.appendChild(menu);
     }
     function toggleCheckAll() { var c = document.getElementById('checkAll'); document.querySelectorAll('.row-check').forEach(function(cb) { cb.checked = c.checked; }); }
     function getCheckedIds() { var ids = []; document.querySelectorAll('.row-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
