@@ -211,7 +211,7 @@
         async function loadFaqs() {
             const { data, error } = await supabaseClient
                 .from('faq_items')
-                .select('question, answer')
+                .select('question, question_en, answer, answer_en')
                 .eq('is_published', true)
                 .order('sort_order', { ascending: true });
 
@@ -229,9 +229,11 @@
             data.forEach(faq => {
                 const div = document.createElement('div');
                 div.className = 'faq-item';
+                const question = faq.question || faq.question_en || '';
+                const answer = faq.answer || faq.answer_en || '';
                 div.innerHTML = `
-                    <div class="question">${faq.question}</div>
-                    <div class="answer">${faq.answer}</div>
+                    <div class="question">${question}</div>
+                    <div class="answer">${answer}</div>
                 `;
                 container.appendChild(div);
             });

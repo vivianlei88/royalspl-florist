@@ -152,18 +152,18 @@
     </style>
     <link rel="stylesheet" href="/css/ai-chat.css">
 
-    <meta name="description" content="RoyalSpl Florist FAQ，Including delivery time、Payment Methods、Flower Care、Return Policyetc.。">
-    <link rel="canonical" href="https://www.royalspl.shop/faq.html">
+    <meta name="description" content="RoyalSpl Florist FAQ - including delivery time, payment methods, flower care tips, return policy and more. Hong Kong online florist with same-day delivery.">
+    <link rel="canonical" href="https://www.royalspl.shop/en/faq.html">
     <meta property="og:title" content="FAQ | RoyalSpl Florist Hong Kong">
-    <meta property="og:description" content="RoyalSpl Florist FAQ，Including delivery time、Payment Methods、Flower Care、Return Policyetc.。">
+    <meta property="og:description" content="RoyalSpl Florist FAQ - including delivery time, payment methods, flower care tips, return policy and more.">
     <meta property="og:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
-    <meta property="og:url" content="https://www.royalspl.shop/faq.html">
+    <meta property="og:url" content="https://www.royalspl.shop/en/faq.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
-    <meta property="og:locale" content="zh_HK">
+    <meta property="og:locale" content="en_US">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="FAQ | RoyalSpl Florist Hong Kong">
-    <meta name="twitter:description" content="RoyalSpl Florist FAQ，Including delivery time、Payment Methods、Flower Care、Return Policyetc.。">
+    <meta name="twitter:description" content="RoyalSpl Florist FAQ - including delivery time, payment methods, flower care tips, return policy and more.">
     <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
 
 <script>
@@ -211,27 +211,29 @@
         async function loadFaqs() {
             const { data, error } = await supabaseClient
                 .from('faq_items')
-                .select('question, answer')
+                .select('question, question_en, answer, answer_en')
                 .eq('is_published', true)
                 .order('sort_order', { ascending: true });
 
             const container = document.getElementById('faqList');
             if (error) {
-                console.error('載入FAQFailed:', error);
-                container.innerHTML = '<div class="empty-state">載入Failed，請稍後再試</div>';
+                console.error('Load FAQ failed:', error);
+                container.innerHTML = '<div class="empty-state">Failed to load, please try again later</div>';
                 return;
             }
             if (!data || data.length === 0) {
-                container.innerHTML = '<div class="empty-state">尚無FAQ</div>';
+                container.innerHTML = '<div class="empty-state">No FAQ available</div>';
                 return;
             }
 
             data.forEach(faq => {
                 const div = document.createElement('div');
                 div.className = 'faq-item';
+                const question = faq.question_en || faq.question || '';
+                const answer = faq.answer_en || faq.answer || '';
                 div.innerHTML = `
-                    <div class="question">${faq.question}</div>
-                    <div class="answer">${faq.answer}</div>
+                    <div class="question">${question}</div>
+                    <div class="answer">${answer}</div>
                 `;
                 container.appendChild(div);
             });

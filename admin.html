@@ -5819,6 +5819,8 @@ async function saveProduct() {
             const [faqs, setFaqs] = useState([]);
             const [question, setQuestion] = useState('');
             const [answer, setAnswer] = useState('');
+            const [questionEn, setQuestionEn] = useState('');
+            const [answerEn, setAnswerEn] = useState('');
             const [editingId, setEditingId] = useState(null);
 
             const loadFaqs = async () => {
@@ -5829,17 +5831,17 @@ async function saveProduct() {
 
             const handleSubmit = async () => {
                 if (!question.trim() || !answer.trim()) return alert('請填寫問題與答案');
-                const payload = { question: question.trim(), answer: answer.trim() };
+                const payload = { question: question.trim(), answer: answer.trim(), question_en: questionEn.trim(), answer_en: answerEn.trim() };
                 if (editingId) {
                     await window.supabaseClient.from('faq_items').update(payload).eq('id', editingId);
                     setEditingId(null);
                 } else {
                     await window.supabaseClient.from('faq_items').insert(payload);
                 }
-                setQuestion(''); setAnswer('');
+                setQuestion(''); setAnswer(''); setQuestionEn(''); setAnswerEn('');
                 loadFaqs();
             };
-            const handleEdit = (faq) => { setEditingId(faq.id); setQuestion(faq.question); setAnswer(faq.answer); };
+            const handleEdit = (faq) => { setEditingId(faq.id); setQuestion(faq.question); setAnswer(faq.answer); setQuestionEn(faq.question_en || ''); setAnswerEn(faq.answer_en || ''); };
             const handleDelete = async (id) => { if (!confirm('確定刪除？')) return; await window.supabaseClient.from('faq_items').delete().eq('id', id); loadFaqs(); };
             const togglePublish = async (id, current) => { await window.supabaseClient.from('faq_items').update({ is_published: !current }).eq('id', id); loadFaqs(); };
 
@@ -5847,9 +5849,17 @@ async function saveProduct() {
                 React.createElement('div', { className: 'page-header' },
                     React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '常見問題管理')
                 ),
-                React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '20px' } },
-                    React.createElement('input', { type: 'text', placeholder: '問題', value: question, onChange: (e) => setQuestion(e.target.value), className: 'form-input', style: { flex: 1 } }),
-                    React.createElement('textarea', { placeholder: '答案', value: answer, onChange: (e) => setAnswer(e.target.value), className: 'form-textarea', style: { flex: 1, minHeight: '60px' } }),
+                React.createElement('div', { style: { background: '#f9f9f9', padding: '15px', borderRadius: '8px', marginBottom: '20px' } },
+                    React.createElement('div', { style: { fontSize: '14px', fontWeight: '600', marginBottom: '10px' } }, '中文'),
+                    React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '15px' } },
+                        React.createElement('input', { type: 'text', placeholder: '問題（中文）', value: question, onChange: (e) => setQuestion(e.target.value), className: 'form-input', style: { flex: 1 } }),
+                        React.createElement('textarea', { placeholder: '答案（中文）', value: answer, onChange: (e) => setAnswer(e.target.value), className: 'form-textarea', style: { flex: 1, minHeight: '60px' } })
+                    ),
+                    React.createElement('div', { style: { fontSize: '14px', fontWeight: '600', marginBottom: '10px' } }, 'English'),
+                    React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '15px' } },
+                        React.createElement('input', { type: 'text', placeholder: 'Question (English)', value: questionEn, onChange: (e) => setQuestionEn(e.target.value), className: 'form-input', style: { flex: 1 } }),
+                        React.createElement('textarea', { placeholder: 'Answer (English)', value: answerEn, onChange: (e) => setAnswerEn(e.target.value), className: 'form-textarea', style: { flex: 1, minHeight: '60px' } })
+                    ),
                     React.createElement('button', { className: 'btn btn-primary', onClick: handleSubmit }, editingId ? '更新' : '新增')
                 ),
                 React.createElement('table', { className: 'data-table' },
@@ -5857,6 +5867,7 @@ async function saveProduct() {
                         React.createElement('tr', null,
                             React.createElement('th', null, '問題'),
                             React.createElement('th', null, '答案'),
+                            React.createElement('th', null, '英文'),
                             React.createElement('th', null, '狀態'),
                             React.createElement('th', null, '操作')
                         )
@@ -5865,6 +5876,7 @@ async function saveProduct() {
                         faqs.map(faq => React.createElement('tr', { key: faq.id },
                             React.createElement('td', null, faq.question),
                             React.createElement('td', null, faq.answer),
+                            React.createElement('td', null, faq.question_en ? '已翻譯' : '未翻譯'),
                             React.createElement('td', null, faq.is_published ? '已發佈' : '草稿'),
                             React.createElement('td', null,
                                 React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => handleEdit(faq), style: { marginRight: '5px' } }, '編輯'),
