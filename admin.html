@@ -725,18 +725,20 @@
             if (error) throw error;
             
             const visitors = data || [];
+            
+            // 更新小鈴鐺徽章（只有電腦端有）
             const bell = document.getElementById('visitorBell');
             const badge = document.getElementById('visitorBadge');
-            if (!bell || !badge) return;
-            
-            if (visitors.length > 0) {
-                badge.style.display = 'block';
-                badge.textContent = visitors.length;
-            } else {
-                badge.style.display = 'none';
+            if (bell && badge) {
+                if (visitors.length > 0) {
+                    badge.style.display = 'block';
+                    badge.textContent = visitors.length;
+                } else {
+                    badge.style.display = 'none';
+                }
             }
 
-            // 檢查新訪客並發出提醒
+            // 檢查新訪客並發出提醒（手機端和電腦端都執行）
             var newVisitors = [];
             for (var i = 0; i < visitors.length; i++) {
                 var v = visitors[i];
