@@ -12,12 +12,14 @@ export async function onRequestPost(context) {
         
         let systemPrompt = '';
         let language = 'auto';
+        let aiModel = '@cf/google/gemma-2-9b-it';
         try {
-            const resp = await fetch(SUPABASE_URL + '/rest/v1/ai_chat_settings?select=system_prompt,language,is_active&limit=1', { headers });
+            const resp = await fetch(SUPABASE_URL + '/rest/v1/ai_chat_settings?select=system_prompt,language,is_active,model&limit=1', { headers });
             const settings = await resp.json();
             if (settings && settings.length > 0) {
                 systemPrompt = settings[0].system_prompt || '';
                 language = settings[0].language || 'auto';
+                aiModel = settings[0].model || '@cf/google/gemma-2-9b-it';
                 if (settings[0].is_active === false) {
                     return Response.json({ reply: '抱歉，AI 客服目前未啟用，請點擊「轉人工客服」聯繫我們。' });
                 }
@@ -202,16 +204,20 @@ export async function onRequestPost(context) {
             }
         }
         
-        // 使用Cloudflare Workers AI（免费额度）- 作为 fallback
-        const models = [
+        // 使用Cloudflare Workers AI（免费额度）
+        // 优先使用后台设置的模型，然后是备用模型
+        const fallbackModels = [
             '@cf/google/gemma-2-9b-it',
             '@cf/google/gemma-7b-it',
             '@cf/meta/llama-3.1-8b-instruct',
             '@cf/mistral/mistral-7b-instruct-v0.1'
         ];
+        // 确保设置的模型在列表第一位，去重
+        const models = [aiModel, ...fallbackModels.filter(m => m !== aiModel)];
         
         let aiResponse = null;
         let lastError = null;
+        let usedModel = '';
         
         for (let i = 0; i < models.length; i++) {
             try {
@@ -223,6 +229,7 @@ export async function onRequestPost(context) {
                 });
                 if (aiResponse && (aiResponse.response || (aiResponse.choices && aiResponse.choices[0]))) {
                     console.log('模型成功:', models[i]);
+                    usedModel = models[i];
                     break;
                 }
             } catch (e) {
@@ -250,7 +257,8 @@ export async function onRequestPost(context) {
         if (reply) {
             return Response.json({ 
                 reply: reply,
-                usage: aiResponse.usage
+                usage: aiResponse.usage,
+                model: usedModel
             });
         } else {
             return Response.json({ error: 'AI 回复失败', raw: aiResponse }, { status: 500 });

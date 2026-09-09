@@ -20,7 +20,8 @@ export async function onRequestGet(context) {
             whatsapp_number: '85265036907',
             transfer_keywords: '人工,客服,真人,投诉,退款,退貨,投訴,#人工',
             max_fail_count: 2,
-            is_active: true
+            is_active: true,
+            model: '@cf/google/gemma-2-9b-it'
         });
     } catch(err) {
         return Response.json({ error: err.message }, { status: 500 });
