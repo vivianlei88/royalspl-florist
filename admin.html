@@ -4483,7 +4483,16 @@ async function saveProduct() {
         v.innerHTML += '<div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div>';
         v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
     }
-    function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
+    function closeOrderDetail() { 
+        var v = document.getElementById('orderDetailView');
+        if (v) {
+            v.style.display = 'none';
+            v.innerHTML = '';
+        }
+        var t = document.getElementById('ordersTable');
+        if (t) t.style.display = 'block';
+        loadOrders(); 
+    }
     
     // 手機端顯示訂單操作菜單
     function showMobileOrderActions() {
@@ -7006,6 +7015,13 @@ function doAdminLogin() {
     }
     .mobile-top-nav {
         display: none;
+    }
+    #orderDetailView[style*="display:none"] {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
     }
     @keyframes mobileAlertPop {
         0% { transform: scale(0.8); opacity: 0; }
