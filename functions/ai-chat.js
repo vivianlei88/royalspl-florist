@@ -134,11 +134,17 @@ export async function onRequestPost(context) {
             temperature: 0.7
         });
         
-        console.log('AI response:', JSON.stringify(aiResponse));
-        
+        // 兼容两种返回格式：Cloudflare标准格式(response)和OpenAI格式(choices)
+        let reply = '';
         if (aiResponse && aiResponse.response) {
+            reply = aiResponse.response;
+        } else if (aiResponse && aiResponse.choices && aiResponse.choices[0] && aiResponse.choices[0].message) {
+            reply = aiResponse.choices[0].message.content;
+        }
+        
+        if (reply) {
             return Response.json({ 
-                reply: aiResponse.response,
+                reply: reply,
                 usage: aiResponse.usage
             });
         } else {
