@@ -2988,6 +2988,21 @@
 
     function renderAnalyticsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">網站數據分析</h2><a class="btn btn-primary" href="https://lookerstudio.google.com/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/ZdB8F" target="_blank">在 Looker Studio 中打開</a></div>';
+        // 今日数据卡片
+        c.innerHTML += '<div style="display:flex;gap:15px;margin-bottom:15px;flex-wrap:wrap;">' +
+            '<div style="flex:1;min-width:180px;background:#1A1A1A;color:white;padding:18px;border-radius:10px;">' +
+            '<div style="font-size:12px;opacity:0.7;margin-bottom:5px;">今日訪客</div>' +
+            '<div style="font-size:28px;font-weight:700;" id="todayVisitors">--</div>' +
+            '</div>' +
+            '<div style="flex:1;min-width:180px;background:#1A1A1A;color:white;padding:18px;border-radius:10px;">' +
+            '<div style="font-size:12px;opacity:0.7;margin-bottom:5px;">今日成交量</div>' +
+            '<div style="font-size:28px;font-weight:700;" id="todayOrders">--</div>' +
+            '</div>' +
+            '<div style="flex:1;min-width:180px;background:#1A1A1A;color:white;padding:18px;border-radius:10px;">' +
+            '<div style="font-size:12px;opacity:0.7;margin-bottom:5px;">今日成交金額</div>' +
+            '<div style="font-size:28px;font-weight:700;" id="todaySales">--</div>' +
+            '</div>' +
+            '</div>';
         c.innerHTML += '<div class="analytics-section" style="padding:0;overflow:hidden;">';
         c.innerHTML += '<div class="analytics-tabs" style="background:white;border-radius:8px 8px 0 0;width:100%;overflow:hidden;padding:10px;display:flex;gap:10px;border-bottom:1px solid #eee;">';
         c.innerHTML += '<button class="analytics-tab active" style="color:white;background:#1A1A1A;border:1px solid #1A1A1A;border-radius:6px;padding:8px 20px;cursor:pointer;font-size:14px;font-weight:600;" onclick="switchAnalyticsTab(0)">瀏覽量</button>';
@@ -3001,6 +3016,47 @@
         c.innerHTML += '<div class="analytics-tab-content" id="analyticsTab3"><iframe class="ga4-iframe" src="https://datastudio.google.com/embed/reporting/caa44a7f-c3a1-4231-819e-19af89bb9bdf/page/p_vnaicps46d" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>';
         c.innerHTML += '</div>';
         // 標籤樣式已內聯設置，無需額外處理
+        // 加载今日数据
+        loadTodayStats();
+    }
+
+    // 加载今日统计数据
+    async function loadTodayStats() {
+        try {
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            var todayStr = today.toISOString();
+
+            // 今日访客（按session_id去重）
+            var visitorRes = await supabaseClient.from('visitor_logs').select('session_id').gte('created_at', todayStr);
+            var uniqueSessions = new Set();
+            if (visitorRes.data) {
+                visitorRes.data.forEach(function(v) { if (v.session_id) uniqueSessions.add(v.session_id); });
+            }
+            var todayVisitorsEl = document.getElementById('todayVisitors');
+            if (todayVisitorsEl) todayVisitorsEl.textContent = uniqueSessions.size;
+
+            // 今日订单和成交金额
+            var orderRes = await supabaseClient.from('orders').select('id,total_amount,status').gte('created_at', todayStr);
+            var todayOrderCount = 0;
+            var todaySalesAmount = 0;
+            if (orderRes.data) {
+                orderRes.data.forEach(function(o) {
+                    todayOrderCount++;
+                    var status = o.status || '';
+                    // 只统计已付款和已完成的订单金额
+                    if (status === 'paid' || status === 'completed') {
+                        todaySalesAmount += parseFloat(o.total_amount) || 0;
+                    }
+                });
+            }
+            var todayOrdersEl = document.getElementById('todayOrders');
+            if (todayOrdersEl) todayOrdersEl.textContent = todayOrderCount;
+            var todaySalesEl = document.getElementById('todaySales');
+            if (todaySalesEl) todaySalesEl.textContent = 'HK$' + todaySalesAmount.toFixed(0);
+        } catch (e) {
+            console.error('加载今日数据失败:', e);
+        }
     }
     function switchAnalyticsTab(index) {
         document.querySelectorAll('.analytics-tab').forEach(function(tab, i) {
