@@ -135,22 +135,17 @@
         /* 预览区域 */
         .preview-area {
             flex: 1;
-            background: #e8e8e8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow: auto;
+            background: #fff;
+            overflow: hidden;
+            padding: 0;
         }
         .preview-frame {
             background: #fff;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            border-radius: 8px;
             overflow: hidden;
             transition: all 0.3s;
         }
-        .preview-frame.desktop { width: 100%; height: 100%; max-width: 1400px; }
-        .preview-frame.mobile { width: 375px; height: 667px; }
+        .preview-frame.desktop { width: 100%; height: 100%; }
+        .preview-frame.mobile { width: 375px; height: 667px; margin: 20px auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border-radius: 8px; }
         .preview-frame iframe {
             width: 100%;
             height: 100%;
@@ -406,6 +401,7 @@
     var currentDevice = 'desktop';
     var currentLang = 'zh';
     var currentProductId = null;
+    var currentBlogId = null;
     var productsList = [];
     var homepageData = {};
     var aiTranslatedData = {};
@@ -496,6 +492,8 @@
         var prefix = currentLang === 'en' ? '/en/' : '/';
         if (currentPage === 'product-detail' && currentProductId) {
             iframe.src = prefix + 'product-detail.html?id=' + currentProductId;
+        } else if (currentPage === 'blog' && currentBlogId) {
+            iframe.src = prefix + 'blog-detail.html?id=' + currentBlogId;
         } else {
             iframe.src = prefix + currentPage + '.html';
         }
@@ -685,6 +683,12 @@
             renderHomepageEditor(panel);
         } else if (currentPage === 'product-detail') {
             renderProductDetailEditor(panel);
+        } else if (currentPage === 'blog') {
+            renderBlogEditor(panel);
+        } else if (currentPage === 'products') {
+            panel.innerHTML = '<div class="panel-section"><div class="panel-title">商品列表頁</div><div style="font-size:13px;color:#666;line-height:1.8;">• 此頁面顯示所有商品分類<br>• 切換「中文/EN」可預覽對應語言<br>• 點擊「AI 翻譯」可批量翻譯所有分類名稱和描述<br>• 分類的詳細設置請在後台「商品分類」中編輯</div></div>';
+        } else if (currentPage === 'faq') {
+            panel.innerHTML = '<div class="panel-section"><div class="panel-title">常見問題頁</div><div style="font-size:13px;color:#666;line-height:1.8;">• 此頁面顯示所有常見問題<br>• 切換「中文/EN」可預覽對應語言<br>• 點擊「AI 翻譯」可批量翻譯所有問題和答案<br>• FAQ的詳細設置請在後台「常見問題」中編輯</div></div>';
         } else {
             panel.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:40px;margin-bottom:10px;"></p><p>此頁面暫不支持可視化編輯</p><p style="font-size:12px;margin-top:10px;">請在後台對應頁面進行設置</p></div>';
         }
@@ -710,6 +714,53 @@
             '• 切換「電腦版/手機版」可預覽不同設備的顯示效果' +
             '</div>' +
             '</div>';
+    }
+
+    // 渲染部落格编辑器
+    async function renderBlogEditor(panel) {
+        panel.innerHTML = '<div class="panel-section"><div class="panel-title">部落格文章</div><div style="text-align:center;padding:20px;color:#999;">載入中...</div></div>';
+        
+        try {
+            var res = await supabaseClient.from('blog_posts').select('id,title,title_en,is_published').order('created_at', { ascending: false }).limit(50);
+            var blogs = res.data || [];
+            
+            var optionsHtml = '<option value="">請選擇文章</option>';
+            blogs.forEach(function(b) {
+                var selected = b.id === currentBlogId ? 'selected' : '';
+                optionsHtml += '<option value="' + b.id + '" ' + selected + '>' + (b.title || '無標題') + '</option>';
+            });
+            
+            var currentBlog = blogs.find(function(b) { return b.id === currentBlogId; });
+            
+            panel.innerHTML =
+                '<div class="panel-section">' +
+                '<div class="panel-title">部落格文章</div>' +
+                '<div class="form-group">' +
+                '<label class="form-label">選擇要翻譯的文章</label>' +
+                '<select class="form-input" onchange="selectBlog(this.value)">' + optionsHtml + '</select>' +
+                '</div>' +
+                (currentBlog ? 
+                    '<div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-top:15px;">' +
+                    '<div style="font-size:13px;color:#666;margin-bottom:5px;">當前文章</div>' +
+                    '<div style="font-size:14px;font-weight:600;">' + escapeHtml(currentBlog.title || '無標題') + '</div>' +
+                    '<div style="font-size:12px;color:#999;margin-top:5px;">ID: ' + currentBlog.id + '</div>' +
+                    '<div style="font-size:12px;color:' + (currentBlog.title_en ? '#52C41A' : '#FAAD14') + ';margin-top:5px;">' + (currentBlog.title_en ? '已有英文翻譯' : '尚未翻譯') + '</div>' +
+                    '</div>' +
+                    '<div style="font-size:13px;color:#666;line-height:1.8;margin-top:15px;">• 選擇文章後，點擊上方「AI 翻譯」按鈕<br>• AI會自動翻譯文章標題和內容<br>• 翻譯結果可編輯，確認後保存</div>'
+                : 
+                    '<div style="font-size:13px;color:#666;line-height:1.8;margin-top:15px;">• 請先選擇要翻譯的文章<br>• 選擇後點擊上方「AI 翻譯」按鈕</div>'
+                ) +
+                '</div>';
+        } catch (e) {
+            panel.innerHTML = '<div class="panel-section"><div class="panel-title">部落格文章</div><div style="color:#f5576c;font-size:13px;">載入失敗: ' + e.message + '</div></div>';
+        }
+    }
+
+    // 选择部落格文章
+    function selectBlog(id) {
+        currentBlogId = id ? parseInt(id) : null;
+        renderEditorPanel();
+        updatePreview();
     }
 
     // 渲染首页编辑器
@@ -1097,6 +1148,45 @@
                         ];
                     }
                 }
+            } else if (currentPage === 'products') {
+                // 商品列表页：翻译所有分类名称和描述
+                translateType = 'categories';
+                var catRes = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order');
+                if (catRes.data && catRes.data.length > 0) {
+                    catRes.data.forEach(function(cat) {
+                        items.push({ label: '分類名稱: ' + (cat.name_zh || ''), original: cat.name_zh || '', field: 'name_en', table: 'categories', id: cat.id });
+                        if (cat.description) {
+                            items.push({ label: '分類描述: ' + (cat.name_zh || ''), original: cat.description || '', field: 'description_en', table: 'categories', id: cat.id });
+                        }
+                    });
+                }
+            } else if (currentPage === 'faq') {
+                // FAQ页：翻译所有问题和答案
+                translateType = 'faq';
+                var faqRes = await supabaseClient.from('faq_items').select('*').order('sort_order');
+                if (faqRes.data && faqRes.data.length > 0) {
+                    faqRes.data.forEach(function(faq) {
+                        items.push({ label: '問題: ' + (faq.question || '').substring(0, 30), original: faq.question || '', field: 'question_en', table: 'faq_items', id: faq.id });
+                        if (faq.answer) {
+                            items.push({ label: '答案: ' + (faq.question || '').substring(0, 30), original: faq.answer || '', field: 'answer_en', table: 'faq_items', id: faq.id });
+                        }
+                    });
+                }
+            } else if (currentPage === 'blog') {
+                // 部落格页：需要先选择文章
+                if (!currentBlogId) {
+                    content.innerHTML = '<p style="color:#f5576c;">請先在左側選擇要翻譯的部落格文章</p>';
+                    return;
+                }
+                translateType = 'blog';
+                var blogRes = await supabaseClient.from('blog_posts').select('*').eq('id', currentBlogId).limit(1);
+                if (blogRes.data && blogRes.data.length > 0) {
+                    var blog = blogRes.data[0];
+                    items = [
+                        { label: '文章標題', original: blog.title || '', field: 'title_en', table: 'blog_posts', id: blog.id },
+                        { label: '文章內容', original: blog.content || '', field: 'content_en', table: 'blog_posts', id: blog.id }
+                    ];
+                }
             } else {
                 // 其他页面：提示暂不支持
                 content.innerHTML = '<p style="color:#f5576c;">此頁面暫不支持AI翻譯</p>';
@@ -1161,6 +1251,9 @@
             var homepageUpdates = {};
             var cardUpdates = {};
             var productUpdates = {};
+            var categoryUpdates = {};
+            var faqUpdates = {};
+            var blogUpdates = {};
 
             for (var i = 0; i < items.length; i++) {
                 var item = items[i];
@@ -1176,6 +1269,14 @@
                     cardUpdates[item.id][item.field] = value;
                 } else if (item.table === 'products') {
                     productUpdates[item.field] = value;
+                } else if (item.table === 'categories') {
+                    if (!categoryUpdates[item.id]) categoryUpdates[item.id] = {};
+                    categoryUpdates[item.id][item.field] = value;
+                } else if (item.table === 'faq_items') {
+                    if (!faqUpdates[item.id]) faqUpdates[item.id] = {};
+                    faqUpdates[item.id][item.field] = value;
+                } else if (item.table === 'blog_posts') {
+                    blogUpdates[item.field] = value;
                 }
             }
 
@@ -1207,6 +1308,21 @@
                         break;
                     }
                 }
+            }
+
+            // 保存分类
+            for (var catId in categoryUpdates) {
+                await supabaseClient.from('categories').update(categoryUpdates[catId]).eq('id', parseInt(catId));
+            }
+
+            // 保存FAQ
+            for (var faqId in faqUpdates) {
+                await supabaseClient.from('faq_items').update(faqUpdates[faqId]).eq('id', parseInt(faqId));
+            }
+
+            // 保存部落格
+            if (Object.keys(blogUpdates).length > 0 && currentBlogId) {
+                await supabaseClient.from('blog_posts').update(blogUpdates).eq('id', currentBlogId);
             }
 
             closeAIModal();
