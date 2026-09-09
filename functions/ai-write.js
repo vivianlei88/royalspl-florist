@@ -36,7 +36,7 @@ export async function onRequestPost(context) {
         }
         
         // 使用Cloudflare Workers AI（免费额度）
-        const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+        const aiResponse = await context.env.AI.run('@cf/google/gemma-4-26b-a4b-it', {
             messages: [{ role: 'user', content: prompt }],
             max_tokens: 1500,
             temperature: 0.7

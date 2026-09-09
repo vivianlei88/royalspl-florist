@@ -12,7 +12,7 @@ export async function onRequest(context) {
     async function translateText(text) {
         if (!text || text.trim() === '') return '';
         try {
-            const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+            const aiResponse = await context.env.AI.run('@cf/google/gemma-4-26b-a4b-it', {
                 messages: [{
                     role: 'user',
                     content: '把以下繁體中文翻譯成自然流暢的英文，用於香港花店電商網站。只輸出翻譯結果，不要解釋：\n\n' + text
