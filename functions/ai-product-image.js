@@ -2,14 +2,6 @@ export async function onRequestPost(context) {
     try {
         const { imageUrl, imageBase64, existingData, userPrompt } = await context.request.json();
         
-        const API_KEY = context.env.DOUBAO_SEED_2_0_MINI_API_KEY;
-        const MODEL_ID = 'doubao-seed-2-0-mini-260428';
-        const BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3';
-        
-        if (!API_KEY) {
-            return Response.json({ error: 'AI 服务未配置' }, { status: 500 });
-        }
-        
         if (!imageUrl && !imageBase64) {
             return Response.json({ error: '请先上传商品图片' }, { status: 400 });
         }
@@ -35,31 +27,23 @@ export async function onRequestPost(context) {
 ${existingData ? '已有信息参考：' + JSON.stringify(existingData) : ''}
 ${userPrompt ? '用户特别要求：' + userPrompt : ''}`;
         
-        const resp = await fetch(`${BASE_URL}/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-                model: MODEL_ID,
-                messages: [
-                    {
-                        role: 'user',
-                        content: [
-                            { type: 'image_url', image_url: imageContent },
-                            { type: 'text', text: prompt }
-                        ]
-                    }
-                ],
-                max_tokens: 1000,
-                temperature: 0.5
-            })
+        // 使用Cloudflare Workers AI视觉模型（免费额度）
+        const aiResponse = await context.env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+            messages: [
+                {
+                    role: 'user',
+                    content: [
+                        { type: 'image_url', image_url: imageContent },
+                        { type: 'text', text: prompt }
+                    ]
+                }
+            ],
+            max_tokens: 1000,
+            temperature: 0.5
         });
         
-        const data = await resp.json();
-        if (data.choices && data.choices[0]) {
-            let content = data.choices[0].message.content;
+        if (aiResponse && aiResponse.response) {
+            let content = aiResponse.response;
             // 尝试提取JSON
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -72,7 +56,7 @@ ${userPrompt ? '用户特别要求：' + userPrompt : ''}`;
             }
             return Response.json({ success: true, data: null, raw: content });
         }
-        return Response.json({ error: data.error?.message || '识别失败' }, { status: 500 });
+        return Response.json({ error: '识别失败' }, { status: 500 });
     } catch(err) {
         return Response.json({ error: err.message }, { status: 500 });
     }

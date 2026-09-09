@@ -5,36 +5,22 @@ export async function onRequest(context) {
     }
 
     const { type, ids } = await context.request.json();
-    const apiKey = context.env.DOUBAO_SEED_2_0_MINI_API_KEY || context.env.DOUBAO_API_KEY;
     
-    if (!apiKey) {
-        return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500 });
-    }
-
     const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
 
     async function translateText(text) {
         if (!text || text.trim() === '') return '';
         try {
-            const resp = await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + apiKey
-                },
-                body: JSON.stringify({
-                    model: 'doubao-seed-2-0-mini-260428',
-                    messages: [{
-                        role: 'user',
-                        content: '把以下繁體中文翻譯成自然流暢的英文，用於香港花店電商網站。只輸出翻譯結果，不要解釋：\n\n' + text
-                    }],
-                    max_tokens: 2000,
-                    temperature: 0.3
-                })
+            const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+                messages: [{
+                    role: 'user',
+                    content: '把以下繁體中文翻譯成自然流暢的英文，用於香港花店電商網站。只輸出翻譯結果，不要解釋：\n\n' + text
+                }],
+                max_tokens: 2000,
+                temperature: 0.3
             });
-            const data = await resp.json();
-            return data.choices[0].message.content.trim();
+            return (aiResponse.response || text).trim();
         } catch (e) {
             console.error('Translation error:', e);
             return text; // 翻譯失敗返回原文

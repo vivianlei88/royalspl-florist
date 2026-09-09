@@ -2,15 +2,8 @@ export async function onRequestPost(context) {
     try {
         const { message, history, productInfo, pageContext, userEmail, userOrders, imageBase64 } = await context.request.json();
         
-        const API_KEY = context.env.DOUBAO_SEED_2_0_MINI_API_KEY;
-        const MODEL_ID = 'doubao-seed-2-0-mini-260428';
-        const BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3';
         const SUPABASE_URL = context.env.SUPABASE_URL || 'https://gefqlrmozxbgfhxgngtg.supabase.co';
         const SERVICE_KEY = context.env.SUPABASE_SERVICE_ROLE_KEY || context.env.SUPABASE_Secret_keys;
-        
-        if (!API_KEY) {
-            return Response.json({ error: 'AI 服务未配置' }, { status: 500 });
-        }
         
         const headers = {
             'apikey': SERVICE_KEY,
@@ -134,28 +127,20 @@ export async function onRequestPost(context) {
             messages.push({ role: 'user', content: message });
         }
         
-        const resp = await fetch(BASE_URL + '/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + API_KEY
-            },
-            body: JSON.stringify({
-                model: MODEL_ID,
-                messages: messages,
-                max_tokens: 1000,
-                temperature: 0.7
-            })
+        // 使用Cloudflare Workers AI（免费额度）
+        const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+            messages: messages,
+            max_tokens: 1000,
+            temperature: 0.7
         });
         
-        const data = await resp.json();
-        if (data.choices && data.choices[0]) {
+        if (aiResponse && aiResponse.response) {
             return Response.json({ 
-                reply: data.choices[0].message.content,
-                usage: data.usage
+                reply: aiResponse.response,
+                usage: aiResponse.usage
             });
         } else {
-            return Response.json({ error: data.error ? data.error.message : 'AI 回复失败' }, { status: 500 });
+            return Response.json({ error: 'AI 回复失败' }, { status: 500 });
         }
     } catch(err) {
         return Response.json({ error: err.message }, { status: 500 });

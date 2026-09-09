@@ -2,14 +2,6 @@ export async function onRequestPost(context) {
     try {
         const { type, topic, existingContent, language } = await context.request.json();
         
-        const API_KEY = context.env.DOUBAO_SEED_2_0_MINI_API_KEY;
-        const MODEL_ID = 'doubao-seed-2-0-mini-260428';
-        const BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3';
-        
-        if (!API_KEY) {
-            return Response.json({ error: 'AI 服务未配置' }, { status: 500 });
-        }
-        
         const lang = language || 'zh-Hant';
         
         let prompt = '';
@@ -43,25 +35,17 @@ export async function onRequestPost(context) {
                 prompt = `${systemPrompt}\n\n请写一段关于「${topic || ''}」的文案，用繁体中文，简洁优雅。`;
         }
         
-        const resp = await fetch(`${BASE_URL}/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-                model: MODEL_ID,
-                messages: [{ role: 'user', content: prompt }],
-                max_tokens: 1500,
-                temperature: 0.7
-            })
+        // 使用Cloudflare Workers AI（免费额度）
+        const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 1500,
+            temperature: 0.7
         });
         
-        const data = await resp.json();
-        if (data.choices && data.choices[0]) {
-            return Response.json({ success: true, content: data.choices[0].message.content });
+        if (aiResponse && aiResponse.response) {
+            return Response.json({ success: true, content: aiResponse.response });
         }
-        return Response.json({ error: data.error?.message || '生成失败' }, { status: 500 });
+        return Response.json({ error: '生成失败' }, { status: 500 });
     } catch(err) {
         return Response.json({ error: err.message }, { status: 500 });
     }
