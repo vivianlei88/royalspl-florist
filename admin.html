@@ -837,22 +837,42 @@
         var old = document.getElementById('chatPanelModal');
         if (old) old.remove();
         
+        var isMobile = window.innerWidth <= 768;
         var modal = document.createElement('div');
         modal.id = 'chatPanelModal';
-        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
-        modal.innerHTML = '<div style="background:white;border-radius:12px;width:90%;max-width:900px;height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,0.3);overflow:hidden;">' +
-            '<div style="background:#1A1A1A;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;">' +
-            '<span style="font-size:16px;font-weight:600;">💬 客服中心</span>' +
-            '<button onclick="closeChatPanel()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;">×</button></div>' +
-            '<div style="display:flex;flex:1;overflow:hidden;">' +
-            '<div id="chatSessionList" style="width:280px;border-right:1px solid #eee;overflow-y:auto;background:#f9f9f9;">加載中...</div>' +
-            '<div id="chatDetail" style="flex:1;display:flex;flex-direction:column;">' +
-            '<div style="padding:15px;border-bottom:1px solid #eee;background:#f5f5f5;" id="chatSessionInfo">請選擇左側會話</div>' +
-            '<div id="chatMessages" style="flex:1;overflow-y:auto;padding:20px;background:#fafafa;"></div>' +
-            '<div style="padding:15px;border-top:1px solid #eee;display:flex;gap:10px;">' +
-            '<input type="text" id="adminReplyInput" placeholder="輸入人工回覆..." style="flex:1;padding:10px 15px;border:1px solid #ddd;border-radius:8px;font-size:14px;" onkeypress="if(event.key==\'Enter\')sendAdminReply()">' +
-            '<button onclick="sendAdminReply()" style="padding:10px 25px;background:#1A1A1A;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">發送</button></div></div></div></div>';
-        modal.onclick = function(e) { if (e.target === modal) closeChatPanel(); };
+        
+        if (isMobile) {
+            // 手機端：全屏顯示
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:white;z-index:99999;display:flex;flex-direction:column;';
+            modal.innerHTML = '<div style="background:#1A1A1A;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">' +
+                '<span style="font-size:18px;font-weight:700;">💬 客服中心</span>' +
+                '<button onclick="closeChatPanel()" style="background:none;border:none;color:white;font-size:28px;cursor:pointer;line-height:1;padding:0 10px;">×</button></div>' +
+                '<div style="display:flex;flex:1;overflow:hidden;min-height:0;">' +
+                '<div id="chatSessionList" style="width:40%;min-width:120px;border-right:1px solid #eee;overflow-y:auto;background:#f9f9f9;">加載中...</div>' +
+                '<div id="chatDetail" style="flex:1;display:flex;flex-direction:column;min-width:0;">' +
+                '<div style="padding:12px;border-bottom:1px solid #eee;background:#f5f5f5;font-size:14px;" id="chatSessionInfo">請選擇左側會話</div>' +
+                '<div id="chatMessages" style="flex:1;overflow-y:auto;padding:15px;background:#fafafa;"></div>' +
+                '<div style="padding:12px;border-top:1px solid #eee;display:flex;gap:8px;flex-shrink:0;">' +
+                '<input type="text" id="adminReplyInput" placeholder="輸入人工回覆..." style="flex:1;padding:12px 15px;border:1px solid #ddd;border-radius:8px;font-size:16px;" onkeypress="if(event.key==\'Enter\')sendAdminReply()">' +
+                '<button onclick="sendAdminReply()" style="padding:12px 20px;background:#1A1A1A;color:white;border:none;border-radius:8px;cursor:pointer;font-size:16px;font-weight:600;">發送</button></div></div></div>';
+        } else {
+            // 電腦端：彈窗顯示
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+            modal.innerHTML = '<div style="background:white;border-radius:12px;width:90%;max-width:900px;height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,0.3);overflow:hidden;">' +
+                '<div style="background:#1A1A1A;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;">' +
+                '<span style="font-size:16px;font-weight:600;">💬 客服中心</span>' +
+                '<button onclick="closeChatPanel()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;">×</button></div>' +
+                '<div style="display:flex;flex:1;overflow:hidden;">' +
+                '<div id="chatSessionList" style="width:280px;border-right:1px solid #eee;overflow-y:auto;background:#f9f9f9;">加載中...</div>' +
+                '<div id="chatDetail" style="flex:1;display:flex;flex-direction:column;">' +
+                '<div style="padding:15px;border-bottom:1px solid #eee;background:#f5f5f5;" id="chatSessionInfo">請選擇左側會話</div>' +
+                '<div id="chatMessages" style="flex:1;overflow-y:auto;padding:20px;background:#fafafa;"></div>' +
+                '<div style="padding:15px;border-top:1px solid #eee;display:flex;gap:10px;">' +
+                '<input type="text" id="adminReplyInput" placeholder="輸入人工回覆..." style="flex:1;padding:10px 15px;border:1px solid #ddd;border-radius:8px;font-size:14px;" onkeypress="if(event.key==\'Enter\')sendAdminReply()">' +
+                '<button onclick="sendAdminReply()" style="padding:10px 25px;background:#1A1A1A;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">發送</button></div></div></div></div>';
+            modal.onclick = function(e) { if (e.target === modal) closeChatPanel(); };
+        }
+        
         document.body.appendChild(modal);
         loadChatSessions();
     }
