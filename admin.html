@@ -666,17 +666,35 @@
     // ==================== Google 登錄 ====================
     async function googleLogin() {
         try {
-            // 先清除可能存在的前台 session
-            await supabaseClient.auth.signOut();
+            console.log('Google login started');
+            // 先清除可能存在的前台 session，等待完成
+            try {
+                await supabaseClient.auth.signOut();
+                console.log('Signed out existing session');
+            } catch(e) { console.warn('Sign out error:', e); }
+            
+            // 等待一小段时间确保状态清理完成
+            await new Promise(r => setTimeout(r, 300));
+            
+            const redirectUrl = window.location.origin + '/admin.html';
+            console.log('Redirect URL:', redirectUrl);
+            
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + '/admin.html',
+                    redirectTo: redirectUrl,
                     queryParams: { prompt: 'select_account' }
                 }
             });
-            if (error) alert('Google 登錄失敗: ' + error.message);
-        } catch (e) { alert('Google 登錄失敗: ' + e.message); }
+            console.log('OAuth response:', data, error);
+            if (error) {
+                console.error('Google login error:', error);
+                alert('Google 登錄失敗: ' + error.message);
+            }
+        } catch (e) { 
+            console.error('Google login exception:', e);
+            alert('Google 登錄失敗: ' + e.message); 
+        }
     }
 
     async function checkGoogleAuth() {
@@ -685,18 +703,24 @@
             console.log('Admin checkGoogleAuth session:', session ? session.user.email : 'no session');
             if (session && session.user) {
                 const userEmail = session.user.email;
+                console.log('Checking admin permission for:', userEmail);
                 // 查詢管理員表
                 const { data: adminData, error: adminError } = await supabaseClient
                     .from('admin_users')
                     .select('*')
                     .eq('email', userEmail)
                     .limit(1);
-                console.log('Admin check result:', adminData, adminError);
+                console.log('Admin check result - data:', adminData, 'error:', adminError);
+                
                 if (adminError) {
                     console.error('查詢管理員表失敗:', adminError);
-                    // RLS 可能阻止查詢，用 service role 或者直接放鬆驗證
+                    // 查詢失敗，不要登出，提示用戶重試
+                    alert('查詢管理員權限失敗，請刷新頁面重試');
+                    return false;
                 }
+                
                 if (adminData && adminData.length > 0) {
+                    console.log('Admin verified, showing UI');
                     localStorage.setItem('royalspl_admin', 'true');
                     localStorage.setItem('admin_email', userEmail);
                     var googleName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || adminData[0].name || userEmail;
@@ -708,12 +732,15 @@
                     showAdminUI();
                     return true;
                 } else {
+                    console.log('Not an admin:', userEmail);
                     // 不是管理員，登出
                     await supabaseClient.auth.signOut();
                     localStorage.removeItem('royalspl_admin');
                     alert('此帳號 (' + userEmail + ') 沒有管理員權限，請聯繫管理員添加');
                     return false;
                 }
+            } else {
+                console.log('No session found');
             }
         } catch (e) {
             console.error('檢查 Google 登錄狀態失敗:', e);
