@@ -4197,7 +4197,14 @@ async function saveProduct() {
         <script>
     // ==================== 訂單管理 ====================
     function renderOrdersPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="pending_payment">待確認付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>';
+        var isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            // 手機端：簡潔顯示，只保留標題和訂單列表
+            c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>';
+        } else {
+            // 電腦端：完整功能
+            c.innerHTML = '<div class="page-header"><h2 class="page-title">訂單管理</h2><div class="btn-group"><button class="btn btn-secondary" onclick="exportOrdersCSV()">導出 CSV</button><button class="btn btn-primary" onclick="showAddOrderForm()">新增訂單</button></div></div><div class="btn-group" style="margin-bottom:15px;"><select id="orderStatusFilter" onchange="filterOrdersByStatus()" style="padding:8px 12px;border:1px solid #1A1A1A;border-radius:5px;"><option value="all">全部狀態</option><option value="unpaid">未付款</option><option value="pending_payment">待確認付款</option><option value="paid">已付款</option><option value="shipped">已出貨</option></select><button class="btn btn-danger btn-small" onclick="bulkDeleteOrders()">批量刪除</button></div><div id="ordersTable"></div><div id="addOrderFormContainer" style="display:none;"></div><div id="orderDetailView" style="display:none;"></div>';
+        }
         loadOrders();
     }
     async function loadOrders() {
@@ -4417,7 +4424,12 @@ async function saveProduct() {
         var v = document.getElementById('orderDetailView');
         v.style.display = 'block';
         document.getElementById('ordersTable').style.display = 'none';
-        v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button><button class="btn btn-primary" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div>';
+        var isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            v.innerHTML = '<div class="page-header"><h2 class="page-title">訂單詳情</h2><button class="btn btn-secondary" onclick="closeOrderDetail()">返回</button></div>';
+        } else {
+            v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button><button class="btn btn-primary" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div>';
+        }
         v.innerHTML += '<div class="form-container" style="max-width:100%;"><input type="hidden" id="orderDetailId" value="' + o.id + '">';
         v.innerHTML += '<div style="text-align:center;margin-bottom:20px;">';
         if (shopLogo) { v.innerHTML += '<img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;"><br>'; }
