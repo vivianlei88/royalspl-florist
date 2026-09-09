@@ -378,6 +378,97 @@
             '訂閱': 'Subscribe', '節慶場合': 'Occasions'
         };
         function translateTag(tag) { return tagTranslations[tag] || tag; }
+        
+        // 花材名称翻译
+        var flowerTranslations = {
+            '玫瑰': 'Rose', '紅玫瑰': 'Red Rose', '粉玫瑰': 'Pink Rose', '白玫瑰': 'White Rose',
+            '黃玫瑰': 'Yellow Rose', '紫玫瑰': 'Purple Rose', '香檳玫瑰': 'Champagne Rose',
+            '桃紅玫瑰': 'Peach Rose', '庭園玫瑰': 'Garden Rose', '多種玫瑰': 'Mixed Roses',
+            '康乃馨': 'Carnation', '紅康乃馨': 'Red Carnation', '粉康乃馨': 'Pink Carnation',
+            '白康乃馨': 'White Carnation',
+            '滿天星': "Baby's Breath", '繡球': 'Hydrangea', '藍繡球': 'Blue Hydrangea',
+            '粉繡球': 'Pink Hydrangea', '白繡球': 'White Hydrangea', '紫繡球': 'Purple Hydrangea',
+            '桔梗': 'Eustoma', '洋桔梗': 'Eustoma', '紫桔梗': 'Purple Eustoma',
+            '白桔梗': 'White Eustoma', '粉桔梗': 'Pink Eustoma',
+            '百合': 'Lily', '白百合': 'White Lily', '粉百合': 'Pink Lily',
+            '重瓣百合': 'Double Lily', '淡粉重瓣百合': 'Light Pink Double Lily',
+            '鬱金香': 'Tulip', '荷蘭鬱金香': 'Dutch Tulip', '多色鬱金香': 'Multi-color Tulip',
+            '向日葵': 'Sunflower', '蘭花': 'Orchid', '蝴蝶蘭': 'Phalaenopsis Orchid',
+            '胡姬蘭': 'Orchid', '千代蘭': 'Chrysanthemum Orchid',
+            '牡丹': 'Peony', '芍藥': 'Peony', '進口牡丹': 'Imported Peony',
+            '荷花': 'Lotus', '蓮蓬': 'Lotus Pod',
+            '尤加利': 'Eucalyptus', '尤加利葉': 'Eucalyptus Leaves',
+            '飛燕草': 'Delphinium', '風鈴草': 'Canterbury Bells', '鼠尾草': 'Sage',
+            '乒乓': 'Ping Pong Chrysanthemum', '乒乓菊': 'Ping Pong Chrysanthemum',
+            '蕾絲花': 'Lace Flower', '雪柳': 'Spiraea', '銀葉菊': 'Dusty Miller',
+            '常春藤': 'Ivy', '文竹': 'Asparagus Fern', '富貴竹': 'Lucky Bamboo',
+            '劍蘭': 'Gladiolus', '紅掌': 'Anthurium', '白掌': 'Peace Lily',
+            '風信子': 'Hyacinth', '水仙': 'Daffodil', '雛菊': 'Daisy', '非洲菊': 'Gerbera',
+            '鳶尾花': 'Iris', '薰衣草': 'Lavender', '菊花': 'Chrysanthemum',
+            '進口千代': 'Imported Orchid', '進口蝴蝶蘭': 'Imported Phalaenopsis',
+            '新娘花球': "Bride's Bouquet", '新郎襟花': "Groom's Boutonniere",
+            '花材配搭協調': 'coordinated floral pairing', '配花': 'Filler Flowers',
+            '配葉': 'Foliage', '綠葉': 'Greenery'
+        };
+        
+        // 产地翻译
+        var originTranslations = {
+            '香港': 'Hong Kong', '進口': 'Imported', '荷蘭': 'Netherlands',
+            '日本': 'Japan', '厄瓜多爾': 'Ecuador', '肯亞': 'Kenya',
+            '哥倫比亞': 'Colombia', '新西蘭': 'New Zealand', '澳洲': 'Australia',
+            '泰國': 'Thailand', '中國': 'China', '台灣': 'Taiwan',
+            '本地': 'Local', '本地種植': 'Locally Grown'
+        };
+        
+        // 翻译花材字段（支持 花A+花B+花C 格式）
+        function translateFlowers(text) {
+            if (!text) return 'N/A';
+            // 如果已经是英文（包含英文字母且没有中文），直接返回
+            if (/^[a-zA-Z0-9\s\+\-\,\.\(\)\'\/]+$/.test(text)) return text;
+            // 按 + 分割翻译
+            var parts = text.split('+');
+            var translated = parts.map(function(part) {
+                part = part.trim();
+                return flowerTranslations[part] || part;
+            });
+            return translated.join(' + ');
+        }
+        
+        // 翻译产地
+        function translateOrigin(text) {
+            if (!text) return 'N/A';
+            if (/^[a-zA-Z\s]+$/.test(text)) return text;
+            return originTranslations[text] || text;
+        }
+        
+        // 翻译规格
+        function translateSpecs(text) {
+            if (!text) return 'N/A';
+            if (/^[a-zA-Z0-9\s\,\.\(\)\-\+]+$/.test(text)) return text;
+            var result = text;
+            result = result.replace(/高約/g, 'Height approx. ');
+            result = result.replace(/闊約/g, 'Width approx. ');
+            result = result.replace(/寬約/g, 'Width approx. ');
+            result = result.replace(/直徑約/g, 'Diameter approx. ');
+            result = result.replace(/直徑/g, 'Diameter ');
+            result = result.replace(/高/g, 'Height ');
+            result = result.replace(/闊/g, 'Width ');
+            result = result.replace(/寬/g, 'Width ');
+            result = result.replace(/長/g, 'Length ');
+            result = result.replace(/標準尺寸/g, 'Standard Size');
+            result = result.replace(/大號/g, 'Large');
+            result = result.replace(/中號/g, 'Medium');
+            result = result.replace(/小號/g, 'Small');
+            result = result.replace(/大型/g, 'Large');
+            result = result.replace(/中型/g, 'Medium');
+            result = result.replace(/小型/g, 'Small');
+            result = result.replace(/花球/g, 'Bouquet');
+            result = result.replace(/襟花/g, 'Boutonniere');
+            result = result.replace(/個/g, ' pcs');
+            result = result.replace(/枝/g, ' stems');
+            result = result.replace(/cm/g, 'cm');
+            return result;
+        }
         var scentNotes = product.scent_notes_en || product.scent_notes || [];
         var stockClass = product.stock === 'In Stock' ? 'status-in-stock' : 'status-pre-order';
         var stockText = product.stock === 'In Stock' ? 'In Stock' : 'Pre-order ' + (product.delivery_days || 3) + ' days';
@@ -433,9 +524,9 @@
         }
         
         html += '<div class="specs-matrix">';
-        html += '<div class="spec-row"><span class="spec-label">Flowers<\/span><span class="spec-value">' + (product.specs_flowers_en || product.specs_flowers || 'N/A') + '<\/span><\/div>';
-        html += '<div class="spec-row"><span class="spec-label">Origin<\/span><span class="spec-value">' + (product.specs_origin_en || product.specs_origin || 'N/A') + '<\/span><\/div>';
-        html += '<div class="spec-row"><span class="spec-label">Specifications<\/span><span class="spec-value">' + (product.specs_size_en || product.specs_size || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Flowers<\/span><span class="spec-value">' + (product.specs_flowers_en || translateFlowers(product.specs_flowers) || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Origin<\/span><span class="spec-value">' + (product.specs_origin_en || translateOrigin(product.specs_origin) || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Specifications<\/span><span class="spec-value">' + (product.specs_size_en || translateSpecs(product.specs_size) || 'N/A') + '<\/span><\/div>';
         html += '<\/div>';
         
         html += '<div class="addon-section"><p class="addon-label">Featured Add-ons<\/p><div id="addonList"><\/div><\/div>';
