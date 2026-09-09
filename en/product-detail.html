@@ -470,9 +470,9 @@
             return result;
         }
         var scentNotes = product.scent_notes_en || product.scent_notes || [];
-        var isInStock = product.stock === 'In Stock' || product.stock === '現貨' || product.is_preorder === false;
+        var isInStock = product.stock === 'In Stock' || product.stock === '現貨';
         var stockClass = isInStock ? 'status-in-stock' : 'status-pre-order';
-        var stockText = isInStock ? 'In Stock' : 'Pre-order ' + (product.delivery_days || product.preorder_days || 3) + ' days';
+        var stockText = isInStock ? 'In Stock' : 'Pre-order ' + (product.delivery_days || 3) + ' days';
         
         var html = '';
         var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
@@ -540,8 +540,8 @@
         
         html += '<div class="total-display" id="totalDisplay">Total: HK$' + product.price + '<\/div>';
         html += '<div class="purchase-actions">';
-        html += '<button class="add-to-cart-btn" onclick="handleAddToCart()">Add to Cart<\/button>';
-        html += '<button class="buy-now-btn" onclick="handleBuyNow()">Buy Now<\/button>';
+        html += '<button class="add-to-cart-btn" onclick="handleAddToCart()">' + (isInStock ? 'Add to Cart' : 'Pre-order') + '<\/button>';
+        html += '<button class="buy-now-btn" onclick="handleBuyNow()">' + (isInStock ? 'Buy Now' : 'Pre-order Now') + '<\/button>';
         html += '<\/div>';
         html += '<\/div>';
         

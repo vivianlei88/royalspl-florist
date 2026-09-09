@@ -565,7 +565,7 @@
         for (var i = 0; i < filteredProducts.length; i++) {
             var p = filteredProducts[i];
             var tags = p.tags || [];
-            var isInStock = p.stock === '現貨' || p.stock === 'In Stock' || p.is_preorder === false;
+            var isInStock = p.stock === 'In Stock' || p.stock === '現貨';
             var stockClass = isInStock ? 'in-stock' : 'pre-order';
             var stockText = isInStock ? 'In Stock' : 'Pre-order';
             var productImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
