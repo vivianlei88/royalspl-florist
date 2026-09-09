@@ -2789,7 +2789,8 @@
             'pending_payment': '待確認付款',
             'paid': '已付款',
             'shipped': '已出貨',
-            'cancelled': '已取消'
+            'cancelled': '已取消',
+            'archived': '已封存'
         };
         return map[status] || status;
     }
@@ -4426,7 +4427,23 @@ async function saveProduct() {
         document.getElementById('ordersTable').style.display = 'none';
         var isMobile = window.innerWidth <= 768;
         if (isMobile) {
-            v.innerHTML = '<div class="page-header"><h2 class="page-title">訂單詳情</h2><button class="btn btn-secondary" onclick="closeOrderDetail()">返回</button></div>';
+            v.innerHTML = '<div class="page-header"><h2 class="page-title">訂單 ' + o.order_code + '</h2><button class="btn btn-secondary" onclick="closeOrderDetail()">返回</button><button class="btn btn-primary" onclick="showMobileOrderActions()">⋯</button></div>';
+            // 手機端操作菜單
+            v.innerHTML += '<div id="mobileOrderActions" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;" onclick="if(event.target===this)this.style.display=\'none\'">' +
+                '<div style="position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:70vh;overflow-y:auto;">' +
+                '<div style="text-align:center;margin-bottom:15px;"><div style="width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 15px;"></div>' +
+                '<h3 style="font-size:20px;font-weight:700;margin:0 0 15px;">管理訂單</h3></div>' +
+                '<div style="border-top:1px solid #eee;padding-top:10px;">' +
+                '<div style="font-size:14px;color:#999;margin-bottom:10px;padding-left:5px;">訂單操作</div>' +
+                '<div onclick="printPackingList()" style="display:flex;align-items:center;gap:15px;padding:15px 10px;cursor:pointer;border-radius:8px;" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
+                '<span style="font-size:24px;">📋</span><span style="font-size:18px;font-weight:600;">列印裝箱單</span></div>' +
+                '<div onclick="printOrder()" style="display:flex;align-items:center;gap:15px;padding:15px 10px;cursor:pointer;border-radius:8px;" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
+                '<span style="font-size:24px;">🖨️</span><span style="font-size:18px;font-weight:600;">列印訂單</span></div>' +
+                '<div onclick="viewReceipt()" style="display:flex;align-items:center;gap:15px;padding:15px 10px;cursor:pointer;border-radius:8px;" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
+                '<span style="font-size:24px;">🧾</span><span style="font-size:18px;font-weight:600;">查看收據</span></div>' +
+                '<div onclick="archiveOrder()" style="display:flex;align-items:center;gap:15px;padding:15px 10px;cursor:pointer;border-radius:8px;" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
+                '<span style="font-size:24px;">📦</span><span style="font-size:18px;font-weight:600;">封存訂單</span></div>' +
+                '</div></div></div>';
         } else {
             v.innerHTML = '<div class="page-header"><button class="btn btn-secondary" onclick="closeOrderDetail()">返回列表</button><button class="btn btn-primary" onclick="downloadOrderPDF()">下載 PDF</button><button class="btn btn-primary" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button></div>';
         }
@@ -4454,6 +4471,144 @@ async function saveProduct() {
         v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
     }
     function closeOrderDetail() { document.getElementById('orderDetailView').style.display = 'none'; document.getElementById('ordersTable').style.display = 'block'; loadOrders(); }
+    
+    // 手機端顯示訂單操作菜單
+    function showMobileOrderActions() {
+        var menu = document.getElementById('mobileOrderActions');
+        if (menu) menu.style.display = 'block';
+    }
+    
+    // 列印裝箱單（不含價格，用於配送核對）
+    function printPackingList() {
+        if (!currentOrderDetail) return;
+        var o = currentOrderDetail;
+        var names = (o.product_names || '').split('|').filter(Boolean);
+        var images = [];
+        try { var parsed = JSON.parse(o.product_images); images = Array.isArray(parsed) ? parsed : [parsed]; } catch(e) { images = (o.product_images || '').split('|').filter(Boolean); }
+        
+        var w = window.open('', '_blank');
+        w.document.write('<html><head><title>裝箱單 ' + o.order_code + '</title><style>body{font-family:sans-serif;padding:30px;max-width:600px;margin:0 auto;}h1{text-align:center;border-bottom:2px solid #333;padding-bottom:10px;}.info{margin:20px 0;}.info div{margin:5px 0;}.items{width:100%;border-collapse:collapse;margin-top:20px;}.items th,.items td{border:1px solid #ddd;padding:10px;text-align:left;}.items th{background:#f5f5f5;}.footer{margin-top:30px;text-align:center;color:#999;font-size:12px;}@media print{body{padding:10px;}}</style></head><body>');
+        w.document.write('<h1>RoyalSpl Florist 裝箱單</h1>');
+        w.document.write('<div class="info">');
+        w.document.write('<div><b>訂單編號：</b>' + o.order_code + '</div>');
+        w.document.write('<div><b>送貨日期：</b>' + (o.delivery_date || '-') + '</div>');
+        w.document.write('<div><b>送貨時段：</b>' + (o.delivery_time_slot || '-') + '</div>');
+        w.document.write('<div><b>收件人：</b>' + (o.recipient_name || '-') + '</div>');
+        w.document.write('<div><b>電話：</b>' + (o.recipient_phone || '-') + '</div>');
+        w.document.write('<div><b>地址：</b>' + (o.recipient_address || '-') + '</div>');
+        w.document.write('</div>');
+        w.document.write('<table class="items"><tr><th>序號</th><th>商品</th><th>數量</th></tr>');
+        if (names.length > 0) {
+            for (var i = 0; i < names.length; i++) {
+                w.document.write('<tr><td>' + (i+1) + '</td><td>' + names[i] + '</td><td>1</td></tr>');
+            }
+        } else {
+            w.document.write('<tr><td>1</td><td>花禮商品</td><td>1</td></tr>');
+        }
+        w.document.write('</table>');
+        if (o.card_message) {
+            w.document.write('<div style="margin-top:20px;padding:15px;background:#f9f9f9;border-radius:8px;"><b>心意卡內容：</b><br>' + o.card_message + '</div>');
+        }
+        w.document.write('<div class="footer">RoyalSpl Florist | 香港花店</div>');
+        w.document.write('</body></html>');
+        w.document.close();
+        w.print();
+        document.getElementById('mobileOrderActions').style.display = 'none';
+    }
+    
+    // 列印訂單（含價格，用於客戶確認）
+    function printOrder() {
+        if (!currentOrderDetail) return;
+        var o = currentOrderDetail;
+        var names = (o.product_names || '').split('|').filter(Boolean);
+        var images = [];
+        try { var parsed = JSON.parse(o.product_images); images = Array.isArray(parsed) ? parsed : [parsed]; } catch(e) { images = (o.product_images || '').split('|').filter(Boolean); }
+        
+        var w = window.open('', '_blank');
+        w.document.write('<html><head><title>訂單 ' + o.order_code + '</title><style>body{font-family:sans-serif;padding:30px;max-width:600px;margin:0 auto;}h1{text-align:center;border-bottom:2px solid #333;padding-bottom:10px;}.info{margin:20px 0;}.info div{margin:5px 0;}.items{width:100%;border-collapse:collapse;margin-top:20px;}.items th,.items td{border:1px solid #ddd;padding:10px;text-align:left;}.items th{background:#f5f5f5;}.total{text-align:right;margin-top:20px;font-size:18px;}.footer{margin-top:30px;text-align:center;color:#999;font-size:12px;}@media print{body{padding:10px;}}</style></head><body>');
+        w.document.write('<h1>RoyalSpl Florist 訂單確認</h1>');
+        w.document.write('<div class="info">');
+        w.document.write('<div><b>訂單編號：</b>' + o.order_code + '</div>');
+        w.document.write('<div><b>訂購日期：</b>' + (o.created_at || '').slice(0,10) + '</div>');
+        w.document.write('<div><b>送貨日期：</b>' + (o.delivery_date || '-') + '</div>');
+        w.document.write('<div><b>收件人：</b>' + (o.recipient_name || '-') + '</div>');
+        w.document.write('<div><b>電話：</b>' + (o.recipient_phone || '-') + '</div>');
+        w.document.write('<div><b>地址：</b>' + (o.recipient_address || '-') + '</div>');
+        w.document.write('<div><b>付款方式：</b>' + (o.payment_method === 'fps' ? '轉數快 FPS' : o.payment_method === 'card' ? '信用卡/Apple Pay' : '-') + '</div>');
+        w.document.write('</div>');
+        w.document.write('<table class="items"><tr><th>商品</th><th>數量</th><th>金額</th></tr>');
+        if (names.length > 0) {
+            for (var i = 0; i < names.length; i++) {
+                w.document.write('<tr><td>' + names[i] + '</td><td>1</td><td>HK$' + (o.subtotal || 0) + '</td></tr>');
+            }
+        } else {
+            w.document.write('<tr><td>花禮商品</td><td>1</td><td>HK$' + (o.subtotal || 0) + '</td></tr>');
+        }
+        w.document.write('<tr><td colspan="2" style="text-align:right;">運費</td><td>HK$' + (o.delivery_fee || 0) + '</td></tr>');
+        w.document.write('<tr><td colspan="2" style="text-align:right;font-weight:bold;">總計</td><td style="font-weight:bold;">HK$' + (o.total_amount || 0) + '</td></tr>');
+        w.document.write('</table>');
+        if (o.card_message) {
+            w.document.write('<div style="margin-top:20px;padding:15px;background:#f9f9f9;border-radius:8px;"><b>心意卡內容：</b><br>' + o.card_message + '</div>');
+        }
+        w.document.write('<div class="footer">RoyalSpl Florist | 香港花店 | 感謝您的訂購</div>');
+        w.document.write('</body></html>');
+        w.document.close();
+        w.print();
+        document.getElementById('mobileOrderActions').style.display = 'none';
+    }
+    
+    // 查看收據
+    function viewReceipt() {
+        if (!currentOrderDetail) return;
+        var o = currentOrderDetail;
+        var w = window.open('', '_blank');
+        w.document.write('<html><head><title>收據 ' + o.order_code + '</title><style>body{font-family:sans-serif;padding:30px;max-width:500px;margin:0 auto;}.receipt{border:2px dashed #ccc;padding:25px;border-radius:10px;}h1{text-align:center;margin:0 0 5px;}.subtitle{text-align:center;color:#999;margin-bottom:20px;}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;}.total{font-size:20px;font-weight:bold;color:#1A1A1A;border-top:2px solid #333;margin-top:10px;padding-top:15px;}.footer{text-align:center;margin-top:20px;color:#999;font-size:12px;}@media print{body{padding:10px;}}</style></head><body>');
+        w.document.write('<div class="receipt">');
+        w.document.write('<h1>RoyalSpl Florist</h1>');
+        w.document.write('<div class="subtitle">購物收據</div>');
+        w.document.write('<div class="row"><span>收據編號</span><span>' + o.order_code + '</span></div>');
+        w.document.write('<div class="row"><span>日期</span><span>' + (o.created_at || '').slice(0,10) + '</span></div>');
+        w.document.write('<div class="row"><span>付款方式</span><span>' + (o.payment_method === 'fps' ? '轉數快 FPS' : o.payment_method === 'card' ? '信用卡/Apple Pay' : '-') + '</span></div>');
+        if (o.fps_ref) {
+            w.document.write('<div class="row"><span>交易編號</span><span>' + o.fps_ref + '</span></div>');
+        }
+        w.document.write('<div style="height:1px;background:#eee;margin:15px 0;"></div>');
+        var names = (o.product_names || '').split('|').filter(Boolean);
+        if (names.length > 0) {
+            for (var i = 0; i < names.length; i++) {
+                w.document.write('<div class="row"><span>' + names[i] + '</span><span>HK$' + (o.subtotal || 0) + '</span></div>');
+            }
+        } else {
+            w.document.write('<div class="row"><span>花禮商品</span><span>HK$' + (o.subtotal || 0) + '</span></div>');
+        }
+        w.document.write('<div class="row"><span>運費</span><span>HK$' + (o.delivery_fee || 0) + '</span></div>');
+        w.document.write('<div class="row total"><span>總計</span><span>HK$' + (o.total_amount || 0) + '</span></div>');
+        w.document.write('</div>');
+        w.document.write('<div class="footer">此為電腦發出之收據，無需簽署<br>RoyalSpl Florist | 香港花店</div>');
+        w.document.write('<div style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="padding:12px 30px;background:#1A1A1A;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;">列印收據</button></div>');
+        w.document.write('</body></html>');
+        w.document.close();
+        document.getElementById('mobileOrderActions').style.display = 'none';
+    }
+    
+    // 封存訂單
+    async function archiveOrder() {
+        if (!currentOrderDetail) return;
+        if (!confirm('確定封存此訂單？封存後訂單將標記為已完成，不再顯示在待處理列表中。')) return;
+        var o = currentOrderDetail;
+        try {
+            await supabaseClient.from('orders').update({ 
+                status: 'archived',
+                archived: true,
+                archived_at: new Date().toISOString()
+            }).eq('id', o.id);
+            showToast('訂單已封存');
+            document.getElementById('mobileOrderActions').style.display = 'none';
+            closeOrderDetail();
+        } catch (e) {
+            showToast('封存失敗：' + e.message);
+        }
+    }
     async function saveOrderDetail() {
         var id = document.getElementById('orderDetailId').value;
         var data = {
