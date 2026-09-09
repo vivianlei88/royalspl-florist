@@ -710,6 +710,8 @@
 
     // ==================== 在線訪客追踪 ====================
     var visitorTimer = null;
+    var notifiedVisitorIds = [];
+    var lastVisitorCheckTime = new Date().toISOString();
 
     async function loadOnlineVisitors() {
         try {
@@ -733,6 +735,38 @@
             } else {
                 badge.style.display = 'none';
             }
+
+            // 檢查新訪客並發出提醒
+            var newVisitors = [];
+            for (var i = 0; i < visitors.length; i++) {
+                var v = visitors[i];
+                var vTime = v.created_at;
+                if (vTime > lastVisitorCheckTime && notifiedVisitorIds.indexOf(v.id) === -1) {
+                    newVisitors.push(v);
+                    notifiedVisitorIds.push(v.id);
+                }
+            }
+
+            if (newVisitors.length > 0) {
+                var latest = newVisitors[0];
+                var location = (latest.country || '') + (latest.region ? ' ' + latest.region : '') || '未知地區';
+                var page = latest.page_url || '/';
+                // 瀏覽器通知
+                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                    new Notification('新訪客！', {
+                        body: '來自 ' + location + '，正在瀏覽 ' + page,
+                        icon: 'https://www.royalspl.shop/favicon.ico'
+                    });
+                }
+                // 手機端頁面內彈出提示
+                if (window.innerWidth <= 768) {
+                    showMobileAlert('新訪客！', '來自：' + location + '<br>正在瀏覽：' + page, 'visitor');
+                }
+                playNotificationSound();
+                showToast(' 新訪客來自 ' + location);
+            }
+
+            lastVisitorCheckTime = new Date().toISOString();
         } catch (e) {
             console.error('載入訪客失敗:', e);
         }
