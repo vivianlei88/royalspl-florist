@@ -3029,7 +3029,7 @@
                     '<td style="word-break:break-word;"> ' + location + '</td>' +
                     '<td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="' + (v.page_url || '#') + '" target="_blank" style="color:#667eea;text-decoration:none;" title="' + page + '">' + page.substring(0, 40) + '</a></td>' +
                     '<td style="white-space:nowrap;">' + formatNotificationTime(v.created_at) + '</td>' +
-                    '<td><button class="btn btn-primary btn-small" onclick="contactVisitor(\'' + (v.session_id || '') + '\', \'' + (v.ip || '') + '\')">💬 聯繫</button></td>' +
+                    '<td><button class="btn btn-primary btn-small" onclick="contactVisitor(\'' + (v.session_id || '') + '\', \'' + (v.ip || '') + '\', \'' + (v.page_url || '').replace(/'/g, "\\'") + '\')">💬 聯繫</button></td>' +
                     '</tr>';
             });
             h += '</tbody></table>';
@@ -3044,7 +3044,7 @@
         showToast('已刷新');
     }
 
-    function contactVisitor(sessionId, ip) {
+    function contactVisitor(sessionId, ip, pageUrl) {
         // 如果沒有session_id，使用IP地址創建臨時會話
         if (!sessionId) {
             if (!ip || ip === '未知') {
@@ -3053,10 +3053,10 @@
             }
             sessionId = 'visitor_' + ip.replace(/\./g, '_');
         }
-        openChatPanelWithVisitor(sessionId, ip);
+        openChatPanelWithVisitor(sessionId, ip, pageUrl);
     }
 
-    async function openChatPanelWithVisitor(sessionId, ip) {
+    async function openChatPanelWithVisitor(sessionId, ip, pageUrl) {
         openChatPanel();
         setTimeout(async function() {
             try {
@@ -3073,12 +3073,18 @@
                         .insert({
                             session_id: sessionId,
                             visitor_ip: ip,
-                            current_page: '',
+                            current_page: pageUrl || '',
                             status: 'active',
                             created_at: new Date().toISOString()
                         })
                         .select();
                     session = newSession && newSession[0];
+                } else if (pageUrl) {
+                    // 更新訪客當前頁面
+                    await supabaseClient
+                        .from('chat_sessions')
+                        .update({ current_page: pageUrl })
+                        .eq('session_id', sessionId);
                 }
 
                 if (session) {
