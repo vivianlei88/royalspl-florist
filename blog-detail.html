@@ -347,7 +347,9 @@
                 case 'heading2': return `<div class="block"><h2>${block.content.text}</h2></div>`;
                 case 'quote': return `<div class="block"><blockquote>${block.content.text}</blockquote></div>`;
                 case 'divider': return '<hr>';
-                case 'image': return `<div class="block"><img src="${block.content.src}" alt="${block.content.alt || ''}"></div>`;
+                case 'image': 
+                    const imgHtml = `<img src="${block.content.src}" alt="${block.content.alt || ''}" style="max-width:100%;border-radius:5px;">`;
+                    return `<div class="block">${block.content.link ? `<a href="${block.content.link}" target="_blank">${imgHtml}</a>` : imgHtml}</div>`;
                 case 'video': return `<div class="block"><iframe src="${block.content.src}" allowfullscreen></iframe></div>`;
                 case 'list': return `<div class="block"><ul>${block.content.items.map(i => `<li>${i}</li>`).join('')}</ul></div>`;
                 case 'numberedList': return `<div class="block"><ol>${block.content.items.map(i => `<li>${i}</li>`).join('')}</ol></div>`;

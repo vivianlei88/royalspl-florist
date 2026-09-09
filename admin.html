@@ -5337,7 +5337,12 @@ async function saveProduct() {
                 case 'image':
                     return React.createElement('div', null,
                         block.content.src
-                            ? React.createElement('img', { src: block.content.src, alt: block.content.alt || '', style: { maxWidth: '100%', borderRadius: '5px' } })
+                            ? (block.content.link 
+                                ? React.createElement('a', { href: block.content.link, target: '_blank', style: { display: 'block' } },
+                                    React.createElement('img', { src: block.content.src, alt: block.content.alt || '', style: { maxWidth: '100%', borderRadius: '5px' } })
+                                  )
+                                : React.createElement('img', { src: block.content.src, alt: block.content.alt || '', style: { maxWidth: '100%', borderRadius: '5px' } })
+                            )
                             : React.createElement('div', {
                                 style: { border: '2px dashed #ddd', borderRadius: '5px', padding: '20px', textAlign: 'center', cursor: 'pointer' },
                                 onClick: () => {
@@ -5348,11 +5353,18 @@ async function saveProduct() {
                                     input.click();
                                 }
                             }, '點擊上傳圖片'),
-                        React.createElement('input', {
-                            type: 'text', value: block.content.alt || '', placeholder: '替代文字',
-                            onChange: (e) => updateBlockContent(block.id, { alt: e.target.value }),
-                            style: { width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '4px', marginTop: '5px' }
-                        }),
+                        React.createElement('div', { style: { display: 'flex', gap: '10px', marginTop: '5px' } },
+                            React.createElement('input', {
+                                type: 'text', value: block.content.alt || '', placeholder: '替代文字',
+                                onChange: (e) => updateBlockContent(block.id, { alt: e.target.value }),
+                                style: { flex: 1, border: '1px solid #ddd', borderRadius: '4px', padding: '4px' }
+                            }),
+                            React.createElement('input', {
+                                type: 'text', value: block.content.link || '', placeholder: '圖片連結（點擊圖片跳轉的網址）',
+                                onChange: (e) => updateBlockContent(block.id, { link: e.target.value }),
+                                style: { flex: 2, border: '1px solid #ddd', borderRadius: '4px', padding: '4px' }
+                            })
+                        ),
                         React.createElement('button', { onClick: () => deleteBlock(block.id), style: { color: 'red', fontSize: '14px', marginTop: '5px' } }, '刪除')
                     );
                 case 'video':
@@ -5723,6 +5735,10 @@ async function saveProduct() {
                         ),
                         React.createElement('button', { onClick: () => document.execCommand('outdent') }, renderIcon('Outdent')),
                         React.createElement('button', { onClick: () => document.execCommand('indent') }, renderIcon('Indent')),
+                        React.createElement('div', { className: 'divider' }),
+                        React.createElement('button', { onClick: () => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = async (e) => { const file = e.target.files[0]; if (file) { const fd = new FormData(); fd.append('file', file); const res = await fetch('/r2-upload', { method: 'POST', body: fd }); const data = await res.json(); if (data.url) { document.execCommand('insertImage', false, data.url); } } }; input.click(); } }, renderIcon('Image')),
+                        React.createElement('button', { onClick: () => { const url = prompt('輸入圖片連結網址：'); if (url) { const img = window.getSelection()?.anchorNode?.parentElement?.closest('img'); if (img) { const a = document.createElement('a'); a.href = url; a.target = '_blank'; img.parentNode.insertBefore(a, img); a.appendChild(img); } else { alert('請先點擊選中圖片'); } } }, renderIcon('Link2')),
+                        React.createElement('button', { onClick: () => insertBlock('image', blocks[blocks.length - 1]?.id) }, renderIcon('ImagePlus')),
                         React.createElement('div', { className: 'divider' }),
                         React.createElement('button', { onClick: () => setIsDragging(!isDragging) }, renderIcon('GripVertical')),
                         React.createElement('button', { onClick: () => alert('快捷鍵：Ctrl+B 粗體，Ctrl+I 斜體，Ctrl+U 底線') }, renderIcon('Info'))
