@@ -237,7 +237,7 @@
                 <div class="payment-method-check"></div>
             </div>
             <div class="payment-method" onclick="selectPayment(this, 'payme')">
-                <div class="payment-method-icon">📱</div>
+                <div class="payment-method-icon"></div>
                 <div class="payment-method-info">
                     <div class="payment-method-name">PayMe</div>
                     <div class="payment-method-desc">HSBC PayMe E-Wallet</div>
@@ -326,7 +326,7 @@
             const itemsHtml = (currentOrder.items || []).map(item => {
                 const img = item.image 
                     ? `<img src="${item.image}" class="order-item-img">` 
-                    : `<span class="order-item-emoji">${item.emoji || '🌸'}</span>`;
+                    : `<span class="order-item-emoji">${item.emoji || ''}</span>`;
                 return `<div class="order-item">
                     ${img}
                     <div class="order-item-info">

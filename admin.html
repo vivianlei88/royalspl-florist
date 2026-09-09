@@ -671,7 +671,7 @@
                         userAvatar.style.display = 'block';
                     } else {
                         // 沒有頭像時顯示默認頭像
-                        userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="%23666"/><text x="20" y="26" font-size="18" text-anchor="middle" fill="white">👤</text></svg>';
+                        userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="%23666"/><text x="20" y="26" font-size="18" text-anchor="middle" fill="white"></text></svg>';
                     }
                     userAvatar.title = email || '';
                 }
@@ -857,7 +857,7 @@
             var infoDiv = document.getElementById('chatSessionInfo');
             if (infoDiv && sessionData) {
                 infoDiv.innerHTML = '<div style="font-size:14px;font-weight:600;">訪客 ' + sessionId.substring(5, 13) + '</div>' +
-                    '<div style="font-size:12px;color:#666;margin-top:3px;">📍 當前頁面: ' + (sessionData.current_page || '未知') + '</div>' +
+                    '<div style="font-size:12px;color:#666;margin-top:3px;"> 當前頁面: ' + (sessionData.current_page || '未知') + '</div>' +
                     '<div style="font-size:11px;color:#999;margin-top:2px;">IP: ' + (sessionData.visitor_ip || '未知') + (sessionData.visitor_region ? ' | ' + sessionData.visitor_region : '') + '</div>';
             }
             
@@ -951,7 +951,7 @@
     let currentBlogId = null;
 
     async function renderBlogPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-secondary" onclick="batchTranslate(&apos;blog&apos;)" style="background:#10b981;color:white;border:none;">🌐 一鍵翻譯為英文</button><button class="btn btn-primary" onclick="showBlogLanguageModal()">新增文章</button></div></div>';
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">部落格文章</h2><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="showBlogImportModal()">匯入CSV</button><button class="btn btn-secondary" onclick="batchTranslate(&apos;blog&apos;)" style="background:#10b981;color:white;border:none;"> 一鍵翻譯為英文</button><button class="btn btn-primary" onclick="showBlogLanguageModal()">新增文章</button></div></div>';
         c.innerHTML += '<div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
             '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:14px;"><input type="checkbox" id="checkAllBlogs" onchange="toggleCheckAllBlogs()"> 全選</label>' +
             '<button class="btn btn-danger btn-small" onclick="batchDeleteBlogs()">批量刪除</button>' +
@@ -1108,7 +1108,7 @@
             '<div id="blogIconAI" style="cursor:pointer;padding:12px;border-radius:8px;background:#e8f0fe;" onclick="showAIWriterModal(\'blog\',\'blogEditorContent\')" title="AI工具"><span style="font-size:20px;">✦</span></div>' +
             '<div id="blogIconSettings" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchBlogSidePanel(\'settings\')" title="設定"><span style="font-size:20px;">⚙</span></div>' +
             '<div id="blogIconSEO" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="switchBlogSidePanel(\'seo\')" title="SEO"><span style="font-size:20px;">🔍</span></div>' +
-            '<div id="blogIconTranslate" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="translateBlogAll()" title="翻譯"><span style="font-size:20px;">🌐</span></div>' +
+            '<div id="blogIconTranslate" style="cursor:pointer;padding:12px;border-radius:8px;" onclick="translateBlogAll()" title="翻譯"><span style="font-size:20px;"></span></div>' +
             '</div>' +
             // 中間編輯區
             '<div style="flex:1;display:flex;flex-direction:column;">' +
@@ -1125,9 +1125,9 @@
             '<button onclick="blogExecCmd(\'underline\')" style="border:none;background:none;text-decoration:underline;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;" title="底線">U</button>' +
             '<button onclick="blogExecCmd(\'strikeThrough\')" style="border:none;background:none;text-decoration:line-through;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;" title="刪除線">A</button>' +
             '<input type="color" onchange="blogExecCmd(\'foreColor\', this.value)" style="width:24px;height:24px;border:none;cursor:pointer;padding:0;" title="字體顏色">' +
-            '<button onclick="blogExecCmd(\'hiliteColor\', \'#FFFF00\')" style="border:none;background:none;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;" title="背景色">🎨</button>' +
+            '<button onclick="blogExecCmd(\'hiliteColor\', \'#FFFF00\')" style="border:none;background:none;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;" title="背景色"></button>' +
             '<span style="color:#ddd;">|</span>' +
-            '<button onclick="blogInsertLink()" style="border:none;background:none;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;" title="連結">🔗</button>' +
+            '<button onclick="blogInsertLink()" style="border:none;background:none;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;" title="連結"></button>' +
             '<button onclick="blogExecCmd(\'formatBlock\', \'blockquote\')" style="border:none;background:none;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;" title="引用">❝</button>' +
             '<button onclick="blogExecCmd(\'formatBlock\', \'pre\')" style="border:none;background:none;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:14px;" title="程式碼">&lt;/&gt;</button>' +
             '<span style="color:#ddd;">|</span>' +
@@ -1432,7 +1432,7 @@
             '<h3 style="margin:0;font-size:18px;">匯入部落格 CSV</h3>' +
             '<button onclick="closeBlogImportModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999;line-height:1;">×</button></div>' +
             '<div id="blogDropZone" style="border:2px dashed #ccc;border-radius:10px;padding:40px 20px;text-align:center;cursor:pointer;transition:all 0.3s;margin-bottom:15px;">' +
-            '<div style="font-size:48px;margin-bottom:10px;">📁</div>' +
+            '<div style="font-size:48px;margin-bottom:10px;"></div>' +
             '<div style="font-size:16px;color:#333;margin-bottom:5px;">拖拽 CSV 檔案到這裡</div>' +
             '<div style="font-size:13px;color:#999;">或點擊選擇檔案</div>' +
             '<input type="file" id="blogCsvFile" accept=".csv" style="display:none;"></div>' +
@@ -2703,7 +2703,7 @@
                     });
                 }
                 playNotificationSound();
-                showToast('📦 新訂單：' + latest.order_code + ' - ' + getOrderStatusText(latest.status));
+                showToast(' 新訂單：' + latest.order_code + ' - ' + getOrderStatusText(latest.status));
             }
 
             lastOrderCheckTime = new Date().toISOString();
@@ -2824,18 +2824,18 @@
                     var v = n.data;
                     var location = [v.region, v.city, v.country].filter(Boolean).join(' ') || '未知地區';
                     var page = v.page_title || v.page_url || '未知頁面';
-                    var visitorType = v.is_new_visitor ? '🆕 新訪客' : '👤 回訪客';
+                    var visitorType = v.is_new_visitor ? ' 新訪客' : ' 回訪客';
                     html += '<div style="padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;" onclick="switchPage(\'visitors\');document.getElementById(\'notificationPanel\').remove();">' +
                         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">' +
                         '<span style="font-weight:600;font-size:13px;">' + visitorType + '</span>' +
                         '<span style="font-size:11px;color:#999;">' + formatNotificationTime(n.time) + '</span></div>' +
-                        '<div style="font-size:12px;color:#666;">📍 ' + location + '</div>' +
+                        '<div style="font-size:12px;color:#666;"> ' + location + '</div>' +
                         '<div style="font-size:12px;color:#666;">👀 ' + page.substring(0, 30) + '</div></div>';
                 } else {
                     var o = n.data;
                     html += '<div style="padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;" onclick="openOrderDetail(' + o.id + ');document.getElementById(\'notificationPanel\').remove();">' +
                         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">' +
-                        '<span style="font-weight:600;font-size:13px;">📦 訂單 ' + o.order_code + '</span>' +
+                        '<span style="font-weight:600;font-size:13px;"> 訂單 ' + o.order_code + '</span>' +
                         '<span style="font-size:11px;color:#999;">' + formatNotificationTime(n.time) + '</span></div>' +
                         '<div style="font-size:12px;color:#666;">狀態：' + getOrderStatusText(o.status) + '</div>' +
                         '<div style="font-size:12px;color:#666;">金額：HK$' + o.total_amount + ' | 收花人：' + (o.recipient_name || '') + '</div></div>';
@@ -2920,7 +2920,7 @@
                 h += '<tr>' +
                     '<td style="word-break:break-word;">' + typeBadge + ' ' + onlineBadge + '</td>' +
                     '<td style="word-break:break-all;">' + (v.ip || '未知') + '</td>' +
-                    '<td style="word-break:break-word;">📍 ' + location + '</td>' +
+                    '<td style="word-break:break-word;"> ' + location + '</td>' +
                     '<td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="' + (v.page_url || '#') + '" target="_blank" style="color:#667eea;text-decoration:none;" title="' + page + '">' + page.substring(0, 40) + '</a></td>' +
                     '<td style="white-space:nowrap;">' + formatNotificationTime(v.created_at) + '</td>' +
                     '<td><button class="btn btn-primary btn-small" onclick="contactVisitor(\'' + (v.session_id || '') + '\', \'' + (v.ip || '') + '\')">💬 聯繫</button></td>' +
@@ -3061,7 +3061,7 @@
         c.innerHTML += '<div class="form-container" style="max-width:100%;">';
         c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">Hero Banner</h3>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">主標題</label><input class="form-input" id="heroTitle"></div><div class="form-group"><label class="form-label">副標題</label><input class="form-input" id="heroSubtitle"></div></div>';
-        c.innerHTML += '<div class="form-group"><label class="form-label">背景圖片（可多張，拖拽或點擊上傳，最多5張）</label><div class="upload-area" id="heroUploadArea" style="min-height:120px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:all 0.3s;"><p style="margin:0;font-size:14px;color:#888;">📁 拖拽圖片到此處，或點擊選擇</p><p style="margin:5px 0 0 0;font-size:12px;color:#aaa;">支援 JPG、PNG，最多5張</p><input type="file" id="heroFileInput" accept="image/*" multiple style="display:none;"></div><div id="heroImagePreview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;"></div></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">背景圖片（可多張，拖拽或點擊上傳，最多5張）</label><div class="upload-area" id="heroUploadArea" style="min-height:120px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:all 0.3s;"><p style="margin:0;font-size:14px;color:#888;"> 拖拽圖片到此處，或點擊選擇</p><p style="margin:5px 0 0 0;font-size:12px;color:#aaa;">支援 JPG、PNG，最多5張</p><input type="file" id="heroFileInput" accept="image/*" multiple style="display:none;"></div><div id="heroImagePreview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;"></div></div>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">CTA 文字</label><input class="form-input" id="heroCtaText"></div><div class="form-group"><label class="form-label">CTA 連結</label><input class="form-input" id="heroCtaLink"></div></div>';
         c.innerHTML += '<hr style="margin:25px 0;border-top:1px solid #ddd;">';
         c.innerHTML += '<h3 style="font-size:18px;font-weight:600;margin-bottom:15px;">臻選系列（6卡片）</h3><div class="category-grid" id="collectionCardsGrid"></div>';
@@ -3203,7 +3203,7 @@
             var h = '';
             for (var j = 0; j < cards.length; j++) {
                 var card = cards[j];
-                var imgBlock = card.image_url ? '<img src="' + card.image_url + '" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">' : '<p style="margin:0;font-size:14px;color:#888;">📁 拖拽圖片到此處，或點擊選擇</p>';
+                var imgBlock = card.image_url ? '<img src="' + card.image_url + '" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">' : '<p style="margin:0;font-size:14px;color:#888;"> 拖拽圖片到此處，或點擊選擇</p>';
                 h += '<div class="collection-card-edit">';
                 h += '<div class="upload-area" id="cardUpArea' + card.id + '" style="min-height:150px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:all 0.3s;overflow:hidden;">' + imgBlock + '<input type="file" id="cardFileInput' + card.id + '" accept="image/*" style="display:none;"></div>';
                 h += '<div class="form-group" style="margin-top:10px;"><input class="form-input" placeholder="中文標題" value="' + (card.title_zh || '') + '" onchange="updateCollectionCard(' + card.id + ',\'title_zh\',this.value)"></div>';
@@ -3358,7 +3358,7 @@
         <script>
     // ==================== 商品管理 ====================
     function renderProductsPage(c) {
-        c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;">🌐 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
+        c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;"> 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
         loadProducts();
     }
     function showAddForm() {
@@ -3498,7 +3498,7 @@
         for (var i = 0; i < allAddons.length; i++) {
             var a = allAddons[i];
             var checked = selectedAddons.indexOf(a.id) > -1 ? 'checked' : '';
-            h += '<label class="addon-checkbox-item"><input type="checkbox" ' + checked + ' onchange="toggleAddon(' + a.id + ')"><span class="addon-checkbox-img">' + (a.image_url ? '<img src="' + a.image_url + '">' : '🎁') + '</span><span class="addon-checkbox-info"><strong>' + (a.name_zh || '') + '</strong><small>+HK$' + a.price + '</small></span></label>';
+            h += '<label class="addon-checkbox-item"><input type="checkbox" ' + checked + ' onchange="toggleAddon(' + a.id + ')"><span class="addon-checkbox-img">' + (a.image_url ? '<img src="' + a.image_url + '">' : '') + '</span><span class="addon-checkbox-info"><strong>' + (a.name_zh || '') + '</strong><small>+HK$' + a.price + '</small></span></label>';
         }
         c.innerHTML = h || '<p style="font-size:13px;color:#888;padding:10px;">暫無配件，請先在「加購配件」中添加</p>';
     }
@@ -4220,7 +4220,7 @@ async function saveProduct() {
             var item = orderItems[pi];
             productHtml += '<div class="order-product-item" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;">';
             if (item.image) { productHtml += (item.productId ? '<a href="product-detail.html?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;cursor:pointer;"></a>' : '<img src="' + item.image + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;">'); }
-            else { productHtml += '<div style="width:100px;height:100px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:40px;">🌸</div>'; }
+            else { productHtml += '<div style="width:100px;height:100px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:40px;"></div>'; }
             productHtml += '<div style="flex:1;">';
             productHtml += '<div style="font-size:13px;font-weight:500;">' + item.name + '</div>';
             if (item.nameEn) productHtml += '<div style="font-size:11px;color:#888;">' + item.nameEn + '</div>';
@@ -5138,17 +5138,17 @@ async function saveProduct() {
 
         const Lucide = {
             Bold: () => '𝐁', Italic: () => '𝐼', Underline: () => 'U̲',
-            Palette: () => '🎨', Highlighter: () => '🖍️', Link2: () => '🔗',
+            Palette: () => '', Highlighter: () => '', Link2: () => '',
             Quote: () => '❝', Code2: () => '</>', ListOrdered: () => '1.',
             List: () => '•', Outdent: () => '⏪', Indent: () => '⏩',
             GripVertical: () => '⋮⋮', Info: () => 'ℹ️', Type: () => 'T',
             Heading1: () => 'H1', Heading2: () => 'H2', Minus: () => '—',
-            Image: () => '🖼️', Video: () => '🎬', Table: () => '▦',
-            MousePointerClick: () => '🖱️', LayoutDashboard: () => '📊',
-            FileText: () => '📄', MessageSquare: () => '💬', FolderOpen: () => '📂',
-            Tags: () => '🏷️', Users: () => '👥', TrendingUp: () => '📈',
-            BarChart2: () => '📊', Download: () => '⬇️', Upload: () => '⬆️',
-            Plus: () => '➕', Trash: () => '🗑️', Edit: () => '✏️'
+            Image: () => '', Video: () => '', Table: () => '▦',
+            MousePointerClick: () => '', LayoutDashboard: () => '',
+            FileText: () => '', MessageSquare: () => '💬', FolderOpen: () => '',
+            Tags: () => '', Users: () => '', TrendingUp: () => '',
+            BarChart2: () => '', Download: () => '', Upload: () => '',
+            Plus: () => '', Trash: () => '', Edit: () => ''
         };
 
         const blockTypes = {

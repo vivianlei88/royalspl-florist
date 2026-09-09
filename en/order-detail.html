@@ -276,7 +276,7 @@
             items.forEach(item => {
                 const imgHtml = item.image 
                     ? (item.productId ? '<a href="product-detail.html?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" alt="' + item.name + '"></a>' : '<img src="' + item.image + '" alt="' + item.name + '">')
-                    : '<div class="product-img-placeholder">🌸</div>';
+                    : '<div class="product-img-placeholder"></div>';
                 const priceHtml = item.price ? 'HK$' + item.price : '-';
                 const subtotal = item.price && item.quantity ? 'HK$' + (item.price * item.quantity) : '';
                 productsHtml += '<div class="product-item">' +

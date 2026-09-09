@@ -230,7 +230,7 @@
             let html = '';
             orders.forEach(order => {
                 const img = getOrderImage(order);
-                const imgHtml = img ? `<img src="${img}" class="order-img" alt="">` : '<div class="order-img-placeholder">🌸</div>';
+                const imgHtml = img ? `<img src="${img}" class="order-img" alt="">` : '<div class="order-img-placeholder"></div>';
                 const createdDate = (order.created_at || '').slice(0, 10);
                 html += `<div class="order-card">
                     ${imgHtml}

@@ -367,7 +367,7 @@
                     <p class="tier-item-area">South Lantau/愉景灣/Ma Wan/離島/機場/Disneylandetc.</p>
                 </div>
             </div>
-            <p class="tier-list-note">💡 System Auto-detect Priority；If detection fails，Please click aboveDistrictManual Selection</p>
+            <p class="tier-list-note"> System Auto-detect Priority；If detection fails，Please click aboveDistrictManual Selection</p>
         </div>
 
         <div class="checkout-section">
@@ -439,7 +439,7 @@
                     <div class="payment-method-check">✓</div>
                 </div>
                 <div class="payment-method" id="pmWallet" onclick="selectPaymentMethod('wallet')">
-                    <div class="payment-method-icon">📱</div>
+                    <div class="payment-method-icon"></div>
                     <div class="payment-method-info">
                         <div class="payment-method-name">Apple Pay / Google Pay</div>
                         <div class="payment-method-desc">iPhone / Android One-tap Payment</div>
@@ -469,7 +469,7 @@
                     4. After submitting order，We will verify payment，Status is「PendingConfirmPayment」
                 </div>
                 <div class="fps-upload-row">
-                    <label class="fps-upload-label">📎 Upload Payment Screenshot
+                    <label class="fps-upload-label"> Upload Payment Screenshot
                         <input type="file" class="fps-upload-input" id="fpsScreenshot" accept="image/*" onchange="previewFpsScreenshot(event)">
                     </label>
                     <img class="fps-preview" id="fpsScreenshotPreview" alt="Payment Screenshot Preview">
@@ -824,7 +824,7 @@
                         name: product.name_zh,
                         nameEn: product.name_en || '',
                         price: product.price,
-                        emoji: product.emoji || '🌸'
+                        emoji: product.emoji || ''
                     };
                 }
                 return item;
@@ -851,7 +851,7 @@
         for (const tier in areaKeywords) { if (areaKeywords[tier].zh.some(k => address.includes(k)) || areaKeywords[tier].en.some(k => lowerAddress.includes(k))) { detected = tier; break; } }
         if (detected) {
             detectedArea = detected; manualArea = '';
-            document.getElementById('autoDetectTierZh').textContent = `📍 已偵測District：${areaNames[detected].zh}`;
+            document.getElementById('autoDetectTierZh').textContent = `District detected: ${areaNames[detected].zh}`;
             document.getElementById('autoDetectTierEn').textContent = `Detected: ${areaNames[detected].en} | 附加費: HK$${areaFees[detected]}`;
             document.getElementById('autoDetectBanner').classList.add('show');
             highlightTierItem(detected);
@@ -866,7 +866,7 @@
     function manualSelectTier(tier) {
         manualArea = tier; detectedArea = '';
         highlightTierItem(tier);
-        document.getElementById('autoDetectTierZh').textContent = `📍 已Manual Selection：${areaNames[tier].zh}`;
+        document.getElementById('autoDetectTierZh').textContent = `Manual selection: ${areaNames[tier].zh}`;
         document.getElementById('autoDetectTierEn').textContent = `Manual: ${areaNames[tier].en} | 附加費: HK$${areaFees[tier]}`;
         document.getElementById('autoDetectBanner').classList.add('show');
         renderSummary();
@@ -915,7 +915,7 @@
         const area = getEffectiveArea();
         const areaFee = getEffectiveAreaFee();
         const itemsHtml = cart.map(item => {
-                const itemImg = item.image ? `<img src="${item.image}" class="summary-item-img">` : `<span class="summary-item-emoji">${item.emoji || '🌸'}</span>`;
+                const itemImg = item.image ? `<img src="${item.image}" class="summary-item-img">` : `<span class="summary-item-emoji">${item.emoji || ''}</span>`;
                 return `<div class="summary-item"><span class="summary-item-info">${itemImg}<span class="summary-item-name">${item.name || 'Product'} × ${item.quantity || 1}</span></span><span>HK$${((item.price || 0) * (item.quantity || 1))}</span></div>`;
             }).join('');
         container.innerHTML = `

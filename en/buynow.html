@@ -303,7 +303,7 @@
                         name: product.name_zh,
                         nameEn: product.name_en || '',
                         price: product.price,
-                        emoji: product.emoji || '🌸',
+                        emoji: product.emoji || '',
                         image: (product.images && product.images[0]) || product.image_url || ''
                     };
                 }
@@ -328,7 +328,7 @@
             const addonsTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
             const itemTotal = ((item.price || 0) + addonsTotal) * (item.quantity || 1);
             const addonsHtml = addons.length > 0 ? `<p class="cart-item-addons">+ ${addons.map(a => a.name || '').join(', ')}</p>` : '';
-            const itemImg = item.image ? `<img src="${item.image}" class="cart-item-image">` : `<span class="cart-item-emoji">${item.emoji || '🌸'}</span>`;
+            const itemImg = item.image ? `<img src="${item.image}" class="cart-item-image">` : `<span class="cart-item-emoji">${item.emoji || ''}</span>`;
             return `<div class="cart-item">
                 ${itemImg}
                 <div class="cart-item-info">

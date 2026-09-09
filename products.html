@@ -350,10 +350,10 @@
             </div>
         </div>
         <div class="products-grid" id="productsGrid">
-            <div style="text-align:center;padding:60px;grid-column:1/-1;">🌸 正在載入...</div>
+            <div style="text-align:center;padding:60px;grid-column:1/-1;">載入中...</div>
         </div>
         <div class="no-results" id="noResults" style="display:none;">
-            <p class="no-results-emoji">🌸</p>
+            <p class="no-results-emoji"></p>
             <p class="no-results-text">沒有找到符合條件的花藝</p>
             <button class="clear-filter-btn" onclick="clearAllFilters()">清除所有篩選</button>
         </div>
@@ -530,7 +530,7 @@
             if (productImg) {
                 html += '<div class="product-card-img"><img src="' + productImg + '" alt="' + p.name_zh + '"><\/div>';
             } else {
-                html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+                html += '<div class="product-emoji">' + (p.emoji || '') + '<\/div>';
             }
             html += '<div class="product-status ' + stockClass + '">' + stockText + '<\/div>';
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';

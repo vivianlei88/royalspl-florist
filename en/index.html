@@ -277,7 +277,7 @@
             <h2 class="section-title-zh" style="cursor:pointer;" onclick="location.href='categories.html'">臻選系列</h2>
         </div>
         <div class="collections-grid" id="collectionsGrid">
-            <div style="text-align:center;padding:40px;grid-column:1/-1;">🌸 正在載入...</div>
+            <div style="text-align:center;padding:40px;grid-column:1/-1;">載入中...</div>
         </div>
     </section>
 
@@ -287,7 +287,7 @@
             <h2 class="section-title-zh" style="cursor:pointer;" onclick="location.href='products.html'">Featured Flowers</h2>
         </div>
         <div class="featured-grid" id="featuredProducts">
-            <div style="text-align:center;padding:40px;grid-column:1/-1;">🌸 正在載入...</div>
+            <div style="text-align:center;padding:40px;grid-column:1/-1;">載入中...</div>
         </div>
     </section>
 
@@ -468,7 +468,7 @@
                 var link = card.link_url || ('products.html?category=' + encodeURIComponent(card.title_zh || ''));
                 var imgHtml = card.image_url 
                     ? '<div class="collection-card-img-wrap"><img src="' + card.image_url + '" alt="' + (card.name_zh || card.name_en || '花藝系列') + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
-                    : '<div class="collection-card-img-wrap" style="background:#F3EFEA;display:flex;align-items:center;justify-content:center;"><span style="font-size:50px;">🌸</span></div>';
+                    : '<div class="collection-card-img-wrap" style="background:#F3EFEA;display:flex;align-items:center;justify-content:center;"></div>';
                 html += '<a href="' + link + '" class="collection-card collection-card-' + (i+1) + '">';
                 html += imgHtml;
                 html += '<div class="collection-card-text">';
@@ -542,7 +542,7 @@
             if (cardImg) {
                 html += '<div class="product-card-img"><img src="' + cardImg + '" alt="' + p.name_zh + '"><\/div>';
             } else {
-                html += '<div class="product-emoji">' + (p.emoji || '🌸') + '<\/div>';
+                html += '<div class="product-emoji">' + (p.emoji || '') + '<\/div>';
             }
             html += '<div class="product-card-info">';
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
@@ -566,7 +566,7 @@
         var existingItem = null;
         for (var j = 0; j < cart.length; j++) { if (cart[j].productId === productId) { existingItem = cart[j]; break; } }
         if (existingItem) { existingItem.quantity += 1; }
-        else { cart.push({ productId: product.id, name: (product.name_en || product.name_zh), nameEn: product.name_en, price: parseFloat(product.price), emoji: product.emoji || '🌸', quantity: 1, addons: [], deliveryDays: product.delivery_days || 1 }); }
+        else { cart.push({ productId: product.id, name: (product.name_en || product.name_zh), nameEn: product.name_en, price: parseFloat(product.price), emoji: product.emoji || '', quantity: 1, addons: [], deliveryDays: product.delivery_days || 1 }); }
         localStorage.setItem('royalspl_cart', JSON.stringify(cart));
         updateCartBadge();
         var toast = document.createElement('div');

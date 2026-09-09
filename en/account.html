@@ -569,7 +569,7 @@
             let html = '';
             orders.forEach(order => {
                 const img = getAccountOrderImage(order);
-                const imgHtml = img ? '<img src="' + img + '" class="account-order-img" alt="">' : '<div class="account-order-img-ph">🌸</div>';
+                const imgHtml = img ? '<img src="' + img + '" class="account-order-img" alt="">' : '<div class="account-order-img-ph"></div>';
                 const createdDate = (order.created_at || '').slice(0, 10);
                 html += '<div class="account-order-item">';
                 html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;">' + imgHtml + '</a>';

@@ -337,7 +337,7 @@
             <h2 class="section-title-zh" style="font-size: 28px;">商品詳情</h2>
         </div>
         <div class="detail-container" id="detailContainer">
-            <div style="text-align:center;padding:60px;">🌸 正在載入...</div>
+            <div style="text-align:center;padding:60px;">載入中...</div>
         </div>
 
     </main>
@@ -468,7 +468,7 @@
             window.currentProductImages = productImages;
             window.currentImageIndex = 0;
         } else {
-            html += '<div class="detail-image-area"><span class="detail-emoji">' + (product.emoji || '🌸') + '<\/span><\/div>';
+            html += '<div class="detail-image-area"><span class="detail-emoji">' + (product.emoji || '') + '<\/span><\/div>';
         }
         if (tags.length > 0) {
             html += '<div class="detail-tags-below">';
@@ -537,7 +537,7 @@
             var html = '';
             for (var i = 0; i < allAddons.length; i++) {
                 var a = allAddons[i];
-                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + a.name + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji">🎁<\/span>';
+                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + a.name + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji"><\/span>';
                 html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()"><\/span>' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><\/label>';
             }
             addonList.innerHTML = html;
@@ -672,7 +672,7 @@
                 var p = recommended[i];
                 var img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
                 html += '<a href="product-detail.html?id=' + p.id + '" class="recommend-card">';
-                html += '<div class="recommend-card-img">' + (img ? '<img src="' + img + '" alt="' + p.name_zh + '">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;">🌸</div>') + '</div>';
+                html += '<div class="recommend-card-img">' + (img ? '<img src="' + img + '" alt="' + p.name_zh + '">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;"></div>') + '</div>';
                 html += '<div class="recommend-card-name-en">' + (p.name_en || '') + '</div>';
                 html += '<div class="recommend-card-name">' + p.name_zh + '</div>';
                 html += '<div class="recommend-card-price">HK$' + p.price + '</div>';
@@ -723,7 +723,7 @@
             name: currentProduct.name_zh,
             nameEn: currentProduct.name_en,
             price: parseFloat(currentProduct.price),
-            emoji: currentProduct.emoji || '🌸',
+            emoji: currentProduct.emoji || '',
             quantity: quantity,
             addons: addons,
             deliveryDays: currentProduct.delivery_days || 1
@@ -768,7 +768,7 @@
             name: currentProduct.name_zh,
             nameEn: currentProduct.name_en,
             price: parseFloat(currentProduct.price),
-            emoji: currentProduct.emoji || '🌸',
+            emoji: currentProduct.emoji || '',
             quantity: quantity,
             addons: addons,
             deliveryDays: currentProduct.delivery_days || 1

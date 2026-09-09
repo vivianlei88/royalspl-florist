@@ -254,7 +254,7 @@
             <h1 class="page-title">設計風格 | 韓式日式法式花藝系列</h1>
         </div>
         <div class="categories-grid" id="categoriesGrid">
-            <div class="loading">🌸 正在載入...</div>
+            <div class="loading">載入中...</div>
         </div>
     </main>
 
@@ -304,7 +304,7 @@
                     const cat = categories[i];
                     const imgHtml = cat.image_url
                         ? '<div class="category-card-img-wrap"><img src="' + cat.image_url + '" alt="' + cat.name_zh + '"></div>'
-                        : '<div class="category-card-img-wrap" style="display:flex;align-items:center;justify-content:center;"><span style="font-size:50px;">🌸</span></div>';
+                        : '<div class="category-card-img-wrap" style="display:flex;align-items:center;justify-content:center;"></div>';
                     html += '<a href="products.html?category=' + encodeURIComponent(cat.name_zh) + '" class="category-card">';
                     html += imgHtml;
                     html += '<div class="category-card-text">';
