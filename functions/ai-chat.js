@@ -79,7 +79,7 @@ export async function onRequestPost(context) {
         } catch(e) {}
         
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,description,specs_flowers,scent_notes,tags,specs,is_active,image_url&is_active=eq.true&order=created_at.desc&limit=100', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,description,specs_flowers,scent_notes,tags,specs,is_active,image_url&is_active=eq.true&order=created_at.desc&limit=50', { headers });
             const products = await r.json();
             if (products && products.length > 0) {
                 knowledgeContext += '\n\n【全部商品列表】\n' + products.map(p => 
@@ -128,7 +128,7 @@ export async function onRequestPost(context) {
         }
         
         // 使用Cloudflare Workers AI（免费额度）
-        const aiResponse = await context.env.AI.run('@cf/mistral/mistral-7b-instruct-v0.1', {
+        const aiResponse = await context.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
             messages: messages,
             max_tokens: 1000,
             temperature: 0.7
