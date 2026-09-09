@@ -6564,8 +6564,165 @@ function doAdminLogin() {
         <img id="lightboxImg" class="lightbox-img" src="" alt="预览">
     </div>
 
+    <!-- 手機端底部導航欄 -->
+    <div class="mobile-bottom-nav" id="mobileBottomNav">
+        <div class="mobile-nav-item active" onclick="mobileSwitchPage('analytics')">
+            <div class="mobile-nav-icon">📊</div>
+            <div class="mobile-nav-text">首頁</div>
+        </div>
+        <div class="mobile-nav-item" onclick="mobileSwitchPage('orders')">
+            <div class="mobile-nav-icon">📦</div>
+            <div class="mobile-nav-text">訂單</div>
+        </div>
+        <div class="mobile-nav-item" onclick="mobileSwitchPage('products')">
+            <div class="mobile-nav-icon">🌸</div>
+            <div class="mobile-nav-text">商品</div>
+        </div>
+        <div class="mobile-nav-item" onclick="openChatPanel()">
+            <div class="mobile-nav-icon">💬</div>
+            <div class="mobile-nav-text">客服</div>
+        </div>
+        <div class="mobile-nav-item" onclick="mobileSwitchPage('settings')">
+            <div class="mobile-nav-icon">⚙️</div>
+            <div class="mobile-nav-text">我的</div>
+        </div>
+    </div>
 
+    <style>
+    /* 手機端專用樣式 - 大字體大按鈕 */
+    @media (max-width: 768px) {
+        body {
+            font-size: 18px !important;
+            padding-bottom: 70px;
+        }
+        .sidebar {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 0 !important;
+            padding: 15px !important;
+        }
+        .top-bar {
+            padding: 12px 15px !important;
+        }
+        .top-bar span, .top-bar a {
+            font-size: 16px !important;
+        }
+        .page-title {
+            font-size: 24px !important;
+            margin-bottom: 15px !important;
+        }
+        .page-header h3 {
+            font-size: 22px !important;
+        }
+        .form-label {
+            font-size: 17px !important;
+            margin-bottom: 8px !important;
+        }
+        .form-input, .form-textarea, .form-select {
+            font-size: 18px !important;
+            padding: 14px !important;
+            min-height: 50px !important;
+        }
+        .btn {
+            padding: 14px 24px !important;
+            font-size: 17px !important;
+            min-height: 50px !important;
+            border-radius: 8px !important;
+        }
+        .btn-primary {
+            font-size: 18px !important;
+            padding: 16px 28px !important;
+        }
+        .data-table th, .data-table td {
+            font-size: 16px !important;
+            padding: 12px 8px !important;
+        }
+        .card, .stat-card, .dashboard-card {
+            padding: 20px !important;
+            margin-bottom: 15px !important;
+        }
+        .stat-number {
+            font-size: 32px !important;
+        }
+        .stat-label {
+            font-size: 16px !important;
+        }
+        /* 底部導航欄 */
+        .mobile-bottom-nav {
+            display: flex !important;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1A1A1A;
+            padding: 8px 0;
+            z-index: 99999;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+        .mobile-nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px 5px;
+            cursor: pointer;
+            color: #999;
+        }
+        .mobile-nav-item.active {
+            color: white;
+        }
+        .mobile-nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .mobile-nav-text {
+            font-size: 13px;
+        }
+        /* 表格改為卡片式 */
+        .data-table {
+            display: block;
+            overflow-x: auto;
+        }
+        /* 增大模態框 */
+        .modal-content {
+            width: 95% !important;
+            max-height: 90vh !important;
+            padding: 20px !important;
+        }
+        .modal-title {
+            font-size: 22px !important;
+        }
+        /* 列表項增大 */
+        .sidebar-item {
+            padding: 15px !important;
+            font-size: 17px !important;
+        }
+        /* 快捷按鈕 */
+        .quick-action-btn {
+            min-height: 60px !important;
+            font-size: 18px !important;
+        }
+    }
+    .mobile-bottom-nav {
+        display: none;
+    }
+    </style>
 
+    <script>
+    // 手機端頁面切換
+    function mobileSwitchPage(page) {
+        // 更新底部導航激活狀態
+        document.querySelectorAll('.mobile-nav-item').forEach(item => item.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        // 切換頁面
+        if (page === 'settings') {
+            switchPage('admins'); // 我的頁面顯示管理員
+        } else {
+            switchPage(page);
+        }
+        // 滾動到頂部
+        window.scrollTo(0, 0);
+    }
+    </script>
 
 </body>
 </html>
