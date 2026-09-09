@@ -38,6 +38,11 @@ async function generateOrderPdfBase64(o) {
 
 function buildPdfHtml(o) {
     var shop = o.shop || SHOP_INFO;
+    var shopName = o.shopName || shop.name || 'RoyalSpl Florist';
+    var shopLogo = o.shopLogo || shop.logo || '';
+    var shopPhone = o.shopPhone || shop.phone || shop.whatsapp || '';
+    var shopEmail = o.shopEmail || shop.email || '';
+    var shopAddress = o.shopAddress || shop.address || '';
 
     // —— 解析訂單明細（支援 items 陣列 / product_names 字串 / product_images 陣列）——
     var rows = '';
@@ -48,6 +53,7 @@ function buildPdfHtml(o) {
     if (o.productNames) names = Array.isArray(o.productNames) ? o.productNames : String(o.productNames).split('|');
     if (o.productImages) images = Array.isArray(o.productImages) ? o.productImages : String(o.productImages).split('|');
 
+    var itemCount = 0;
     if (items && items.length) {
         for (var i = 0; i < items.length; i++) {
             var it = items[i] || {};
@@ -56,52 +62,81 @@ function buildPdfHtml(o) {
             var q = it.quantity || 1;
             var pr = (it.price != null && it.price !== '') ? parseFloat(it.price) : 0;
             rows += orderItemRow(img, nm, q, pr);
+            itemCount++;
         }
     } else if (names) {
         for (var j = 0; j < names.length; j++) {
             if (!names[j]) continue;
             var img2 = (images && images[j]) || '';
-            rows += orderItemRow(img2, names[j], 1, 0);
+            var unitPrice = o.subtotal ? (parseFloat(o.subtotal) / names.filter(Boolean).length) : 0;
+            rows += orderItemRow(img2, names[j], 1, unitPrice);
+            itemCount++;
         }
     } else {
         rows = '<tr><td style="padding:10px;border:1px solid #D8DEE6;text-align:center;color:#888;" colspan="5">花禮商品</td></tr>';
+        itemCount = 1;
     }
 
-    // —— 店舖資訊區 ——
+    // —— 付款狀態映射 ——
+    var paymentStatusMap = {
+        'unpaid': '待付款',
+        'pending_payment': '待付款',
+        'paid': '已付款',
+        'shipped': '已付款',
+        'archived': '已付款',
+        'cancelled': '已取消'
+    };
+    var paymentStatus = o.paymentStatus || paymentStatusMap[o.status] || o.status || '-';
+
+    // —— 配送時段映射 ——
+    var timeSlotMap = {
+        'full_day': '全日',
+        'morning': '上午 (9:00-13:00)',
+        'afternoon': '下午 (13:00-18:00)',
+        'evening': '晚上 (18:00-21:00)'
+    };
+    var deliveryTime = timeSlotMap[o.deliveryTime] || o.deliveryTime || '-';
+
+    // —— 下單日期格式化 ——
+    var orderDate = '-';
+    if (o.createdAt) {
+        try {
+            var d = new Date(o.createdAt);
+            orderDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        } catch(e) {}
+    }
+
+    // —— 付款方式 ——
+    var paymentMethod = o.paymentMethod || '-';
+    if (o.payment_method === 'fps') paymentMethod = '轉數快 FPS';
+    else if (o.payment_method === 'card') paymentMethod = '信用卡/Apple Pay';
+
+    // —— 店舖聯絡資訊 ——
     var contactParts = [];
-    if (shop.email) contactParts.push(shop.email);
-    if (shop.whatsapp) contactParts.push('WhatsApp ' + shop.whatsapp);
-    if (shop.phone) contactParts.push(shop.phone);
-    var contactLine = contactParts.join(' · ');
-
-    var shopBlock = '<div style="background:#1E3A5F;color:#fff;padding:20px 24px;border-radius:8px;text-align:center;">'
-        + (shop.logo ? '<img src="' + shop.logo + '" style="width:104px;height:104px;object-fit:contain;background:#fff;border-radius:10px;padding:6px;margin-bottom:12px;display:inline-block;" onerror="this.style.display=\'none\';" />' : '')
-        + '<div style="font-size:26px;font-weight:bold;letter-spacing:3px;">' + shop.name + '</div>'
-        + '<div style="font-size:13px;margin-top:8px;opacity:0.92;">' + (contactLine || '') + '</div>'
-        + (shop.address ? '<div style="font-size:13px;margin-top:4px;opacity:0.92;">📍 ' + shop.address + '</div>' : '')
-        + '</div>';
-
-    // —— 訂購人 / 收貨人 ——
-    var customer = (o.customerName || '') + (o.customerPhone ? '（' + o.customerPhone + '）' : '') + (o.customerEmail ? ' · ' + o.customerEmail : '');
-    var recipient = (o.recipientName || '') + (o.recipientPhone ? '（' + o.recipientPhone + '）' : '');
-    var delivery = (o.deliveryDate || '-') + (o.deliveryTime ? '（' + o.deliveryTime + '）' : '');
+    if (shopPhone) contactParts.push('電話：' + shopPhone);
+    if (shopEmail) contactParts.push('電郵：' + shopEmail);
+    if (shopAddress) contactParts.push('地址：' + shopAddress);
+    contactParts.push('網址：www.royalspl.shop');
 
     return '<div style="width:600px;margin:0 auto;font-family:Arial,\'Noto Sans TC\',\'Microsoft JhengHei\',sans-serif;padding:8px;background:#fff;color:#1A1B1C;">'
         + '<div style="border:1px solid #E4E3DD;border-radius:10px;padding:26px 30px;">'
-        + shopBlock
-        + '<p style="text-align:center;font-size:15px;color:#1E3A5F;font-weight:bold;letter-spacing:4px;margin:18px 0 16px;">訂單確認書</p>'
+        // 店舖Logo + 名稱
+        + (shopLogo ? '<div style="text-align:center;margin-bottom:15px;"><img src="' + shopLogo + '" style="max-width:80px;max-height:80px;object-fit:contain;" onerror="this.style.display=\'none\';"></div>' : '')
+        + '<h1 style="text-align:center;border-bottom:3px solid #1E3A5F;padding-bottom:15px;margin:0 0 10px 0;font-size:24px;">' + shopName + '</h1>'
+        + '<p style="text-align:center;font-size:18px;font-weight:bold;margin:15px 0;color:#1A1A1A;">購物收據 / Official Receipt</p>'
 
-        // 訂單基本資料
-        + '<table style="width:100%;font-size:13px;margin-bottom:12px;border-collapse:collapse;">'
-        + '<tr><td style="padding:3px 0;"><b>訂單編號：</b>' + (o.orderCode || '-') + '</td><td style="padding:3px 0;"><b>狀態：</b>' + (o.status || '-') + '</td></tr>'
-        + '<tr><td style="padding:3px 0;"><b>送貨日期：</b>' + delivery + '</td><td style="padding:3px 0;"><b>配送區域：</b>' + (o.deliveryArea || '-') + '</td></tr>'
+        // 訂單資訊
+        + '<table style="width:100%;margin:15px 0;border-collapse:collapse;font-size:13px;">'
+        + '<tr><td style="padding:6px 0;"><b>訂單編號：</b>' + (o.orderCode || '-') + '</td><td style="padding:6px 0;"><b>下單日期：</b>' + orderDate + '</td></tr>'
+        + '<tr><td style="padding:6px 0;"><b>送貨日期：</b>' + (o.deliveryDate || '-') + '</td><td style="padding:6px 0;"><b>配送時段：</b>' + deliveryTime + '</td></tr>'
+        + '<tr><td style="padding:6px 0;"><b>付款狀態：</b>' + paymentStatus + '</td><td style="padding:6px 0;"><b>付款方式：</b>' + paymentMethod + '</td></tr>'
         + '</table>'
 
-        // 訂購人 + 收貨人
-        + '<table style="width:100%;font-size:13px;background:#F4F6F9;border-radius:6px;padding:0;margin-bottom:16px;">'
-        + '<tr><td style="padding:8px 12px;border-bottom:1px solid #E4E3DD;"><b>訂購人：</b>' + (customer || '-') + '</td></tr>'
-        + '<tr><td style="padding:8px 12px;border-bottom:1px solid #E4E3DD;"><b>收貨人：</b>' + (recipient || '-') + '</td></tr>'
-        + '<tr><td style="padding:8px 12px;"><b>送貨地址：</b>' + (o.address || '-') + '</td></tr>'
+        // 收件人資訊
+        + '<table style="width:100%;margin:10px 0;border-collapse:collapse;font-size:13px;">'
+        + '<tr><td style="padding:6px 0;"><b>收件人：</b>' + (o.recipientName || '-') + '</td><td style="padding:6px 0;"><b>電話：</b>' + (o.recipientPhone || '-') + '</td></tr>'
+        + '<tr><td colspan="2" style="padding:6px 0;"><b>地址：</b>' + (o.address || '-') + '</td></tr>'
+        + (o.customerEmail ? '<tr><td colspan="2" style="padding:6px 0;"><b>客戶電郵：</b>' + o.customerEmail + '</td></tr>' : '')
         + '</table>'
 
         // 商品明細（含圖片）
@@ -118,15 +153,22 @@ function buildPdfHtml(o) {
 
         // 金額合計
         + '<table style="width:58%;margin-left:auto;margin-top:14px;font-size:13px;border-collapse:collapse;">'
-        + '<tr><td style="padding:4px 0;">商品小計：</td><td style="padding:4px 0;text-align:right;">HK$' + fmtMoney(o.subtotal) + '</td></tr>'
-        + '<tr><td style="padding:4px 0;">配送費：</td><td style="padding:4px 0;text-align:right;">HK$' + fmtMoney(o.deliveryFee) + '</td></tr>'
-        + '<tr style="font-size:18px;font-weight:bold;"><td style="padding:6px 0;border-top:1px solid #ccc;">總計：</td><td style="padding:6px 0;border-top:1px solid #ccc;text-align:right;">HK$' + fmtMoney(o.total) + '</td></tr>'
+        + '<tr><td style="padding:5px 0;">小計：</td><td style="padding:5px 0;text-align:right;">HK$' + fmtMoney(o.subtotal) + '</td></tr>'
+        + '<tr><td style="padding:5px 0;">運費：</td><td style="padding:5px 0;text-align:right;">HK$' + fmtMoney(o.deliveryFee) + '</td></tr>'
+        + (o.discountAmount && parseFloat(o.discountAmount) > 0 ? '<tr><td style="padding:5px 0;color:#d32f2f;">折扣：</td><td style="padding:5px 0;text-align:right;color:#d32f2f;">-HK$' + fmtMoney(o.discountAmount) + '</td></tr>' : '')
+        + '<tr style="font-size:18px;font-weight:bold;"><td style="padding:8px 0;border-top:2px solid #333;">總計：</td><td style="padding:8px 0;border-top:2px solid #333;text-align:right;">HK$' + fmtMoney(o.total || o.totalAmount) + '</td></tr>'
         + '</table>'
 
-        + (o.cardMessage ? '<div style="background:#FFF8E1;padding:11px 14px;border-left:4px solid #FFC107;margin-top:14px;font-size:13px;"><b>心意卡：</b>' + o.cardMessage + '</div>' : '')
-        + (o.remarks ? '<div style="background:#F0F4F8;padding:11px 14px;border-left:4px solid #8BC8EA;margin-top:10px;font-size:13px;"><b>特別事項：</b>' + o.remarks + '</div>' : '')
+        // 心意卡
+        + (o.cardMessage ? '<div style="background:#FFF8E1;padding:12px 15px;border-left:4px solid #FFC107;margin:18px 0;font-size:13px;"><b>心意卡：</b>' + o.cardMessage + '</div>' : '')
 
-        + '<p style="text-align:center;margin-top:22px;font-size:11px;color:#888;">感謝您的訂購！如有疑問請聯絡 ' + shop.name + ' · ' + shop.email + '</p>'
+        // 店舖聯絡資訊
+        + '<div style="margin-top:25px;padding-top:18px;border-top:1px solid #ddd;font-size:12px;color:#666;line-height:1.8;text-align:center;">'
+        + contactParts.join('<br>')
+        + '</div>'
+
+        // 底部
+        + '<p style="text-align:center;margin-top:18px;color:#999;font-size:11px;">此為電腦發出之收據，無需簽署<br>感謝您的訂購！</p>'
         + '</div>'
         + '</div>';
 }
