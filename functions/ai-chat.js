@@ -127,8 +127,82 @@ export async function onRequestPost(context) {
             messages.push({ role: 'user', content: message });
         }
         
-        // 使用Cloudflare Workers AI（免费额度）
-        // 尝试多个模型，确保可用性
+        // 优先使用 Gemini API（如果配置了）
+        const GEMINI_API_KEY = context.env.GEMINI_API_KEY || context.env.GEMINI_KEY || '';
+        
+        if (GEMINI_API_KEY) {
+            try {
+                console.log('使用 Gemini API');
+                
+                // 转换消息格式为 Gemini 格式
+                const geminiContents = [];
+                const systemMsg = messages.find(m => m.role === 'system');
+                const chatMessages = messages.filter(m => m.role !== 'system');
+                
+                for (let i = 0; i < chatMessages.length; i++) {
+                    const m = chatMessages[i];
+                    const role = m.role === 'assistant' ? 'model' : 'user';
+                    let parts = [];
+                    
+                    if (typeof m.content === 'string') {
+                        parts = [{ text: m.content }];
+                    } else if (Array.isArray(m.content)) {
+                        parts = m.content.map(p => {
+                            if (p.type === 'text') return { text: p.text };
+                            if (p.type === 'image_url') return { inlineData: { data: p.image_url.url.replace(/^data:image\/\w+;base64,/, ''), mimeType: 'image/jpeg' } };
+                            return { text: '' };
+                        });
+                    }
+                    
+                    geminiContents.push({ role: role, parts: parts });
+                }
+                
+                const geminiBody = {
+                    contents: geminiContents,
+                    generationConfig: {
+                        maxOutputTokens: 1000,
+                        temperature: 0.7
+                    }
+                };
+                
+                if (systemMsg && systemMsg.content) {
+                    geminiBody.systemInstruction = {
+                        parts: [{ text: systemMsg.content }]
+                    };
+                }
+                
+                const geminiResp = await fetch(
+                    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_API_KEY,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(geminiBody)
+                    }
+                );
+                
+                const geminiData = await geminiResp.json();
+                
+                if (geminiData.candidates && geminiData.candidates[0] && 
+                    geminiData.candidates[0].content && 
+                    geminiData.candidates[0].content.parts &&
+                    geminiData.candidates[0].content.parts[0]) {
+                    const reply = geminiData.candidates[0].content.parts[0].text;
+                    if (reply) {
+                        return Response.json({ 
+                            reply: reply,
+                            model: 'gemini-2.0-flash'
+                        });
+                    }
+                }
+                
+                console.error('Gemini 返回异常:', JSON.stringify(geminiData).substring(0, 500));
+            } catch (e) {
+                console.error('Gemini API 调用失败:', e.message);
+                // 失败后继续尝试 Cloudflare Workers AI
+            }
+        }
+        
+        // 使用Cloudflare Workers AI（免费额度）- 作为 fallback
         const models = [
             '@cf/google/gemma-2-9b-it',
             '@cf/google/gemma-7b-it',
