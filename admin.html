@@ -762,13 +762,17 @@
                 if (unread.length > 0) {
                     badge.style.display = 'block';
                     badge.textContent = unread.length > 99 ? '99+' : unread.length;
+                    const latest = unread[0];
                     // 瀏覽器通知
-                    if (unread.length > 0 && Notification.permission === 'granted') {
-                        const latest = unread[0];
+                    if (Notification.permission === 'granted') {
                         new Notification('新客服消息', {
                             body: (latest.content || '').substring(0, 50),
                             icon: 'https://www.royalspl.shop/favicon.ico'
                         });
+                    }
+                    // 手機端頁面內彈出提示
+                    if (window.innerWidth <= 768) {
+                        showMobileAlert('新客服消息！', (latest.content || '').substring(0, 100), 'chat');
                     }
                     // 聲音提醒
                     playNotificationSound();
@@ -2676,17 +2680,55 @@
     function playNotificationSound() {
         try {
             var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            var oscillator = audioCtx.createOscillator();
-            var gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.frequency.value = 880;
-            oscillator.type = 'sine';
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 0.3);
+            // 叮咚聲 - 兩次提示音
+            var playDing = function(freq, startTime, duration) {
+                var oscillator = audioCtx.createOscillator();
+                var gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime + startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + startTime + duration);
+                oscillator.start(audioCtx.currentTime + startTime);
+                oscillator.stop(audioCtx.currentTime + startTime + duration);
+            };
+            playDing(880, 0, 0.25); // 叮
+            playDing(1100, 0.25, 0.35); // 咚
         } catch (e) {}
+    }
+
+    // 手機端頁面內彈出提示
+    function showMobileAlert(title, message, type) {
+        // 移除舊的提示
+        var old = document.getElementById('mobileAlertOverlay');
+        if (old) old.remove();
+        
+        var overlay = document.createElement('div');
+        overlay.id = 'mobileAlertOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;';
+        
+        var box = document.createElement('div');
+        var bgColor = type === 'order' ? '#1A1A1A' : '#2D5016';
+        box.style.cssText = 'background:white;border-radius:16px;padding:30px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);animation:mobileAlertPop 0.3s ease-out;';
+        
+        var icon = type === 'order' ? '📦' : '💬';
+        box.innerHTML = `
+            <div style="font-size:60px;margin-bottom:15px;">${icon}</div>
+            <div style="font-size:24px;font-weight:bold;color:${bgColor};margin-bottom:10px;">${title}</div>
+            <div style="font-size:18px;color:#333;line-height:1.6;margin-bottom:25px;">${message}</div>
+            <button onclick="document.getElementById('mobileAlertOverlay').remove()" style="width:100%;padding:16px;background:${bgColor};color:white;border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;">知道了</button>
+        `;
+        
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        
+        // 5秒後自動關閉
+        setTimeout(function() {
+            if (document.getElementById('mobileAlertOverlay')) {
+                document.getElementById('mobileAlertOverlay').remove();
+            }
+        }, 8000);
     }
 
     // ==================== 訂單提醒 ====================
@@ -2717,13 +2759,18 @@
 
             if (newNotifications.length > 0) {
                 updateNotificationBadge();
+                var latest = newNotifications[0];
+                var statusText = getOrderStatusText(latest.status);
+                // 瀏覽器通知
                 if (Notification.permission === 'granted') {
-                    var latest = newNotifications[0];
-                    var statusText = getOrderStatusText(latest.status);
                     new Notification('訂單提醒', {
                         body: '訂單 ' + latest.order_code + ' 狀態：' + statusText + '，金額：HK$' + latest.total_amount,
                         icon: 'https://www.royalspl.shop/favicon.ico'
                     });
+                }
+                // 手機端頁面內彈出提示
+                if (window.innerWidth <= 768) {
+                    showMobileAlert('新訂單！', '訂單號：' + latest.order_code + '<br>狀態：' + statusText + '<br>金額：HK$' + latest.total_amount, 'order');
                 }
                 playNotificationSound();
                 showToast(' 新訂單：' + latest.order_code + ' - ' + getOrderStatusText(latest.status));
@@ -6701,6 +6748,10 @@ function doAdminLogin() {
     }
     .mobile-top-nav {
         display: none;
+    }
+    @keyframes mobileAlertPop {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
     }
     </style>
 
