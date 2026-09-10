@@ -676,7 +676,7 @@
             // 等待一小段时间确保状态清理完成
             await new Promise(r => setTimeout(r, 300));
             
-            const redirectUrl = window.location.origin + '/admin.html';
+            const redirectUrl = window.location.origin + '/admin';
             console.log('Redirect URL:', redirectUrl);
             
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
