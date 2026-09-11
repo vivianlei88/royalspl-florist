@@ -4663,7 +4663,7 @@ async function saveProduct() {
         filteredEmails.forEach(function(email) {
             var isRead = email.is_read;
             var rowStyle = isRead ? 'background:white;' : 'background:#f0f7ff;font-weight:600;';
-            var time = new Date(email.created_at).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
+            var time = new Date(email.created_at + 'Z').toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
             var category = email.category || '其他';
             
             html += '<tr style="' + rowStyle + 'border-bottom:1px solid #eee;cursor:pointer;" onclick="viewEmail(' + email.id + ')">';
@@ -4716,7 +4716,7 @@ async function saveProduct() {
         if (listView) listView.style.display = 'none';
         if (detailView) detailView.style.display = 'block';
         
-        var time = new Date(email.created_at).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
+        var time = new Date(email.created_at + 'Z').toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
         
         var html = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">';
         html += '<button class="btn btn-secondary" onclick="backToEmailList()">← 返回列表</button>';
