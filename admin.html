@@ -4556,13 +4556,34 @@ async function saveProduct() {
         html += '<div id="inboxListView"><div id="emailsList" style="margin-top:15px;">加載中...</div></div>';
         html += '<div id="emailDetailView" style="display:none;margin-top:15px;"></div>';
         
-        // 回复邮件弹窗
-        html += '<div id="replyEmailModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;">';
-        html += '<div style="background:white;border-radius:10px;padding:25px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto;">';
+        // 回复邮件弹窗（富文本编辑器）
+        html += '<div id="replyEmailModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;">';
+        html += '<div style="background:white;border-radius:10px;padding:25px;width:90%;max-width:700px;max-height:85vh;overflow-y:auto;">';
         html += '<h3 style="margin:0 0 15px 0;">回復郵件</h3>';
         html += '<div style="margin-bottom:10px;"><strong>收件人：</strong><span id="replyToEmail"></span></div>';
         html += '<div style="margin-bottom:10px;"><strong>主題：</strong><span id="replySubject"></span></div>';
-        html += '<textarea id="replyContent" rows="8" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;resize:vertical;" placeholder="輸入回復內容..."></textarea>';
+        // 富文本工具栏
+        html += '<div style="border:1px solid #ddd;border-bottom:none;border-radius:5px 5px 0 0;padding:8px;background:#f5f5f5;display:flex;gap:5px;flex-wrap:wrap;">';
+        html += '<button type="button" onclick="execFormat(\'bold\')" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;font-weight:bold;">B</button>';
+        html += '<button type="button" onclick="execFormat(\'italic\')" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;font-style:italic;">I</button>';
+        html += '<button type="button" onclick="execFormat(\'underline\')" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;text-decoration:underline;">U</button>';
+        html += '<select onchange="execFormat(\'fontSize\', this.value)" style="padding:5px;border:1px solid #ccc;border-radius:3px;">';
+        html += '<option value="">字體大小</option>';
+        html += '<option value="1">小</option>';
+        html += '<option value="3">正常</option>';
+        html += '<option value="5">大</option>';
+        html += '<option value="7">特大</option>';
+        html += '</select>';
+        html += '<input type="color" onchange="execFormat(\'foreColor\', this.value)" style="width:30px;height:28px;border:1px solid #ccc;cursor:pointer;" title="字體顏色">';
+        html += '<button type="button" onclick="execFormat(\'justifyLeft\')" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;">左對齊</button>';
+        html += '<button type="button" onclick="execFormat(\'justifyCenter\')" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;">居中</button>';
+        html += '<button type="button" onclick="execFormat(\'justifyRight\')" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;">右對齊</button>';
+        html += '<button type="button" onclick="insertLink()" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;">🔗 鏈接</button>';
+        html += '<button type="button" onclick="insertImage()" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;">🖼️ 圖片</button>';
+        html += '<button type="button" onclick="execFormat(\'removeFormat\')" style="padding:5px 10px;border:1px solid #ccc;background:white;cursor:pointer;border-radius:3px;">清除格式</button>';
+        html += '</div>';
+        // 富文本编辑区
+        html += '<div id="replyContent" contenteditable="true" style="width:100%;min-height:200px;padding:10px;border:1px solid #ddd;border-radius:0 0 5px 5px;font-size:14px;line-height:1.6;" placeholder="輸入回復內容..."></div>';
         html += '<div style="display:flex;gap:10px;margin-top:15px;justify-content:flex-end;">';
         html += '<button class="btn btn-secondary" onclick="closeReplyModal()">取消</button>';
         html += '<button class="btn btn-primary" onclick="sendReplyEmail()">發送回復</button>';
@@ -4733,7 +4754,7 @@ async function saveProduct() {
         
         document.getElementById('replyToEmail').textContent = email.from_email;
         document.getElementById('replySubject').textContent = 'Re: ' + email.subject;
-        document.getElementById('replyContent').value = '';
+        document.getElementById('replyContent').innerHTML = '';
         document.getElementById('replyEmailModal').style.display = 'flex';
     }
     
@@ -4741,17 +4762,39 @@ async function saveProduct() {
         document.getElementById('replyEmailModal').style.display = 'none';
     }
     
+    // 富文本编辑函数
+    function execFormat(command, value) {
+        document.getElementById('replyContent').focus();
+        document.execCommand(command, false, value || null);
+    }
+    
+    function insertLink() {
+        var url = prompt('請輸入鏈接URL：', 'https://');
+        if (url) {
+            document.getElementById('replyContent').focus();
+            document.execCommand('createLink', false, url);
+        }
+    }
+    
+    function insertImage() {
+        var url = prompt('請輸入圖片URL：', 'https://');
+        if (url) {
+            document.getElementById('replyContent').focus();
+            document.execCommand('insertImage', false, url);
+        }
+    }
+    
     async function sendReplyEmail() {
         var toEmail = document.getElementById('replyToEmail').textContent;
         var subject = document.getElementById('replySubject').textContent;
-        var content = document.getElementById('replyContent').value;
+        var content = document.getElementById('replyContent').innerHTML;
         
-        if (!content.trim()) {
+        if (!content.trim() || content === '<br>') {
             showToast('請輸入回復內容');
             return;
         }
         
-        var htmlContent = '<p>' + content.replace(/\n/g, '<br>') + '</p><br><p>Best regards,<br>RoyalSpl Florist</p>';
+        var htmlContent = content + '<br><br><p>Best regards,<br>RoyalSpl Florist</p>';
         
         try {
             var resp = await fetch('/send-email', {
@@ -4761,7 +4804,7 @@ async function saveProduct() {
                     to: toEmail,
                     subject: subject,
                     html: htmlContent,
-                    text: content
+                    text: content.replace(/<[^>]*>/g, '')
                 })
             });
             
