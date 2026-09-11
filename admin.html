@@ -529,6 +529,7 @@
                 </div>
             </div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
+            <div class="sidebar-item" data-page="inbox" onclick="switchPage('inbox')">收件箱</div>
             <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
             <div class="sidebar-item" data-page="visitors" onclick="switchPage('visitors')">在線訪客</div>
             <div class="sidebar-group" id="contentMenuGroup" onmouseenter="showContentMenu()" onmouseleave="hideContentMenu()">
@@ -2803,6 +2804,7 @@
         else if (page === 'categories') { renderCategoriesPage(c); }
         else if (page === 'addons') { renderAddonsPage(c); }
         else if (page === 'orders') { renderOrdersPage(c); }
+        else if (page === 'inbox') { renderInboxPage(c); }
         else if (page === 'members') { renderMembersPage(c); }
         else if (page === 'visitors') { renderVisitorsPage(c); }
         else if (page === 'template') { renderTemplatePage(c); }
@@ -4524,6 +4526,177 @@ async function saveProduct() {
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
     </script>
         <script>
+    // ==================== 收件箱 ====================
+    var allReceivedEmails = [];
+    var currentEmailId = null;
+    
+    function renderInboxPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">收件箱</h2><div style="display:flex;gap:10px;"><button class="btn btn-secondary" onclick="refreshInbox()">刷新</button><button class="btn btn-danger" onclick="deleteSelectedEmails()">批量刪除</button></div></div>';
+        c.innerHTML += '<div id="inboxListView"><div id="emailsList" style="margin-top:15px;">加載中...</div></div>';
+        c.innerHTML += '<div id="emailDetailView" style="display:none;margin-top:15px;"></div>';
+        loadReceivedEmails();
+    }
+    
+    async function loadReceivedEmails() {
+        try {
+            var { data, error } = await supabaseClient
+                .from('received_emails')
+                .select('*')
+                .eq('is_deleted', false)
+                .order('created_at', { ascending: false })
+                .limit(100);
+            
+            if (error) {
+                document.getElementById('emailsList').innerHTML = '<div style="padding:20px;color:#999;">加載失敗：' + error.message + '</div>';
+                return;
+            }
+            
+            allReceivedEmails = data || [];
+            renderEmailsList();
+            updateInboxBadge();
+        } catch (e) {
+            document.getElementById('emailsList').innerHTML = '<div style="padding:20px;color:#999;">加載失敗：' + e.message + '</div>';
+        }
+    }
+    
+    function renderEmailsList() {
+        var container = document.getElementById('emailsList');
+        if (!container) return;
+        
+        if (allReceivedEmails.length === 0) {
+            container.innerHTML = '<div style="padding:40px;text-align:center;color:#999;font-size:16px;">暫無郵件<br><span style="font-size:13px;">發送郵件到 info@royalspl.xyz 即可在此查看</span></div>';
+            return;
+        }
+        
+        var html = '<table style="width:100%;border-collapse:collapse;">';
+        html += '<thead><tr style="background:#1A1A1A;color:white;">';
+        html += '<th style="padding:12px;text-align:left;width:40px;"><input type="checkbox" id="selectAllEmails" onchange="toggleSelectAllEmails(this)"></th>';
+        html += '<th style="padding:12px;text-align:left;width:200px;">發件人</th>';
+        html += '<th style="padding:12px;text-align:left;">主題</th>';
+        html += '<th style="padding:12px;text-align:left;width:180px;">收件時間</th>';
+        html += '<th style="padding:12px;text-align:center;width:80px;">操作</th>';
+        html += '</tr></thead><tbody>';
+        
+        allReceivedEmails.forEach(function(email) {
+            var isRead = email.is_read;
+            var rowStyle = isRead ? 'background:white;' : 'background:#f0f7ff;font-weight:600;';
+            var time = new Date(email.created_at).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
+            
+            html += '<tr style="' + rowStyle + 'border-bottom:1px solid #eee;cursor:pointer;" onclick="viewEmail(' + email.id + ')">';
+            html += '<td style="padding:12px;" onclick="event.stopPropagation();"><input type="checkbox" class="email-checkbox" value="' + email.id + '"></td>';
+            html += '<td style="padding:12px;">' + (email.from_name ? email.from_name + '<br><span style="font-size:12px;color:#888;font-weight:400;">' + email.from_email + '</span>' : email.from_email) + '</td>';
+            html += '<td style="padding:12px;">' + (isRead ? '' : '<span style="color:#2563eb;">● </span>') + email.subject + '</td>';
+            html += '<td style="padding:12px;font-size:13px;color:#666;">' + time + '</td>';
+            html += '<td style="padding:12px;text-align:center;" onclick="event.stopPropagation();">';
+            html += '<button class="btn btn-danger btn-small" onclick="deleteEmail(' + email.id + ')" style="padding:4px 10px;font-size:12px;">刪除</button>';
+            html += '</td>';
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+    
+    async function viewEmail(id) {
+        var email = allReceivedEmails.find(function(e) { return e.id === id; });
+        if (!email) return;
+        
+        currentEmailId = id;
+        
+        // 标记为已读
+        if (!email.is_read) {
+            await supabaseClient.from('received_emails').update({ is_read: true }).eq('id', id);
+            email.is_read = true;
+            updateInboxBadge();
+        }
+        
+        var listView = document.getElementById('inboxListView');
+        var detailView = document.getElementById('emailDetailView');
+        if (listView) listView.style.display = 'none';
+        if (detailView) detailView.style.display = 'block';
+        
+        var time = new Date(email.created_at).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
+        
+        var html = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">';
+        html += '<button class="btn btn-secondary" onclick="backToEmailList()">← 返回列表</button>';
+        html += '<button class="btn btn-danger" onclick="deleteEmail(' + id + ')">刪除郵件</button>';
+        html += '</div>';
+        
+        html += '<div style="background:white;border:1px solid #eee;border-radius:8px;padding:25px;">';
+        html += '<h2 style="font-size:22px;margin:0 0 15px 0;">' + email.subject + '</h2>';
+        html += '<div style="border-bottom:1px solid #eee;padding-bottom:15px;margin-bottom:20px;">';
+        html += '<div style="margin-bottom:8px;"><strong>發件人：</strong>' + (email.from_name ? email.from_name + ' (' + email.from_email + ')' : email.from_email) + '</div>';
+        html += '<div style="margin-bottom:8px;"><strong>收件人：</strong>' + email.to_email + '</div>';
+        html += '<div><strong>時間：</strong>' + time + '</div>';
+        html += '</div>';
+        
+        // 邮件内容
+        if (email.html_content) {
+            html += '<div style="line-height:1.8;font-size:15px;" id="emailHtmlContent">' + email.html_content + '</div>';
+        } else if (email.text_content) {
+            html += '<div style="line-height:1.8;font-size:15px;white-space:pre-wrap;">' + email.text_content + '</div>';
+        } else {
+            html += '<div style="color:#999;">（無內容）</div>';
+        }
+        
+        html += '</div>';
+        
+        detailView.innerHTML = html;
+    }
+    
+    function backToEmailList() {
+        var listView = document.getElementById('inboxListView');
+        var detailView = document.getElementById('emailDetailView');
+        if (listView) listView.style.display = 'block';
+        if (detailView) detailView.style.display = 'none';
+        currentEmailId = null;
+        renderEmailsList();
+    }
+    
+    async function deleteEmail(id) {
+        if (!confirm('確定刪除這封郵件嗎？')) return;
+        await supabaseClient.from('received_emails').update({ is_deleted: true }).eq('id', id);
+        if (currentEmailId === id) {
+            backToEmailList();
+        }
+        loadReceivedEmails();
+        showToast('郵件已刪除');
+    }
+    
+    function toggleSelectAllEmails(checkbox) {
+        var checkboxes = document.querySelectorAll('.email-checkbox');
+        checkboxes.forEach(function(cb) { cb.checked = checkbox.checked; });
+    }
+    
+    async function deleteSelectedEmails() {
+        var checkboxes = document.querySelectorAll('.email-checkbox:checked');
+        if (checkboxes.length === 0) { showToast('請先勾選郵件'); return; }
+        if (!confirm('確定刪除選中的 ' + checkboxes.length + ' 封郵件嗎？')) return;
+        
+        var ids = Array.from(checkboxes).map(function(cb) { return parseInt(cb.value); });
+        await supabaseClient.from('received_emails').update({ is_deleted: true }).in('id', ids);
+        loadReceivedEmails();
+        showToast('已刪除 ' + ids.length + ' 封郵件');
+    }
+    
+    function refreshInbox() {
+        loadReceivedEmails();
+        showToast('已刷新');
+    }
+    
+    function updateInboxBadge() {
+        var unreadCount = allReceivedEmails.filter(function(e) { return !e.is_read; }).length;
+        // 可以在菜单上显示未读数量
+        var menuItem = document.querySelector('[data-page="inbox"]');
+        if (menuItem) {
+            if (unreadCount > 0) {
+                menuItem.innerHTML = '收件箱 <span style="background:#ef4444;color:white;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:5px;">' + unreadCount + '</span>';
+            } else {
+                menuItem.innerHTML = '收件箱';
+            }
+        }
+    }
+    
     // ==================== 訂單管理 ====================
     function renderOrdersPage(c) {
         var isMobile = window.innerWidth <= 768;
