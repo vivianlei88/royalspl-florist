@@ -4526,15 +4526,51 @@ async function saveProduct() {
     async function bulkCategoryActive(active) { var ids = getCheckedCategoryIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('categories').update({ is_active: active }).in('id', ids); showToast('完成'); loadCategories(); }
     </script>
         <script>
-    // ==================== 收件箱 ====================
+    // ==================== 收件箱（增强版） ====================
     var allReceivedEmails = [];
     var currentEmailId = null;
+    var emailSearchKeyword = '';
+    var emailCategoryFilter = 'all';
+    var lastEmailCheckTime = Date.now();
+    var emailCheckInterval = null;
+    var emailCategories = ['全部', '諮詢', '訂單', '售後', '其他'];
     
     function renderInboxPage(c) {
-        c.innerHTML = '<div class="page-header"><h2 class="page-title">收件箱</h2><div style="display:flex;gap:10px;"><button class="btn btn-secondary" onclick="refreshInbox()">刷新</button><button class="btn btn-danger" onclick="deleteSelectedEmails()">批量刪除</button></div></div>';
-        c.innerHTML += '<div id="inboxListView"><div id="emailsList" style="margin-top:15px;">加載中...</div></div>';
-        c.innerHTML += '<div id="emailDetailView" style="display:none;margin-top:15px;"></div>';
+        var html = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">';
+        html += '<h2 class="page-title">收件箱</h2>';
+        html += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
+        html += '<button class="btn btn-secondary" onclick="refreshInbox()">刷新</button>';
+        html += '<button class="btn btn-danger" onclick="deleteSelectedEmails()">批量刪除</button>';
+        html += '</div></div>';
+        
+        // 搜索和筛选栏
+        html += '<div style="display:flex;gap:10px;margin:15px 0;flex-wrap:wrap;align-items:center;">';
+        html += '<input type="text" id="emailSearchInput" placeholder="搜索發件人、主題、內容..." style="flex:1;min-width:200px;padding:10px 15px;border:1px solid #ddd;border-radius:5px;font-size:14px;" oninput="filterEmails()">';
+        html += '<select id="emailCategorySelect" onchange="filterEmails()" style="padding:10px 15px;border:1px solid #ddd;border-radius:5px;font-size:14px;">';
+        emailCategories.forEach(function(cat) {
+            html += '<option value="' + cat + '">' + cat + '</option>';
+        });
+        html += '</select>';
+        html += '</div>';
+        
+        html += '<div id="inboxListView"><div id="emailsList" style="margin-top:15px;">加載中...</div></div>';
+        html += '<div id="emailDetailView" style="display:none;margin-top:15px;"></div>';
+        
+        // 回复邮件弹窗
+        html += '<div id="replyEmailModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;">';
+        html += '<div style="background:white;border-radius:10px;padding:25px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto;">';
+        html += '<h3 style="margin:0 0 15px 0;">回復郵件</h3>';
+        html += '<div style="margin-bottom:10px;"><strong>收件人：</strong><span id="replyToEmail"></span></div>';
+        html += '<div style="margin-bottom:10px;"><strong>主題：</strong><span id="replySubject"></span></div>';
+        html += '<textarea id="replyContent" rows="8" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;resize:vertical;" placeholder="輸入回復內容..."></textarea>';
+        html += '<div style="display:flex;gap:10px;margin-top:15px;justify-content:flex-end;">';
+        html += '<button class="btn btn-secondary" onclick="closeReplyModal()">取消</button>';
+        html += '<button class="btn btn-primary" onclick="sendReplyEmail()">發送回復</button>';
+        html += '</div></div></div>';
+        
+        c.innerHTML = html;
         loadReceivedEmails();
+        startEmailNotificationCheck();
     }
     
     async function loadReceivedEmails() {
@@ -4559,11 +4595,36 @@ async function saveProduct() {
         }
     }
     
+    function filterEmails() {
+        var searchInput = document.getElementById('emailSearchInput');
+        var categorySelect = document.getElementById('emailCategorySelect');
+        if (searchInput) emailSearchKeyword = searchInput.value.toLowerCase();
+        if (categorySelect) emailCategoryFilter = categorySelect.value;
+        renderEmailsList();
+    }
+    
     function renderEmailsList() {
         var container = document.getElementById('emailsList');
         if (!container) return;
         
-        if (allReceivedEmails.length === 0) {
+        // 筛选邮件
+        var filteredEmails = allReceivedEmails.filter(function(email) {
+            var matchSearch = true;
+            var matchCategory = true;
+            
+            if (emailSearchKeyword) {
+                var searchText = (email.from_email + ' ' + email.from_name + ' ' + email.subject + ' ' + email.text_content + ' ' + email.html_content).toLowerCase();
+                matchSearch = searchText.indexOf(emailSearchKeyword) >= 0;
+            }
+            
+            if (emailCategoryFilter !== '全部') {
+                matchCategory = email.category === emailCategoryFilter;
+            }
+            
+            return matchSearch && matchCategory;
+        });
+        
+        if (filteredEmails.length === 0) {
             container.innerHTML = '<div style="padding:40px;text-align:center;color:#999;font-size:16px;">暫無郵件<br><span style="font-size:13px;">發送郵件到 info@royalspl.xyz 即可在此查看</span></div>';
             return;
         }
@@ -4571,23 +4632,35 @@ async function saveProduct() {
         var html = '<table style="width:100%;border-collapse:collapse;">';
         html += '<thead><tr style="background:#1A1A1A;color:white;">';
         html += '<th style="padding:12px;text-align:left;width:40px;"><input type="checkbox" id="selectAllEmails" onchange="toggleSelectAllEmails(this)"></th>';
-        html += '<th style="padding:12px;text-align:left;width:200px;">發件人</th>';
+        html += '<th style="padding:12px;text-align:left;width:180px;">發件人</th>';
         html += '<th style="padding:12px;text-align:left;">主題</th>';
-        html += '<th style="padding:12px;text-align:left;width:180px;">收件時間</th>';
-        html += '<th style="padding:12px;text-align:center;width:80px;">操作</th>';
+        html += '<th style="padding:12px;text-align:left;width:100px;">分類</th>';
+        html += '<th style="padding:12px;text-align:left;width:160px;">收件時間</th>';
+        html += '<th style="padding:12px;text-align:center;width:100px;">操作</th>';
         html += '</tr></thead><tbody>';
         
-        allReceivedEmails.forEach(function(email) {
+        filteredEmails.forEach(function(email) {
             var isRead = email.is_read;
             var rowStyle = isRead ? 'background:white;' : 'background:#f0f7ff;font-weight:600;';
             var time = new Date(email.created_at).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
+            var category = email.category || '其他';
             
             html += '<tr style="' + rowStyle + 'border-bottom:1px solid #eee;cursor:pointer;" onclick="viewEmail(' + email.id + ')">';
             html += '<td style="padding:12px;" onclick="event.stopPropagation();"><input type="checkbox" class="email-checkbox" value="' + email.id + '"></td>';
             html += '<td style="padding:12px;">' + (email.from_name ? email.from_name + '<br><span style="font-size:12px;color:#888;font-weight:400;">' + email.from_email + '</span>' : email.from_email) + '</td>';
             html += '<td style="padding:12px;">' + (isRead ? '' : '<span style="color:#2563eb;">● </span>') + email.subject + '</td>';
+            html += '<td style="padding:12px;" onclick="event.stopPropagation();">';
+            html += '<select onchange="setEmailCategory(' + email.id + ', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;">';
+            emailCategories.forEach(function(cat) {
+                if (cat !== '全部') {
+                    html += '<option value="' + cat + '"' + (category === cat ? ' selected' : '') + '>' + cat + '</option>';
+                }
+            });
+            html += '</select>';
+            html += '</td>';
             html += '<td style="padding:12px;font-size:13px;color:#666;">' + time + '</td>';
             html += '<td style="padding:12px;text-align:center;" onclick="event.stopPropagation();">';
+            html += '<button class="btn btn-primary btn-small" onclick="openReplyModal(' + email.id + ')" style="padding:4px 10px;font-size:12px;margin-right:5px;">回復</button>';
             html += '<button class="btn btn-danger btn-small" onclick="deleteEmail(' + email.id + ')" style="padding:4px 10px;font-size:12px;">刪除</button>';
             html += '</td>';
             html += '</tr>';
@@ -4595,6 +4668,13 @@ async function saveProduct() {
         
         html += '</tbody></table>';
         container.innerHTML = html;
+    }
+    
+    async function setEmailCategory(id, category) {
+        await supabaseClient.from('received_emails').update({ category: category }).eq('id', id);
+        var email = allReceivedEmails.find(function(e) { return e.id === id; });
+        if (email) email.category = category;
+        showToast('分類已更新');
     }
     
     async function viewEmail(id) {
@@ -4617,16 +4697,19 @@ async function saveProduct() {
         
         var time = new Date(email.created_at).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
         
-        var html = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">';
+        var html = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">';
         html += '<button class="btn btn-secondary" onclick="backToEmailList()">← 返回列表</button>';
+        html += '<div style="display:flex;gap:10px;">';
+        html += '<button class="btn btn-primary" onclick="openReplyModal(' + id + ')">回復郵件</button>';
         html += '<button class="btn btn-danger" onclick="deleteEmail(' + id + ')">刪除郵件</button>';
-        html += '</div>';
+        html += '</div></div>';
         
         html += '<div style="background:white;border:1px solid #eee;border-radius:8px;padding:25px;">';
         html += '<h2 style="font-size:22px;margin:0 0 15px 0;">' + email.subject + '</h2>';
         html += '<div style="border-bottom:1px solid #eee;padding-bottom:15px;margin-bottom:20px;">';
         html += '<div style="margin-bottom:8px;"><strong>發件人：</strong>' + (email.from_name ? email.from_name + ' (' + email.from_email + ')' : email.from_email) + '</div>';
         html += '<div style="margin-bottom:8px;"><strong>收件人：</strong>' + email.to_email + '</div>';
+        html += '<div style="margin-bottom:8px;"><strong>分類：</strong>' + (email.category || '其他') + '</div>';
         html += '<div><strong>時間：</strong>' + time + '</div>';
         html += '</div>';
         
@@ -4642,6 +4725,56 @@ async function saveProduct() {
         html += '</div>';
         
         detailView.innerHTML = html;
+    }
+    
+    function openReplyModal(id) {
+        var email = allReceivedEmails.find(function(e) { return e.id === id; });
+        if (!email) return;
+        
+        document.getElementById('replyToEmail').textContent = email.from_email;
+        document.getElementById('replySubject').textContent = 'Re: ' + email.subject;
+        document.getElementById('replyContent').value = '';
+        document.getElementById('replyEmailModal').style.display = 'flex';
+    }
+    
+    function closeReplyModal() {
+        document.getElementById('replyEmailModal').style.display = 'none';
+    }
+    
+    async function sendReplyEmail() {
+        var toEmail = document.getElementById('replyToEmail').textContent;
+        var subject = document.getElementById('replySubject').textContent;
+        var content = document.getElementById('replyContent').value;
+        
+        if (!content.trim()) {
+            showToast('請輸入回復內容');
+            return;
+        }
+        
+        var htmlContent = '<p>' + content.replace(/\n/g, '<br>') + '</p><br><p>Best regards,<br>RoyalSpl Florist</p>';
+        
+        try {
+            var resp = await fetch('/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: toEmail,
+                    subject: subject,
+                    html: htmlContent,
+                    text: content
+                })
+            });
+            
+            var result = await resp.json();
+            if (result.id || result.success) {
+                showToast('回復郵件已發送');
+                closeReplyModal();
+            } else {
+                showToast('發送失敗：' + (result.error || '未知錯誤'));
+            }
+        } catch (e) {
+            showToast('發送失敗：' + e.message);
+        }
     }
     
     function backToEmailList() {
@@ -4686,7 +4819,6 @@ async function saveProduct() {
     
     function updateInboxBadge() {
         var unreadCount = allReceivedEmails.filter(function(e) { return !e.is_read; }).length;
-        // 可以在菜单上显示未读数量
         var menuItem = document.querySelector('[data-page="inbox"]');
         if (menuItem) {
             if (unreadCount > 0) {
@@ -4695,6 +4827,80 @@ async function saveProduct() {
                 menuItem.innerHTML = '收件箱';
             }
         }
+    }
+    
+    // ==================== 新邮件提醒 ====================
+    function startEmailNotificationCheck() {
+        if (emailCheckInterval) clearInterval(emailCheckInterval);
+        lastEmailCheckTime = Date.now();
+        emailCheckInterval = setInterval(checkNewEmails, 10000); // 每10秒检查一次
+    }
+    
+    async function checkNewEmails() {
+        try {
+            var checkTime = new Date(lastEmailCheckTime).toISOString();
+            var { data, error } = await supabaseClient
+                .from('received_emails')
+                .select('*')
+                .eq('is_deleted', false)
+                .gt('created_at', checkTime)
+                .order('created_at', { ascending: false });
+            
+            if (error || !data || data.length === 0) return;
+            
+            lastEmailCheckTime = Date.now();
+            
+            // 有新邮件
+            data.forEach(function(email) {
+                showEmailNotification(email);
+            });
+            
+            // 刷新列表
+            if (document.getElementById('emailsList')) {
+                loadReceivedEmails();
+            }
+        } catch (e) {
+            console.log('Email check error:', e);
+        }
+    }
+    
+    function showEmailNotification(email) {
+        // 播放提示音
+        playNotificationSound();
+        
+        // 浏览器通知
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('新郵件 - RoyalSpl Florist', {
+                body: '發件人：' + (email.from_name || email.from_email) + '\n主題：' + email.subject,
+                icon: '/apple-touch-icon.png'
+            });
+        }
+        
+        // 页面内弹窗提醒
+        showToast('📬 新郵件：' + email.subject);
+    }
+    
+    function playNotificationSound() {
+        try {
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            var oscillator = audioCtx.createOscillator();
+            var gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.5);
+        } catch (e) {
+            console.log('Sound play error:', e);
+        }
+    }
+    
+    // 请求浏览器通知权限
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
     }
     
     // ==================== 訂單管理 ====================
