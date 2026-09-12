@@ -3376,8 +3376,8 @@
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;margin-bottom:20px;">';
         // 订单状态分布
         html += '<div style="background:white;border-radius:16px;padding:25px;box-shadow:0 2px 16px rgba(0,0,0,0.04);border:1px solid #f0f0f0;">';
-        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">訂單狀態</h3>';
-        html += '<div id="orderStatusList"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
+        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">IP 排名</h3>';
+        html += '<div id="ipRankingList"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
         html += '</div>';
         // 访客统计
         html += '<div style="background:white;border-radius:16px;padding:25px;box-shadow:0 2px 16px rgba(0,0,0,0.04);border:1px solid #f0f0f0;">';
@@ -3390,8 +3390,8 @@
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;">';
         // 热销商品
         html += '<div style="background:white;border-radius:16px;padding:25px;box-shadow:0 2px 16px rgba(0,0,0,0.04);border:1px solid #f0f0f0;">';
-        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">熱銷商品 TOP 10</h3>';
-        html += '<div id="topProducts"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
+        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">熱門訪問商品</h3>';
+        html += '<div id="topVisitedProducts"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
         html += '</div>';
         // 热门页面
         html += '<div style="background:white;border-radius:16px;padding:25px;box-shadow:0 2px 16px rgba(0,0,0,0.04);border:1px solid #f0f0f0;">';
@@ -3457,9 +3457,9 @@
         var visitors = visitorRes.data || [];
         
         renderSalesTrend(orders, days);
-        renderOrderStatus(orders);
+        renderIpRanking(visitors);
         renderVisitorStats(visitors);
-        renderTopProducts(orders);
+        renderTopVisitedProducts(visitors);
         renderTopPages(visitors);
     }
     
@@ -3558,47 +3558,51 @@
         });
     }
     
-    // 渲染订单状态分布 - 时尚样式
-    function renderOrderStatus(orders) {
-        var statusMap = {
-            'unpaid': { name: '未付款', color: '#94A3B8' },
-            'pending_payment': { name: '待確認付款', color: '#F59E0B' },
-            'paid': { name: '已付款', color: '#10B981' },
-            'shipped': { name: '已出貨', color: '#3B82F6' },
-            'completed': { name: '已完成', color: '#0A0A0A' },
-            'cancelled': { name: '已取消', color: '#EF4444' },
-            'archived': { name: '已封存', color: '#6B7280' }
-        };
-        var statusCount = {};
-        var statusAmount = {};
-        var total = orders.length;
-        orders.forEach(function(o) {
-            var s = o.status || 'unknown';
-            statusCount[s] = (statusCount[s] || 0) + 1;
-            statusAmount[s] = (statusAmount[s] || 0) + (parseFloat(o.total_amount) || 0);
-        });
-        
-        var html = '<div style="display:flex;flex-direction:column;gap:14px;">';
-        var hasData = false;
-        Object.keys(statusMap).forEach(function(key) {
-            if (statusCount[key]) {
-                hasData = true;
-                var pct = total > 0 ? (statusCount[key] / total * 100).toFixed(0) : 0;
-                html += '<div>';
-                html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
-                html += '<span style="font-size:13px;color:#333;font-weight:500;">' + statusMap[key].name + '</span>';
-                html += '<span style="font-size:13px;color:#666;">' + statusCount[key] + ' 單 · HK$' + statusAmount[key].toFixed(0) + '</span>';
-                html += '</div>';
-                html += '<div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;">';
-                html += '<div style="width:' + pct + '%;height:100%;background:' + statusMap[key].color + ';border-radius:3px;transition:width 0.5s ease;"></div>';
-                html += '</div></div>';
+    // 渲染IP排名 - 时尚样式
+    function renderIpRanking(visitors) {
+        var ipCount = {};
+        var ipCountry = {};
+        var ipPages = {};
+        visitors.forEach(function(v) {
+            if (v.ip) {
+                ipCount[v.ip] = (ipCount[v.ip] || 0) + 1;
+                if (v.country) ipCountry[v.ip] = v.country;
+                if (v.page_url) {
+                    if (!ipPages[v.ip]) ipPages[v.ip] = {};
+                    ipPages[v.ip][v.page_url] = true;
+                }
             }
         });
-        if (!hasData) {
+        
+        var sorted = Object.entries(ipCount).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
+        var maxCount = sorted.length > 0 ? sorted[0][1] : 1;
+        
+        var html = '<div style="display:flex;flex-direction:column;gap:10px;">';
+        if (sorted.length === 0) {
             html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無數據</div>';
+        } else {
+            sorted.forEach(function(item, i) {
+                var ip = item[0];
+                var count = item[1];
+                var country = ipCountry[ip] || '未知';
+                var pageCount = ipPages[ip] ? Object.keys(ipPages[ip]).length : 0;
+                var pct = (count / maxCount * 100).toFixed(0);
+                var rankColor = i < 3 ? '#C9A961' : '#ddd';
+                html += '<div style="padding:12px;background:#fafafa;border-radius:10px;">';
+                html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">';
+                html += '<span style="width:24px;height:24px;background:' + rankColor + ';color:' + (i < 3 ? '#fff' : '#666') + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">' + (i + 1) + '</span>';
+                html += '<span style="flex:1;font-size:13px;color:#0A0A0A;font-weight:600;font-family:monospace;">' + ip + '</span>';
+                html += '<span style="font-size:11px;color:#888;background:#eee;padding:3px 8px;border-radius:10px;">' + country + '</span>';
+                html += '</div>';
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+                html += '<span style="font-size:11px;color:#888;">訪問 ' + count + ' 次 · 瀏覽 ' + pageCount + ' 個頁面</span>';
+                html += '</div>';
+                html += '<div style="height:5px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#0A0A0A,#C9A961);border-radius:3px;transition:width 0.5s ease;"></div></div>';
+                html += '</div>';
+            });
         }
         html += '</div>';
-        var el = document.getElementById('orderStatusList');
+        var el = document.getElementById('ipRankingList');
         if (el) el.innerHTML = html;
     }
     
@@ -3650,40 +3654,50 @@
         if (el) el.innerHTML = html;
     }
     
-    // 渲染热销商品 - 时尚样式
-    function renderTopProducts(orders) {
-        var productSales = {};
-        orders.forEach(function(o) {
-            if (o.items && Array.isArray(o.items)) {
-                o.items.forEach(function(item) {
-                    var name = item.name || item.product_name || '未知商品';
-                    var qty = item.quantity || 1;
-                    var price = item.price || 0;
-                    if (!productSales[name]) productSales[name] = { qty: 0, amount: 0 };
-                    productSales[name].qty += qty;
-                    productSales[name].amount += qty * price;
-                });
+    // 渲染热门访问商品 - 时尚样式
+    function renderTopVisitedProducts(visitors) {
+        var productViews = {};
+        visitors.forEach(function(v) {
+            if (v.page_url) {
+                var url = v.page_url;
+                // 匹配商品详情页
+                if (url.indexOf('/product-detail') !== -1 || url.indexOf('/product-page') !== -1) {
+                    var productId = '';
+                    if (url.indexOf('id=') !== -1) {
+                        productId = url.split('id=')[1].split('&')[0];
+                    } else {
+                        var parts = url.split('/');
+                        productId = parts[parts.length - 1] || parts[parts.length - 2];
+                    }
+                    var key = productId || url;
+                    productViews[key] = (productViews[key] || 0) + 1;
+                }
             }
         });
         
-        var sorted = Object.entries(productSales).sort(function(a, b) { return b[1].qty - a[1].qty; }).slice(0, 10);
+        var sorted = Object.entries(productViews).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
+        var maxViews = sorted.length > 0 ? sorted[0][1] : 1;
         
         var html = '<div style="display:flex;flex-direction:column;gap:8px;">';
         if (sorted.length === 0) {
-            html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無數據</div>';
+            html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無商品訪問數據</div>';
         } else {
             sorted.forEach(function(p, i) {
                 var rankColor = i < 3 ? '#C9A961' : '#ddd';
-                html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:#fafafa;border-radius:10px;transition:background 0.2s;">';
+                var pct = (p[1] / maxViews * 100).toFixed(0);
+                var displayName = p[0].length > 25 ? p[0].slice(0, 25) + '...' : p[0];
+                html += '<div style="padding:12px;background:#fafafa;border-radius:10px;">';
+                html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">';
                 html += '<span style="width:24px;height:24px;background:' + rankColor + ';color:' + (i < 3 ? '#fff' : '#666') + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">' + (i + 1) + '</span>';
-                html += '<span style="flex:1;font-size:13px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + p[0] + '</span>';
-                html += '<span style="font-size:12px;color:#888;flex-shrink:0;">' + p[1].qty + ' 件</span>';
-                html += '<span style="font-size:12px;color:#0A0A0A;font-weight:600;flex-shrink:0;">HK$' + p[1].amount.toFixed(0) + '</span>';
+                html += '<span style="flex:1;font-size:13px;color:#333;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">商品 #' + displayName + '</span>';
+                html += '<span style="font-size:12px;color:#0A0A0A;font-weight:600;">' + p[1] + ' 次</span>';
+                html += '</div>';
+                html += '<div style="height:5px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#0A0A0A,#C9A961);border-radius:3px;transition:width 0.5s ease;"></div></div>';
                 html += '</div>';
             });
         }
         html += '</div>';
-        var el = document.getElementById('topProducts');
+        var el = document.getElementById('topVisitedProducts');
         if (el) el.innerHTML = html;
     }
     
