@@ -4115,6 +4115,7 @@
         loadProducts();
     }
     function showAddForm() {
+        productsScrollPos = window.scrollY;
         document.getElementById('productsListView').style.display = 'none';
         var f = document.getElementById('productFormView');
         f.style.display = 'block';
@@ -4139,9 +4140,20 @@
         uploadedImages = []; variants = []; selectedAddons = []; selectedTags = [];
         toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea();
     }
-    function showProductsList() { document.getElementById('productsListView').style.display = 'block'; document.getElementById('productFormView').style.display = 'none'; loadProducts(); }
+    var productsScrollPos = 0;
+    function showProductsList() {
+        document.getElementById('productsListView').style.display = 'block';
+        document.getElementById('productFormView').style.display = 'none';
+        loadProducts(function() {
+            // 恢复滚动位置
+            setTimeout(function() {
+                window.scrollTo(0, productsScrollPos);
+            }, 50);
+        });
+    }
     function showEditFormById(id) { for (var i = 0; i < allProducts.length; i++) { if (allProducts[i].id === id) { showEditForm(allProducts[i]); return; } } }
     function showEditForm(p) {
+        productsScrollPos = window.scrollY;
         document.getElementById('productsListView').style.display = 'none';
         var f = document.getElementById('productFormView');
         f.style.display = 'block';
@@ -4525,7 +4537,7 @@ async function saveProduct() {
             showToast('保存成功'); showProductsList();
         } catch (err) { showToast('保存失敗：' + err.message); }
     }
-    async function loadProducts() { var c = document.getElementById('productsTable'); if (!c) return; try { var r = await supabaseClient.from('products').select('*').order('id', { ascending: true }); allProducts = r.data || []; renderProductsTable(allProducts); } catch (e) { c.innerHTML = '載入失敗'; } }
+    async function loadProducts(callback) { var c = document.getElementById('productsTable'); if (!c) return; try { var r = await supabaseClient.from('products').select('*').order('id', { ascending: true }); allProducts = r.data || []; renderProductsTable(allProducts); if (callback) callback(); } catch (e) { c.innerHTML = '載入失敗'; if (callback) callback(); } }
     function filterProducts() { var kw = document.getElementById('productSearch').value.toLowerCase(); renderProductsTable(allProducts.filter(function(p) { return (p.name_zh || '').toLowerCase().indexOf(kw) > -1 || (p.name_en || '').toLowerCase().indexOf(kw) > -1; })); }
     function renderProductsTable(list) {
         var c = document.getElementById('productsTable');
