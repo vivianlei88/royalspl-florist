@@ -1985,8 +1985,57 @@
     
     function rteInsertLink(editorId) {
         var eid = editorId || currentRTE;
+        var editor = document.getElementById(eid);
+        if (!editor) return;
+        editor.focus();
+        
         var url = prompt('請輸入連結網址：', 'https://');
-        if (url) rteExec('createLink', url, eid);
+        if (!url) return;
+        
+        var selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            var range = selection.getRangeAt(0);
+            // 檢查是否選中了圖片
+            var container = range.commonAncestorContainer;
+            var img = null;
+            if (container.nodeType === 1 && container.tagName === 'IMG') {
+                img = container;
+            } else if (container.parentNode && container.parentNode.tagName === 'IMG') {
+                img = container.parentNode;
+            } else {
+                // 在選區內查找圖片
+                var div = document.createElement('div');
+                div.appendChild(range.cloneContents());
+                var imgs = div.querySelectorAll('img');
+                if (imgs.length > 0) img = imgs[0];
+            }
+            
+            if (img) {
+                // 給圖片添加鏈接
+                var a = document.createElement('a');
+                a.href = url;
+                a.target = '_blank';
+                a.style.textDecoration = 'none';
+                img.parentNode.insertBefore(a, img);
+                a.appendChild(img);
+            } else {
+                // 給文字添加鏈接
+                document.execCommand('createLink', false, url);
+                // 設置鏈接在新窗口打開
+                var links = editor.querySelectorAll('a');
+                links.forEach(function(link) {
+                    if (link.href === url || link.getAttribute('href') === url) {
+                        link.target = '_blank';
+                    }
+                });
+            }
+        } else {
+            // 沒有選中內容，插入文字鏈接
+            document.execCommand('insertHTML', false, '<a href="' + url + '" target="_blank" style="color:#1A1A1A;text-decoration:underline;">' + url + '</a>');
+        }
+        
+        // 觸發預覽更新
+        if (eid === 'edmContent' && typeof updateEDMPreview === 'function') updateEDMPreview();
     }
     
     function rteInsertImage(editorId) {
