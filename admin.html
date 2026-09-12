@@ -1901,7 +1901,35 @@
             '<textarea id="edmEmails" rows="4" placeholder="輸入收件人郵箱，多個郵箱用逗號或換行分隔&#10;例如：email1@example.com, email2@example.com" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea>' +
             '<div id="edmEmailCount" style="font-size:12px;color:#666;margin-top:5px;">已輸入 0 個郵箱</div></div>';
         c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">郵件內容 <button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="showAIWriterModal(\'blog\',\'edmContent\')">✦ AI寫作</button></label>' +
-            '<textarea id="edmContent" rows="12" placeholder="輸入郵件內容，支援 HTML" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea></div>';
+            '<div class="rte-container" style="border:1px solid #ddd;border-radius:5px;overflow:hidden;">' +
+            '<div class="rte-toolbar" style="background:#f8f8f8;border-bottom:1px solid #ddd;padding:8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">' +
+            '<select class="rte-select" onchange="rteExec(\'fontName\', this.value)" style="height:32px;padding:0 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;"><option value="">字體</option><option value="Arial">Arial</option><option value="Times New Roman">Times New Roman</option><option value="Georgia">Georgia</option><option value="Verdana">Verdana</option><option value="Courier New">Courier New</option></select>' +
+            '<select class="rte-select" onchange="rteExec(\'fontSize\', this.value)" style="height:32px;padding:0 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;"><option value="">字號</option><option value="1">10px</option><option value="2">13px</option><option value="3">16px</option><option value="4">18px</option><option value="5">24px</option><option value="6">32px</option><option value="7">48px</option></select>' +
+            '<div style="width:1px;height:24px;background:#ddd;margin:0 4px;"></div>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'bold\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-weight:bold;font-size:14px;" title="粗體">B</button>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'italic\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-style:italic;font-size:14px;" title="斜體">I</button>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'underline\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;text-decoration:underline;font-size:14px;" title="底線">U</button>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'strikeThrough\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;text-decoration:line-through;font-size:14px;" title="刪除線">S</button>' +
+            '<div style="width:1px;height:24px;background:#ddd;margin:0 4px;"></div>' +
+            '<input type="color" class="rte-color-picker" onchange="rteExec(\'foreColor\', this.value)" value="#000000" style="width:32px;height:32px;padding:2px;border:1px solid #ddd;border-radius:4px;cursor:pointer;" title="文字顏色">' +
+            '<input type="color" class="rte-color-picker" onchange="rteExec(\'hiliteColor\', this.value)" value="#ffff00" style="width:32px;height:32px;padding:2px;border:1px solid #ddd;border-radius:4px;cursor:pointer;" title="背景顏色">' +
+            '<div style="width:1px;height:24px;background:#ddd;margin:0 4px;"></div>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'justifyLeft\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="左對齊">⬅</button>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'justifyCenter\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="置中">⬌</button>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'justifyRight\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="右對齊">➡</button>' +
+            '<div style="width:1px;height:24px;background:#ddd;margin:0 4px;"></div>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'insertUnorderedList\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="無序列表">• ≡</button>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'insertOrderedList\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="有序列表">1. ≡</button>' +
+            '<div style="width:1px;height:24px;background:#ddd;margin:0 4px;"></div>' +
+            '<button type="button" class="rte-btn" onclick="rteInsertLink()" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="插入連結">🔗</button>' +
+            '<button type="button" class="rte-btn" onclick="rteInsertImage()" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="插入圖片">🖼</button>' +
+            '<div style="width:1px;height:24px;background:#ddd;margin:0 4px;"></div>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'undo\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="復原">↩</button>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'redo\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:14px;" title="重做">↪</button>' +
+            '<button type="button" class="rte-btn" onclick="rteExec(\'removeFormat\')" style="min-width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:4px;cursor:pointer;font-size:12px;" title="清除格式">清除</button>' +
+            '</div>' +
+            '<div id="edmContent" class="rte-editor" contenteditable="true" style="min-height:200px;padding:12px;font-size:14px;line-height:1.6;outline:none;background:white;" placeholder="輸入郵件內容..."></div>' +
+            '</div></div>';
         c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">按鈕文字（可選）</label>' +
             '<input type="text" id="edmButtonText" placeholder="例如：立即選購" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>';
         c.innerHTML += '<div><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">按鈕連結（可選）</label>' +
@@ -1938,13 +1966,46 @@
         }, 100);
     }
     
+    // 富文本编辑器函数
+    function rteExec(command, value) {
+        var editor = document.getElementById('edmContent');
+        if (!editor) return;
+        editor.focus();
+        document.execCommand(command, false, value || null);
+        updateEDMPreview();
+    }
+    
+    function rteInsertLink() {
+        var url = prompt('請輸入連結網址：', 'https://');
+        if (url) {
+            rteExec('createLink', url);
+        }
+    }
+    
+    function rteInsertImage() {
+        var url = prompt('請輸入圖片網址：', 'https://');
+        if (url) {
+            rteExec('insertImage', url);
+        }
+    }
+    
+    function getEdmContent() {
+        var editor = document.getElementById('edmContent');
+        return editor ? editor.innerHTML : '';
+    }
+    
+    function setEdmContent(html) {
+        var editor = document.getElementById('edmContent');
+        if (editor) editor.innerHTML = html;
+    }
+
     function updateEDMPreview() {
         var subject = document.getElementById('edmSubject').value;
-        var content = document.getElementById('edmContent').value;
+        var content = getEdmContent();
         var btnText = document.getElementById('edmButtonText').value;
         var btnUrl = document.getElementById('edmButtonUrl').value;
         var body = '<div style="font-size:16px;font-weight:600;margin-bottom:15px;color:#1A1A1A;">' + (subject || '郵件主題') + '</div>';
-        body += '<div style="white-space:pre-wrap;">' + (content || '郵件內容預覽...') + '</div>';
+        body += '<div>' + (content || '郵件內容預覽...') + '</div>';
         if (btnText && btnUrl) {
             body += '<div style="text-align:center;margin-top:20px;"><a href="' + btnUrl + '" style="display:inline-block;padding:12px 30px;background:#1A1A1A;color:white;text-decoration:none;border-radius:5px;font-weight:600;">' + btnText + '</a></div>';
         }
@@ -1999,7 +2060,7 @@
     
     async function sendEDM() {
         var subject = document.getElementById('edmSubject').value.trim();
-        var content = document.getElementById('edmContent').value.trim();
+        var content = getEdmContent().trim();
         var emailsText = document.getElementById('edmEmails').value.trim();
         var btnText = document.getElementById('edmButtonText').value.trim();
         var btnUrl = document.getElementById('edmButtonUrl').value.trim();
