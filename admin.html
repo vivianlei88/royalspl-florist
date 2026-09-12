@@ -527,8 +527,8 @@
             <div class="mobile-nav-item" onclick="openChatPanel()">
                 <div class="mobile-nav-text">客服</div>
             </div>
-            <div class="mobile-nav-item" onclick="mobileSwitchPage('settings')">
-                <div class="mobile-nav-text">我的</div>
+            <div class="mobile-nav-item" onclick="mobileSwitchPage('email')">
+                <div class="mobile-nav-text">郵件</div>
             </div>
         </div>
         <div class="sidebar">
@@ -8682,13 +8682,63 @@ async function saveProduct() {
         document.querySelectorAll('.mobile-nav-item').forEach(item => item.classList.remove('active'));
         event.currentTarget.classList.add('active');
         // 切換頁面
-        if (page === 'settings') {
-            switchPage('admins'); // 我的頁面顯示管理員
+        if (page === 'email') {
+            renderMobileEmailPage(); // 手機端郵件管理頁面
         } else {
             switchPage(page);
         }
         // 滾動到頂部
         window.scrollTo(0, 0);
+    }
+
+    // 手機端郵件管理頁面（收件箱 + 郵件營銷 Tab）
+    function renderMobileEmailPage() {
+        var c = document.getElementById('mainContent');
+        c.innerHTML = `
+            <div style="padding:15px;">
+                <h2 style="font-size:20px;font-weight:600;margin-bottom:15px;">郵件管理</h2>
+                <div style="display:flex;gap:10px;margin-bottom:15px;">
+                    <button id="mobileEmailTabInbox" onclick="switchMobileEmailTab('inbox')" 
+                        style="flex:1;padding:12px;font-size:16px;font-weight:600;border:2px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:8px;cursor:pointer;">
+                        📥 收件箱
+                    </button>
+                    <button id="mobileEmailTabEdm" onclick="switchMobileEmailTab('edm')" 
+                        style="flex:1;padding:12px;font-size:16px;font-weight:600;border:2px solid #ddd;background:white;color:#333;border-radius:8px;cursor:pointer;">
+                        📤 郵件營銷
+                    </button>
+                </div>
+                <div id="mobileEmailContent"></div>
+            </div>
+        `;
+        // 默認顯示收件箱
+        switchMobileEmailTab('inbox');
+    }
+
+    // 切換手機端郵件Tab
+    function switchMobileEmailTab(tab) {
+        var inboxBtn = document.getElementById('mobileEmailTabInbox');
+        var edmBtn = document.getElementById('mobileEmailTabEdm');
+        var content = document.getElementById('mobileEmailContent');
+        
+        if (tab === 'inbox') {
+            inboxBtn.style.background = '#1a1a1a';
+            inboxBtn.style.color = 'white';
+            inboxBtn.style.borderColor = '#1a1a1a';
+            edmBtn.style.background = 'white';
+            edmBtn.style.color = '#333';
+            edmBtn.style.borderColor = '#ddd';
+            // 加載收件箱
+            renderInboxPage(content);
+        } else {
+            edmBtn.style.background = '#1a1a1a';
+            edmBtn.style.color = 'white';
+            edmBtn.style.borderColor = '#1a1a1a';
+            inboxBtn.style.background = 'white';
+            inboxBtn.style.color = '#333';
+            inboxBtn.style.borderColor = '#ddd';
+            // 加載郵件營銷
+            renderEDMPage(content);
+        }
     }
     </script>
 
