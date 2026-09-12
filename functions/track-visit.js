@@ -4,10 +4,11 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // 排除的IP列表（管理員自己的IP，不計入訪客，不觸發提醒）
 const EXCLUDED_IPS = [
-    '81.28.13.120',  // 管理員本機電腦
-    // 在這裡添加更多管理員IP，例如：
-    // '192.168.1.1',
+    // '81.28.13.120',  // 已改用瀏覽器標記方式
 ];
+
+// 管理員瀏覽器標記Cookie名稱
+const ADMIN_COOKIE_NAME = 'rs_admin_visitor';
 
 export async function onRequestPost(context) {
     const { request, env } = context;
@@ -37,6 +38,21 @@ export async function onRequestPost(context) {
                 ip: ip, 
                 excluded: true,
                 message: 'IP在排除列表中，不記錄訪客'
+            }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
+        
+        // 1.6 檢查是否有管理員瀏覽器標記Cookie
+        const cookieHeader = request.headers.get('cookie') || '';
+        const hasAdminCookie = cookieHeader.split(';').some(c => c.trim().startsWith(ADMIN_COOKIE_NAME + '='));
+        if (hasAdminCookie) {
+            return new Response(JSON.stringify({ 
+                success: true, 
+                ip: ip, 
+                excluded: true,
+                message: '管理員瀏覽器，不記錄訪客'
             }), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }

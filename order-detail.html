@@ -198,6 +198,21 @@
     <meta name="twitter:image" content="https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <script>
+    // 管理員瀏覽器標記：訪問 ?admin=1 設置標記，?admin=0 取消標記
+    (function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === '1') {
+            document.cookie = 'rs_admin_visitor=1; path=/; max-age=31536000; SameSite=Lax';
+            console.log('已設置管理員瀏覽器標記，不會被記錄為訪客');
+        } else if (urlParams.get('admin') === '0') {
+            document.cookie = 'rs_admin_visitor=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+            console.log('已取消管理員瀏覽器標記');
+        }
+    })();
+    </script>
+
 </head>
 <body>
     <div class="container">
