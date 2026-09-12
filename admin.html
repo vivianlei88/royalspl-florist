@@ -2777,11 +2777,11 @@
         const container = document.getElementById('seoTabContent');
         container.innerHTML = '<div style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">' +
             '<div><div style="font-size:14px;color:#888;margin-bottom:5px;">關鍵詞排名跟踪</div>' +
-            '<div style="font-size:13px;color:#666;">數據來源：Google Search Console，每天更新一次</div></div>' +
+            '<div style="font-size:13px;color:#666;">數據來源：Google搜索結果爬取，查詢前100名排名</div></div>' +
             '<button class="btn btn-primary" onclick="updateKeywordRankings()">更新排名數據</button></div>';
         container.innerHTML += '<div id="keywordRankingList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr 0.9fr;gap:10px;font-weight:600;font-size:14px;">' +
-            '<div>關鍵詞</div><div>排名</div><div>曝光量</div><div>點擊量</div><div>點擊率</div><div>趨勢</div></div>' +
+            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;font-weight:600;font-size:14px;">' +
+            '<div>關鍵詞</div><div>排名</div><div>趨勢</div><div>最後更新</div></div>' +
             '<div id="keywordRankingItems">加載中...</div></div>';
         await loadKeywordRankings();
     }
@@ -2811,9 +2811,9 @@
                 const row = latest[kw];
                 const prev = previous[kw];
                 if (!row) {
-                    html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;">' +
+                    html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;">' +
                         '<div style="font-size:14px;">' + kw + '</div>' +
-                        '<div colspan="5" style="color:#ccc;font-size:13px;">未查詢</div></div>';
+                        '<div colspan="3" style="color:#ccc;font-size:13px;">未查詢</div></div>';
                     return;
                 }
                 let trend = '-';
@@ -2823,15 +2823,20 @@
                     if (diff > 0) { trend = '↑ ' + diff; trendColor = '#52C41A'; }
                     else if (diff < 0) { trend = '↓ ' + Math.abs(diff); trendColor = '#EA6668'; }
                     else { trend = '→ 0'; trendColor = '#999'; }
+                } else if (prev && !prev.position && row.position) {
+                    trend = '↑ 新進榜'; trendColor = '#52C41A';
                 }
-                const posColor = row.position <= 10 ? '#52C41A' : row.position <= 30 ? '#FAAD14' : '#EA6668';
-                html += '<div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr 0.9fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
+                let posDisplay = '未進前100';
+                let posColor = '#999';
+                if (row.position) {
+                    posDisplay = '第 ' + row.position + ' 名';
+                    posColor = row.position <= 10 ? '#52C41A' : row.position <= 30 ? '#FAAD14' : '#EA6668';
+                }
+                html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
                     '<div style="font-size:14px;">' + kw + '</div>' +
-                    '<div style="font-size:14px;font-weight:600;color:' + posColor + ';">' + (row.position ? row.position.toFixed(0) : '-') + '</div>' +
-                    '<div style="font-size:13px;">' + (row.impressions || 0) + '</div>' +
-                    '<div style="font-size:13px;">' + (row.clicks || 0) + '</div>' +
-                    '<div style="font-size:13px;">' + (row.ctr ? (row.ctr * 100).toFixed(2) + '%' : '-') + '</div>' +
-                    '<div style="font-size:13px;color:' + trendColor + ';font-weight:600;">' + trend + '</div></div>';
+                    '<div style="font-size:14px;font-weight:600;color:' + posColor + ';">' + posDisplay + '</div>' +
+                    '<div style="font-size:13px;color:' + trendColor + ';font-weight:600;">' + trend + '</div>' +
+                    '<div style="font-size:12px;color:#999;">' + (row.check_date || '-') + '</div></div>';
             });
             container.innerHTML = html;
         } catch (e) {
@@ -2869,39 +2874,27 @@
 
     async function updateKeywordRankings() {
         try {
-            alert('開始更新排名數據，請稍候...');
-            const accessToken = await getGCPAccessToken();
-            const siteUrl = 'https://www.royalspl.shop/';
+            showToast('開始更新排名數據，請稍候...（約需30秒）');
             const today = new Date().toISOString().split('T')[0];
-            const startDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            let successCount = 0;
             
             for (let i = 0; i < seoKeywords.length; i++) {
                 const kw = seoKeywords[i];
                 try {
-                    const resp = await fetch('https://www.googleapis.com/webmasters/v3/sites/' + encodeURIComponent(siteUrl) + '/searchAnalytics/query', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            startDate: startDate,
-                            endDate: today,
-                            dimensions: ['query'],
-                            dimensionFilterGroups: [{
-                                filters: [{ dimension: 'query', operator: 'equals', expression: kw }]
-                            }],
-                            rowLimit: 1
-                        })
-                    });
+                    // 调用爬取Function查询Google排名
+                    const resp = await fetch('/google-rank?keyword=' + encodeURIComponent(kw));
                     const data = await resp.json();
-                    if (data.rows && data.rows.length > 0) {
-                        const row = data.rows[0];
+                    
+                    if (data && data.found) {
                         await supabaseClient.from('keyword_rankings').upsert({
                             keyword: kw,
-                            position: Math.round(row.position),
-                            impressions: row.impressions,
-                            clicks: row.clicks,
-                            ctr: row.ctr,
+                            position: data.position,
+                            impressions: 0,
+                            clicks: 0,
+                            ctr: 0,
                             check_date: today
                         }, { onConflict: 'keyword,check_date' });
+                        successCount++;
                     } else {
                         await supabaseClient.from('keyword_rankings').upsert({
                             keyword: kw,
@@ -2912,14 +2905,16 @@
                             check_date: today
                         }, { onConflict: 'keyword,check_date' });
                     }
+                    // 避免请求过快
+                    await new Promise(r => setTimeout(r, 1000));
                 } catch (e) {
                     console.error('查詢關鍵詞 ' + kw + ' 失敗:', e);
                 }
             }
-            alert('排名數據更新完成！');
+            showToast('排名數據更新完成！成功查詢 ' + successCount + ' 個關鍵詞');
             await loadKeywordRankings();
         } catch (e) {
-            alert('更新失敗: ' + e.message);
+            showToast('更新失敗: ' + e.message);
         }
     }
 
