@@ -78,6 +78,16 @@
         .summary-item-img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
         .summary-item-emoji { font-size: 24px; }
         .summary-item-name { color: #FAF8F5; }
+        .points-banner { background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%); color: #FAF8F5; padding: 20px 25px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .points-banner-content { display: flex; align-items: center; gap: 12px; }
+        .points-banner-icon { font-size: 28px; }
+        .points-banner-text { font-size: 15px; line-height: 1.6; }
+        .points-banner-text strong { color: #C9A961; font-size: 18px; }
+        .points-banner-actions { display: flex; gap: 10px; }
+        .points-btn { padding: 10px 20px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+        .points-btn-primary { background-color: #C9A961; color: #1A1A1A; }
+        .points-btn-secondary { background-color: transparent; color: #FAF8F5; border: 1px solid rgba(250,248,245,0.3); }
+        .points-btn:hover { opacity: 0.9; }
         .summary-divider { border-top: 1px solid rgba(250,248,245,0.2); margin: 15px 0; }
         .summary-total { display: flex; justify-content: space-between; font-size: 22px; font-weight: 700; }
         .delivery-fee-formula { font-size: 12px; color: #AAA; margin-top: 10px; text-align: right; }
@@ -356,6 +366,15 @@
         <div class="checkout-header">
             <a href="cart.html" class="back-link">← 返回購物車</a>
             <h1 class="checkout-title">結帳</h1>
+        </div>
+
+        <!-- 會員積分提示 -->
+        <div class="points-banner" id="pointsBanner">
+            <div class="points-banner-content">
+                <div class="points-banner-icon">🎁</div>
+                <div class="points-banner-text" id="pointsBannerText">載入中...</div>
+            </div>
+            <div class="points-banner-actions" id="pointsBannerActions"></div>
         </div>
 
         <div class="checkout-section">
@@ -1440,11 +1459,47 @@
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
+    // 更新會員積分提示
+    async function updatePointsBanner() {
+        var banner = document.getElementById('pointsBanner');
+        var textEl = document.getElementById('pointsBannerText');
+        var actionsEl = document.getElementById('pointsBannerActions');
+        if (!banner || !textEl) return;
+        
+        var total = getTotal();
+        var points = Math.floor(total); // 消費1元=1積分
+        var pointsValue = (points / 100).toFixed(2); // 100積分=HK$1
+        
+        try {
+            var { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                // 已登入：顯示將獲得的積分
+                var userId = session.user.id;
+                var currentPoints = 0;
+                try {
+                    var { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', userId).single();
+                    currentPoints = profile?.points || 0;
+                } catch(e) {}
+                
+                textEl.innerHTML = '✅ 此單完成後，您將獲得 <strong>' + points + ' 積分</strong>（價值 HK$' + pointsValue + '）<br>累計積分：' + currentPoints.toLocaleString() + '，下次購物可直接抵扣';
+                actionsEl.innerHTML = '';
+            } else {
+                // 未登入：提示登入/註冊
+                textEl.innerHTML = '🎁 <strong>會員專屬</strong>：登入後此單可獲得 <strong>' + points + ' 積分</strong>（價值 HK$' + pointsValue + '），下次購物直接抵扣！';
+                actionsEl.innerHTML = '<button class="points-btn points-btn-primary" onclick="location.href=\'login.html?redirect=checkout.html\'">立即登入</button><button class="points-btn points-btn-secondary" onclick="location.href=\'register.html\'">註冊會員</button>';
+            }
+        } catch(e) {
+            textEl.innerHTML = '🎁 <strong>會員專屬</strong>：登入後此單可獲得 <strong>' + points + ' 積分</strong>（價值 HK$' + pointsValue + '），下次購物直接抵扣！';
+            actionsEl.innerHTML = '<button class="points-btn points-btn-primary" onclick="location.href=\'login.html?redirect=checkout.html\'">立即登入</button><button class="points-btn points-btn-secondary" onclick="location.href=\'register.html\'">註冊會員</button>';
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         updateCartBadge();
         syncCartWithDatabase();
         setupDatePicker();
         fillDefaultAddressIfLoggedIn();
+        setTimeout(updatePointsBanner, 500);
     });
     </script>
     <script>
