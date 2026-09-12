@@ -4537,7 +4537,7 @@ async function saveProduct() {
             showToast('保存成功'); showProductsList();
         } catch (err) { showToast('保存失敗：' + err.message); }
     }
-    async function loadProducts(callback) { var c = document.getElementById('productsTable'); if (!c) return; try { var r = await supabaseClient.from('products').select('*').order('id', { ascending: true }); allProducts = r.data || []; renderProductsTable(allProducts); if (callback) callback(); } catch (e) { c.innerHTML = '載入失敗'; if (callback) callback(); } }
+    async function loadProducts(callback) { var c = document.getElementById('productsTable'); if (!c) return; try { var r = await supabaseClient.from('products').select('*').order('id', { ascending: false }); allProducts = r.data || []; renderProductsTable(allProducts); if (callback) callback(); } catch (e) { c.innerHTML = '載入失敗'; if (callback) callback(); } }
     function filterProducts() { var kw = document.getElementById('productSearch').value.toLowerCase(); renderProductsTable(allProducts.filter(function(p) { return (p.name_zh || '').toLowerCase().indexOf(kw) > -1 || (p.name_en || '').toLowerCase().indexOf(kw) > -1; })); }
     function renderProductsTable(list) {
         var c = document.getElementById('productsTable');
