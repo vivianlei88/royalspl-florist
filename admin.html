@@ -1892,13 +1892,14 @@
         c.innerHTML += '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">';
         c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">郵件主題</label>' +
             '<input type="text" id="edmSubject" placeholder="例如：新品上市！限時優惠8折" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>';
-        c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">收件人</label>' +
-            '<select id="edmRecipients" onchange="toggleManualEmails()" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;">' +
-            '<option value="all">所有會員（自動從會員管理讀取）</option>' +
-            '<option value="customers">有訂單的客戶（自動從訂單讀取）</option>' +
-            '<option value="manual">手動輸入郵箱</option></select></div>';
-        c.innerHTML += '<div id="manualEmailsBox" style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">手動輸入郵箱（用逗號或換行分隔，選擇「手動輸入郵箱」時生效）</label>' +
-            '<textarea id="edmManualEmails" rows="4" placeholder="email1@example.com, email2@example.com&#10;email3@example.com" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea></div>';
+        c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:8px;font-size:14px;font-weight:600;">收件人郵箱</label>' +
+            '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">' +
+            '<button type="button" onclick="fillEdmRecipients(\'all\')" style="padding:8px 14px;font-size:13px;border:1px solid #ddd;background:white;border-radius:5px;cursor:pointer;">📋 所有會員</button>' +
+            '<button type="button" onclick="fillEdmRecipients(\'customers\')" style="padding:8px 14px;font-size:13px;border:1px solid #ddd;background:white;border-radius:5px;cursor:pointer;">🛒 有訂單客戶</button>' +
+            '<button type="button" onclick="document.getElementById(\'edmEmails\').value=\'\'" style="padding:8px 14px;font-size:13px;border:1px solid #ddd;background:white;border-radius:5px;cursor:pointer;">🗑️ 清空</button>' +
+            '</div>' +
+            '<textarea id="edmEmails" rows="4" placeholder="輸入收件人郵箱，多個郵箱用逗號或換行分隔&#10;例如：email1@example.com, email2@example.com" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea>' +
+            '<div id="edmEmailCount" style="font-size:12px;color:#666;margin-top:5px;">已輸入 0 個郵箱</div></div>';
         c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">郵件內容 <button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="showAIWriterModal(\'blog\',\'edmContent\')">✦ AI寫作</button></label>' +
             '<textarea id="edmContent" rows="12" placeholder="輸入郵件內容，支援 HTML" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea></div>';
         c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">按鈕文字（可選）</label>' +
@@ -1929,6 +1930,11 @@
                 document.getElementById('edmButtonText').addEventListener('input', updateEDMPreview);
                 document.getElementById('edmButtonUrl').addEventListener('input', updateEDMPreview);
             }
+            // 郵箱計數
+            var emailsEl = document.getElementById('edmEmails');
+            if (emailsEl) {
+                emailsEl.addEventListener('input', updateEdmEmailCount);
+            }
         }, 100);
     }
     
@@ -1946,50 +1952,65 @@
     }
     
     function toggleManualEmails() {
-        var val = document.getElementById('edmRecipients').value;
-        var box = document.getElementById('manualEmailsBox');
-        var textarea = document.getElementById('edmManualEmails');
-        if (box) {
-            if (val === 'manual') {
-                box.style.border = '2px solid #1a1a1a';
-                box.style.padding = '10px';
-                box.style.borderRadius = '5px';
-                box.style.background = '#f9f9f9';
-                if (textarea) textarea.focus();
-            } else {
-                box.style.border = 'none';
-                box.style.padding = '0';
-                box.style.background = 'transparent';
-            }
-        }
+        // 保留舊函數以兼容，但不再使用
     }
-    
-    async function sendEDM() {
-        var subject = document.getElementById('edmSubject').value.trim();
-        var content = document.getElementById('edmContent').value.trim();
-        var recipients = document.getElementById('edmRecipients').value;
-        var btnText = document.getElementById('edmButtonText').value.trim();
-        var btnUrl = document.getElementById('edmButtonUrl').value.trim();
-        
-        if (!subject) { alert('請輸入郵件主題'); return; }
-        if (!content) { alert('請輸入郵件內容'); return; }
+
+    // 一鍵填充收件人郵箱
+    async function fillEdmRecipients(type) {
+        var textarea = document.getElementById('edmEmails');
+        if (!textarea) return;
         
         var emails = [];
         try {
-            if (recipients === 'manual') {
-                var manual = document.getElementById('edmManualEmails').value.trim();
-                if (!manual) { alert('請輸入郵箱地址'); return; }
-                emails = manual.split(/[,\n]/).map(function(e) { return e.trim(); }).filter(function(e) { return e && e.includes('@'); });
-            } else if (recipients === 'customers') {
+            if (type === 'customers') {
                 var r = await supabaseClient.from('orders').select('customer_email').not('customer_email', 'is', null);
                 var seen = {};
-                (r.data || []).forEach(function(o) { if (o.customer_email && !seen[o.customer_email]) { seen[o.customer_email] = true; emails.push(o.customer_email); } });
+                (r.data || []).forEach(function(o) { 
+                    if (o.customer_email && !seen[o.customer_email]) { 
+                        seen[o.customer_email] = true; 
+                        emails.push(o.customer_email); 
+                    } 
+                });
             } else {
                 var r2 = await supabaseClient.from('profiles').select('email').not('email', 'is', null);
                 emails = (r2.data || []).map(function(p) { return p.email; }).filter(function(e) { return e; });
             }
             
-            if (emails.length === 0) { alert('沒有找到收件人'); return; }
+            if (emails.length > 0) {
+                textarea.value = emails.join(', ');
+                updateEdmEmailCount();
+                alert('已載入 ' + emails.length + ' 個郵箱');
+            } else {
+                alert('沒有找到郵箱');
+            }
+        } catch(e) {
+            alert('載入失敗：' + e.message);
+        }
+    }
+
+    // 更新郵箱計數
+    function updateEdmEmailCount() {
+        var textarea = document.getElementById('edmEmails');
+        var countEl = document.getElementById('edmEmailCount');
+        if (!textarea || !countEl) return;
+        var emails = textarea.value.split(/[,\n]/).map(function(e) { return e.trim(); }).filter(function(e) { return e && e.includes('@'); });
+        countEl.textContent = '已輸入 ' + emails.length + ' 個郵箱';
+    }
+    
+    async function sendEDM() {
+        var subject = document.getElementById('edmSubject').value.trim();
+        var content = document.getElementById('edmContent').value.trim();
+        var emailsText = document.getElementById('edmEmails').value.trim();
+        var btnText = document.getElementById('edmButtonText').value.trim();
+        var btnUrl = document.getElementById('edmButtonUrl').value.trim();
+        
+        if (!subject) { alert('請輸入郵件主題'); return; }
+        if (!content) { alert('請輸入郵件內容'); return; }
+        if (!emailsText) { alert('請輸入收件人郵箱'); return; }
+        
+        var emails = emailsText.split(/[,\n]/).map(function(e) { return e.trim(); }).filter(function(e) { return e && e.includes('@'); });
+        
+        if (emails.length === 0) { alert('沒有有效的郵箱地址'); return; }
             if (!confirm('確定發送郵件給 ' + emails.length + ' 位收件人？\n\n' + emails.slice(0,5).join('\n') + (emails.length > 5 ? '\n...' : ''))) return;
             
             // 獲取店鋪資料
