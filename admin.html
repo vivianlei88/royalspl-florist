@@ -6417,6 +6417,17 @@ async function saveProduct() {
             showToast('店鋪資料已保存');
         } catch (e) { showToast('保存失敗：' + (e.message || '請檢查 shop_settings 表')); }
     }
+    // 返回會員列表（修復重複頁面檢查導致的無法返回問題）
+    function backToMemberList() {
+        window.currentPage = 'members';
+        document.querySelectorAll('.sidebar-item').forEach(function(el) { el.classList.remove('active'); });
+        var memberMenuItem = document.querySelector('[data-page="members"]');
+        if (memberMenuItem) memberMenuItem.classList.add('active');
+        var c = document.getElementById('mainContent');
+        renderMembersPage(c);
+        window.scrollTo(0, 0);
+    }
+
     async function renderMembersPage(c) {
         c.innerHTML = '<div class="page-header"><h3>會員管理</h3><div style="display:flex;gap:10px;align-items:center;"><input type="text" id="memberSearch" placeholder="搜尋名稱或電郵..." style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;"><button class="btn btn-primary" onclick="showAddMemberForm()">手動新增</button><button class="btn btn-secondary" onclick="exportMembersCSV()">匯出 CSV</button><label class="btn btn-secondary" style="cursor:pointer;">匯入 CSV<input type="file" id="memberCSVInput" accept=".csv" style="display:none;" onchange="importMembersCSV(this)"></label></div></div><div id="membersTableContainer" style="overflow-x:auto;"></div>';
         loadMembersList();
@@ -6574,12 +6585,12 @@ async function saveProduct() {
             return !search || (m.full_name || '').toLowerCase().includes(search) || (m.email || '').toLowerCase().includes(search);
         });
         var html = '<table style="width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed;"><thead><tr style="border-bottom:2px solid #1A1A1A;">';
-        html += '<th style="padding:12px 6px;text-align:left;width:5%;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
-        html += '<th style="padding:12px 6px;text-align:left;width:15%;">名稱</th><th style="padding:12px 6px;text-align:left;width:18%;">電子郵件</th>';
-        html += '<th style="padding:12px 6px;text-align:left;width:12%;">電話</th><th style="padding:12px 6px;text-align:left;width:10%;">會員狀態</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:4%;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:13%;">名稱</th><th style="padding:12px 6px;text-align:left;width:16%;">電子郵件</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:10%;">電話</th><th style="padding:12px 6px;text-align:left;width:8%;">積分</th><th style="padding:12px 6px;text-align:left;width:9%;">會員狀態</th>';
         html += '<th style="padding:12px 6px;text-align:left;width:10%;">標籤</th><th style="padding:12px 6px;text-align:left;width:15%;">最近活動</th><th style="padding:12px 6px;text-align:left;width:15%;">建立日期</th></tr></thead><tbody>';
         if (filtered.length === 0) {
-            html += '<tr><td colspan="8" style="padding:30px;text-align:center;color:#888;">尚無會員</td></tr>';
+            html += '<tr><td colspan="9" style="padding:30px;text-align:center;color:#888;">尚無會員</td></tr>';
         } else {
             filtered.forEach(function(m) {
                 var isSelected = selectedMemberIds.includes(m.id);
@@ -6588,6 +6599,7 @@ async function saveProduct() {
                 html += '<td style="padding:12px 6px;word-break:break-all;"><a href="javascript:void(0)" onclick="showMemberDetail(\'' + m.id + '\')" style="color:#1A1A1A;text-decoration:underline;font-weight:500;">' + (m.full_name || '-') + '</a></td>';
                 html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.email || '-') + '</td>';
                 html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.phone || '-') + '</td>';
+                html += '<td style="padding:12px 6px;font-weight:600;color:#1A1A1A;">' + (m.points || 0).toLocaleString() + '</td>';
                 var statusColor = m.member_status === 'active' ? '#e8f5e9' : '#f5f5f5';
                 var statusTextColor = m.member_status === 'active' ? '#27ae60' : '#999';
                 html += '<td style="padding:12px 6px;"><span style="padding:3px 10px;border-radius:12px;font-size:12px;background:' + statusColor + ';color:' + statusTextColor + ';">' + (m.member_status || 'active') + '</span></td>';
@@ -6610,7 +6622,7 @@ async function saveProduct() {
         var member = allMembers.find(function(m) { return m.id === memberId; });
         if (!member) { c.innerHTML = '<p>會員不存在</p>'; return; }
         
-        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>會員詳情</h3></div>';
+        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="backToMemberList()">← 返回會員列表</button><h3>會員詳情</h3></div>';
         html += '<div class="form-container" style="max-width:100%;">';
         
         // 基本資料
@@ -6620,6 +6632,23 @@ async function saveProduct() {
         html += '<div class="form-group"><label class="form-label">會員狀態</label><select class="form-input" id="md_member_status"><option value="active"' + (member.member_status === 'active' ? ' selected' : '') + '>活躍</option><option value="inactive"' + (member.member_status === 'inactive' ? ' selected' : '') + '>非活躍</option></select></div>';
         html += '<div class="form-group"><label class="form-label">會員積分</label><input class="form-input" type="number" id="md_points" value="' + (member.points || 0) + '"></div>';
         html += '</div>';
+        
+        // 積分管理
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">積分管理</h4>';
+        html += '<div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;">';
+        html += '<div style="display:flex;gap:15px;align-items:center;margin-bottom:15px;flex-wrap:wrap;">';
+        html += '<div style="font-size:14px;">當前積分：<span id="md_current_points" style="font-size:24px;font-weight:700;color:#1A1A1A;">' + (member.points || 0).toLocaleString() + '</span></div>';
+        html += '<div style="font-size:14px;color:#666;">約值 HK$' + ((member.points || 0) / 100).toFixed(2) + '</div>';
+        html += '</div>';
+        html += '<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">';
+        html += '<div><label style="display:block;font-size:13px;margin-bottom:5px;">調整積分（正數增加，負數扣除）</label><input type="number" id="md_adjust_points" placeholder="例如：100 或 -50" style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;width:150px;"></div>';
+        html += '<div><label style="display:block;font-size:13px;margin-bottom:5px;">原因</label><input type="text" id="md_adjust_reason" placeholder="例如：手動調整" style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;width:200px;"></div>';
+        html += '<button class="btn btn-primary" onclick="adjustMemberPoints(\'' + memberId + '\')">確認調整</button>';
+        html += '</div></div>';
+        
+        // 積分記錄
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">積分記錄</h4>';
+        html += '<div id="md_points_log" style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:8px;"><p style="text-align:center;padding:20px;color:#888;">載入中...</p></div>';
         
         // 聯絡資訊
         html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">聯絡資訊</h4>';
@@ -6670,6 +6699,8 @@ async function saveProduct() {
         c.innerHTML = html;
         // 加载订单统计
         loadMemberOrderStats(memberId);
+        // 加载积分记录
+        loadMemberPointsLog(memberId);
     }
     
     async function loadMemberOrderStats(memberId) {
@@ -6690,10 +6721,15 @@ async function saveProduct() {
     
     async function saveMemberDetail(memberId) {
         try {
+            var oldPoints = 0;
+            var idx = allMembers.findIndex(function(m) { return m.id === memberId; });
+            if (idx >= 0) oldPoints = allMembers[idx].points || 0;
+            
+            var newPoints = parseInt(document.getElementById('md_points').value) || 0;
             var payload = {
                 full_name: document.getElementById('md_full_name').value,
                 member_status: document.getElementById('md_member_status').value,
-                points: parseInt(document.getElementById('md_points').value) || 0,
+                points: newPoints,
                 email: document.getElementById('md_email').value,
                 phone: document.getElementById('md_phone').value,
                 phone2: document.getElementById('md_phone2').value,
@@ -6704,11 +6740,96 @@ async function saveProduct() {
                 tags: document.getElementById('md_tags').value
             };
             await supabaseClient.from('profiles').update(payload).eq('id', memberId);
+            
+            // 如果積分有變化，記錄變動
+            if (newPoints !== oldPoints) {
+                try {
+                    await supabaseClient.from('member_points_log').insert({
+                        member_id: memberId,
+                        points: newPoints - oldPoints,
+                        type: 'adjust',
+                        description: '管理員手動修改積分（' + oldPoints + ' → ' + newPoints + '）'
+                    });
+                } catch(e) { console.log('積分記錄失敗:', e); }
+            }
+            
             alert('保存成功！');
             // 更新本地数据
-            var idx = allMembers.findIndex(function(m) { return m.id === memberId; });
             if (idx >= 0) { allMembers[idx] = Object.assign(allMembers[idx], payload); }
+            // 更新顯示
+            var currentPointsEl = document.getElementById('md_current_points');
+            if (currentPointsEl) currentPointsEl.textContent = newPoints.toLocaleString();
+            loadMemberPointsLog(memberId);
         } catch(e) { alert('保存失败：' + e.message); }
+    }
+    
+    // 調整會員積分
+    async function adjustMemberPoints(memberId) {
+        var adjust = parseInt(document.getElementById('md_adjust_points').value);
+        var reason = document.getElementById('md_adjust_reason').value || '管理員調整';
+        if (!adjust || adjust === 0) { alert('請輸入調整積分數'); return; }
+        
+        try {
+            var idx = allMembers.findIndex(function(m) { return m.id === memberId; });
+            var oldPoints = idx >= 0 ? (allMembers[idx].points || 0) : 0;
+            var newPoints = oldPoints + adjust;
+            if (newPoints < 0) { alert('積分不能為負數'); return; }
+            
+            // 更新積分
+            await supabaseClient.from('profiles').update({ points: newPoints }).eq('id', memberId);
+            
+            // 記錄變動
+            await supabaseClient.from('member_points_log').insert({
+                member_id: memberId,
+                points: adjust,
+                type: adjust > 0 ? 'earn' : 'spend',
+                description: reason
+            });
+            
+            // 更新本地數據和顯示
+            if (idx >= 0) allMembers[idx].points = newPoints;
+            document.getElementById('md_points').value = newPoints;
+            document.getElementById('md_current_points').textContent = newPoints.toLocaleString();
+            document.getElementById('md_adjust_points').value = '';
+            document.getElementById('md_adjust_reason').value = '';
+            loadMemberPointsLog(memberId);
+            alert('積分調整成功！當前積分：' + newPoints);
+        } catch(e) { alert('調整失敗：' + e.message); }
+    }
+    
+    // 加載會員積分記錄
+    async function loadMemberPointsLog(memberId) {
+        var container = document.getElementById('md_points_log');
+        if (!container) return;
+        try {
+            var r = await supabaseClient.from('member_points_log')
+                .select('*')
+                .eq('member_id', memberId)
+                .order('created_at', { ascending: false })
+                .limit(50);
+            var logs = r.data || [];
+            if (logs.length === 0) {
+                container.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">尚無積分記錄</p>';
+                return;
+            }
+            var html = '<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="background:#f5f5f5;">';
+            html += '<th style="padding:10px;text-align:left;">日期</th><th style="padding:10px;text-align:left;">類型</th><th style="padding:10px;text-align:right;">積分變動</th><th style="padding:10px;text-align:left;">原因</th></tr></thead><tbody>';
+            logs.forEach(function(log) {
+                var typeText = { earn: '獲得', spend: '使用', adjust: '調整', expire: '過期' }[log.type] || log.type;
+                var typeColor = log.points > 0 ? '#27ae60' : '#e74c3c';
+                var pointsText = (log.points > 0 ? '+' : '') + log.points;
+                html += '<tr style="border-bottom:1px solid #eee;">';
+                html += '<td style="padding:10px;">' + (log.created_at || '').slice(0, 16).replace('T', ' ') + '</td>';
+                html += '<td style="padding:10px;">' + typeText + '</td>';
+                html += '<td style="padding:10px;text-align:right;font-weight:600;color:' + typeColor + ';">' + pointsText + '</td>';
+                html += '<td style="padding:10px;color:#666;">' + (log.description || '-') + '</td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch(e) {
+            container.innerHTML = '<p style="text-align:center;padding:20px;color:red;">載入失敗：' + e.message + '</p>';
+        }
     }
     
     // ========== 手動訂單商品選擇器 ==========
@@ -6846,7 +6967,7 @@ async function saveProduct() {
     }
     function showAddMemberForm() {
         var c = document.getElementById('mainContent');
-        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>手動新增會員</h3></div>';
+        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="backToMemberList()">← 返回會員列表</button><h3>手動新增會員</h3></div>';
         html += '<div class="form-container" style="max-width:100%;">';
         
         // 基本資料
