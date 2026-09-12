@@ -1894,10 +1894,10 @@
             '<input type="text" id="edmSubject" placeholder="例如：新品上市！限時優惠8折" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;"></div>';
         c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">收件人</label>' +
             '<select id="edmRecipients" onchange="toggleManualEmails()" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;">' +
-            '<option value="all">所有會員（自動）</option>' +
-            '<option value="customers">有訂單的客戶（自動）</option>' +
+            '<option value="all">所有會員（自動從會員管理讀取）</option>' +
+            '<option value="customers">有訂單的客戶（自動從訂單讀取）</option>' +
             '<option value="manual">手動輸入郵箱</option></select></div>';
-        c.innerHTML += '<div id="manualEmailsBox" style="margin-bottom:15px;display:none;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">手動輸入郵箱（用逗號或換行分隔）</label>' +
+        c.innerHTML += '<div id="manualEmailsBox" style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">手動輸入郵箱（用逗號或換行分隔，選擇「手動輸入郵箱」時生效）</label>' +
             '<textarea id="edmManualEmails" rows="4" placeholder="email1@example.com, email2@example.com&#10;email3@example.com" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea></div>';
         c.innerHTML += '<div style="margin-bottom:15px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">郵件內容 <button class="btn btn-small btn-secondary" style="margin-left:10px;" onclick="showAIWriterModal(\'blog\',\'edmContent\')">✦ AI寫作</button></label>' +
             '<textarea id="edmContent" rows="12" placeholder="輸入郵件內容，支援 HTML" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea></div>';
@@ -1948,7 +1948,20 @@
     function toggleManualEmails() {
         var val = document.getElementById('edmRecipients').value;
         var box = document.getElementById('manualEmailsBox');
-        if (box) box.style.display = (val === 'manual') ? 'block' : 'none';
+        var textarea = document.getElementById('edmManualEmails');
+        if (box) {
+            if (val === 'manual') {
+                box.style.border = '2px solid #1a1a1a';
+                box.style.padding = '10px';
+                box.style.borderRadius = '5px';
+                box.style.background = '#f9f9f9';
+                if (textarea) textarea.focus();
+            } else {
+                box.style.border = 'none';
+                box.style.padding = '0';
+                box.style.background = 'transparent';
+            }
+        }
     }
     
     async function sendEDM() {
