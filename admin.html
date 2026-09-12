@@ -4901,10 +4901,24 @@ async function saveProduct() {
         if (!ids.length) { showToast('請先勾選要下載的商品'); return; }
         var selectedProducts = allProducts.filter(function(p) { return ids.indexOf(p.id) !== -1; });
         if (!selectedProducts.length) { showToast('無商品'); return; }
-        var rows = ['id,sku,name_zh,name_en,price,category,categories,category_ids,description,description_en,tags,stock,delivery_days,is_active,image_url,images'];
+        var rows = ['id,sku,name_zh,name_en,price,category,categories,category_ids,description,description_en,tags,stock,delivery_days,is_active,image_url,images,花材,產地,規格,香調備註(|分隔),香調分數,特價HKD,是否預購,預購天數,狀態,SEO標題,SEO描述,slug,規格變體JSON'];
         for (var i = 0; i < selectedProducts.length; i++) {
             var p = selectedProducts[i];
-            rows.push([p.id, p.sku || '', p.name_zh || '', p.name_en || '', p.price, p.category || '', (p.categories || []).join('|'), (p.category_ids || []).join('|'), (p.description || '').replace(/,/g, '，'), (p.description_en || '').replace(/,/g, '，'), (p.tags || []).join('|'), p.stock, p.delivery_days || 1, p.is_active !== false, p.image_url || '', (p.images || []).join('|')].join(','));
+            var scentNotes = (p.scent_notes || []).join('|');
+            var variantsJson = p.variants ? JSON.stringify(p.variants).replace(/,/g, '，') : '';
+            rows.push([
+                p.id, p.sku || '', p.name_zh || '', p.name_en || '', p.price, 
+                p.category || '', (p.categories || []).join('|'), (p.category_ids || []).join('|'),
+                (p.description || '').replace(/,/g, '，'), (p.description_en || '').replace(/,/g, '，'),
+                (p.tags || []).join('|'), p.stock, p.delivery_days || 1, p.is_active !== false,
+                p.image_url || '', (p.images || []).join('|'),
+                (p.specs_flowers || '').replace(/,/g, '，'), (p.specs_origin || '').replace(/,/g, '，'),
+                (p.specs_size || '').replace(/,/g, '，'), scentNotes, p.style_spectrum || 0,
+                p.sale_price || '', p.is_preorder ? 'Y' : 'N', p.delivery_days || 3,
+                p.is_active !== false ? 'active' : 'inactive',
+                (p.seo_title || '').replace(/,/g, '，'), (p.seo_description || '').replace(/,/g, '，'),
+                p.slug || '', variantsJson
+            ].join(','));
         }
         var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
         var a = document.createElement('a');
