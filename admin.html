@@ -545,7 +545,6 @@
                 </div>
             </div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
-            <div class="sidebar-item" data-page="inbox" onclick="switchPage('inbox')">收件箱</div>
             <div class="sidebar-item" data-page="members" onclick="switchPage('members')">會員管理</div>
             <div class="sidebar-item" data-page="visitors" onclick="switchPage('visitors')">在線訪客</div>
             <div class="sidebar-group" id="contentMenuGroup" onmouseenter="showContentMenu()" onmouseleave="hideContentMenu()">
@@ -557,6 +556,15 @@
                     <div class="sidebar-item sidebar-subitem" data-page="blog" onclick="switchPage('blog')">部落格文章</div>
                     <div class="sidebar-item sidebar-subitem" data-page="faq" onclick="switchPage('faq')">常見問題</div>
                     <div class="sidebar-item sidebar-subitem" data-page="privacy" onclick="switchPage('privacy')">私隱政策</div>
+                </div>
+            </div>
+            <div class="sidebar-group" id="emailMenuGroup" onmouseenter="showEmailMenu()" onmouseleave="hideEmailMenu()">
+                <div class="sidebar-item sidebar-group-header">
+                    <span>郵件管理</span>
+                    <span class="settings-arrow" id="emailArrow">▶</span>
+                </div>
+                <div class="sidebar-submenu" id="emailSubmenu">
+                    <div class="sidebar-item sidebar-subitem" data-page="inbox" onclick="switchPage('inbox')">收件箱</div>
                     <div class="sidebar-item sidebar-subitem" data-page="edm" onclick="switchPage('edm')">郵件營銷</div>
                 </div>
             </div>
@@ -2844,6 +2852,18 @@
     function hideContentMenu() {
         var submenu = document.getElementById('contentSubmenu');
         var arrow = document.getElementById('contentArrow');
+        if (submenu) submenu.classList.remove('show');
+        if (arrow) arrow.textContent = '▶';
+    }
+    function showEmailMenu() {
+        var submenu = document.getElementById('emailSubmenu');
+        var arrow = document.getElementById('emailArrow');
+        if (submenu) submenu.classList.add('show');
+        if (arrow) arrow.textContent = '◀';
+    }
+    function hideEmailMenu() {
+        var submenu = document.getElementById('emailSubmenu');
+        var arrow = document.getElementById('emailArrow');
         if (submenu) submenu.classList.remove('show');
         if (arrow) arrow.textContent = '▶';
     }
