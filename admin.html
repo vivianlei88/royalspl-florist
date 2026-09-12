@@ -4400,7 +4400,7 @@
             // 手機端：只保留搜尋和新增商品
             c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row" style="flex-wrap:wrap;gap:10px;"><h2 class="page-title" style="margin:0;font-size:22px;width:100%;">商品管理</h2><input type="text" class="products-search" id="productSearch" placeholder="搜尋商品名稱..." oninput="filterProducts()" style="flex:1;min-width:0;"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
         } else {
-            c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;"> 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
+            c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載勾選 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;"> 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
         }
         loadProducts();
     }
@@ -4896,7 +4896,23 @@ async function saveProduct() {
     async function bulkDelete() { var ids = getCheckedIds(); if (!ids.length) { showToast('請先勾選'); return; } if (!confirm('刪除 ' + ids.length + ' 個？')) return; await supabaseClient.from('products').delete().in('id', ids); showToast('完成'); loadProducts(); }
     async function deleteProduct(id) { if (!confirm('刪除？')) return; await supabaseClient.from('products').delete().eq('id', id); showToast('已刪除'); loadProducts(); }
     async function toggleActive(id, current) { await supabaseClient.from('products').update({ is_active: !current }).eq('id', id); loadProducts(); }
-    function exportCSV() { if (!allProducts.length) { showToast('無商品'); return; } var rows = ['id,sku,name_zh,name_en,price,category,categories,category_ids,description,description_en,tags,stock,delivery_days,is_active,image_url,images']; for (var i = 0; i < allProducts.length; i++) { var p = allProducts[i]; rows.push([p.id, p.sku || '', p.name_zh || '', p.name_en || '', p.price, p.category || '', (p.categories || []).join('|'), (p.category_ids || []).join('|'), (p.description || '').replace(/,/g, '，'), (p.description_en || '').replace(/,/g, '，'), (p.tags || []).join('|'), p.stock, p.delivery_days || 1, p.is_active !== false, p.image_url || '', (p.images || []).join('|')].join(',')); } var blob = new Blob([rows.join('\n')], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'products.csv'; a.click(); }
+    function exportCSV() {
+        var ids = getCheckedIds();
+        if (!ids.length) { showToast('請先勾選要下載的商品'); return; }
+        var selectedProducts = allProducts.filter(function(p) { return ids.indexOf(p.id) !== -1; });
+        if (!selectedProducts.length) { showToast('無商品'); return; }
+        var rows = ['id,sku,name_zh,name_en,price,category,categories,category_ids,description,description_en,tags,stock,delivery_days,is_active,image_url,images'];
+        for (var i = 0; i < selectedProducts.length; i++) {
+            var p = selectedProducts[i];
+            rows.push([p.id, p.sku || '', p.name_zh || '', p.name_en || '', p.price, p.category || '', (p.categories || []).join('|'), (p.category_ids || []).join('|'), (p.description || '').replace(/,/g, '，'), (p.description_en || '').replace(/,/g, '，'), (p.tags || []).join('|'), p.stock, p.delivery_days || 1, p.is_active !== false, p.image_url || '', (p.images || []).join('|')].join(','));
+        }
+        var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'products_selected_' + selectedProducts.length + '.csv';
+        a.click();
+        showToast('已下載 ' + selectedProducts.length + ' 個商品');
+    }
     function parseCSVLine(line) {
         var result = [];
         var current = '';
