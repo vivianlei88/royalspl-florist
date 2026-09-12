@@ -6417,6 +6417,17 @@ async function saveProduct() {
             showToast('店鋪資料已保存');
         } catch (e) { showToast('保存失敗：' + (e.message || '請檢查 shop_settings 表')); }
     }
+    // 返回會員列表（修復重複頁面檢查導致的無法返回問題）
+    function backToMemberList() {
+        window.currentPage = 'members';
+        document.querySelectorAll('.sidebar-item').forEach(function(el) { el.classList.remove('active'); });
+        var memberMenuItem = document.querySelector('[data-page="members"]');
+        if (memberMenuItem) memberMenuItem.classList.add('active');
+        var c = document.getElementById('mainContent');
+        renderMembersPage(c);
+        window.scrollTo(0, 0);
+    }
+
     async function renderMembersPage(c) {
         c.innerHTML = '<div class="page-header"><h3>會員管理</h3><div style="display:flex;gap:10px;align-items:center;"><input type="text" id="memberSearch" placeholder="搜尋名稱或電郵..." style="padding:8px 12px;border:1px solid #ddd;border-radius:5px;"><button class="btn btn-primary" onclick="showAddMemberForm()">手動新增</button><button class="btn btn-secondary" onclick="exportMembersCSV()">匯出 CSV</button><label class="btn btn-secondary" style="cursor:pointer;">匯入 CSV<input type="file" id="memberCSVInput" accept=".csv" style="display:none;" onchange="importMembersCSV(this)"></label></div></div><div id="membersTableContainer" style="overflow-x:auto;"></div>';
         loadMembersList();
@@ -6574,12 +6585,12 @@ async function saveProduct() {
             return !search || (m.full_name || '').toLowerCase().includes(search) || (m.email || '').toLowerCase().includes(search);
         });
         var html = '<table style="width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed;"><thead><tr style="border-bottom:2px solid #1A1A1A;">';
-        html += '<th style="padding:12px 6px;text-align:left;width:5%;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
-        html += '<th style="padding:12px 6px;text-align:left;width:15%;">名稱</th><th style="padding:12px 6px;text-align:left;width:18%;">電子郵件</th>';
-        html += '<th style="padding:12px 6px;text-align:left;width:12%;">電話</th><th style="padding:12px 6px;text-align:left;width:10%;">會員狀態</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:4%;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:13%;">名稱</th><th style="padding:12px 6px;text-align:left;width:16%;">電子郵件</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:10%;">電話</th><th style="padding:12px 6px;text-align:left;width:8%;">積分</th><th style="padding:12px 6px;text-align:left;width:9%;">會員狀態</th>';
         html += '<th style="padding:12px 6px;text-align:left;width:10%;">標籤</th><th style="padding:12px 6px;text-align:left;width:15%;">最近活動</th><th style="padding:12px 6px;text-align:left;width:15%;">建立日期</th></tr></thead><tbody>';
         if (filtered.length === 0) {
-            html += '<tr><td colspan="8" style="padding:30px;text-align:center;color:#888;">尚無會員</td></tr>';
+            html += '<tr><td colspan="9" style="padding:30px;text-align:center;color:#888;">尚無會員</td></tr>';
         } else {
             filtered.forEach(function(m) {
                 var isSelected = selectedMemberIds.includes(m.id);
@@ -6588,6 +6599,7 @@ async function saveProduct() {
                 html += '<td style="padding:12px 6px;word-break:break-all;"><a href="javascript:void(0)" onclick="showMemberDetail(\'' + m.id + '\')" style="color:#1A1A1A;text-decoration:underline;font-weight:500;">' + (m.full_name || '-') + '</a></td>';
                 html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.email || '-') + '</td>';
                 html += '<td style="padding:12px 6px;word-break:break-all;">' + (m.phone || '-') + '</td>';
+                html += '<td style="padding:12px 6px;font-weight:600;color:#1A1A1A;">' + (m.points || 0).toLocaleString() + '</td>';
                 var statusColor = m.member_status === 'active' ? '#e8f5e9' : '#f5f5f5';
                 var statusTextColor = m.member_status === 'active' ? '#27ae60' : '#999';
                 html += '<td style="padding:12px 6px;"><span style="padding:3px 10px;border-radius:12px;font-size:12px;background:' + statusColor + ';color:' + statusTextColor + ';">' + (m.member_status || 'active') + '</span></td>';
@@ -6610,7 +6622,7 @@ async function saveProduct() {
         var member = allMembers.find(function(m) { return m.id === memberId; });
         if (!member) { c.innerHTML = '<p>會員不存在</p>'; return; }
         
-        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>會員詳情</h3></div>';
+        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="backToMemberList()">← 返回會員列表</button><h3>會員詳情</h3></div>';
         html += '<div class="form-container" style="max-width:100%;">';
         
         // 基本資料
@@ -6846,7 +6858,7 @@ async function saveProduct() {
     }
     function showAddMemberForm() {
         var c = document.getElementById('mainContent');
-        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="switchPage(\'members\')">← 返回會員列表</button><h3>手動新增會員</h3></div>';
+        var html = '<div class="page-header"><button class="btn btn-secondary" onclick="backToMemberList()">← 返回會員列表</button><h3>手動新增會員</h3></div>';
         html += '<div class="form-container" style="max-width:100%;">';
         
         // 基本資料
