@@ -2011,8 +2011,9 @@
         var emails = emailsText.split(/[,\n]/).map(function(e) { return e.trim(); }).filter(function(e) { return e && e.includes('@'); });
         
         if (emails.length === 0) { alert('沒有有效的郵箱地址'); return; }
-            if (!confirm('確定發送郵件給 ' + emails.length + ' 位收件人？\n\n' + emails.slice(0,5).join('\n') + (emails.length > 5 ? '\n...' : ''))) return;
-            
+        if (!confirm('確定發送郵件給 ' + emails.length + ' 位收件人？\n\n' + emails.slice(0,5).join('\n') + (emails.length > 5 ? '\n...' : ''))) return;
+        
+        try {
             // 獲取店鋪資料
             var shop = {};
             try {
