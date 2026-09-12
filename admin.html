@@ -6798,8 +6798,9 @@ async function saveProduct() {
     
     function toggleProductSelector() {
         var selector = document.getElementById('mo_product_selector');
-        if (!selector) return;
-        if (selector.style.display === 'none') {
+        if (!selector) { alert('找不到商品選擇器'); return; }
+        var isHidden = selector.style.display === 'none' || selector.style.display === '';
+        if (isHidden) {
             selector.style.display = 'block';
             loadProductSelector();
         } else {
@@ -6826,7 +6827,7 @@ async function saveProduct() {
                     img = imgs[0] || '';
                 } catch(e) { img = ''; }
                 var isSelected = manualOrderProducts.some(function(mp) { return mp.id === p.id; });
-                html += '<div style="border:1px solid ' + (isSelected ? '#1A1A1A' : '#eee') + ';border-radius:8px;padding:8px;cursor:pointer;background:' + (isSelected ? '#f0f0f0' : '#fff') + ';" onclick="selectManualProduct(\'' + p.id + '\', \'' + (p.name || '').replace(/'/g, "\\'") + '\', ' + (p.price || 0) + ')">';
+                html += '<div class="product-select-item" data-id="' + p.id + '" data-name="' + (p.name || '').replace(/"/g, '&quot;') + '" data-price="' + (p.price || 0) + '" style="border:1px solid ' + (isSelected ? '#1A1A1A' : '#eee') + ';border-radius:8px;padding:8px;cursor:pointer;background:' + (isSelected ? '#f0f0f0' : '#fff') + ';">';
                 html += '<div style="width:100%;aspect-ratio:1;background:#f5f5f5;border-radius:4px;overflow:hidden;margin-bottom:5px;">';
                 if (img) { html += '<img src="' + img + '" style="width:100%;height:100%;object-fit:cover;">'; }
                 html += '</div>';
@@ -6836,6 +6837,16 @@ async function saveProduct() {
             });
             html += '</div>';
             selector.innerHTML = html;
+            // 绑定点击事件
+            var items = selector.querySelectorAll('.product-select-item');
+            items.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    var id = this.getAttribute('data-id');
+                    var name = this.getAttribute('data-name');
+                    var price = parseFloat(this.getAttribute('data-price')) || 0;
+                    selectManualProduct(id, name, price);
+                });
+            });
         } catch(e) {
             selector.innerHTML = '<p style="text-align:center;padding:20px;color:red;">載入失敗：' + e.message + '</p>';
         }
