@@ -1991,8 +1991,82 @@
     
     function rteInsertImage(editorId) {
         var eid = editorId || currentRTE;
-        var url = prompt('請輸入圖片網址：', 'https://');
-        if (url) rteExec('insertImage', url, eid);
+        // 創建隱藏的文件選擇框
+        var fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        fileInput.onchange = function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) { alert('請選擇圖片文件'); return; }
+            if (file.size > 5 * 1024 * 1024) { alert('圖片大小不能超過5MB'); return; }
+            uploadRTEImage(file, eid);
+        };
+        document.body.appendChild(fileInput);
+        fileInput.click();
+        document.body.removeChild(fileInput);
+    }
+    
+    async function uploadRTEImage(file, editorId) {
+        var eid = editorId || currentRTE;
+        var editor = document.getElementById(eid);
+        if (!editor) return;
+        
+        // 顯示上傳中提示
+        var loadingId = 'rte_loading_' + Date.now();
+        editor.focus();
+        var loadingHtml = '<div id="' + loadingId + '" style="padding:20px;text-align:center;color:#888;font-size:14px;">📤 圖片上傳中...</div>';
+        var selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            var range = selection.getRangeAt(0);
+            if (editor.contains(range.commonAncestorContainer)) {
+                range.deleteContents();
+                var div = document.createElement('div');
+                div.innerHTML = loadingHtml;
+                var frag = document.createDocumentFragment();
+                var node;
+                while ((node = div.firstChild)) frag.appendChild(node);
+                range.insertNode(frag);
+            } else {
+                editor.innerHTML += loadingHtml;
+            }
+        } else {
+            editor.innerHTML += loadingHtml;
+        }
+        
+        try {
+            var formData = new FormData();
+            formData.append('file', file);
+            var resp = await fetch('/r2-upload', { method: 'POST', body: formData });
+            var result = await resp.json();
+            if (result.url) {
+                // 替換上傳中提示為實際圖片
+                var loadingEl = document.getElementById(loadingId);
+                if (loadingEl) {
+                    var img = document.createElement('img');
+                    img.src = result.url;
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                    img.style.display = 'block';
+                    img.style.margin = '10px 0';
+                    img.alt = '圖片';
+                    loadingEl.parentNode.replaceChild(img, loadingEl);
+                } else {
+                    editor.innerHTML += '<img src="' + result.url + '" style="max-width:100%;height:auto;display:block;margin:10px 0;" alt="圖片">';
+                }
+                // 觸發預覽更新
+                if (eid === 'edmContent' && typeof updateEDMPreview === 'function') updateEDMPreview();
+            } else {
+                alert('上傳失敗：' + (result.error || '未知錯誤'));
+                var loadingEl2 = document.getElementById(loadingId);
+                if (loadingEl2) loadingEl2.remove();
+            }
+        } catch (e) {
+            alert('上傳失敗：' + e.message);
+            var loadingEl3 = document.getElementById(loadingId);
+            if (loadingEl3) loadingEl3.remove();
+        }
     }
     
     // 生成富文本编辑器工具栏
