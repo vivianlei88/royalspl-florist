@@ -2,6 +2,13 @@
 const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
 
+// 排除的IP列表（管理員自己的IP，不計入訪客，不觸發提醒）
+const EXCLUDED_IPS = [
+    '81.28.13.120',  // 管理員本機電腦
+    // 在這裡添加更多管理員IP，例如：
+    // '192.168.1.1',
+];
+
 export async function onRequestPost(context) {
     const { request, env } = context;
     
@@ -19,6 +26,19 @@ export async function onRequestPost(context) {
         if (!ip) {
             return new Response(JSON.stringify({ success: false, error: '無法獲取IP' }), {
                 status: 400,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
+        
+        // 1.5 檢查是否在排除IP列表中
+        if (EXCLUDED_IPS.includes(ip)) {
+            return new Response(JSON.stringify({ 
+                success: true, 
+                ip: ip, 
+                excluded: true,
+                message: 'IP在排除列表中，不記錄訪客'
+            }), {
+                status: 200,
                 headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
             });
         }
