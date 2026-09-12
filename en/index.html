@@ -52,6 +52,7 @@
         .collection-card-text { padding: 12px 2px 4px 2px; text-align: left; }
         .collection-card-text .en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #383431; margin: 0 0 6px 0; }
         .collection-card-text .zh { font-size: 18px; font-weight: 500; color: #1A1A1A; margin: 0; }
+        .collection-card-desc { font-size: 12px; color: #888; margin: 6px 0 0 0; line-height: 1.5; }
         .collection-emoji { font-size: 70px; margin-bottom: 20px; }
         .collection-title { font-size: 20px; font-weight: 600; margin-bottom: 5px; color: #1A1A1A; }
         .collection-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 13px; letter-spacing: 1px; color: #383431; text-transform: uppercase; }
@@ -458,22 +459,37 @@
         var container = document.getElementById('collectionsGrid');
         if (!container) return;
         try {
-            var result = await supabaseClient.from('collection_cards').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+            var result = await supabaseClient.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true });
             if (result.error) throw result.error;
-            var cards = result.data || [];
-            if (!cards.length) { container.innerHTML = ''; return; }
+            var categories = result.data || [];
+            if (!categories.length) { container.innerHTML = ''; return; }
+            
+            // 随机轮换：打乱顺序，取前6个
+            var shuffled = categories.slice();
+            for (var i = shuffled.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = shuffled[i];
+                shuffled[i] = shuffled[j];
+                shuffled[j] = temp;
+            }
+            var displayCount = Math.min(6, shuffled.length);
+            var cards = shuffled.slice(0, displayCount);
+            
             var html = '';
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
-                var link = card.link_url || ('products.html?category=' + encodeURIComponent(card.title_zh || ''));
+                var link = 'products.html?category=' + encodeURIComponent(card.name_zh || '');
                 var imgHtml = card.image_url 
-                    ? '<div class="collection-card-img-wrap"><img src="' + card.image_url + '" alt="' + (card.name_zh || card.name_en || '花藝系列') + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+                    ? '<div class="collection-card-img-wrap"><img src="' + card.image_url + '" alt="' + (card.name_en || card.name_zh || 'Floral Collection') + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
                     : '<div class="collection-card-img-wrap" style="background:#F3EFEA;display:flex;align-items:center;justify-content:center;"></div>';
+                var desc = card.description_en || card.description || '';
+                if (desc.length > 60) desc = desc.substring(0, 60) + '...';
                 html += '<a href="' + link + '" class="collection-card collection-card-' + (i+1) + '">';
                 html += imgHtml;
                 html += '<div class="collection-card-text">';
-                html += '<p class="en">' + (card.title_en || '') + '</p>';
-                html += '<h3 class="zh">' + (card.title_zh || '') + '</h3>';
+                html += '<p class="en">' + (card.name_en || '') + '</p>';
+                html += '<h3 class="zh">' + (card.name_zh || '') + '</h3>';
+                if (desc) html += '<p class="collection-card-desc">' + desc + '</p>';
                 html += '</div></a>';
             }
             container.innerHTML = html;
