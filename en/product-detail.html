@@ -974,16 +974,16 @@
             const { data, error } = await supabaseClient.from('privacy_policy').select('*').eq('is_published', true).limit(1).maybeSingle();
             const el = document.getElementById('privacyContent');
             if (el) {
-                if (data && data.content) {
-                    el.innerHTML = parseMarkdown(data.content);
+                if (data && (data.content_en || data.content)) {
+                    el.innerHTML = parseMarkdown(data.content_en || data.content);
                 } else {
                     el.innerHTML = 'No content';
                 }
             }
         } catch(e) { 
-            console.log('隐私政策加载失败:', e); 
+            console.log('Privacy policy load failed:', e); 
             const el = document.getElementById('privacyContent');
-            if (el) el.innerHTML = '暫無內容';
+            if (el) el.innerHTML = 'No content';
         }
     }
 
