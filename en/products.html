@@ -580,7 +580,7 @@
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
             html += '<p class="product-price">HK$' + p.price + '<\/p>';
             html += '<div class="product-tags">';
-            for (var j = 0; j < Math.min(tags.length, 4); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }
+            for (var j = 0; j < Math.min(tags.length, 4); j++) { html += '<span class="tag-pill">' + translateTag(tags[j]) + '<\/span>'; }
             html += '<\/div>';
             html += '<\/a>';
         }
