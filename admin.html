@@ -6697,6 +6697,10 @@ async function saveProduct() {
         html += '<div style="background:#f9f9f9;padding:15px 20px;border-radius:8px;flex:1;"><div style="font-size:13px;color:#888;">會員積分</div><div style="font-size:24px;font-weight:600;">' + (member.points || 0) + '</div></div>';
         html += '</div>';
         
+        // 積分記錄
+        html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">積分記錄</h4>';
+        html += '<div id="md_points_log" style="border:1px solid #eee;border-radius:8px;margin-bottom:15px;min-height:60px;"><p style="text-align:center;padding:20px;color:#888;">載入中...</p></div>';
+        
         // 手動建立訂單
         html += '<h4 style="font-size:16px;font-weight:600;margin:20px 0 10px;">手動建立訂單</h4>';
         html += '<div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px;">';
@@ -6718,6 +6722,8 @@ async function saveProduct() {
         c.innerHTML = html;
         // 加载订单统计
         loadMemberOrderStats(memberId);
+        // 加载积分记录
+        loadMemberPointsLog(memberId);
     }
     
     async function loadMemberOrderStats(memberId) {
@@ -6731,9 +6737,36 @@ async function saveProduct() {
             var total = paidOrders.reduce(function(sum, o) { return sum + (parseFloat(o.total_amount) || 0); }, 0);
             document.getElementById('md_order_count').textContent = count;
             document.getElementById('md_total_spent').textContent = 'HK$' + total.toFixed(2);
-            // 更新数据库
             await supabaseClient.from('profiles').update({ order_count: count, total_spent: total }).eq('id', memberId);
         } catch(e) { console.error('加载订单统计失败', e); }
+    }
+    
+    async function loadMemberPointsLog(memberId) {
+        var container = document.getElementById('md_points_log');
+        if (!container) return;
+        try {
+            var r = await supabaseClient.from('member_points_log').select('*').eq('member_id', memberId).order('created_at', { ascending: false }).limit(20);
+            var logs = r.data || [];
+            if (logs.length === 0) {
+                container.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">尚無積分記錄</p>';
+                return;
+            }
+            var h = '<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="background:#f5f5f5;">';
+            h += '<th style="padding:8px;text-align:left;">日期</th><th style="padding:8px;text-align:right;">積分</th><th style="padding:8px;text-align:left;">原因</th></tr></thead><tbody>';
+            logs.forEach(function(log) {
+                var color = log.points > 0 ? '#27ae60' : '#e74c3c';
+                var txt = (log.points > 0 ? '+' : '') + log.points;
+                h += '<tr style="border-bottom:1px solid #eee;">';
+                h += '<td style="padding:8px;">' + (log.created_at || '').slice(0, 10) + '</td>';
+                h += '<td style="padding:8px;text-align:right;font-weight:600;color:' + color + ';">' + txt + '</td>';
+                h += '<td style="padding:8px;color:#666;">' + (log.description || '-') + '</td>';
+                h += '</tr>';
+            });
+            h += '</tbody></table>';
+            container.innerHTML = h;
+        } catch(e) {
+            container.innerHTML = '<p style="text-align:center;padding:20px;color:red;">載入失敗</p>';
+        }
     }
     
     async function saveMemberDetail(memberId) {
