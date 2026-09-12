@@ -2669,22 +2669,32 @@
             });
 
             if (commitResp.ok) {
-                // 自動提交到 Google 和 Bing
+                // 自動提交到多個搜索引擎
                 const sitemapUrl = 'https://www.royalspl.shop/sitemap.xml';
                 let pingResults = [];
-                try {
-                    await fetch('https://www.google.com/ping?sitemap=' + encodeURIComponent(sitemapUrl), { mode: 'no-cors' });
-                    pingResults.push('Google ✅');
-                } catch (e) { pingResults.push('Google ❌'); }
-                try {
-                    await fetch('https://www.bing.com/ping?sitemap=' + encodeURIComponent(sitemapUrl), { mode: 'no-cors' });
-                    pingResults.push('Bing ✅');
-                } catch (e) { pingResults.push('Bing ❌'); }
+                
+                // 定義搜索引擎列表
+                const searchEngines = [
+                    { name: 'Google', url: 'https://www.google.com/ping?sitemap=' },
+                    { name: 'Bing', url: 'https://www.bing.com/ping?sitemap=' },
+                    { name: '百度', url: 'https://www.baidu.com/ping?sitemap=' },
+                    { name: 'Yandex', url: 'https://yandex.ru/ping?sitemap=' },
+                    { name: 'Ask', url: 'http://submissions.ask.com/ping?sitemap=' }
+                ];
+                
+                for (var i = 0; i < searchEngines.length; i++) {
+                    try {
+                        await fetch(searchEngines[i].url + encodeURIComponent(sitemapUrl), { mode: 'no-cors' });
+                        pingResults.push(searchEngines[i].name + ' ✅');
+                    } catch (e) {
+                        pingResults.push(searchEngines[i].name + ' ❌');
+                    }
+                }
                 
                 resultDiv.innerHTML = '<div style="color:#52C41A;font-weight:600;">✅ Sitemap 生成並提交成功！</div>' +
                     '<div style="color:#666;margin-top:10px;">共 ' + totalUrls + ' 個 URL（靜態頁面 ' + staticPages.length + ' / 商品 ' + (products || []).length + ' / 分類 ' + (categories || []).length + ' / 部落格 ' + (posts || []).length + '）</div>' +
-                    '<div style="color:#666;margin-top:8px;">已通知搜索引擎：' + pingResults.join('、') + '</div>' +
-                    '<div style="color:#999;margin-top:5px;font-size:12px;">Cloudflare Pages 正在自動部署，大約1分鐘後生效</div>';
+                    '<div style="color:#666;margin-top:8px;">已通知搜索引擎（' + searchEngines.length + '個）：' + pingResults.join('、') + '</div>' +
+                    '<div style="color:#999;margin-top:5px;font-size:12px;">💡 香港常用：Google、Bing（含Yahoo）、百度<br>Cloudflare Pages 正在自動部署，大約1分鐘後生效</div>';
             } else {
                 const err = await commitResp.json();
                 throw new Error('GitHub 提交失敗: ' + (err.message || commitResp.status));
