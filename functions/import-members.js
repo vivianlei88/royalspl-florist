@@ -12,27 +12,44 @@ export async function onRequestPost(context) {
         
         for (const member of members) {
             try {
-                // 1. 创建 auth 用户
-                const authResp = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SERVICE_ROLE_KEY,
-                        'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: member.email,
-                        password: 'Temp' + Date.now() + '!',
-                        email_confirm: true,
-                        user_metadata: { full_name: member.full_name }
-                    })
-                });
-                const authData = await authResp.json();
-                if (!authResp.ok) throw new Error(authData.msg || authData.error || '创建用户失败');
+                let userId = null;
                 
-                const userId = authData.id;
+                if (member.email) {
+                    // 有電子郵件：創建 auth 用戶
+                    const authResp = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SERVICE_ROLE_KEY,
+                            'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: member.email,
+                            password: 'Temp' + Date.now() + '!',
+                            email_confirm: true,
+                            user_metadata: { full_name: member.full_name }
+                        })
+                    });
+                    const authData = await authResp.json();
+                    if (!authResp.ok) throw new Error(authData.msg || authData.error || '创建用户失败');
+                    
+                    userId = authData.id;
+                    
+                    // 發送重置密碼郵件
+                    await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SERVICE_ROLE_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: member.email })
+                    });
+                } else {
+                    // 無電子郵件：生成一個臨時 ID（不創建 auth 賬號）
+                    userId = 'csv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                }
                 
-                // 2. 创建 profile
+                // 創建 profile
                 const profileResp = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
                     method: 'POST',
                     headers: {
@@ -44,7 +61,7 @@ export async function onRequestPost(context) {
                     body: JSON.stringify({
                         id: userId,
                         full_name: member.full_name,
-                        email: member.email,
+                        email: member.email || '',
                         phone: member.phone,
                         phone2: member.phone2,
                         shipping_address: member.shipping_address,
@@ -55,6 +72,7 @@ export async function onRequestPost(context) {
                         email_subscription: member.email_subscription || '未訂閱',
                         sms_subscription: member.sms_subscription || '未訂閱',
                         language: member.language || 'zh',
+                        points: member.points || 0,
                         last_active: member.last_active || new Date().toISOString(),
                         created_at: member.created_at || new Date().toISOString()
                     })
@@ -64,20 +82,10 @@ export async function onRequestPost(context) {
                     throw new Error('创建profile失败: ' + errText);
                 }
                 
-                // 3. 发送重置密码邮件
-                await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SERVICE_ROLE_KEY,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email: member.email })
-                });
-                
                 results.success++;
             } catch(err) {
                 results.failed++;
-                results.errors.push({ email: member.email, error: err.message });
+                results.errors.push({ email: member.email || member.full_name, error: err.message });
             }
         }
         

@@ -7071,33 +7071,45 @@ async function saveProduct() {
                 var row = {};
                 headers.forEach(function(h, idx) { row[h] = (vals[idx] || '').trim(); });
                 
-                var fullName = (row['名字'] || '') + ' ' + (row['姓氏'] || '');
-                fullName = fullName.trim();
+                // 支援多種名稱欄位：名稱、名字、姓名、full_name、名字+姓氏
+                var fullName = row['名稱'] || row['姓名'] || row['名字'] || row['full_name'] || row['Full Name'] || '';
+                if (!fullName) {
+                    fullName = ((row['名字'] || '') + ' ' + (row['姓氏'] || '')).trim();
+                }
+                if (!fullName) continue; // 只要有名稱就可以匯入，沒有名稱跳過
+                
                 var shippingAddr = [row['地址 1 - 街道'], row['地址 1 - 城市'], row['地址 1 - 郵遞區號'], row['地址 1 - 國家']].filter(Boolean).join(', ');
                 var billingAddr = [row['地址 2 - 街道'], row['地址 2 - 城市'], row['地址 2 - 郵遞區號'], row['地址 2 - 國家']].filter(Boolean).join(', ');
-                var email = row['電子郵件 1'] || row['電子郵件'] || '';
-                if (!email) continue;
+                var email = row['電子郵件 1'] || row['電子郵件'] || row['email'] || row['Email'] || '';
+                // 沒有電子郵件也可以匯入（不會創建登錄賬號，只記錄會員資料）
                 
                 members.push({
                     full_name: fullName,
                     email: email,
-                    phone: row['電話 1'] || row['電話'] || '',
+                    phone: row['電話 1'] || row['電話'] || row['phone'] || '',
                     phone2: row['電話 2'] || '',
                     shipping_address: shippingAddr,
                     billing_address: billingAddr,
                     member_status: 'active',
-                    tags: '',
+                    tags: row['標籤'] || row['tags'] || '',
                     source: row['來源'] || 'Wix 商店',
                     email_subscription: row['電子郵件訂閱者狀態'] || '未訂閱',
                     sms_subscription: row['簡訊訂閱者狀態'] || '未訂閱',
                     language: row['語言'] || 'zh',
+                    points: parseInt(row['積分'] || row['points'] || '0') || 0,
                     last_active: row['上次活動日期 (UTC+0)'] || new Date().toISOString(),
                     created_at: row['建立時間 (UTC+0)'] || new Date().toISOString()
                 });
             }
             
-            if (members.length === 0) { alert('沒有有效的會員資料'); return; }
-            if (!confirm('即將匯入 ' + members.length + ' 位會員，並為每位會員創建登錄賬號及發送設置密碼郵件，是否繼續？')) return;
+            if (members.length === 0) { alert('沒有有效的會員資料（需要至少有名稱欄位）'); return; }
+            var hasEmail = members.filter(function(m) { return m.email; }).length;
+            var noEmail = members.length - hasEmail;
+            var confirmMsg = '即將匯入 ' + members.length + ' 位會員';
+            if (hasEmail > 0) confirmMsg += '\n有電子郵件：' + hasEmail + ' 位（會創建登錄賬號並發送設置密碼郵件）';
+            if (noEmail > 0) confirmMsg += '\n無電子郵件：' + noEmail + ' 位（只記錄資料，不創建登錄賬號）';
+            confirmMsg += '\n\n是否繼續？';
+            if (!confirm(confirmMsg)) return;
             
             try {
                 var resp = await fetch('/import-members', {
