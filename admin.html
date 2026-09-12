@@ -3376,8 +3376,8 @@
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;margin-bottom:20px;">';
         // 订单状态分布
         html += '<div style="background:white;border-radius:16px;padding:25px;box-shadow:0 2px 16px rgba(0,0,0,0.04);border:1px solid #f0f0f0;">';
-        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">IP 排名</h3>';
-        html += '<div id="ipRankingList"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
+        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">訪問時段分佈</h3>';
+        html += '<div id="hourlyStats"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
         html += '</div>';
         // 访客统计
         html += '<div style="background:white;border-radius:16px;padding:25px;box-shadow:0 2px 16px rgba(0,0,0,0.04);border:1px solid #f0f0f0;">';
@@ -3393,10 +3393,10 @@
         html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">熱門訪問商品</h3>';
         html += '<div id="topVisitedProducts"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
         html += '</div>';
-        // 热门页面
+        // 访客来源分布
         html += '<div style="background:white;border-radius:16px;padding:25px;box-shadow:0 2px 16px rgba(0,0,0,0.04);border:1px solid #f0f0f0;">';
-        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">熱門頁面 TOP 10</h3>';
-        html += '<div id="topPages"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
+        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">訪客來源分佈</h3>';
+        html += '<div id="trafficSources"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
         html += '</div>';
         html += '</div>';
         
@@ -3457,10 +3457,10 @@
         var visitors = visitorRes.data || [];
         
         renderSalesTrend(orders, days);
-        renderIpRanking(visitors);
+        renderHourlyStats(visitors);
         renderVisitorStats(visitors);
         renderTopVisitedProducts(visitors);
-        renderTopPages(visitors);
+        renderTrafficSources(visitors);
     }
     
     // 渲染销售趋势图 - 时尚样式
@@ -3558,51 +3558,51 @@
         });
     }
     
-    // 渲染IP排名 - 时尚样式
-    function renderIpRanking(visitors) {
-        var ipCount = {};
-        var ipCountry = {};
-        var ipPages = {};
+    // 渲染访问时段分布 - 时尚样式
+    function renderHourlyStats(visitors) {
+        var hourCount = {};
+        for (var h = 0; h < 24; h++) hourCount[h] = 0;
+        
         visitors.forEach(function(v) {
-            if (v.ip) {
-                ipCount[v.ip] = (ipCount[v.ip] || 0) + 1;
-                if (v.country) ipCountry[v.ip] = v.country;
-                if (v.page_url) {
-                    if (!ipPages[v.ip]) ipPages[v.ip] = {};
-                    ipPages[v.ip][v.page_url] = true;
-                }
+            if (v.created_at) {
+                try {
+                    var d = new Date(v.created_at);
+                    var hkHour = (d.getUTCHours() + 8) % 24;
+                    hourCount[hkHour]++;
+                } catch(e) {}
             }
         });
         
-        var sorted = Object.entries(ipCount).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
-        var maxCount = sorted.length > 0 ? sorted[0][1] : 1;
+        var maxCount = Math.max.apply(null, Object.values(hourCount));
+        if (maxCount === 0) maxCount = 1;
         
-        var html = '<div style="display:flex;flex-direction:column;gap:10px;">';
-        if (sorted.length === 0) {
-            html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無數據</div>';
-        } else {
-            sorted.forEach(function(item, i) {
-                var ip = item[0];
-                var count = item[1];
-                var country = ipCountry[ip] || '未知';
-                var pageCount = ipPages[ip] ? Object.keys(ipPages[ip]).length : 0;
-                var pct = (count / maxCount * 100).toFixed(0);
-                var rankColor = i < 3 ? '#C9A961' : '#ddd';
-                html += '<div style="padding:12px;background:#fafafa;border-radius:10px;">';
-                html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">';
-                html += '<span style="width:24px;height:24px;background:' + rankColor + ';color:' + (i < 3 ? '#fff' : '#666') + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">' + (i + 1) + '</span>';
-                html += '<span style="flex:1;font-size:13px;color:#0A0A0A;font-weight:600;font-family:monospace;">' + ip + '</span>';
-                html += '<span style="font-size:11px;color:#888;background:#eee;padding:3px 8px;border-radius:10px;">' + country + '</span>';
-                html += '</div>';
-                html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
-                html += '<span style="font-size:11px;color:#888;">訪問 ' + count + ' 次 · 瀏覽 ' + pageCount + ' 個頁面</span>';
-                html += '</div>';
-                html += '<div style="height:5px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#0A0A0A,#C9A961);border-radius:3px;transition:width 0.5s ease;"></div></div>';
-                html += '</div>';
-            });
+        // 找出高峰时段
+        var peakHour = 0;
+        for (var h = 0; h < 24; h++) {
+            if (hourCount[h] > hourCount[peakHour]) peakHour = h;
+        }
+        
+        var html = '<div style="margin-bottom:15px;padding:12px;background:linear-gradient(135deg,#0A0A0A,#1A1A2E);border-radius:10px;color:white;">';
+        html += '<div style="font-size:11px;opacity:0.6;margin-bottom:4px;">訪問高峰時段</div>';
+        html += '<div style="font-size:22px;font-weight:700;">' + (peakHour < 10 ? '0' + peakHour : peakHour) + ':00 - ' + ((peakHour + 1) < 10 ? '0' + (peakHour + 1) : (peakHour + 1)) + ':00</div>';
+        html += '<div style="font-size:11px;opacity:0.6;margin-top:4px;">' + hourCount[peakHour] + ' 次訪問</div>';
+        html += '</div>';
+        
+        html += '<div style="display:flex;align-items:flex-end;gap:3px;height:120px;padding:0 5px;">';
+        for (var h = 0; h < 24; h++) {
+            var count = hourCount[h];
+            var heightPct = maxCount > 0 ? (count / maxCount * 100) : 0;
+            var isPeak = h === peakHour;
+            html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;" title="' + h + ':00 - ' + count + '次">';
+            html += '<div style="width:100%;height:' + Math.max(heightPct, 2) + '%;background:' + (isPeak ? 'linear-gradient(180deg,#C9A961,#0A0A0A)' : 'linear-gradient(180deg,#ddd,#bbb)') + ';border-radius:3px 3px 0 0;min-height:3px;transition:height 0.3s ease;"></div>';
+            html += '</div>';
         }
         html += '</div>';
-        var el = document.getElementById('ipRankingList');
+        html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:#999;margin-top:6px;padding:0 5px;">';
+        html += '<span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span>';
+        html += '</div>';
+        
+        var el = document.getElementById('hourlyStats');
         if (el) el.innerHTML = html;
     }
     
@@ -3701,38 +3701,71 @@
         if (el) el.innerHTML = html;
     }
     
-    // 渲染热门页面 - 时尚样式
-    function renderTopPages(visitors) {
-        var pageViews = {};
+    // 渲染访客来源分布 - 时尚样式
+    function renderTrafficSources(visitors) {
+        var sources = {
+            '直接/自然訪問': 0,
+            '谷歌搜索': 0,
+            '社交媒體': 0,
+            '付費推廣': 0,
+            '其他來源': 0
+        };
+        var sourceColors = {
+            '直接/自然訪問': '#0A0A0A',
+            '谷歌搜索': '#4285F4',
+            '社交媒體': '#C9A961',
+            '付費推廣': '#10B981',
+            '其他來源': '#94A3B8'
+        };
+        
         visitors.forEach(function(v) {
             if (v.page_url) {
-                var url = v.page_url.split('?')[0];
-                pageViews[url] = (pageViews[url] || 0) + 1;
+                var url = v.page_url.toLowerCase();
+                if (url.indexOf('utm_source=google') !== -1 || url.indexOf('gclid=') !== -1 || url.indexOf('utm_medium=cpc') !== -1) {
+                    sources['付費推廣']++;
+                } else if (url.indexOf('utm_source=facebook') !== -1 || url.indexOf('utm_source=instagram') !== -1 || url.indexOf('fbclid=') !== -1) {
+                    sources['社交媒體']++;
+                } else if (url.indexOf('utm_source=') !== -1) {
+                    sources['其他來源']++;
+                } else {
+                    sources['直接/自然訪問']++;
+                }
+            } else {
+                sources['直接/自然訪問']++;
             }
         });
         
-        var sorted = Object.entries(pageViews).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
-        var maxViews = sorted.length > 0 ? sorted[0][1] : 1;
+        var total = visitors.length;
+        var sorted = Object.entries(sources).filter(function(s) { return s[1] > 0; }).sort(function(a, b) { return b[1] - a[1]; });
         
-        var html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+        var html = '<div style="display:flex;flex-direction:column;gap:14px;">';
         if (sorted.length === 0) {
             html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無數據</div>';
         } else {
-            sorted.forEach(function(p, i) {
-                var displayUrl = p[0].replace('https://www.royalspl.shop', '').replace('http://www.royalspl.shop', '');
-                if (displayUrl === '') displayUrl = '/ (首頁)';
-                var pct = (p[1] / maxViews * 100).toFixed(0);
-                html += '<div style="padding:10px 12px;background:#fafafa;border-radius:10px;">';
+            sorted.forEach(function(s) {
+                var name = s[0];
+                var count = s[1];
+                var pct = total > 0 ? (count / total * 100).toFixed(0) : 0;
+                var color = sourceColors[name] || '#999';
+                html += '<div>';
                 html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
-                html += '<span style="font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">' + displayUrl + '</span>';
-                html += '<span style="font-size:12px;color:#0A0A0A;font-weight:600;">' + p[1] + ' 次</span>';
+                html += '<span style="font-size:13px;color:#333;font-weight:500;display:flex;align-items:center;gap:8px;">';
+                html += '<span style="width:10px;height:10px;background:' + color + ';border-radius:50%;display:inline-block;"></span>';
+                html += name + '</span>';
+                html += '<span style="font-size:13px;color:#666;">' + count + ' 次 (' + pct + '%)</span>';
                 html += '</div>';
-                html += '<div style="height:4px;background:#eee;border-radius:2px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#0A0A0A,#333);border-radius:2px;"></div></div>';
-                html += '</div>';
+                html += '<div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;">';
+                html += '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:4px;transition:width 0.5s ease;"></div>';
+                html += '</div></div>';
             });
         }
         html += '</div>';
-        var el = document.getElementById('topPages');
+        
+        html += '<div style="margin-top:15px;padding:10px;background:#f8f8f8;border-radius:8px;font-size:11px;color:#888;text-align:center;">';
+        html += '提示：在營銷鏈接中添加 utm_source 參數可準確追踪來源';
+        html += '</div>';
+        
+        var el = document.getElementById('trafficSources');
         if (el) el.innerHTML = html;
     }
 
