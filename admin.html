@@ -2013,27 +2013,9 @@
         var editor = document.getElementById(eid);
         if (!editor) return;
         
-        // 顯示上傳中提示
+        // 直接在編輯器末尾添加上傳中提示
         var loadingId = 'rte_loading_' + Date.now();
-        editor.focus();
-        var loadingHtml = '<div id="' + loadingId + '" style="padding:20px;text-align:center;color:#888;font-size:14px;">📤 圖片上傳中...</div>';
-        var selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            var range = selection.getRangeAt(0);
-            if (editor.contains(range.commonAncestorContainer)) {
-                range.deleteContents();
-                var div = document.createElement('div');
-                div.innerHTML = loadingHtml;
-                var frag = document.createDocumentFragment();
-                var node;
-                while ((node = div.firstChild)) frag.appendChild(node);
-                range.insertNode(frag);
-            } else {
-                editor.innerHTML += loadingHtml;
-            }
-        } else {
-            editor.innerHTML += loadingHtml;
-        }
+        editor.innerHTML += '<div id="' + loadingId + '" style="padding:20px;text-align:center;color:#888;font-size:14px;border:1px dashed #ddd;margin:10px 0;">📤 圖片上傳中...</div>';
         
         try {
             var formData = new FormData();
@@ -2041,17 +2023,10 @@
             var resp = await fetch('/r2-upload', { method: 'POST', body: formData });
             var result = await resp.json();
             if (result.url) {
-                // 替換上傳中提示為實際圖片
+                // 用innerHTML替換loading元素為圖片
                 var loadingEl = document.getElementById(loadingId);
                 if (loadingEl) {
-                    var img = document.createElement('img');
-                    img.src = result.url;
-                    img.style.maxWidth = '100%';
-                    img.style.height = 'auto';
-                    img.style.display = 'block';
-                    img.style.margin = '10px 0';
-                    img.alt = '圖片';
-                    loadingEl.parentNode.replaceChild(img, loadingEl);
+                    loadingEl.outerHTML = '<img src="' + result.url + '" style="max-width:100%;height:auto;display:block;margin:10px 0;" alt="圖片">';
                 } else {
                     editor.innerHTML += '<img src="' + result.url + '" style="max-width:100%;height:auto;display:block;margin:10px 0;" alt="圖片">';
                 }
