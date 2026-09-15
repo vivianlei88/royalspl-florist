@@ -260,8 +260,8 @@ export async function onRequestPost(context) {
         }
         
         // 优先使用豆包 API（如果配置了 API Key）—— 火山方舟 OpenAI 兼容接口
-        const DOUBAO_API_KEY = context.env.DOUBAO_API_KEY || context.env.ARK_API_KEY || context.env.VOLC_API_KEY || context.env.DOUBAO_KEY || context.env.DOUBAO_SECRET_KEY || '';
-        const DOUBAO_MODEL = context.env.DOUBAO_MODEL || 'doubao-seed-2-0-mini-260428';
+        const DOUBAO_API_KEY = context.env.DOUBAO_API_KEY || context.env.DOUBAO_SEED_2_0_MINI_API_KEY || context.env.ARK_API_KEY || context.env.VOLC_API_KEY || context.env.DOUBAO_KEY || context.env.DOUBAO_SECRET_KEY || '';
+        const DOUBAO_MODEL = context.env.DOUBAO_MODEL_ID || context.env.DOUBAO_MODEL || 'doubao-seed-2-0-mini-260428';
         
         if (DOUBAO_API_KEY) {
             try {
