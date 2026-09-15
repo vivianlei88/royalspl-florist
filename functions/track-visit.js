@@ -18,6 +18,8 @@ export async function onRequestPost(context) {
         const pageUrl = body.page_url || request.headers.get('referer') || '';
         const pageTitle = body.page_title || '';
         const userAgent = request.headers.get('user-agent') || '';
+        // 訪客來源頁（從哪個網站/平台點進來）：優先取前端上報的 document.referrer，其次取 HTTP Referer
+        const referrer = body.referrer || request.headers.get('referer') || '';
         
         // 1. 獲取訪客真實IP
         const ip = request.headers.get('cf-connecting-ip') 
@@ -111,6 +113,7 @@ export async function onRequestPost(context) {
                 city: city,
                 page_url: pageUrl,
                 page_title: pageTitle,
+                referrer: referrer,
                 is_new_visitor: isNewVisitor,
                 user_agent: userAgent
             })

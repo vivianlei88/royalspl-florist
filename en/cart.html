@@ -542,7 +542,7 @@
         fetch('/track-visit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ page_name: document.title || '未知頁面' })
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title, referrer: document.referrer })
         }).catch(function() {});
     })();
     </script>

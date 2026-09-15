@@ -3766,7 +3766,7 @@
         var orderRes = await supabaseClient.from('orders').select('id,total_amount,status,created_at,items').gte('created_at', startStr);
         var orders = orderRes.data || [];
         
-        var visitorRes = await supabaseClient.from('visitor_logs').select('ip,country,is_new_visitor,page_url,created_at').gte('created_at', startStr);
+        var visitorRes = await supabaseClient.from('visitor_logs').select('*').gte('created_at', startStr);
         var visitors = visitorRes.data || [];
         
         renderSalesTrend(orders, days);
@@ -4015,36 +4015,88 @@
     }
     
     // 渲染访客来源分布 - 时尚样式
+    // 全渠道来源识别：优先按 UTM 广告参数，其次按 referrer 来源域名归类
     function renderTrafficSources(visitors) {
         var sources = {
-            '直接/自然訪問': 0,
-            '谷歌搜索': 0,
-            '社交媒體': 0,
-            '付費推廣': 0,
-            '其他來源': 0
+            '直接訪問': 0,
+            'Google 搜索': 0,
+            'Bing 搜索': 0,
+            '其他搜索引擎': 0,
+            'WhatsApp': 0,
+            'Instagram': 0,
+            'Facebook': 0,
+            'YouTube': 0,
+            '其他社交媒體': 0,
+            '電郵 (Email)': 0,
+            '其他網站': 0,
+            '付費推廣': 0
         };
         var sourceColors = {
-            '直接/自然訪問': '#0A0A0A',
-            '谷歌搜索': '#4285F4',
-            '社交媒體': '#C9A961',
-            '付費推廣': '#10B981',
-            '其他來源': '#94A3B8'
+            '直接訪問': '#0A0A0A',
+            'Google 搜索': '#4285F4',
+            'Bing 搜索': '#008373',
+            '其他搜索引擎': '#6B7280',
+            'WhatsApp': '#25D366',
+            'Instagram': '#E1306C',
+            'Facebook': '#1877F2',
+            'YouTube': '#FF0000',
+            '其他社交媒體': '#C9A961',
+            '電郵 (Email)': '#EA4335',
+            '其他網站': '#94A3B8',
+            '付費推廣': '#10B981'
         };
         
+        function classifySource(v) {
+            var url = (v.page_url || '').toLowerCase();
+            var ref = (v.referrer || '').toLowerCase();
+            
+            // 1. 優先按 UTM 廣告參數判斷（付費推廣）
+            if (url.indexOf('utm_source=google') !== -1 || url.indexOf('gclid=') !== -1 || url.indexOf('utm_medium=cpc') !== -1 || url.indexOf('utm_source=adwords') !== -1) {
+                return '付費推廣';
+            }
+            if (url.indexOf('utm_source=facebook') !== -1 || url.indexOf('utm_source=instagram') !== -1 || url.indexOf('fbclid=') !== -1) {
+                return (url.indexOf('utm_source=instagram') !== -1) ? 'Instagram' : 'Facebook';
+            }
+            if (url.indexOf('utm_source=') !== -1) {
+                var utm = url.split('utm_source=')[1].split('&')[0];
+                if (utm.indexOf('whatsapp') !== -1) return 'WhatsApp';
+                if (utm.indexOf('instagram') !== -1) return 'Instagram';
+                if (utm.indexOf('facebook') !== -1) return 'Facebook';
+                if (utm.indexOf('youtube') !== -1) return 'YouTube';
+                if (utm.indexOf('mail') !== -1 || utm.indexOf('email') !== -1 || utm.indexOf('newsletter') !== -1) return '電郵 (Email)';
+                return '其他網站';
+            }
+            
+            // 2. 按 referrer 來源域名歸類（訪客從哪個平台點進來）
+            if (ref) {
+                // 搜索引擎
+                if (ref.indexOf('google.') !== -1 && ref.indexOf('googleusercontent') === -1) return 'Google 搜索';
+                if (ref.indexOf('bing.com') !== -1) return 'Bing 搜索';
+                if (ref.indexOf('baidu.com') !== -1 || ref.indexOf('yahoo.com') !== -1 || ref.indexOf('duckduckgo.com') !== -1 || ref.indexOf('yandex.com') !== -1) return '其他搜索引擎';
+                // 即時通訊 / 社交
+                if (ref.indexOf('wa.me') !== -1 || ref.indexOf('whatsapp.com') !== -1 || ref.indexOf('api.whatsapp') !== -1) return 'WhatsApp';
+                if (ref.indexOf('instagram.com') !== -1) return 'Instagram';
+                if (ref.indexOf('facebook.com') !== -1 || ref.indexOf('fb.me') !== -1 || ref.indexOf('messenger.com') !== -1) return 'Facebook';
+                if (ref.indexOf('youtube.com') !== -1 || ref.indexOf('youtu.be') !== -1) return 'YouTube';
+                if (ref.indexOf('tiktok.com') !== -1 || ref.indexOf('weibo.com') !== -1 || ref.indexOf('xiaohongshu.com') !== -1 || ref.indexOf('pinterest.com') !== -1 || ref.indexOf('twitter.com') !== -1 || ref.indexOf('x.com') !== -1 || ref.indexOf('linkedin.com') !== -1 || ref.indexOf('threads.net') !== -1 || ref.indexOf('snapchat.com') !== -1) return '其他社交媒體';
+                // 電郵客戶端
+                if (ref.indexOf('mail.google.com') !== -1 || ref.indexOf('mail.google') !== -1 || ref.indexOf('outlook.') !== -1 || ref.indexOf('mail.yahoo.com') !== -1 || ref.indexOf('mail.') !== -1 || ref.indexOf('gmail.com') !== -1 || ref.indexOf('webmail') !== -1) return '電郵 (Email)';
+                // 本站內部跳轉不算來源
+                if (ref.indexOf('royalspl.shop') !== -1 || ref.indexOf('royalspl.xyz') !== -1) return null;
+                // 其他外部網站
+                return '其他網站';
+            }
+            
+            // 3. 沒有 referrer 也沒有 UTM → 直接訪問
+            return '直接訪問';
+        }
+        
         visitors.forEach(function(v) {
-            if (v.page_url) {
-                var url = v.page_url.toLowerCase();
-                if (url.indexOf('utm_source=google') !== -1 || url.indexOf('gclid=') !== -1 || url.indexOf('utm_medium=cpc') !== -1) {
-                    sources['付費推廣']++;
-                } else if (url.indexOf('utm_source=facebook') !== -1 || url.indexOf('utm_source=instagram') !== -1 || url.indexOf('fbclid=') !== -1) {
-                    sources['社交媒體']++;
-                } else if (url.indexOf('utm_source=') !== -1) {
-                    sources['其他來源']++;
-                } else {
-                    sources['直接/自然訪問']++;
-                }
-            } else {
-                sources['直接/自然訪問']++;
+            var cat = classifySource(v);
+            if (cat && sources[cat] !== undefined) {
+                sources[cat]++;
+            } else if (cat && sources[cat] === undefined) {
+                sources['其他網站']++;
             }
         });
         
@@ -4075,7 +4127,7 @@
         html += '</div>';
         
         html += '<div style="margin-top:15px;padding:10px;background:#f8f8f8;border-radius:8px;font-size:11px;color:#888;text-align:center;">';
-        html += '提示：在營銷鏈接中添加 utm_source 參數可準確追踪來源';
+        html += '自動識別 Google/Bing 搜索、WhatsApp、IG、Facebook、電郵、其他網站等所有來訪渠道';
         html += '</div>';
         
         var el = document.getElementById('trafficSources');
