@@ -101,11 +101,16 @@ export async function onRequestGet(context) {
           return btoa(unescape(encodeURIComponent(str)))
             .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         }
+        function b64url2bytes(bytes) {
+          let bin = '';
+          for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+          return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
         const eh2 = b64url2(JSON.stringify(header2));
         const ec2 = b64url2(JSON.stringify(claimSet2));
         const si2 = eh2 + '.' + ec2;
         const sig2 = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privKey2, new TextEncoder().encode(si2));
-        const jwtStr = si2 + '.' + b64url2(String.fromCharCode(...new Uint8Array(sig2)));
+        const jwtStr = si2 + '.' + b64url2bytes(new Uint8Array(sig2));
 
         // 用匹配的证书公钥验证 JWT 签名
         let jwtValid = false;
@@ -134,7 +139,7 @@ export async function onRequestGet(context) {
           const ec3 = b64url2(JSON.stringify(cs2));
           const si3 = eh2 + '.' + ec3;
           const sg3 = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privKey2, new TextEncoder().encode(si3));
-          const jw3 = si3 + '.' + b64url2(String.fromCharCode(...new Uint8Array(sg3)));
+          const jw3 = si3 + '.' + b64url2bytes(new Uint8Array(sg3));
           const r3 = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -182,6 +187,13 @@ export async function onRequestGet(context) {
         .replace(/=+$/, '');
     }
 
+    // 签名编码：必须是纯二进制→base64，不能经过 encodeURIComponent（会把 >127 字节按 UTF-8 膨胀）
+    function base64urlFromBytes(bytes) {
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
     const encodedHeader = base64url(JSON.stringify(header));
     const encodedClaimSet = base64url(JSON.stringify(claimSet));
     const signingInput = encodedHeader + '.' + encodedClaimSet;
@@ -205,7 +217,7 @@ export async function onRequestGet(context) {
       cryptoKey,
       new TextEncoder().encode(signingInput)
     );
-    const encodedSignature = base64url(String.fromCharCode(...new Uint8Array(signature)));
+    const encodedSignature = base64urlFromBytes(new Uint8Array(signature));
     const jwt = signingInput + '.' + encodedSignature;
 
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
