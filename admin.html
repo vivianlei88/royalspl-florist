@@ -2777,11 +2777,11 @@
         const container = document.getElementById('seoTabContent');
         container.innerHTML = '<div style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">' +
             '<div><div style="font-size:14px;color:#888;margin-bottom:5px;">關鍵詞排名跟踪</div>' +
-            '<div style="font-size:13px;color:#666;">數據來源：Google搜索結果爬取，查詢前100名排名</div></div>' +
+            '<div style="font-size:13px;color:#666;">數據來源：Search Console 官方真實數據（點擊/展示/排名），無數據時回退爬取</div></div>' +
             '<button class="btn btn-primary" onclick="updateKeywordRankings()">更新排名數據</button></div>';
         container.innerHTML += '<div id="keywordRankingList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;font-weight:600;font-size:14px;">' +
-            '<div>關鍵詞</div><div>排名</div><div>趨勢</div><div>最後更新</div></div>' +
+            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr;gap:10px;font-weight:600;font-size:14px;">' +
+            '<div>關鍵詞</div><div>排名</div><div>點擊/展示</div><div>趨勢</div><div>最後更新</div></div>' +
             '<div id="keywordRankingItems">加載中...</div></div>';
         await loadKeywordRankings();
     }
@@ -2811,9 +2811,12 @@
                 const row = latest[kw];
                 const prev = previous[kw];
                 if (!row) {
-                    html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;">' +
+                    html += '<div style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;">' +
                         '<div style="font-size:14px;">' + kw + '</div>' +
-                        '<div colspan="3" style="color:#ccc;font-size:13px;">未查詢</div></div>';
+                        '<div style="color:#ccc;font-size:13px;">未查詢</div>' +
+                        '<div style="color:#ccc;font-size:13px;">-</div>' +
+                        '<div style="color:#ccc;font-size:13px;">-</div>' +
+                        '<div style="color:#ccc;font-size:13px;">-</div></div>';
                     return;
                 }
                 let trend = '-';
@@ -2832,9 +2835,11 @@
                     posDisplay = '第 ' + row.position + ' 名';
                     posColor = row.position <= 10 ? '#52C41A' : row.position <= 30 ? '#FAAD14' : '#EA6668';
                 }
-                html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
+                var ctrDisplay = (row.clicks > 0 || row.impressions > 0) ? (row.clicks + ' / ' + row.impressions) : '-';
+                html += '<div style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
                     '<div style="font-size:14px;">' + kw + '</div>' +
                     '<div style="font-size:14px;font-weight:600;color:' + posColor + ';">' + posDisplay + '</div>' +
+                    '<div style="font-size:13px;color:#666;">' + ctrDisplay + '</div>' +
                     '<div style="font-size:13px;color:' + trendColor + ';font-weight:600;">' + trend + '</div>' +
                     '<div style="font-size:12px;color:#999;">' + (row.check_date || '-') + '</div></div>';
             });
@@ -2878,20 +2883,45 @@
             const today = new Date().toISOString().split('T')[0];
             let successCount = 0;
             
+            // 優先嘗試 Search Console 官方數據，失敗自動回退爬取
             for (let i = 0; i < seoKeywords.length; i++) {
                 const kw = seoKeywords[i];
                 try {
-                    // 调用爬取Function查询Google排名
-                    const resp = await fetch('/google-rank?keyword=' + encodeURIComponent(kw));
-                    const data = await resp.json();
+                    let data = null;
+                    let source = 'gsc';
+                    // 1) 嘗試 GSC 官方真實數據
+                    try {
+                        const gscResp = await fetch('/gsc-rank?action=query&keyword=' + encodeURIComponent(kw));
+                        const gscData = await gscResp.json();
+                        if (gscData && gscData.ok && gscData.results) {
+                            data = gscData.results;
+                            source = 'gsc';
+                        } else if (gscData && gscData.needAuth) {
+                            showToast('⚠️ 請先在 Search Console 授權服務帳號: ' + (gscData.error || ''));
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn('GSC查詢失敗，回退爬取:', kw, e.message);
+                    }
+                    // 2) GSC 無數據或失敗 → 回退爬取
+                    if (!data) {
+                        const resp = await fetch('/google-rank?keyword=' + encodeURIComponent(kw));
+                        const crawlData = await resp.json();
+                        source = 'crawl';
+                        if (crawlData && crawlData.found) {
+                            data = { keyword: kw, position: crawlData.position, clicks: 0, impressions: 0, ctr: 0 };
+                        } else {
+                            data = { keyword: kw, position: null, clicks: 0, impressions: 0, ctr: 0 };
+                        }
+                    }
                     
                     if (data && data.found) {
                         await supabaseClient.from('keyword_rankings').upsert({
                             keyword: kw,
                             position: data.position,
-                            impressions: 0,
-                            clicks: 0,
-                            ctr: 0,
+                            impressions: data.impressions || 0,
+                            clicks: data.clicks || 0,
+                            ctr: data.ctr || 0,
                             check_date: today
                         }, { onConflict: 'keyword,check_date' });
                         successCount++;
@@ -2899,14 +2929,14 @@
                         await supabaseClient.from('keyword_rankings').upsert({
                             keyword: kw,
                             position: null,
-                            impressions: 0,
-                            clicks: 0,
-                            ctr: 0,
+                            impressions: data && data.impressions ? data.impressions : 0,
+                            clicks: data && data.clicks ? data.clicks : 0,
+                            ctr: data && data.ctr ? data.ctr : 0,
                             check_date: today
                         }, { onConflict: 'keyword,check_date' });
                     }
-                    // 避免请求过快
-                    await new Promise(r => setTimeout(r, 1000));
+                    // 避免請求過快
+                    await new Promise(r => setTimeout(r, 800));
                 } catch (e) {
                     console.error('查詢關鍵詞 ' + kw + ' 失敗:', e);
                 }
