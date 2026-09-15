@@ -277,7 +277,7 @@ function extractSPKI(der) {
   function readTLV(buf, offset) {
     const tag = buf[offset];
     let len = buf[offset + 1];
-    let lenBytes = 1;
+    let lenBytes = 0;
     if (len & 0x80) {
       lenBytes = len & 0x7f;
       len = 0;
