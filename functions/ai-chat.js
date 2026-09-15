@@ -53,24 +53,24 @@ export async function onRequestPost(context) {
         // 精简商品索引（常驻，仅 ID+名称+价格，用于ID校验与基础推荐）
         let validProductIds = []; // 真實商品ID列表，用於過濾AI編造的鏈接
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,is_active&is_active=eq.true&order=created_at.desc&limit=30', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,stock,delivery_days,is_active&is_active=eq.true&order=created_at.desc&limit=30', { headers });
             const products = await r.json();
             if (products && products.length > 0) {
                 validProductIds = products.map(p => String(p.id));
                 knowledgeContext += '\n\n【商品索引】\n' + products.map(p => 
-                    'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 鏈接:/product-detail.html?id=' + p.id
+                    'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 庫存:' + (p.stock === '現貨' ? '現貨' : '預訂 ' + (p.delivery_days || 3) + ' 天') + ' | 鏈接:/product-detail.html?id=' + p.id
                 ).join('\n');
             }
         } catch(e) {}
         
-        // 商品/花材/推薦意向 → 查商品詳情（含花材、描述）
+        // 商品/花材/推薦意向 → 查商品詳情（含花材、描述、庫存狀態）
         if (hasIntent(['花','玫瑰','鬱金香','芍藥','繡球','百合','康乃馨','蘭花','牡丹','尤加利','洋桔梗','滿天星','花束','花禮','推薦','預算','買','送禮','bouquet','flower','rose','recommend','budget','gift','buy','price','幾錢','咩價'])) {
             try {
-                const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,description&is_active=eq.true&order=created_at.desc&limit=8', { headers });
+                const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,description,stock,delivery_days&is_active=eq.true&order=created_at.desc&limit=8', { headers });
                 const products = await r.json();
                 if (products && products.length > 0) {
                     knowledgeContext += '\n\n【熱門商品詳情】\n' + products.map(p => 
-                        'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 花材:' + (p.specs_flowers||'') + (p.description ? ' | 描述:' + p.description.substring(0,80) : '')
+                        'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 庫存:' + (p.stock === '現貨' ? '現貨' : '預訂 ' + (p.delivery_days || 3) + ' 天') + ' | 花材:' + (p.specs_flowers||'') + (p.description ? ' | 描述:' + p.description.substring(0,80) : '')
                     ).join('\n');
                 }
             } catch(e) {}
@@ -137,24 +137,31 @@ export async function onRequestPost(context) {
         systemPrompt += '\n\n【商品推薦規則-最重要】用戶詢問推薦商品、想買花、送禮、有什麼花束、報預算等，必須從上方【全部商品列表】中挑選具體商品來推薦，嚴禁推薦分類。\n推薦步驟：1) 若用戶報咗預算（如800-1000、600左右），從商品列表中篩選價格符合預算的商品；2) 若無預算，選2-3個最受歡迎/最合適嘅商品。\n每個推薦必須嚴格使用列表中的真實商品ID，鏈接格式（一字不差，只准用相對路徑，嚴禁拼寫任何域名）：\n商品名稱 - HK$真實價格 - 鏈接：/product-detail.html?id=真實商品ID\n示例：\n鬱金香光譜 - HK$460 - 鏈接：/product-detail.html?id=66\n\n【禁止事項】\n1. 嚴禁推薦分類（如法式田園自然風、日式鮮花束等），必須推薦具體商品；\n2. 嚴禁編造或猜測ID，鏈接中的ID必須是商品列表中出現過的；\n3. 嚴禁寫HK$價格暫缺，價格必須用商品列表中的真實價格；\n4. 除非用戶明確問「有咩分類」，先可以用分類頁鏈接：/products.html?category=分類ID。\n5. 嚴禁在鏈接中輸出任何域名（如www.royalspl.shop、royalspl.com等），鏈接必須以/product-detail.html開頭。';
         
         if (productInfo) {
-            systemPrompt += '\n\n【用戶當前瀏覽的商品】ID:' + productInfo.id + ' | ' + productInfo.name + ' | ' + (productInfo.price || '');
+            var piStock = (productInfo.stock === '現貨') ? '現貨' : ('預訂 ' + (productInfo.delivery_days || 3) + ' 天');
+            systemPrompt += '\n\n【用戶當前瀏覽的商品】ID:' + productInfo.id + ' | ' + productInfo.name + ' | ' + (productInfo.price || '') + ' | 庫存狀態:' + piStock;
         }
         if (pageContext) {
             systemPrompt += '\n\n【客人停留頁面】' + (pageContext.pageType || '') + ' | ' + (pageContext.detail || '') + ' | 頁面地址:' + (pageContext.url || '');
             systemPrompt += '\n請結合客人停留的頁面給出貼合情境的回覆：例如客人在商品詳情頁就圍繞該商品講解與推薦搭配；在分類頁就推薦該分類商品；在購物車/結帳頁就協助訂單問題；在首頁就引導選擇。';
-            // 後端從URL提取商品ID查庫（前端DOM異步加載時商品名可能缺失，此為兜底）
+            // 後端從URL提取商品ID查庫（前端DOM異步加載時商品名可能缺失，此為兜底；同時補齊庫存狀態）
             const urlProductMatch = (pageContext.url || '').match(/[?&]id=(\d+)/);
             const urlCatMatch = (pageContext.url || '').match(/[?&]category=([^&]+)/);
             let curProductName = (productInfo && productInfo.name) ? productInfo.name : '';
-            if ((!productInfo || !productInfo.name) && urlProductMatch) {
+            let curProductStock = '';
+            if (productInfo && productInfo.stock) {
+                curProductStock = (productInfo.stock === '現貨') ? '現貨' : ('預訂 ' + (productInfo.delivery_days || 3) + ' 天');
+            }
+            // 若前端商品信息完整（含庫存），直接用；否則查庫兜底
+            if ((!curProductStock) && urlProductMatch) {
                 try {
                     const pid = urlProductMatch[1];
-                    const pr = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,description,is_active&id=eq.' + pid + '&is_active=eq.true&limit=1', { headers });
+                    const pr = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,description,stock,delivery_days&id=eq.' + pid + '&limit=1', { headers });
                     const pdata = await pr.json();
                     if (pdata && pdata.length > 0) {
                         const p = pdata[0];
                         curProductName = (p.name_zh || p.name_en);
-                        systemPrompt += '\n\n【用戶當前瀏覽的商品（後端查庫）】ID:' + p.id + ' | 名稱:' + curProductName + ' | 價格:HK$' + p.price + ' | 花材:' + (p.specs_flowers || '') + ' | 鏈接:/product-detail.html?id=' + p.id;
+                        curProductStock = (p.stock === '現貨') ? '現貨' : ('預訂 ' + (p.delivery_days || 3) + ' 天');
+                        systemPrompt += '\n\n【用戶當前瀏覽的商品（後端查庫）】ID:' + p.id + ' | 名稱:' + curProductName + ' | 價格:HK$' + p.price + ' | 庫存狀態:' + curProductStock + ' | 花材:' + (p.specs_flowers || '') + ' | 鏈接:/product-detail.html?id=' + p.id;
                     }
                 } catch(e) {}
             }
@@ -170,7 +177,7 @@ export async function onRequestPost(context) {
             }
             // 商品詳情頁：強化「圍繞當前商品回答」指令
             if (pageContext.pageType === '商品詳情頁' || urlProductMatch) {
-                systemPrompt += '\n\n【當前頁面是商品詳情頁-必須遵守】\n1. 客人正在瀏覽商品「' + (curProductName || '當前商品') + '」，佢問嘅「呢束花」「呢個」「這個」「呢款」等都係指當前商品。\n2. 回答配送/送貨問題時，直接回答當前商品嘅配送安排，唔好叫客人再提供商品ID或名稱。\n3. 例如問「呢束花19號可以送貨嗎」= 問「' + (curProductName || '當前商品') + '」19號能否送貨，直接回答。';
+                systemPrompt += '\n\n【當前頁面是商品詳情頁-必須遵守】\n1. 客人正在瀏覽商品「' + (curProductName || '當前商品') + '」，佢問嘅「呢束花」「呢個」「這個」「呢款」等都係指當前商品。\n2. 回答配送/送貨問題時，直接回答當前商品嘅配送安排，唔好叫客人再提供商品ID或名稱。\n3. 例如問「呢束花19號可以送貨嗎」= 問「' + (curProductName || '當前商品') + '」19號能否送貨，直接回答。\n4. 客人問「呢束花係咪現貨」「要等幾耐」「幾時有貨」「訂購」「預訂」等庫存問題，必須嚴格按商品嘅庫存狀態回答：\n   - 若庫存狀態為「現貨」：回答「係現貨，落單後可安排盡快出貨/即日或翌日配送」；\n   - 若庫存狀態為「預訂 X 天」：回答「需要預訂，約 X 天後可配送/取貨」，X 必須用庫存狀態中嘅具體天數，嚴禁講成現貨、嚴禁統一講 3 天。\n5. 若商品庫存狀態未知，先講「等我查一查」，再根據實際情況回答，嚴禁自行假設係現貨。';
             }
         }
         
