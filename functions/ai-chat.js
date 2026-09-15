@@ -34,7 +34,7 @@ export async function onRequestPost(context) {
         systemPrompt += '\n\n【語言規則 - 必須嚴格遵守】\n1. 預設用香港廣東話口語 + 繁體字回答，例如「你好呀」「唔該」「多謝」「嘅」「咁」「喺」「哋」\n2. 絕對不能用簡體字，所有字必須是繁體\n3. 用戶用英文提問，先用英文回答\n4. 用戶明確要求普通話/書面語，才用書面繁體\n5. 跟隨用戶嘅語言，唔好主動轉換';
         
         // 输出限制
-        systemPrompt += '\n\n【輸出限制】只輸出文字回答，不要生成圖片、視頻、代碼塊或Markdown格式，用純文本回答。';
+        systemPrompt += '\n\n【輸出限制-必須嚴格遵守】\n1. 只輸出文字回答，不要生成圖片、視頻、代碼塊或Markdown格式，用純文本回答。\n2. 回覆必須簡潔精煉：商品推薦時直接列出商品鏈接即可，禁止長篇大論、禁止寫「如需更多資訊請查看產品詳情頁/聯繫客服」這類冗餘客套話。\n3. 推薦商品格式（一字不差）：\n商品名稱 - HK$價格 - 鏈接：/product-detail.html?id=商品ID\n每個推薦後不要附加額外解釋段落。\n4. 回覆總長度控制在150字以內（中文）/100詞以內（英文），除非用戶要求詳細說明。';
         
         // 加载全网站内容（精简版，控制在8K上下文内）
         let knowledgeContext = '';
@@ -100,6 +100,30 @@ export async function onRequestPost(context) {
         if (pageContext) {
             systemPrompt += '\n\n【客人停留頁面】' + (pageContext.pageType || '') + ' | ' + (pageContext.detail || '') + ' | 頁面地址:' + (pageContext.url || '');
             systemPrompt += '\n請結合客人停留的頁面給出貼合情境的回覆：例如客人在商品詳情頁就圍繞該商品講解與推薦搭配；在分類頁就推薦該分類商品；在購物車/結帳頁就協助訂單問題；在首頁就引導選擇。';
+            // 後端從URL提取商品ID查庫（前端DOM異步加載時商品名可能缺失，此為兜底）
+            const urlProductMatch = (pageContext.url || '').match(/[?&]id=(\d+)/);
+            const urlCatMatch = (pageContext.url || '').match(/[?&]category=([^&]+)/);
+            if ((!productInfo || !productInfo.name) && urlProductMatch) {
+                try {
+                    const pid = urlProductMatch[1];
+                    const pr = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,description,is_active&id=eq.' + pid + '&is_active=eq.true&limit=1', { headers });
+                    const pdata = await pr.json();
+                    if (pdata && pdata.length > 0) {
+                        const p = pdata[0];
+                        systemPrompt += '\n\n【用戶當前瀏覽的商品（後端查庫）】ID:' + p.id + ' | 名稱:' + (p.name_zh || p.name_en) + ' | 價格:HK$' + p.price + ' | 花材:' + (p.specs_flowers || '') + ' | 鏈接:/product-detail.html?id=' + p.id;
+                    }
+                } catch(e) {}
+            }
+            if (urlCatMatch && (pageContext.pageType === '商品分類頁' || !pageContext.detail)) {
+                try {
+                    const catKey = decodeURIComponent(urlCatMatch[1]);
+                    const cr = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name_zh,name_en,description&or=(name_zh.eq.' + encodeURIComponent(catKey) + ',name_en.eq.' + encodeURIComponent(catKey) + ',id.eq.' + encodeURIComponent(catKey) + ')&limit=1', { headers });
+                    const cdata = await cr.json();
+                    if (cdata && cdata.length > 0) {
+                        systemPrompt += '\n\n【用戶當前瀏覽的分類（後端查庫）】' + (cdata[0].name_zh || cdata[0].name_en) + (cdata[0].description ? ' | 分類簡介:' + cdata[0].description.substring(0, 100) : '');
+                    }
+                } catch(e) {}
+            }
         }
         
         if (userOrders && userOrders.length > 0) {

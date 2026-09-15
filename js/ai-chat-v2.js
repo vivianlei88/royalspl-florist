@@ -461,18 +461,29 @@
                 }
             }
             ids.forEach(function(id) {
-                const urlPattern = new RegExp('(鏈接[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?', 'g');
+                const urlPattern = new RegExp('(鏈接[：: ]*|Link[：: ]*|link[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?');
                 const p = pMap[id];
                 if (p) {
                     const img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
                     const card = buildProductCard(p.id, img, p.name_zh, p.name_en, p.price);
-                    replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) { return card; });
+                    // 逐行處理：若整行只是「商品名 - HK$價格 - 鏈接：」這類冗餘推薦文字，整行替換為卡片
+                    replyHtml = replyHtml.split('\n').map(function(line) {
+                        if (urlPattern.test(line)) {
+                            const textOnly = line.replace(/<[^>]+>/g, '').trim();
+                            const isRecommendLine = /^[\s\S]{0,80}[-–—]\s*HK\$\d/.test(textOnly) || /鏈接\s*[：:]/.test(textOnly) || /Link\s*[：:]/.test(textOnly);
+                            if (isRecommendLine && textOnly.length <= 150) {
+                                return card;
+                            }
+                            return line.replace(urlPattern, function(m2, prefix, suffix) { return card; });
+                        }
+                        return line;
+                    }).join('\n');
                     return;
                 }
                 const c = cMap[id];
                 if (c) {
                     const card = buildCategoryCard(c.id, c.image_url || '', c.name_zh, c.name_en, c.description);
-                    replyHtml = replyHtml.replace(urlPattern, function(match, prefix, suffix) { return card; });
+                    replyHtml = replyHtml.replace(new RegExp('(鏈接[：: ]*|Link[：: ]*|link[：: ]*|\\()?/?product-detail\\.html\\?id=' + id + '(\\))?', 'g'), function(m2, prefix, suffix) { return card; });
                 }
             });
         }
