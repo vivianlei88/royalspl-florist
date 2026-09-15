@@ -66,6 +66,35 @@ export async function onRequestGet(context) {
         // 用证书公钥验证数据库私钥的签名
         const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', certPubKey, signature2, testMsg);
 
+        // ===== 复现完整 token JWT 流程并验证 =====
+        const now2 = Math.floor(Date.now() / 1000);
+        const header2 = { alg: 'RS256', typ: 'JWT' };
+        const claimSet2 = {
+          iss: sa.client_email,
+          scope: 'https://www.googleapis.com/auth/webmasters.readonly',
+          aud: 'https://oauth2.googleapis.com/token',
+          iat: now2,
+          exp: now2 + 3600
+        };
+        function b64url2(str) {
+          return btoa(unescape(encodeURIComponent(str)))
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+        const eh2 = b64url2(JSON.stringify(header2));
+        const ec2 = b64url2(JSON.stringify(claimSet2));
+        const si2 = eh2 + '.' + ec2;
+        const sig2 = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privKey2, new TextEncoder().encode(si2));
+        const jwtValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', certPubKey, sig2, new TextEncoder().encode(si2));
+        const jwtStr = si2 + '.' + b64url2(String.fromCharCode(...new Uint8Array(sig2)));
+
+        // ===== 直接用复现的 JWT 请求 token（真实测试）=====
+        const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + encodeURIComponent(jwtStr)
+        });
+        const tokenData = await tokenResp.json();
+
         // 额外：证书公钥指纹
         const certFp = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', spkiDer))).map(b => b.toString(16).padStart(2, '0')).join('');
 
@@ -75,7 +104,10 @@ export async function onRequestGet(context) {
           json_private_key_id: sa.private_key_id,
           gcp_cert_public_key_sha1: certFp,
           signature_valid_with_gcp_cert: valid,
-          match: valid
+          match: valid,
+          jwt_signature_valid_with_gcp_cert: jwtValid,
+          token_response: tokenData,
+          jwt_preview: jwtStr.substring(0, 60) + '...'
         }, 200, corsHeaders);
       } catch (diagErr) {
         return json({ ok: false, diagError: diagErr.message }, 500, corsHeaders);
