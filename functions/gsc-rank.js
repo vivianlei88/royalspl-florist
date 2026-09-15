@@ -54,6 +54,14 @@ export async function onRequestGet(context) {
         const certResp = await fetch(sa.client_x509_cert_url);
         const certJson = await certResp.json();
         const certKeys = Object.keys(certJson);
+        // 记录缓存头，判断 metadata 是否有缓存残留
+        const certHeaders = {
+          age: certResp.headers.get('age') || null,
+          date: certResp.headers.get('date') || null,
+          cacheControl: certResp.headers.get('cache-control') || null,
+          expires: certResp.headers.get('expires') || null,
+          lastModified: certResp.headers.get('last-modified') || null
+        };
 
         // 签名固定测试消息
         const testMsg = new TextEncoder().encode('royalspl-gsc-diag-test');
@@ -141,6 +149,7 @@ export async function onRequestGet(context) {
           client_email: sa.client_email,
           json_private_key_id: sa.private_key_id,
           cert_key_ids: certKeys,
+          cert_headers: certHeaders,
           cert_results: certResults,
           matching_key_id: matchingKid,
           db_private_key_matches_gcp_cert: match,
