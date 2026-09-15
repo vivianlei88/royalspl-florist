@@ -39,61 +39,98 @@ export async function onRequestPost(context) {
         // 输出限制
         systemPrompt += '\n\n【輸出限制-必須嚴格遵守】\n1. 只輸出文字回答，不要生成圖片、視頻、代碼塊或Markdown格式，用純文本回答。\n2. 回覆必須簡潔精煉：商品推薦時直接列出商品鏈接即可，禁止長篇大論、禁止寫「如需更多資訊請查看產品詳情頁/聯繫客服」這類冗餘客套話。\n3. 推薦商品格式（一字不差）：\n商品名稱 - HK$價格 - 鏈接：/product-detail.html?id=商品ID\n每個推薦後不要附加額外解釋段落。\n4. 回覆總長度控制在150字以內（中文）/100詞以內（英文），除非用戶要求詳細說明。';
         
-        // 加载全网站内容（精简版，控制在8K上下文内）
+        // ===== 按需检索加载（客人问到才查，控制 token 消耗）=====
         let knowledgeContext = '';
-        
-        try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/blog_posts?select=title,content,created_at&is_published=eq.true&order=created_at.desc&limit=5', { headers });
-            const posts = await r.json();
-            if (posts && posts.length > 0) {
-                knowledgeContext += '\n\n【品牌Blog】\n' + posts.map(p => '標題:' + p.title + '\n內容:' + (p.content||'').substring(0,150)).join('\n---\n');
+        const rawMsgForIntent = (typeof message === 'string') ? message : JSON.stringify(message || '');
+        const hasIntent = function(patterns) {
+            const lower = rawMsgForIntent.toLowerCase();
+            for (let i = 0; i < patterns.length; i++) {
+                if (lower.indexOf(patterns[i]) !== -1) return true;
             }
-        } catch(e) {}
+            return false;
+        };
         
-        try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/faq_items?select=question,answer&is_published=eq.true&order=sort_order.asc&limit=10', { headers });
-            const faqs = await r.json();
-            if (faqs && faqs.length > 0) {
-                knowledgeContext += '\n\n【常見問題】\n' + faqs.map(f => 'Q:' + f.question + '\nA:' + (f.answer||'').substring(0,100)).join('\n---\n');
-            }
-        } catch(e) {}
-        
-        try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/contact_settings?select=*&limit=1', { headers });
-            const contact = await r.json();
-            if (contact && contact.length > 0) {
-                const c = contact[0];
-                knowledgeContext += '\n\n【聯絡我們】電話:' + (c.phone||'') + ' | 電郵:' + (c.email||'') + ' | 地址:' + (c.address||'') + ' | 營業時間:' + (c.business_hours||'');
-            }
-        } catch(e) {}
-        
-        try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/flower_care?select=title,content&is_active=eq.true&limit=5', { headers });
-            const care = await r.json();
-            if (care && care.length > 0) {
-                knowledgeContext += '\n\n【花材護理】\n' + care.map(c => '標題:' + c.title + '\n內容:' + (c.content||'').substring(0,100)).join('\n---\n');
-            }
-        } catch(e) {}
-        
-        try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name_zh,name_en&is_active=eq.true&order=sort_order.asc', { headers });
-            const cats = await r.json();
-            if (cats && cats.length > 0) {
-                knowledgeContext += '\n\n【商品分類】\n' + cats.map(c => 'ID:' + c.id + ' | ' + (c.name_zh||'') + ' ' + (c.name_en||'')).join('\n');
-            }
-        } catch(e) {}
-        
+        // 精简商品索引（常驻，仅 ID+名称+价格，用于ID校验与基础推荐）
         let validProductIds = []; // 真實商品ID列表，用於過濾AI編造的鏈接
         try {
-            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,is_active&is_active=eq.true&order=created_at.desc&limit=30', { headers });
+            const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,is_active&is_active=eq.true&order=created_at.desc&limit=30', { headers });
             const products = await r.json();
             if (products && products.length > 0) {
                 validProductIds = products.map(p => String(p.id));
-                knowledgeContext += '\n\n【全部商品】\n' + products.map(p => 
-                    'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 分類:' + (p.category||'') + ' | 花材:' + (p.specs_flowers||'') + ' | 鏈接:/product-detail.html?id=' + p.id
+                knowledgeContext += '\n\n【商品索引】\n' + products.map(p => 
+                    'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 鏈接:/product-detail.html?id=' + p.id
                 ).join('\n');
             }
         } catch(e) {}
+        
+        // 商品/花材/推薦意向 → 查商品詳情（含花材、描述）
+        if (hasIntent(['花','玫瑰','鬱金香','芍藥','繡球','百合','康乃馨','蘭花','牡丹','尤加利','洋桔梗','滿天星','花束','花禮','推薦','預算','買','送禮','bouquet','flower','rose','recommend','budget','gift','buy','price','幾錢','咩價'])) {
+            try {
+                const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,description&is_active=eq.true&order=created_at.desc&limit=8', { headers });
+                const products = await r.json();
+                if (products && products.length > 0) {
+                    knowledgeContext += '\n\n【熱門商品詳情】\n' + products.map(p => 
+                        'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 花材:' + (p.specs_flowers||'') + (p.description ? ' | 描述:' + p.description.substring(0,80) : '')
+                    ).join('\n');
+                }
+            } catch(e) {}
+        }
+        
+        // 護理/保鮮意向 → 查花材護理
+        if (hasIntent(['護理','保鮮','點養','保存','澆水','換水','care','fresh','preserve','keep','點樣養'])) {
+            try {
+                const r = await fetch(SUPABASE_URL + '/rest/v1/flower_care?select=title,content&is_active=eq.true&limit=5', { headers });
+                const care = await r.json();
+                if (care && care.length > 0) {
+                    knowledgeContext += '\n\n【花材護理】\n' + care.map(c => '標題:' + c.title + '\n內容:' + (c.content||'').substring(0,150)).join('\n---\n');
+                }
+            } catch(e) {}
+        }
+        
+        // 配送/FAQ/訂單意向 → 查常見問題
+        if (hasIntent(['送貨','配送','運費','幾耐','幾時','即日','翌日','自取','訂單','退貨','取消','delivery','shipping','deliver','pickup','order','faq','多久','幾多日','時間','送達'])) {
+            try {
+                const r = await fetch(SUPABASE_URL + '/rest/v1/faq_items?select=question,answer&is_published=eq.true&order=sort_order.asc&limit=10', { headers });
+                const faqs = await r.json();
+                if (faqs && faqs.length > 0) {
+                    knowledgeContext += '\n\n【常見問題】\n' + faqs.map(f => 'Q:' + f.question + '\nA:' + (f.answer||'').substring(0,150)).join('\n---\n');
+                }
+            } catch(e) {}
+        }
+        
+        // 品牌/Blog 意向 → 查部落格
+        if (hasIntent(['品牌','故事','關於','歷史','blog','about','story','店舖','花店'])) {
+            try {
+                const r = await fetch(SUPABASE_URL + '/rest/v1/blog_posts?select=title,content,created_at&is_published=eq.true&order=created_at.desc&limit=3', { headers });
+                const posts = await r.json();
+                if (posts && posts.length > 0) {
+                    knowledgeContext += '\n\n【品牌Blog】\n' + posts.map(p => '標題:' + p.title + '\n內容:' + (p.content||'').substring(0,150)).join('\n---\n');
+                }
+            } catch(e) {}
+        }
+        
+        // 分類意向 → 查商品分類
+        if (hasIntent(['分類','系列','collection','category','種類','款式'])) {
+            try {
+                const r = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name_zh,name_en&is_active=eq.true&order=sort_order.asc', { headers });
+                const cats = await r.json();
+                if (cats && cats.length > 0) {
+                    knowledgeContext += '\n\n【商品分類】\n' + cats.map(c => 'ID:' + c.id + ' | ' + (c.name_zh||'') + ' ' + (c.name_en||'')).join('\n');
+                }
+            } catch(e) {}
+        }
+        
+        // 聯絡意向 → 查聯絡方式
+        if (hasIntent(['電話','聯絡','地址','營業時間','contact','phone','address','email','電郵','whatsapp','whatapp'])) {
+            try {
+                const r = await fetch(SUPABASE_URL + '/rest/v1/contact_settings?select=*&limit=1', { headers });
+                const contact = await r.json();
+                if (contact && contact.length > 0) {
+                    const c = contact[0];
+                    knowledgeContext += '\n\n【聯絡我們】電話:' + (c.phone||'') + ' | 電郵:' + (c.email||'') + ' | 地址:' + (c.address||'') + ' | 營業時間:' + (c.business_hours||'');
+                }
+            } catch(e) {}
+        }
         
         systemPrompt += knowledgeContext;
         
@@ -220,6 +257,102 @@ export async function onRequestPost(context) {
             });
         } else {
             messages.push({ role: 'user', content: message });
+        }
+        
+        // 优先使用豆包 API（如果配置了 API Key）—— 火山方舟 OpenAI 兼容接口
+        const DOUBAO_API_KEY = context.env.DOUBAO_API_KEY || context.env.ARK_API_KEY || context.env.VOLC_API_KEY || context.env.DOUBAO_KEY || context.env.DOUBAO_SECRET_KEY || '';
+        const DOUBAO_MODEL = context.env.DOUBAO_MODEL || 'doubao-seed-2-0-mini-260428';
+        
+        if (DOUBAO_API_KEY) {
+            try {
+                console.log('使用豆包 API，模型:', DOUBAO_MODEL);
+                const doubaoResp = await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + DOUBAO_API_KEY
+                    },
+                    body: JSON.stringify({
+                        model: DOUBAO_MODEL,
+                        messages: messages,
+                        max_tokens: 1000,
+                        temperature: 0.7
+                    })
+                });
+                const doubaoData = await doubaoResp.json();
+                
+                if (doubaoData.choices && doubaoData.choices[0] && 
+                    doubaoData.choices[0].message && doubaoData.choices[0].message.content) {
+                    let reply = doubaoData.choices[0].message.content;
+                    if (reply) {
+                        // 后处理：修正AI可能输出的错误域名链接为相对路径
+                        reply = reply
+                            .replace(/https?:\/\/(www\.)?royalspl(shop|florist|\.com|\.xyz)[^\/\s]*/gi, '')
+                            .replace(/https?:\/\/[^\s\/]+\/(product-detail|products)\.html/g, '/$1.html')
+                            .replace(/\[\/?product-detail\.html/g, '[/product-detail.html')
+                            .replace(/\]\s*[\(\[]\/?product-detail/g, '](/product-detail');
+                        
+                        // 過濾AI編造的商品ID：只保留真實商品列表中的ID鏈接，其餘剔除
+                        if (validProductIds.length > 0) {
+                            const linkRegex = /\/product-detail\.html\?id=(\d+)/g;
+                            let lm;
+                            const idsInReply = new Set();
+                            while ((lm = linkRegex.exec(reply)) !== null) {
+                                idsInReply.add(lm[1]);
+                            }
+                            idsInReply.forEach(function(pid) {
+                                if (validProductIds.indexOf(pid) === -1) {
+                                    const lineRegex = new RegExp('[^\\n]*/product-detail\\.html\\?id=' + pid + '[^\\n]*');
+                                    reply = reply.replace(lineRegex, '');
+                                }
+                            });
+                        }
+                        
+                        // 語言後處理：客人用中文/粵語提問，但AI回覆主要是英文時，自動翻譯為繁體中文
+                        const userMsgText = (typeof message === 'string' ? message : JSON.stringify(message || ''));
+                        const hasChinese = /[\u4e00-\u9fff]/.test(userMsgText);
+                        if (hasChinese && reply) {
+                            const chineseChars = (reply.match(/[\u4e00-\u9fff]/g) || []).length;
+                            const englishChars = (reply.match(/[a-zA-Z]/g) || []).length;
+                            if (englishChars > 50 && englishChars > chineseChars * 2) {
+                                try {
+                                    const transResp = await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer ' + DOUBAO_API_KEY
+                                        },
+                                        body: JSON.stringify({
+                                            model: DOUBAO_MODEL,
+                                            messages: [
+                                                { role: 'system', content: '你係翻譯器。將用戶提供嘅內容翻譯成自然嘅繁體中文（香港用語），只輸出翻譯結果，唔好加任何解釋、唔好保留原文。若內容包含鏈接（/product-detail.html?id=...）或HK$價格，原樣保留。' },
+                                                { role: 'user', content: reply }
+                                            ],
+                                            max_tokens: 1200,
+                                            temperature: 0.3
+                                        })
+                                    });
+                                    const transData = await transResp.json();
+                                    const translated = (transData.choices && transData.choices[0] && transData.choices[0].message) ? transData.choices[0].message.content.trim() : '';
+                                    if (translated && /[\u4e00-\u9fff]/.test(translated)) {
+                                        reply = translated;
+                                    }
+                                } catch(e) { console.error('豆包翻譯回覆失敗:', e.message); }
+                            }
+                        }
+                        
+                        return Response.json({ 
+                            reply: reply,
+                            model: DOUBAO_MODEL
+                        });
+                    }
+                }
+                
+                console.error('豆包返回异常:', JSON.stringify(doubaoData).substring(0, 500));
+            } catch (e) {
+                console.error('豆包 API 调用失败:', e.message);
+                // 失败后继续尝试 Gemini / Cloudflare Workers AI
+            }
         }
         
         // 优先使用 Gemini API（如果配置了）
