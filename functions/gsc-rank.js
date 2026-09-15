@@ -39,7 +39,7 @@ export async function onRequestGet(context) {
     }
     const sa = JSON.parse(saRows[0].setting_value);
 
-    // ===== 1.5 诊断模式（不换 token，直接用数据库私钥签名 + GCP 官方公钥验证）=====
+    // ===== 1.5 诊断模式（遍历所有证书，验证数据库私钥 + 完整 JWT→token 复现）=====
     if (action === 'diag') {
       try {
         const privateKeyPem2 = (sa.private_key || '').replace(/\\n/g, '\n');
@@ -50,23 +50,36 @@ export async function onRequestGet(context) {
         const bin2 = Uint8Array.from(atob(pemBody2), c => c.charCodeAt(0));
         const privKey2 = await crypto.subtle.importKey('pkcs8', bin2.buffer, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, true, ['sign']);
 
+        // 从 GCP 官方 x509 端点拉取当前全部有效密钥证书
+        const certResp = await fetch(sa.client_x509_cert_url);
+        const certJson = await certResp.json();
+        const certKeys = Object.keys(certJson);
+
         // 签名固定测试消息
         const testMsg = new TextEncoder().encode('royalspl-gsc-diag-test');
         const signature2 = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privKey2, testMsg);
 
-        // 从 GCP 官方 x509 证书提取公钥
-        const certResp = await fetch(sa.client_x509_cert_url);
-        const certJson = await certResp.json();
-        const certPem = certJson[sa.client_email] || Object.values(certJson)[0] || '';
-        const certBody = certPem.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\n/g, '');
-        const certBin = Uint8Array.from(atob(certBody), c => c.charCodeAt(0));
-        const spkiDer = extractSPKI(certBin);
-        const certPubKey = await crypto.subtle.importKey('spki', spkiDer, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, true, ['verify']);
+        // 遍历所有证书，找出与数据库私钥匹配的那把
+        const certResults = {};
+        for (const kid of certKeys) {
+          const pemOne = certJson[kid];
+          const bodyOne = pemOne.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\n/g, '');
+          const binOne = Uint8Array.from(atob(bodyOne), c => c.charCodeAt(0));
+          const spkiOne = extractSPKI(binOne);
+          const pubOne = await crypto.subtle.importKey('spki', spkiOne, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, true, ['verify']);
+          const okOne = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', pubOne, signature2, testMsg);
+          const fpOne = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', spkiOne))).map(b => b.toString(16).padStart(2, '0')).join('');
+          certResults[kid] = { matches_db_private_key: okOne, spki_sha1: fpOne };
+        }
 
-        // 用证书公钥验证数据库私钥的签名
-        const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', certPubKey, signature2, testMsg);
+        // 找出匹配的证书 key_id
+        let matchingKid = null;
+        for (const kid of certKeys) {
+          if (certResults[kid].matches_db_private_key) { matchingKid = kid; break; }
+        }
+        const match = !!matchingKid;
 
-        // ===== 复现完整 token JWT 流程并验证 =====
+        // 复现完整 token JWT 流程
         const now2 = Math.floor(Date.now() / 1000);
         const header2 = { alg: 'RS256', typ: 'JWT' };
         const claimSet2 = {
@@ -84,10 +97,20 @@ export async function onRequestGet(context) {
         const ec2 = b64url2(JSON.stringify(claimSet2));
         const si2 = eh2 + '.' + ec2;
         const sig2 = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privKey2, new TextEncoder().encode(si2));
-        const jwtValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', certPubKey, sig2, new TextEncoder().encode(si2));
         const jwtStr = si2 + '.' + b64url2(String.fromCharCode(...new Uint8Array(sig2)));
 
-        // ===== 直接用复现的 JWT 请求 token（真实测试）=====
+        // 用匹配的证书公钥验证 JWT 签名
+        let jwtValid = false;
+        if (matchingKid) {
+          const pemMatch = certJson[matchingKid];
+          const bodyMatch = pemMatch.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\n/g, '');
+          const binMatch = Uint8Array.from(atob(bodyMatch), c => c.charCodeAt(0));
+          const spkiMatch = extractSPKI(binMatch);
+          const pubMatch = await crypto.subtle.importKey('spki', spkiMatch, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, true, ['verify']);
+          jwtValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', pubMatch, sig2, new TextEncoder().encode(si2));
+        }
+
+        // ===== 用复现的 JWT 请求 token（真实测试）=====
         const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -95,13 +118,7 @@ export async function onRequestGet(context) {
         });
         const tokenData = await tokenResp.json();
 
-        // ===== 附加诊断 1：证书 JSON 的所有 key（检查是否多把密钥）=====
-        const certKeys = Object.keys(certJson);
-
-        // ===== 附加诊断 2：证书 DER 的 SHA-1（对比 private_key_id 是否一致）=====
-        const certDerFp = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', certBin))).map(b => b.toString(16).padStart(2, '0')).join('');
-
-        // ===== 附加诊断 3：iat 偏移测试（-60s / -300s），验证是否时钟偏差 =====
+        // ===== 附加诊断：iat 偏移测试（-60s / -300s / +300s），验证是否时钟偏差 =====
         const iatTests = {};
         for (const offset of [-60, -300, 300]) {
           const tt = Math.floor(Date.now() / 1000) + offset;
@@ -119,23 +136,19 @@ export async function onRequestGet(context) {
           iatTests[offset] = { error: d3.error || null, error_description: d3.error_description || null, ok: !!d3.access_token };
         }
 
-        // 额外：证书公钥指纹
-        const certFp = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', spkiDer))).map(b => b.toString(16).padStart(2, '0')).join('');
-
         return json({
           ok: true,
           client_email: sa.client_email,
           json_private_key_id: sa.private_key_id,
-          gcp_cert_public_key_sha1: certFp,
-          gcp_cert_der_sha1: certDerFp,
           cert_key_ids: certKeys,
+          cert_results: certResults,
+          matching_key_id: matchingKid,
+          db_private_key_matches_gcp_cert: match,
           worker_time_iat: now2,
-          signature_valid_with_gcp_cert: valid,
-          match: valid,
           jwt_signature_valid_with_gcp_cert: jwtValid,
           token_response: tokenData,
           iat_offset_tests: iatTests,
-          jwt_preview: jwtStr.substring(0, 60) + '...'
+          jwt_preview: jwtStr.substring(0, 80) + '...'
         }, 200, corsHeaders);
       } catch (diagErr) {
         return json({ ok: false, diagError: diagErr.message }, 500, corsHeaders);
