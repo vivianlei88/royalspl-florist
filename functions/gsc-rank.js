@@ -96,6 +96,40 @@ export async function onRequestGet(context) {
     const accessToken = tokenData.access_token;
 
     // ===== 3. 按 action 分发 =====
+    if (action === 'diag') {
+      // 诊断模式：对比数据库私钥公钥指纹 与 GCP 当前 x509 证书公钥指纹
+      try {
+        const privateKeyPem2 = (sa.private_key || '').replace(/\\n/g, '\n');
+        const pemBody2 = privateKeyPem2
+          .replace('-----BEGIN PRIVATE KEY-----\n', '')
+          .replace('\n-----END PRIVATE KEY-----', '')
+          .replace(/\n/g, '');
+        const bin2 = Uint8Array.from(atob(pemBody2), c => c.charCodeAt(0));
+        const privKey2 = await crypto.subtle.importKey('pkcs8', bin2.buffer, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, true, ['sign']);
+        const spkiBuf = await crypto.subtle.exportKey('spki', privKey2);
+        const dbFp = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', spkiBuf))).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const certResp = await fetch(sa.client_x509_cert_url);
+        const certJson = await certResp.json();
+        const certPem = certJson[sa.client_email] || Object.values(certJson)[0] || '';
+        const certBody = certPem.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\n/g, '');
+        const certBin = Uint8Array.from(atob(certBody), c => c.charCodeAt(0));
+        const spkiDer = extractSPKI(certBin);
+        const certFp = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', spkiDer))).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        return json({
+          ok: true,
+          client_email: sa.client_email,
+          json_private_key_id: sa.private_key_id,
+          db_public_key_sha1: dbFp,
+          gcp_cert_public_key_sha1: certFp,
+          match: dbFp === certFp
+        }, 200, corsHeaders);
+      } catch (diagErr) {
+        return json({ ok: false, diagError: diagErr.message }, 500, corsHeaders);
+      }
+    }
+
     if (action === 'sites') {
       // 列出服务账号可见的 Search Console 站点（验证授权是否完成）
       const sitesResp = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
@@ -227,4 +261,47 @@ function json(data, status, corsHeaders) {
     status: status || 200,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
+}
+
+// 轻量 ASN.1 DER 解析：从 X.509 证书中提取 SubjectPublicKeyInfo
+function extractSPKI(der) {
+  function readTLV(buf, offset) {
+    const tag = buf[offset];
+    let len = buf[offset + 1];
+    let lenBytes = 1;
+    if (len & 0x80) {
+      lenBytes = len & 0x7f;
+      len = 0;
+      for (let i = 0; i < lenBytes; i++) len = len * 256 + buf[offset + 2 + i];
+    }
+    const headerLen = 2 + lenBytes;
+    return { tag, len, valueStart: offset + headerLen, total: headerLen + len };
+  }
+
+  let pos = 0;
+  let outer = readTLV(der, pos);           // Certificate SEQUENCE
+  pos = outer.valueStart;
+  let tbs = readTLV(der, pos);             // TBSCertificate SEQUENCE
+  pos = tbs.valueStart;
+  const tbsEnd = pos + tbs.len;
+
+  // version [0] EXPLICIT（可选，v3 证书通常存在）
+  if (pos < tbsEnd && der[pos] === 0xa0) {
+    const v = readTLV(der, pos);
+    pos += v.total;
+  }
+  // serialNumber INTEGER
+  pos += readTLV(der, pos).total;
+  // signature SEQUENCE
+  pos += readTLV(der, pos).total;
+  // issuer SEQUENCE
+  pos += readTLV(der, pos).total;
+  // validity SEQUENCE
+  pos += readTLV(der, pos).total;
+  // subject SEQUENCE
+  pos += readTLV(der, pos).total;
+  // subjectPublicKeyInfo SEQUENCE ← 目标
+  if (pos >= tbsEnd) throw new Error('证书结构解析失败：未找到公钥');
+  const spki = readTLV(der, pos);
+  return der.slice(pos, pos + spki.total);
 }
