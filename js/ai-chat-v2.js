@@ -296,6 +296,8 @@
         showTyping();
 
         try {
+            const controller = new AbortController();
+            const timeoutTimer = setTimeout(() => controller.abort(), 90000);
             const resp = await fetch('/ai-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -307,8 +309,10 @@
                     userEmail: userInfo.email,
                     userOrders: userInfo.orders,
                     imageBase64: imgToSend
-                })
+                }),
+                signal: controller.signal
             });
+            clearTimeout(timeoutTimer);
             const data = await resp.json();
             hideTyping();
 
@@ -337,7 +341,11 @@
             }
         } catch(e) {
             hideTyping();
-            addMessage('網絡錯誤，請檢查連接或點擊「聯繫WhatsApp」。', 'ai');
+            if (e && e.name === 'AbortError') {
+                addMessage('回覆等待時間較長（可能正在讀取您提供的網頁），請稍後再試或點擊「聯繫WhatsApp」。', 'ai');
+            } else {
+                addMessage('網絡錯誤，請檢查連接或點擊「聯繫WhatsApp」。', 'ai');
+            }
         }
     };
 
