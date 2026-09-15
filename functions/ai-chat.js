@@ -12,14 +12,14 @@ export async function onRequestPost(context) {
         
         let systemPrompt = '';
         let language = 'auto';
-        let aiModel = '@cf/google/gemma-2-9b-it';
+        let aiModel = '@cf/mistral/mistral-7b-instruct-v0.1';
         try {
             const resp = await fetch(SUPABASE_URL + '/rest/v1/ai_chat_settings?select=system_prompt,language,is_active,model&limit=1', { headers });
             const settings = await resp.json();
             if (settings && settings.length > 0) {
                 systemPrompt = settings[0].system_prompt || '';
                 language = settings[0].language || 'auto';
-                aiModel = settings[0].model || '@cf/google/gemma-2-9b-it';
+                aiModel = settings[0].model || '@cf/mistral/mistral-7b-instruct-v0.1';
                 if (settings[0].is_active === false) {
                     return Response.json({ reply: '抱歉，AI 客服目前未啟用，請點擊「轉人工客服」聯繫我們。' });
                 }
@@ -92,7 +92,7 @@ export async function onRequestPost(context) {
         
         systemPrompt += knowledgeContext;
         
-        systemPrompt += '\n\n【商品推薦規則-最重要】用戶詢問推薦商品、想買花、送禮、有什麼花束、報預算等，必須從上方【全部商品列表】中挑選具體商品來推薦，嚴禁推薦分類。\n推薦步驟：1) 若用戶報咗預算（如800-1000、600左右），從商品列表中篩選價格符合預算的商品；2) 若無預算，選2-3個最受歡迎/最合適嘅商品。\n每個推薦必須嚴格使用列表中的真實商品ID，鏈接格式（一字不差）：\n商品名稱 - HK$真實價格 - 鏈接：/product-detail.html?id=真實商品ID\n示例：\n鬱金香光譜 - HK$460 - 鏈接：/product-detail.html?id=66\n\n【禁止事項】\n1. 嚴禁推薦分類（如法式田園自然風、日式鮮花束等），必須推薦具體商品；\n2. 嚴禁編造或猜測ID，鏈接中的ID必須是商品列表中出現過的；\n3. 嚴禁寫HK$價格暫缺，價格必須用商品列表中的真實價格；\n4. 除非用戶明確問「有咩分類」，先可以用分類頁鏈接：/products.html?category=分類ID。';
+        systemPrompt += '\n\n【商品推薦規則-最重要】用戶詢問推薦商品、想買花、送禮、有什麼花束、報預算等，必須從上方【全部商品列表】中挑選具體商品來推薦，嚴禁推薦分類。\n推薦步驟：1) 若用戶報咗預算（如800-1000、600左右），從商品列表中篩選價格符合預算的商品；2) 若無預算，選2-3個最受歡迎/最合適嘅商品。\n每個推薦必須嚴格使用列表中的真實商品ID，鏈接格式（一字不差，只准用相對路徑，嚴禁拼寫任何域名）：\n商品名稱 - HK$真實價格 - 鏈接：/product-detail.html?id=真實商品ID\n示例：\n鬱金香光譜 - HK$460 - 鏈接：/product-detail.html?id=66\n\n【禁止事項】\n1. 嚴禁推薦分類（如法式田園自然風、日式鮮花束等），必須推薦具體商品；\n2. 嚴禁編造或猜測ID，鏈接中的ID必須是商品列表中出現過的；\n3. 嚴禁寫HK$價格暫缺，價格必須用商品列表中的真實價格；\n4. 除非用戶明確問「有咩分類」，先可以用分類頁鏈接：/products.html?category=分類ID。\n5. 嚴禁在鏈接中輸出任何域名（如www.royalspl.shop、royalspl.com等），鏈接必須以/product-detail.html開頭。';
         
         if (productInfo) {
             systemPrompt += '\n\n【用戶當前瀏覽的商品】ID:' + productInfo.id + ' | ' + productInfo.name + ' | ' + (productInfo.price || '');
@@ -204,13 +204,13 @@ export async function onRequestPost(context) {
             }
         }
         
-        // 使用Cloudflare Workers AI（免费额度）
-        // 优先使用后台设置的模型，然后是备用模型
+        // 使用Cloudflare Workers AI（每天免费额度）
+        // Cloudflare免费模型：mistral-7b-instruct-v0.1（已验证可用）
         const fallbackModels = [
-            '@cf/google/gemma-2-9b-it',
-            '@cf/google/gemma-7b-it',
+            '@cf/mistral/mistral-7b-instruct-v0.1',
             '@cf/meta/llama-3.1-8b-instruct',
-            '@cf/mistral/mistral-7b-instruct-v0.1'
+            '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+            '@cf/qwen/qwen1.5-14b-chat-awq'
         ];
         // 确保设置的模型在列表第一位，去重
         const models = [aiModel, ...fallbackModels.filter(m => m !== aiModel)];
@@ -255,6 +255,13 @@ export async function onRequestPost(context) {
         }
         
         if (reply) {
+            // 后处理：修正AI可能输出的错误域名链接为相对路径
+            reply = reply
+                .replace(/https?:\/\/(www\.)?royalspl(shop|florist|\.com|\.xyz)[^\/\s]*/gi, '')
+                .replace(/https?:\/\/[^\s\/]+\/(product-detail|products)\.html/g, '/$1.html')
+                .replace(/\[\/?product-detail\.html/g, '[/product-detail.html')
+                .replace(/\]\s*[\(\[]\/?product-detail/g, '](/product-detail');
+            
             return Response.json({ 
                 reply: reply,
                 usage: aiResponse.usage,
