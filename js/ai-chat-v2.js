@@ -27,6 +27,14 @@
         try {
             const pageUrl = window.location.href;
             const pageTitle = document.title;
+            // 生成友好的頁面描述：頁面類型 + 詳細信息（商品/分類名等）
+            let pageDesc = '';
+            if (pageContext) {
+                pageDesc = pageContext.pageType || '';
+                if (pageContext.detail) pageDesc += ' | ' + pageContext.detail;
+                if (pageContext.product) pageDesc += ' | 商品ID:' + pageContext.product.id;
+            }
+            const currentPage = (pageDesc || pageTitle) + ' | ' + pageUrl.substring(0, 120);
             // 檢查會話是否存在
             const checkResp = await fetch(SUPABASE_URL + '/rest/v1/chat_sessions?session_id=eq.' + encodeURIComponent(chatSessionId) + '&select=id&limit=1', {
                 headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
@@ -37,14 +45,14 @@
                 await fetch(SUPABASE_URL + '/rest/v1/chat_sessions?session_id=eq.' + encodeURIComponent(chatSessionId), {
                     method: 'PATCH',
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current_page: pageTitle + ' | ' + pageUrl, last_message_at: new Date().toISOString() })
+                    body: JSON.stringify({ current_page: currentPage, last_message_at: new Date().toISOString() })
                 });
             } else {
                 // 創建新會話
                 await fetch(SUPABASE_URL + '/rest/v1/chat_sessions', {
                     method: 'POST',
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-                    body: JSON.stringify({ session_id: chatSessionId, current_page: pageTitle + ' | ' + pageUrl })
+                    body: JSON.stringify({ session_id: chatSessionId, current_page: currentPage })
                 });
             }
         } catch(e) { console.error('保存會話失敗:', e); }
@@ -673,6 +681,18 @@
     async function init() {
         await loadConfig();
         loadUserInfo(); // 异步加载，不阻塞
+        // 頁面加載即偵測並記錄當前頁面（後台客服可實時看到訪客所在頁面）
+        detectPageContext();
+        saveChatSession();
+        // 定時更新當前頁面（訪客切換頁面後，後台也能看到最新位置）
+        setInterval(function() {
+            detectPageContext();
+            saveChatSession();
+        }, 30000);
+        // SPA/hash 切換時即時更新
+        window.addEventListener('popstate', function() {
+            setTimeout(function() { detectPageContext(); saveChatSession(); }, 300);
+        });
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', createWidget);
         } else {
