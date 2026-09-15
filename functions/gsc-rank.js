@@ -95,6 +95,30 @@ export async function onRequestGet(context) {
         });
         const tokenData = await tokenResp.json();
 
+        // ===== 附加诊断 1：证书 JSON 的所有 key（检查是否多把密钥）=====
+        const certKeys = Object.keys(certJson);
+
+        // ===== 附加诊断 2：证书 DER 的 SHA-1（对比 private_key_id 是否一致）=====
+        const certDerFp = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', certBin))).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // ===== 附加诊断 3：iat 偏移测试（-60s / -300s），验证是否时钟偏差 =====
+        const iatTests = {};
+        for (const offset of [-60, -300, 300]) {
+          const tt = Math.floor(Date.now() / 1000) + offset;
+          const cs2 = { ...claimSet2, iat: tt, exp: tt + 3600 };
+          const ec3 = b64url2(JSON.stringify(cs2));
+          const si3 = eh2 + '.' + ec3;
+          const sg3 = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privKey2, new TextEncoder().encode(si3));
+          const jw3 = si3 + '.' + b64url2(String.fromCharCode(...new Uint8Array(sg3)));
+          const r3 = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + encodeURIComponent(jw3)
+          });
+          const d3 = await r3.json();
+          iatTests[offset] = { error: d3.error || null, error_description: d3.error_description || null, ok: !!d3.access_token };
+        }
+
         // 额外：证书公钥指纹
         const certFp = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', spkiDer))).map(b => b.toString(16).padStart(2, '0')).join('');
 
@@ -103,10 +127,14 @@ export async function onRequestGet(context) {
           client_email: sa.client_email,
           json_private_key_id: sa.private_key_id,
           gcp_cert_public_key_sha1: certFp,
+          gcp_cert_der_sha1: certDerFp,
+          cert_key_ids: certKeys,
+          worker_time_iat: now2,
           signature_valid_with_gcp_cert: valid,
           match: valid,
           jwt_signature_valid_with_gcp_cert: jwtValid,
           token_response: tokenData,
+          iat_offset_tests: iatTests,
           jwt_preview: jwtStr.substring(0, 60) + '...'
         }, 200, corsHeaders);
       } catch (diagErr) {
