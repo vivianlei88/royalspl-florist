@@ -5283,8 +5283,19 @@ async function saveProduct() {
         for (var m = 0; m < categoryDetailProducts.length; m++) {
             var pid = categoryDetailProducts[m].id;
             var prod = existingMap[pid];
-            var catIds = prod ? (prod.category_ids || []) : [];
-            var catNames = prod ? (prod.categories || []) : [];
+            var catIds = prod ? (prod.category_ids || []).slice() : [];
+            var catNames = prod ? (prod.categories || []).slice() : [];
+            // 关键修复：商品不在当前分类的 existing 结果里（例如它原本属于 A 分类，现正添加进 B 分类），
+            // 必须实时查库读取它原有的完整分类，绝不能从空数组开始，否则会覆盖清掉原有分类。
+            if (!prod) {
+                try {
+                    var pResp = await supabaseClient.from('products').select('id,category_ids,categories').eq('id', pid).maybeSingle();
+                    if (pResp.data) {
+                        catIds = (pResp.data.category_ids || []).slice();
+                        catNames = (pResp.data.categories || []).slice();
+                    }
+                } catch (e) {}
+            }
             if (catIds.indexOf(categoryId) === -1) { catIds.push(categoryId); catNames.push(categoryName); }
             var addResp = await supabaseClient.from('products').update({ category_ids: catIds, categories: catNames, category: catNames.join(', '), category_id: catIds.length > 0 ? catIds[0] : null, sort_order_in_category: m + 1 }).eq('id', pid);
             if (addResp.error) { showToast('保存商品失敗：' + addResp.error.message); }
