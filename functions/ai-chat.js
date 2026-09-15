@@ -83,10 +83,12 @@ export async function onRequestPost(context) {
             }
         } catch(e) {}
         
+        let validProductIds = []; // 真實商品ID列表，用於過濾AI編造的鏈接
         try {
             const r = await fetch(SUPABASE_URL + '/rest/v1/products?select=id,name_zh,name_en,price,category,specs_flowers,is_active&is_active=eq.true&order=created_at.desc&limit=30', { headers });
             const products = await r.json();
             if (products && products.length > 0) {
+                validProductIds = products.map(p => String(p.id));
                 knowledgeContext += '\n\n【全部商品】\n' + products.map(p => 
                     'ID:' + p.id + ' | ' + (p.name_zh||p.name_en) + ' | HK$' + p.price + ' | 分類:' + (p.category||'') + ' | 花材:' + (p.specs_flowers||'') + ' | 鏈接:/product-detail.html?id=' + p.id
                 ).join('\n');
@@ -288,6 +290,24 @@ export async function onRequestPost(context) {
                 .replace(/https?:\/\/[^\s\/]+\/(product-detail|products)\.html/g, '/$1.html')
                 .replace(/\[\/?product-detail\.html/g, '[/product-detail.html')
                 .replace(/\]\s*[\(\[]\/?product-detail/g, '](/product-detail');
+            
+            // 過濾AI編造的商品ID：只保留真實商品列表中的ID鏈接，其餘剔除
+            if (validProductIds.length > 0) {
+                // 找出回覆中所有商品ID鏈接
+                const linkRegex = /\/product-detail\.html\?id=(\d+)/g;
+                let lm;
+                const idsInReply = new Set();
+                while ((lm = linkRegex.exec(reply)) !== null) {
+                    idsInReply.add(lm[1]);
+                }
+                // 剔除不在真實列表中的ID鏈接（含其行首的「商品名 - HK$價格 -」冗餘文字）
+                idsInReply.forEach(function(pid) {
+                    if (validProductIds.indexOf(pid) === -1) {
+                        const lineRegex = new RegExp('[^\\n]*/product-detail\\.html\\?id=' + pid + '[^\\n]*');
+                        reply = reply.replace(lineRegex, '');
+                    }
+                });
+            }
             
             return Response.json({ 
                 reply: reply,
