@@ -157,7 +157,7 @@ export async function onRequestGet(context) {
           jwt_signature_valid_with_gcp_cert: jwtValid,
           token_response: tokenData,
           iat_offset_tests: iatTests,
-          jwt_preview: jwtStr.substring(0, 80) + '...'
+          jwt_full: jwtStr
         }, 200, corsHeaders);
       } catch (diagErr) {
         return json({ ok: false, diagError: diagErr.message }, 500, corsHeaders);
