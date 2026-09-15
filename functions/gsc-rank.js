@@ -89,7 +89,7 @@ export async function onRequestGet(context) {
 
         // 复现完整 token JWT 流程
         const now2 = Math.floor(Date.now() / 1000);
-        const header2 = { alg: 'RS256', typ: 'JWT' };
+        const header2 = { alg: 'RS256', typ: 'JWT', kid: sa.private_key_id };
         const claimSet2 = {
           iss: sa.client_email,
           scope: 'https://www.googleapis.com/auth/webmasters.readonly',
@@ -166,7 +166,7 @@ export async function onRequestGet(context) {
 
     // ===== 2. 用服务账号签发 JWT 换取 access token（scope: webmasters.readonly）=====
     const now = Math.floor(Date.now() / 1000);
-    const header = { alg: 'RS256', typ: 'JWT' };
+    const header = { alg: 'RS256', typ: 'JWT', kid: sa.private_key_id };
     const claimSet = {
       iss: sa.client_email,
       scope: 'https://www.googleapis.com/auth/webmasters.readonly',
