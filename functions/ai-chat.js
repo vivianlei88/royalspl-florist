@@ -147,6 +147,64 @@ export async function onRequestPost(context) {
             systemPrompt += '\n\n用戶已登錄，電郵：' + userEmail + '，暫時沒有訂單記錄。可以推薦入門級商品。';
         }
         
+        // 【讀取客人提供的網址鏈接】若客人消息中含 http/https 網址，抓取網頁內容供AI閱讀
+        const rawMsg = (typeof message === 'string') ? message : JSON.stringify(message || '');
+        const urlMatches = rawMsg.match(/https?:\/\/[^\s"'<>（）()，,。]+/g);
+        if (urlMatches && urlMatches.length > 0) {
+            const fetchedContents = [];
+            for (const url of urlMatches.slice(0, 2)) { // 最多抓2個鏈接
+                // 安全過濾：禁止內網/本地地址，防止 SSRF
+                try {
+                    const u = new URL(url);
+                    const host = u.hostname;
+                    if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || /^10\./.test(host) || /^192\.168\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host) || host.endsWith('.local')) {
+                        fetchedContents.push('網址 ' + url + '：內部地址，無法訪問。');
+                        continue;
+                    }
+                } catch(e) { continue; }
+                try {
+                    const resp = await fetch(url, {
+                        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RoyalSpl-AIChat/1.0)' },
+                        redirect: 'follow'
+                    });
+                    if (!resp.ok) {
+                        fetchedContents.push('網址 ' + url + '：無法訪問（HTTP ' + resp.status + '）。');
+                        continue;
+                    }
+                    const ctype = (resp.headers.get('content-type') || '');
+                    let text = '';
+                    if (ctype.includes('application/json')) {
+                        text = await resp.text();
+                        text = text.substring(0, 4000);
+                    } else if (ctype.includes('text') || ctype.includes('html') || ctype.includes('xml') || ctype.includes('javascript')) {
+                        text = await resp.text();
+                        // 移除 HTML 標籤與腳本，提取可讀文字
+                        text = text
+                            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+                            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+                            .replace(/<[^>]+>/g, ' ')
+                            .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+                        text = text.substring(0, 4000);
+                    } else {
+                        fetchedContents.push('網址 ' + url + '：內容類型 ' + (ctype.split(';')[0] || '未知') + '，無法閱讀。');
+                        continue;
+                    }
+                    if (text && text.length > 20) {
+                        fetchedContents.push('【網址內容】' + url + '\n' + text);
+                    } else {
+                        fetchedContents.push('網址 ' + url + '：未能提取到有效文字內容。');
+                    }
+                } catch(e) {
+                    fetchedContents.push('網址 ' + url + '：讀取失敗（' + (e.message || '網絡錯誤') + '）。');
+                }
+            }
+            if (fetchedContents.length > 0) {
+                systemPrompt += '\n\n【客人提供的網頁內容-重要】客人發咗以下網址鏈接，請閱讀網頁內容並根據內容回答客人嘅問題。若網頁內容與花店/商品無關，禮貌告知客人暫時無法處理。\n' + fetchedContents.join('\n\n---\n\n');
+            }
+        }
+        
         let messages = [{ role: 'system', content: systemPrompt }];
         if (history && Array.isArray(history)) {
             messages = messages.concat(history.slice(-6));
