@@ -1052,7 +1052,7 @@
     // 加载首页数据
     async function loadHomepageData() {
         try {
-            var r = await supabaseClient.from('homepage_settings').select('*').limit(1);
+            var r = await supabaseClient.from('homepage_settings').select('*').order('id', { ascending: true }).limit(1);
             if (r.data && r.data.length > 0) {
                 homepageData = r.data[0];
                 renderEditorPanel();

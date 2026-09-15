@@ -485,7 +485,7 @@
     async function loadHomepageSettings() {
         try {
             console.log('開始載入首頁設置...');
-            var result = await supabaseClient.from('homepage_settings').select('*').limit(1);
+            var result = await supabaseClient.from('homepage_settings').select('*').order('id', { ascending: true }).limit(1);
             console.log('查詢結果:', result);
             if (result.error) { console.error('查詢錯誤:', result.error); throw result.error; }
             var settings = result.data && result.data[0];

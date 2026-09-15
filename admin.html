@@ -4253,7 +4253,7 @@
     }
     async function loadHomepageData() {
         try {
-            var r = await supabaseClient.from('homepage_settings').select('*').limit(1);
+            var r = await supabaseClient.from('homepage_settings').select('*').order('id', { ascending: true }).limit(1);
             if (r.data && r.data.length > 0) {
                 var d = r.data[0];
                 document.getElementById('heroTitle').value = d.hero_title || '';
@@ -4279,7 +4279,7 @@
             about_text: aboutEl ? aboutEl.innerHTML : ''
         };
         try {
-            var r = await supabaseClient.from('homepage_settings').select('id').limit(1);
+            var r = await supabaseClient.from('homepage_settings').select('id').order('id', { ascending: true }).limit(1);
             if (r.data && r.data.length > 0) { await supabaseClient.from('homepage_settings').update(data).eq('id', r.data[0].id); }
             else { await supabaseClient.from('homepage_settings').insert(data); }
             showToast('首頁設置已保存');
