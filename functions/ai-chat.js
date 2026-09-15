@@ -31,7 +31,7 @@ export async function onRequestPost(context) {
         }
         
         // 强制语言规则 - 粤语繁体
-        systemPrompt += '\n\n【語言規則 - 必須嚴格遵守】\n1. 預設用香港廣東話口語 + 繁體字回答，例如「你好呀」「唔該」「多謝」「嘅」「咁」「喺」「哋」\n2. 絕對不能用簡體字，所有字必須是繁體\n3. 用戶用英文提問，先用英文回答\n4. 用戶明確要求普通話/書面語，才用書面繁體\n5. 跟隨用戶嘅語言，唔好主動轉換\n6. 任何情況下都禁止輸出簡體中文，違反即為重大錯誤';
+        systemPrompt += '\n\n【語言規則 - 必須嚴格遵守】\n1. 預設用香港廣東話口語 + 繁體字回答，例如「你好呀」「唔該」「多謝」「嘅」「咁」「喺」「哋」\n2. 絕對不能用簡體字，所有字必須是繁體\n3. 用戶用英文提問，先用英文回答\n4. 用戶明確要求普通話/書面語，才用書面繁體\n5. 跟隨用戶嘅語言，唔好主動轉換\n6. 任何情況下都禁止輸出簡體中文，違反即為重大錯誤\n7. 用戶用中文/粵語提問時，禁止用英文回答，禁止先寫英文再翻譯，直接全用繁體中文回答。';
         
         // 日期與配送理解規則
         systemPrompt += '\n\n【日期與配送理解-重要】\n1. 用戶講「X號」「X月X號」「今日」「聽日」「後日」等，係指日期/配送時間，唔係商品編號。\n2. 例如「19號可以送貨嗎」= 問19號當日能否送貨，唔好理解成商品「19」號。\n3. 回答配送問題時，引用配送政策：香港全港送貨，即日鮮花可即日/翌日配送，其他需提前預訂（一般3日）。\n4. 若客人喺商品詳情頁問送貨，默認佢問嘅就係當前瀏覽嗰件商品，直接回答該商品嘅配送安排。';
@@ -108,6 +108,7 @@ export async function onRequestPost(context) {
             // 後端從URL提取商品ID查庫（前端DOM異步加載時商品名可能缺失，此為兜底）
             const urlProductMatch = (pageContext.url || '').match(/[?&]id=(\d+)/);
             const urlCatMatch = (pageContext.url || '').match(/[?&]category=([^&]+)/);
+            let curProductName = (productInfo && productInfo.name) ? productInfo.name : '';
             if ((!productInfo || !productInfo.name) && urlProductMatch) {
                 try {
                     const pid = urlProductMatch[1];
@@ -115,7 +116,8 @@ export async function onRequestPost(context) {
                     const pdata = await pr.json();
                     if (pdata && pdata.length > 0) {
                         const p = pdata[0];
-                        systemPrompt += '\n\n【用戶當前瀏覽的商品（後端查庫）】ID:' + p.id + ' | 名稱:' + (p.name_zh || p.name_en) + ' | 價格:HK$' + p.price + ' | 花材:' + (p.specs_flowers || '') + ' | 鏈接:/product-detail.html?id=' + p.id;
+                        curProductName = (p.name_zh || p.name_en);
+                        systemPrompt += '\n\n【用戶當前瀏覽的商品（後端查庫）】ID:' + p.id + ' | 名稱:' + curProductName + ' | 價格:HK$' + p.price + ' | 花材:' + (p.specs_flowers || '') + ' | 鏈接:/product-detail.html?id=' + p.id;
                     }
                 } catch(e) {}
             }
@@ -128,6 +130,10 @@ export async function onRequestPost(context) {
                         systemPrompt += '\n\n【用戶當前瀏覽的分類（後端查庫）】' + (cdata[0].name_zh || cdata[0].name_en) + (cdata[0].description ? ' | 分類簡介:' + cdata[0].description.substring(0, 100) : '');
                     }
                 } catch(e) {}
+            }
+            // 商品詳情頁：強化「圍繞當前商品回答」指令
+            if (pageContext.pageType === '商品詳情頁' || urlProductMatch) {
+                systemPrompt += '\n\n【當前頁面是商品詳情頁-必須遵守】\n1. 客人正在瀏覽商品「' + (curProductName || '當前商品') + '」，佢問嘅「呢束花」「呢個」「這個」「呢款」等都係指當前商品。\n2. 回答配送/送貨問題時，直接回答當前商品嘅配送安排，唔好叫客人再提供商品ID或名稱。\n3. 例如問「呢束花19號可以送貨嗎」= 問「' + (curProductName || '當前商品') + '」19號能否送貨，直接回答。';
             }
         }
         
