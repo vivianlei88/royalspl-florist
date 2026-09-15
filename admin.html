@@ -7533,6 +7533,66 @@ async function saveProduct() {
                 }
             });
         }
+
+        // ========== 回到前台自動刷新（手機切換 APP 回來時） ==========
+        var lastForegroundRefresh = 0;
+
+        function isAdminLoggedIn() {
+            var ap = document.getElementById('adminPage');
+            return ap && ap.style.display === 'block';
+        }
+
+        // 強制重新渲染當前頁面 + 刷新通知輪詢
+        function refreshCurrentPage() {
+            var page = window.currentPage || 'analytics';
+            var mobilePage = window.mobileCurrentPage;
+            // 繞過 switchPage 的同頁保護，強制重渲染當前頁
+            window.currentPage = null;
+            try {
+                // 手機端「郵件」頁不走 switchPage，需單獨處理
+                if (mobilePage === 'email') {
+                    if (typeof renderMobileEmailPage === 'function') renderMobileEmailPage();
+                } else {
+                    switchPage(page);
+                }
+            } catch (e) { console.error('自動刷新頁面失敗:', e); }
+            // 刷新通知徽章
+            try { if (typeof updateNotificationBadge === 'function') updateNotificationBadge(); } catch (e) {}
+            // 重新啟動輪詢（確保定時器存活）
+            try { if (typeof startVisitorTracking === 'function') startVisitorTracking(); } catch (e) {}
+            try { if (typeof startChatTracking === 'function') startChatTracking(); } catch (e) {}
+            try { if (typeof startOrderTracking === 'function') startOrderTracking(); } catch (e) {}
+        }
+
+        // 手機從其他 APP 切回本頁時：檢查登錄態並自動刷新數據
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState !== 'visible') return;
+            if (!isAdminLoggedIn()) return;
+            var now = Date.now();
+            if (now - lastForegroundRefresh < 5000) return; // 5秒內不重複刷新
+            lastForegroundRefresh = now;
+            checkGoogleAuth().then(function(loggedIn) {
+                if (loggedIn || localStorage.getItem('royalspl_admin') === 'true') {
+                    refreshCurrentPage();
+                }
+            });
+        });
+
+        // 斷線 / 恢復網絡自動重連
+        var wasOffline = false;
+        window.addEventListener('offline', function() {
+            wasOffline = true;
+            try { showToast('⚠️ 網絡已斷開，恢復後將自動重新連線'); } catch (e) {}
+        });
+        window.addEventListener('online', function() {
+            if (wasOffline) {
+                wasOffline = false;
+                try { showToast('✅ 網絡已恢復，正在重新載入...'); } catch (e) {}
+                if (isAdminLoggedIn()) {
+                    refreshCurrentPage();
+                }
+            }
+        });
     });
 
     </script>
@@ -9072,6 +9132,7 @@ async function saveProduct() {
     <script>
     // 手機端頁面切換
     function mobileSwitchPage(page) {
+        window.mobileCurrentPage = page;
         // 更新頂部導航激活狀態
         document.querySelectorAll('.mobile-nav-item').forEach(item => item.classList.remove('active'));
         event.currentTarget.classList.add('active');
