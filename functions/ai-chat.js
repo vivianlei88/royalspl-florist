@@ -315,6 +315,31 @@ export async function onRequestPost(context) {
                 });
             }
             
+            // 語言後處理：客人用中文/粵語提問，但AI回覆主要是英文時，自動翻譯為繁體中文
+            const userMsgText = (typeof message === 'string' ? message : JSON.stringify(message || ''));
+            const hasChinese = /[\u4e00-\u9fff]/.test(userMsgText);
+            if (hasChinese && reply && usedModel) {
+                const chineseChars = (reply.match(/[\u4e00-\u9fff]/g) || []).length;
+                const englishChars = (reply.match(/[a-zA-Z]/g) || []).length;
+                // 中文提問但回覆英文佔主導（英文>中文 且 英文>50字符）→ 翻譯
+                if (englishChars > 50 && englishChars > chineseChars * 2) {
+                    try {
+                        const transResp = await context.env.AI.run(usedModel, {
+                            messages: [
+                                { role: 'system', content: '你係翻譯器。將用戶提供嘅內容翻譯成自然嘅繁體中文（香港用語），只輸出翻譯結果，唔好加任何解釋、唔好保留原文。若內容包含鏈接（/product-detail.html?id=...）或HK$價格，原樣保留。' },
+                                { role: 'user', content: reply }
+                            ],
+                            max_tokens: 1200,
+                            temperature: 0.3
+                        });
+                        const translated = (transResp && transResp.response) ? transResp.response.trim() : '';
+                        if (translated && /[\u4e00-\u9fff]/.test(translated)) {
+                            reply = translated;
+                        }
+                    } catch(e) { console.error('翻譯回覆失敗:', e.message); }
+                }
+            }
+            
             return Response.json({ 
                 reply: reply,
                 usage: aiResponse.usage,
