@@ -2708,46 +2708,60 @@
     async function renderSEOProductsTab() {
         const container = document.getElementById('seoTabContent');
         container.innerHTML = '<div style="background:white;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="font-size:14px;color:#888;margin-bottom:10px;">商品描述優化建議</div>' +
+            '<div style="font-size:14px;color:#888;margin-bottom:10px;">商品描述優化建議（中/英文分開檢查）</div>' +
             '<div style="font-size:13px;color:#666;line-height:1.8;">' +
-            '✅ 描述 >100字：良好<br>' +
+            '✅ 描述 >100字 且 命中≥2個關鍵詞：良好<br>' +
             '⚠️ 描述 50-100字：建議增加<br>' +
             '❌ 描述 <50字：需要優化<br>' +
-            '建議描述包含：香港、配送、花束、生日等關鍵詞' +
+            '中文關鍵詞：香港、配送、花束、生日、花藝、鮮花<br>' +
+            '英文關鍵詞：Hong Kong、flower、bouquet、delivery、fresh、wedding、birthday、Valentine、florist、gift' +
             '</div></div>';
         container.innerHTML += '<div id="productSEOList" style="background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.3fr 1fr 1.2fr 0.9fr 100px;gap:10px;font-weight:600;font-size:14px;">' +
-            '<div>商品名稱</div><div>描述長度</div><div>關鍵詞</div><div>狀態</div><div>操作</div></div>' +
+            '<div style="padding:15px 20px;background:#1A1A1A;color:white;display:grid;grid-template-columns:1.2fr 0.7fr 0.7fr 1.2fr 0.8fr 100px;gap:10px;font-weight:600;font-size:14px;">' +
+            '<div>商品名稱</div><div>中文描述</div><div>英文描述</div><div>關鍵詞(中/英)</div><div>狀態</div><div>操作</div></div>' +
             '<div id="productSEOItems">加載中...</div></div>';
         await loadProductSEOCheck();
     }
 
     async function loadProductSEOCheck() {
         try {
-            const { data: products, error } = await supabaseClient.from('products').select('id, name_zh, name_en, description, is_active').order('id');
+            const { data: products, error } = await supabaseClient.from('products').select('id, name_zh, name_en, description, description_en, is_active').order('id');
             if (error) throw error;
             const container = document.getElementById('productSEOItems');
             if (!products || products.length === 0) {
                 container.innerHTML = '<div style="padding:30px;text-align:center;color:#999;">暫無商品</div>';
                 return;
             }
-            const keywords = ['香港', '配送', '花束', '生日', '花藝', '鮮花'];
+            const zhKeywords = ['香港', '配送', '花束', '生日', '花藝', '鮮花'];
+            const enKeywords = ['hong kong', 'flower', 'bouquet', 'delivery', 'fresh', 'wedding', 'birthday', 'valentine', 'florist', 'gift'];
+            function evalStatus(len, matchedCount) {
+                if (len >= 100 && matchedCount >= 2) return { status: '良好', color: '#52C41A', score: 3 };
+                if (len >= 50) return { status: '需改進', color: '#FAAD14', score: 2 };
+                return { status: '需優化', color: '#EA6668', score: 1 };
+            }
             let html = '';
             let good = 0, warning = 0, bad = 0;
             products.forEach(p => {
                 const desc = (p.description || '').trim();
-                const descLen = desc.length;
-                const matchedKw = keywords.filter(kw => desc.includes(kw));
-                let status, statusColor;
-                if (descLen >= 100 && matchedKw.length >= 2) { status = '良好'; statusColor = '#52C41A'; good++; }
-                else if (descLen >= 50) { status = '需改進'; statusColor = '#FAAD14'; warning++; }
-                else { status = '需優化'; statusColor = '#EA6668'; bad++; }
-                html += '<div style="display:grid;grid-template-columns:1.3fr 1fr 1.2fr 0.9fr 100px;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
+                const enDesc = (p.description_en || '').trim();
+                const zhLen = desc.length;
+                const enLen = enDesc.length;
+                const zhMatched = zhKeywords.filter(kw => desc.includes(kw));
+                const enMatched = enKeywords.filter(kw => enDesc.toLowerCase().includes(kw));
+                const zh = evalStatus(zhLen, zhMatched.length);
+                const en = evalStatus(enLen, enMatched.length);
+                const final = zh.score <= en.score ? zh : en;
+                if (final.score === 3) good++;
+                else if (final.score === 2) warning++;
+                else bad++;
+                html += '<div style="display:grid;grid-template-columns:1.2fr 0.7fr 0.7fr 1.2fr 0.8fr 100px;gap:10px;padding:12px 20px;border-bottom:1px solid #eee;align-items:center;">' +
                     '<div><div style="font-size:14px;font-weight:600;">' + (p.name_zh || p.name_en || '未命名') + '</div>' +
                     '<div style="font-size:12px;color:#999;">ID: ' + p.id + '</div></div>' +
-                    '<div style="font-size:13px;">' + descLen + ' 字</div>' +
-                    '<div style="font-size:12px;">' + (matchedKw.length > 0 ? matchedKw.join(', ') : '<span style="color:#ccc;">無</span>') + '</div>' +
-                    '<div style="color:' + statusColor + ';font-size:13px;font-weight:600;">' + status + '</div>' +
+                    '<div style="font-size:12px;line-height:1.6;">' + zhLen + ' 字<br><span style="color:' + zh.color + ';">' + zh.status + '</span></div>' +
+                    '<div style="font-size:12px;line-height:1.6;">' + enLen + ' 字<br><span style="color:' + en.color + ';">' + en.status + '</span></div>' +
+                    '<div style="font-size:11px;line-height:1.6;word-break:break-all;">中: ' + (zhMatched.length > 0 ? zhMatched.join(', ') : '<span style="color:#ccc;">無</span>') + '<br>' +
+                    '英: ' + (enMatched.length > 0 ? enMatched.join(', ') : '<span style="color:#ccc;">無</span>') + '</div>' +
+                    '<div style="color:' + final.color + ';font-size:13px;font-weight:600;">' + final.status + '</div>' +
                     '<div><button class="btn btn-small btn-secondary" onclick="switchPage(\'products\')">編輯</button></div></div>';
             });
             html = '<div style="padding:15px 20px;background:#f9f9f9;font-size:13px;display:flex;gap:20px;border-bottom:1px solid #eee;">' +
