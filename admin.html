@@ -3299,6 +3299,7 @@
     var orderTimer = null;
     var lastOrderCheckTime = new Date().toISOString();
     var notifiedOrderIds = [];
+    var notifiedOrderStates = {};
 
     async function checkNewOrders() {
         try {
@@ -3306,33 +3307,63 @@
                 .from('orders')
                 .select('*')
                 .order('updated_at', { ascending: false })
-                .limit(10);
+                .limit(20);
             if (error) throw error;
 
             var orders = data || [];
             var newNotifications = [];
+            var paidNotifications = [];
 
             for (var i = 0; i < orders.length; i++) {
                 var o = orders[i];
-                var orderTime = o.updated_at || o.created_at;
-                if (orderTime > lastOrderCheckTime && notifiedOrderIds.indexOf(o.id) === -1) {
-                    newNotifications.push(o);
+                var isNewOrder = (o.created_at || '') > lastOrderCheckTime && notifiedOrderIds.indexOf(o.id) === -1;
+                var stateChanged = notifiedOrderStates[o.id] !== undefined && notifiedOrderStates[o.id] !== o.status;
+                if (isNewOrder) {
+                    // 新創建訂單：記入去重表，作為「新訂單」提醒
                     notifiedOrderIds.push(o.id);
+                    notifiedOrderStates[o.id] = o.status;
+                    newNotifications.push(o);
+                } else if (stateChanged) {
+                    // 訂單狀態變化：更新記錄；付款成功（paid）→ 成交提醒，其他狀態變化 → 一般提醒
+                    notifiedOrderStates[o.id] = o.status;
+                    if (o.status === 'paid') {
+                        paidNotifications.push(o);
+                    } else {
+                        newNotifications.push(o);
+                    }
+                } else if (notifiedOrderStates[o.id] === undefined) {
+                    // 頁面初次加載時已存在的訂單：只記錄狀態，不彈提醒
+                    notifiedOrderStates[o.id] = o.status;
                 }
+            }
+
+            // 成交提醒優先（付款成功 = 真正成交）
+            if (paidNotifications.length > 0) {
+                updateNotificationBadge();
+                var latestPaid = paidNotifications[0];
+                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                    new Notification('訂單成交！', {
+                        body: '訂單 ' + latestPaid.order_code + ' 已付款 HK$' + latestPaid.total_amount,
+                        icon: 'https://www.royalspl.shop/favicon.ico'
+                    });
+                }
+                if (window.innerWidth <= 768) {
+                    showMobileAlert('訂單成交！', '訂單號：' + latestPaid.order_code + '<br>金額：HK$' + latestPaid.total_amount, 'order');
+                }
+                playNotificationSound();
+                showToast(' 訂單成交：' + latestPaid.order_code + ' 已付款 HK$' + latestPaid.total_amount);
             }
 
             if (newNotifications.length > 0) {
                 updateNotificationBadge();
                 var latest = newNotifications[0];
                 var statusText = getOrderStatusText(latest.status);
-                // 瀏覽器通知
-                if (Notification.permission === 'granted') {
+                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                     new Notification('訂單提醒', {
                         body: '訂單 ' + latest.order_code + ' 狀態：' + statusText + '，金額：HK$' + latest.total_amount,
                         icon: 'https://www.royalspl.shop/favicon.ico'
                     });
                 }
-                // 手機端頁面內彈出提示
                 if (window.innerWidth <= 768) {
                     showMobileAlert('新訂單！', '訂單號：' + latest.order_code + '<br>狀態：' + statusText + '<br>金額：HK$' + latest.total_amount, 'order');
                 }
@@ -3363,6 +3394,16 @@
         if (orderTimer) clearInterval(orderTimer);
         orderTimer = setInterval(checkNewOrders, 10000);
     }
+
+    // 手機/電腦端從後台返回前台時立即檢查提醒（解決移動端後台標籤頁定時器被凍結問題）
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            if (typeof checkNewOrders === 'function') checkNewOrders();
+            if (typeof checkVisitorNotifications === 'function') checkVisitorNotifications();
+            if (typeof checkNewChatMessages === 'function') checkNewChatMessages();
+            if (typeof updateNotificationBadge === 'function') updateNotificationBadge();
+        }
+    });
 
     async function updateNotificationBadge() {
         try {
@@ -5714,7 +5755,7 @@ async function saveProduct() {
     }
     
     function showEmailNotification(email) {
-        // 播放提示音
+        // 播放提示音（使用主版本：叮咚兩聲+震動）
         playNotificationSound();
         
         // 浏览器通知
@@ -5727,24 +5768,6 @@ async function saveProduct() {
         
         // 页面内弹窗提醒
         showToast('📬 新郵件：' + email.subject);
-    }
-    
-    function playNotificationSound() {
-        try {
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            var oscillator = audioCtx.createOscillator();
-            var gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 0.5);
-        } catch (e) {
-            console.log('Sound play error:', e);
-        }
     }
     
     // 请求浏览器通知权限
