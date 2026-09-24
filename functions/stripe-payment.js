@@ -40,9 +40,16 @@ export async function onRequestPost(context) {
     }
 
     if (action === 'refund') {
-      // 發起退款
+      // 發起退款（支援 Apple Pay / Google Pay / 信用卡，全部經 Stripe PaymentIntent 原路退回）
+      const paymentIntentId = body.paymentIntentId || body.orderId;
+      if (!paymentIntentId) {
+        return new Response(JSON.stringify({ success: false, error: '缺少 paymentIntentId' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const refundAmount = parseFloat(body.refundAmount || 0);
       const formData = new URLSearchParams();
-      formData.append('payment_intent', orderId);
+      formData.append('payment_intent', paymentIntentId);
+      // 有金額就按金額退（全額/部分都支援）；冇金額就全額退
+      if (refundAmount > 0) formData.append('amount', String(Math.round(refundAmount * 100)));
       const response = await fetch('https://api.stripe.com/v1/refunds', {
         method: 'POST',
         headers: {
@@ -52,6 +59,9 @@ export async function onRequestPost(context) {
         body: formData.toString(),
       });
       const refund = await response.json();
+      if (refund.error) {
+        return new Response(JSON.stringify({ success: false, error: refund.error.message }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
       return new Response(JSON.stringify({ success: true, refund }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 

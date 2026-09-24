@@ -6758,7 +6758,7 @@ async function saveProduct() {
             refundNote = prompt('退款備註（可留空）：', '');
             if (refundNote === null) return;
         }
-        var confirmMsg = '確定退款 HK$' + refundAmount + '？\n訂單：' + order.order_code + '\n方式：' + (order.stripe_payment_intent_id ? '信用卡 (Stripe)' : refundMethod);
+        var confirmMsg = '確定退款 HK$' + refundAmount + '？\n訂單：' + order.order_code + '\n方式：' + (order.stripe_payment_intent_id ? 'Stripe 原路退款 (Apple Pay / Google Pay / 信用卡)' : refundMethod);
         if (refundNote) confirmMsg += '\n備註：' + refundNote;
         if (!confirm(confirmMsg)) return;
         processRefund(order, refundAmount, refundMethod, refundNote);
@@ -6793,7 +6793,7 @@ async function saveProduct() {
     // 退款通知郵件
     async function sendRefundNotificationEmail(order, refundAmount, refundMethod, refundNote) {
         if (!order.customer_email) { console.log('無客戶電郵，跳過退款通知'); return; }
-        var methodText = (refundMethod === 'stripe') ? '信用卡（Stripe）' : (refundMethod || '');
+        var methodText = (refundMethod === 'stripe') ? 'Stripe 原路退款（Apple Pay / Google Pay / 信用卡）' : (refundMethod || '');
         var html = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">' +
             '<div style="text-align:center;padding:20px 0;border-bottom:2px solid #1a1a1a;">' +
             '<h1 style="margin:0;font-size:22px;color:#1a1a1a;">退款通知 / Refund Notice</h1>' +
