@@ -385,7 +385,7 @@
         }).join('');
         const subtotal = cart.reduce((sum, item) => { const addons = item.addons || []; const addonsTotal = addons.reduce((a, addon) => a + (addon.price || 0), 0); return sum + ((item.price || 0) + addonsTotal) * (item.quantity || 1); }, 0);
         const cardSectionOpen = cardType === 'yes' || cardType === 'blank';
-        const showTextarea = cardType === 'yes' || cardType === 'blank';
+        const showTextarea = cardType === 'yes';
         container.innerHTML = `
             <div class="cart-items">${itemsHtml}</div>
             <div class="cart-section">
@@ -447,7 +447,11 @@
             cardContent.classList.add('open');
             const span = sectionTitle.querySelector('span');
             if (span) span.textContent = '−';
-            if (!existingTextarea) {
+            // 空白心意卡：只點選，不顯示/不保留文字框
+            if (type === 'blank') {
+                if (existingTextarea) { existingTextarea.remove(); }
+                cardMessage = '';
+            } else if (type === 'yes' && !existingTextarea) {
                 const textarea = document.createElement('textarea');
                 textarea.className = 'card-textarea';
                 textarea.placeholder = '請輸入祝福語...';
