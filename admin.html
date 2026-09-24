@@ -4046,51 +4046,97 @@
         if (el) el.innerHTML = html;
     }
     
-    // 渲染热门访问商品 - 时尚样式
+    // 渲染热门访问商品 - 显示商品图 + 商品名称
     function renderTopVisitedProducts(visitors) {
         var productViews = {};
         visitors.forEach(function(v) {
-            if (v.page_url) {
-                var url = v.page_url;
-                // 匹配商品详情页
-                if (url.indexOf('/product-detail') !== -1 || url.indexOf('/product-page') !== -1) {
-                    var productId = '';
-                    if (url.indexOf('id=') !== -1) {
-                        productId = url.split('id=')[1].split('&')[0];
-                    } else {
-                        var parts = url.split('/');
-                        productId = parts[parts.length - 1] || parts[parts.length - 2];
+            if (!v.page_url) return;
+            var url = v.page_url;
+            var productKey = '';
+            // 提取 id= 參數（product-detail.html?id=23）
+            var idMatch = url.match(/[?&]id=(\d+)/);
+            if (idMatch) {
+                productKey = 'id:' + idMatch[1];
+            } else {
+                // 提取 slug 參數（product-detail?slug=xxx）
+                var slugMatch = url.match(/[?&]slug=([^&]+)/);
+                if (slugMatch) {
+                    try { productKey = 'slug:' + decodeURIComponent(slugMatch[1]); }
+                    catch(e) { productKey = 'slug:' + slugMatch[1]; }
+                } else {
+                    // /product-page/xxx 舊網址格式
+                    var pp = url.match(/\/product-page\/([^\/?]+)/);
+                    if (pp) {
+                        try { productKey = 'slug:' + decodeURIComponent(pp[1]); }
+                        catch(e) { productKey = 'slug:' + pp[1]; }
                     }
-                    var key = productId || url;
-                    productViews[key] = (productViews[key] || 0) + 1;
                 }
             }
+            // 唔係商品頁（products.html 列表頁等）→ 唔統計
+            if (!productKey) return;
+            productViews[productKey] = (productViews[productKey] || 0) + 1;
         });
         
         var sorted = Object.entries(productViews).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
         var maxViews = sorted.length > 0 ? sorted[0][1] : 1;
         
-        var html = '<div style="display:flex;flex-direction:column;gap:8px;">';
-        if (sorted.length === 0) {
-            html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無商品訪問數據</div>';
-        } else {
-            sorted.forEach(function(p, i) {
-                var rankColor = i < 3 ? '#C9A961' : '#ddd';
-                var pct = (p[1] / maxViews * 100).toFixed(0);
-                var displayName = p[0].length > 25 ? p[0].slice(0, 25) + '...' : p[0];
-                html += '<div style="padding:12px;background:#fafafa;border-radius:10px;">';
-                html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">';
-                html += '<span style="width:24px;height:24px;background:' + rankColor + ';color:' + (i < 3 ? '#fff' : '#666') + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">' + (i + 1) + '</span>';
-                html += '<span style="flex:1;font-size:13px;color:#333;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">商品 #' + displayName + '</span>';
-                html += '<span style="font-size:12px;color:#0A0A0A;font-weight:600;">' + p[1] + ' 次</span>';
-                html += '</div>';
-                html += '<div style="height:5px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#0A0A0A,#C9A961);border-radius:3px;transition:width 0.5s ease;"></div></div>';
-                html += '</div>';
-            });
+        // 收集 id / slug 用嚟查商品名同圖片
+        var idKeys = [], slugKeys = [];
+        sorted.forEach(function(p) {
+            if (p[0].indexOf('slug:') === 0) slugKeys.push(p[0].substring(5));
+            else idKeys.push(parseInt(p[0].substring(3)));
+        });
+        
+        function render(nameMap) {
+            var html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+            if (sorted.length === 0) {
+                html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無商品訪問數據</div>';
+            } else {
+                sorted.forEach(function(p, i) {
+                    var rankColor = i < 3 ? '#C9A961' : '#ddd';
+                    var pct = (p[1] / maxViews * 100).toFixed(0);
+                    var info = nameMap[p[0]] || {};
+                    var img = info.image
+                        ? '<img src="' + info.image + '" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;">'
+                        : '<span style="width:32px;height:32px;background:#eee;border-radius:8px;flex-shrink:0;"></span>';
+                    var rawName = info.name || '';
+                    var displayName = rawName || (p[0].indexOf('slug:') === 0 ? '商品（' + p[0].substring(5) + '）' : '商品 #' + p[0].substring(3));
+                    if (displayName.length > 25) displayName = displayName.slice(0, 25) + '...';
+                    html += '<div style="padding:12px;background:#fafafa;border-radius:10px;">';
+                    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">';
+                    html += '<span style="width:24px;height:24px;background:' + rankColor + ';color:' + (i < 3 ? '#fff' : '#666') + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">' + (i + 1) + '</span>';
+                    html += img;
+                    html += '<span style="flex:1;font-size:13px;color:#333;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + displayName + '</span>';
+                    html += '<span style="font-size:12px;color:#0A0A0A;font-weight:600;">' + p[1] + ' 次</span>';
+                    html += '</div>';
+                    html += '<div style="height:5px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#0A0A0A,#C9A961);border-radius:3px;transition:width 0.5s ease;"></div></div>';
+                    html += '</div>';
+                });
+            }
+            html += '</div>';
+            var el = document.getElementById('topVisitedProducts');
+            if (el) el.innerHTML = html;
         }
-        html += '</div>';
-        var el = document.getElementById('topVisitedProducts');
-        if (el) el.innerHTML = html;
+        
+        // 異步查 products 表攞商品名 + 圖片
+        var tasks = [];
+        if (idKeys.length > 0) {
+            tasks.push(supabaseClient.from('products').select('id,name_zh,image_url').in('id', idKeys));
+        }
+        if (slugKeys.length > 0) {
+            tasks.push(supabaseClient.from('products').select('slug,name_zh,image_url').in('slug', slugKeys));
+        }
+        if (tasks.length === 0) { render({}); return; }
+        Promise.all(tasks).then(function(results) {
+            var nameMap = {};
+            results.forEach(function(r) {
+                if (r.data) r.data.forEach(function(row) {
+                    if (row.id) nameMap['id:' + row.id] = { name: row.name_zh, image: row.image_url };
+                    if (row.slug) nameMap['slug:' + row.slug] = { name: row.name_zh, image: row.image_url };
+                });
+            });
+            render(nameMap);
+        }).catch(function() { render({}); });
     }
     
     // 渲染访客来源分布 - 时尚样式
