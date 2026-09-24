@@ -3706,23 +3706,23 @@
         // 今日访客
         html += '<div style="background:linear-gradient(135deg,#0A0A0A 0%,#1A1A2E 100%);color:white;padding:24px;border-radius:16px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.15);">';
         html += '<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(201,169,97,0.1);border-radius:50%;"></div>';
-        html += '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">今日訪客</div>';
+        html += '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">訪客</div>';
         html += '<div style="font-size:38px;font-weight:700;letter-spacing:-1px;" id="todayVisitors">--</div>';
-        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;">按IP去重統計</div>';
+        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;" id="statVisitorsSub">按IP去重統計 · 最近7天</div>';
         html += '</div>';
-        // 今日成交量
+        // 訂單量
         html += '<div style="background:linear-gradient(135deg,#0A0A0A 0%,#1A1A2E 100%);color:white;padding:24px;border-radius:16px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.15);">';
         html += '<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(201,169,97,0.1);border-radius:50%;"></div>';
-        html += '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">今日訂單</div>';
+        html += '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">訂單</div>';
         html += '<div style="font-size:38px;font-weight:700;letter-spacing:-1px;" id="todayOrders">--</div>';
-        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;">全部狀態訂單</div>';
+        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;" id="statOrdersSub">全部狀態訂單 · 最近7天</div>';
         html += '</div>';
-        // 今日成交金额
+        // 成交金额
         html += '<div style="background:linear-gradient(135deg,#0A0A0A 0%,#1A1A2E 100%);color:white;padding:24px;border-radius:16px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.15);">';
         html += '<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(201,169,97,0.15);border-radius:50%;"></div>';
         html += '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">成交金額</div>';
         html += '<div style="font-size:38px;font-weight:700;letter-spacing:-1px;" id="todaySales">--</div>';
-        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;">已付款訂單金額</div>';
+        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;" id="statSalesSub">已付款訂單金額 · 最近7天</div>';
         html += '</div>';
         html += '</div>';
         
@@ -3769,28 +3769,33 @@
         html += '</div>';
         
         c.innerHTML = html;
-        loadTodayStats();
+        loadAnalyticsStats();
         loadAnalyticsData();
     }
     
     var salesChart = null;
     
-    // 加载今日统计数据
-    async function loadTodayStats() {
+    // 加载范围统计数据（跟随時間範圍選擇器：最近7天/30天）
+    async function loadAnalyticsStats() {
         try {
-            var today = new Date();
-            today.setHours(0, 0, 0, 0);
-            var todayStr = today.toISOString();
-            
-            var visitorRes = await supabaseClient.from('visitor_logs').select('ip').gte('created_at', todayStr);
+            var days = parseInt(document.getElementById('analyticsRange').value) || 7;
+            var start = new Date();
+            start.setDate(start.getDate() - days);
+            start.setHours(0, 0, 0, 0);
+            var startStr = start.toISOString();
+            var rangeText = '最近' + days + '天';
+
+            var visitorRes = await supabaseClient.from('visitor_logs').select('ip').gte('created_at', startStr);
             var uniqueIps = new Set();
             if (visitorRes.data) {
                 visitorRes.data.forEach(function(v) { if (v.ip) uniqueIps.add(v.ip); });
             }
             var el = document.getElementById('todayVisitors');
             if (el) el.textContent = uniqueIps.size;
-            
-            var orderRes = await supabaseClient.from('orders').select('id,total_amount,status').gte('created_at', todayStr);
+            var sub1 = document.getElementById('statVisitorsSub');
+            if (sub1) sub1.textContent = '按IP去重統計 · ' + rangeText;
+
+            var orderRes = await supabaseClient.from('orders').select('id,total_amount,status').gte('created_at', startStr);
             var orderCount = 0, salesAmount = 0;
             if (orderRes.data) {
                 orderRes.data.forEach(function(o) {
@@ -3803,10 +3808,15 @@
             }
             var el2 = document.getElementById('todayOrders');
             if (el2) el2.textContent = orderCount;
+            var sub2 = document.getElementById('statOrdersSub');
+            if (sub2) sub2.textContent = '全部狀態訂單 · ' + rangeText;
+
             var el3 = document.getElementById('todaySales');
             if (el3) el3.textContent = 'HK$' + salesAmount.toFixed(0);
+            var sub3 = document.getElementById('statSalesSub');
+            if (sub3) sub3.textContent = '已付款訂單金額 · ' + rangeText;
         } catch (e) {
-            console.error('加载今日数据失败:', e);
+            console.error('加载统计数据失败:', e);
         }
     }
     
@@ -3817,7 +3827,10 @@
         startDate.setDate(startDate.getDate() - days);
         startDate.setHours(0, 0, 0, 0);
         var startStr = startDate.toISOString();
-        
+
+        // 同步刷新顶部三個範圍統計卡片
+        loadAnalyticsStats();
+
         var orderRes = await supabaseClient.from('orders').select('id,total_amount,status,created_at,items').gte('created_at', startStr);
         var orders = orderRes.data || [];
         
