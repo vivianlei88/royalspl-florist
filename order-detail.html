@@ -408,7 +408,8 @@
                 if (data.url) {
                     window.location.href = data.url;
                 } else {
-                    window.location.href = 'payment.html?order_id=' + orderId;
+                    // 唔再跳去假付款頁——建立失敗就顯示錯誤，訂單保持「未付款」
+                    throw new Error(data.error || '建立付款失敗');
                 }
             } catch (e) {
                 console.error('支付失败:', e);

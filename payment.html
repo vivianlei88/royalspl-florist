@@ -383,27 +383,43 @@
             btn.textContent = '處理中...';
             
             try {
-                // 更新订单状态为已付款
-                if (orderId) {
-                    await supabaseClient
-                        .from('orders')
-                        .update({ 
-                            status: 'paid',
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', orderId);
+                // 真實付款：建立 Stripe Checkout Session 並跳轉（唔會直接標記已付款）
+                if (!currentOrder) throw new Error('訂單資料不存在，請返回會員中心重新支付');
+                
+                const recipient = currentOrder.recipient || {};
+                const items = (currentOrder.items || []).map(item => ({
+                    name: item.name, price: item.price || 0, quantity: item.quantity || 1
+                }));
+                
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: items,
+                        recipientName: recipient.name,
+                        recipientPhone: recipient.phone,
+                        recipientAddress: recipient.address,
+                        deliveryDate: recipient.date,
+                        deliveryTimeSlot: recipient.timeSlot,
+                        deliveryFee: currentOrder.deliveryFee || 0,
+                        subtotal: currentOrder.subtotal || 0,
+                        totalAmount: currentOrder.total || 0,
+                        orderId: currentOrder.id || orderId,
+                        orderCode: currentOrder.orderCode
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.url) {
+                    // 跳去 Stripe 安全付款頁，完成後自動返嚟成功頁（嗰邊先會更新為已付款）
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || '建立付款失敗');
                 }
                 
-                // 清除待支付订单
-                localStorage.removeItem('pending_order');
-                
-                // 显示成功页面
-                document.getElementById('paymentPage').style.display = 'none';
-                document.getElementById('successPage').style.display = 'block';
-                
             } catch (e) {
-                console.error('支付失败:', e);
-                alert('支付處理失敗，請稍後重試');
+                console.error('支付失敗:', e);
+                alert('建立付款失敗：' + (e.message || '請稍後重試'));
                 btn.disabled = false;
                 btn.textContent = '確認支付';
             }
