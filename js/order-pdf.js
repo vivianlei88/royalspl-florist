@@ -132,11 +132,16 @@ function buildPdfHtml(o) {
         + '<tr><td style="padding:6px 0;"><b>付款狀態：</b>' + paymentStatus + '</td><td style="padding:6px 0;"><b>付款方式：</b>' + paymentMethod + '</td></tr>'
         + '</table>'
 
+        // 訂購人資訊
+        + '<table style="width:100%;margin:10px 0;border-collapse:collapse;font-size:13px;">'
+        + '<tr><td style="padding:6px 0;"><b>訂購人：</b>' + (o.customerName || '-') + '</td><td style="padding:6px 0;"><b>電話：</b>' + (o.customerPhone || '-') + '</td></tr>'
+        + '<tr><td colspan="2" style="padding:6px 0;"><b>電郵：</b>' + (o.customerEmail || '-') + '</td></tr>'
+        + '</table>'
+
         // 收件人資訊
         + '<table style="width:100%;margin:10px 0;border-collapse:collapse;font-size:13px;">'
         + '<tr><td style="padding:6px 0;"><b>收件人：</b>' + (o.recipientName || '-') + '</td><td style="padding:6px 0;"><b>電話：</b>' + (o.recipientPhone || '-') + '</td></tr>'
         + '<tr><td colspan="2" style="padding:6px 0;"><b>地址：</b>' + (o.address || '-') + '</td></tr>'
-        + (o.customerEmail ? '<tr><td colspan="2" style="padding:6px 0;"><b>客戶電郵：</b>' + o.customerEmail + '</td></tr>' : '')
         + '</table>'
 
         // 商品明細（含圖片）

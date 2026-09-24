@@ -6617,11 +6617,16 @@ async function saveProduct() {
         html += '<tr><td style="padding:8px 0;"><b>付款狀態：</b>' + paymentStatus + '</td><td style="padding:8px 0;"><b>付款方式：</b>' + (o.payment_method || '-') + '</td></tr>';
         html += '</table>';
         
+        // 訂購人信息
+        html += '<table style="width:100%;margin:10px 0;border-collapse:collapse;">';
+        html += '<tr><td style="padding:8px 0;"><b>訂購人：</b>' + (o.customer_name || '-') + '</td><td style="padding:8px 0;"><b>電話：</b>' + (o.customer_phone || '-') + '</td></tr>';
+        html += '<tr><td colspan="2" style="padding:8px 0;"><b>電郵：</b>' + (o.customer_email || '-') + '</td></tr>';
+        html += '</table>';
+        
         // 收件人信息
         html += '<table style="width:100%;margin:10px 0;border-collapse:collapse;">';
         html += '<tr><td style="padding:8px 0;"><b>收件人：</b>' + (o.recipient_name || '-') + '</td><td style="padding:8px 0;"><b>電話：</b>' + (o.recipient_phone || '-') + '</td></tr>';
         html += '<tr><td colspan="2" style="padding:8px 0;"><b>地址：</b>' + (o.recipient_address || '-') + '</td></tr>';
-        if (o.customer_email) { html += '<tr><td colspan="2" style="padding:8px 0;"><b>客戶電郵：</b>' + o.customer_email + '</td></tr>'; }
         html += '</table>';
         
         // 商品明细表格
