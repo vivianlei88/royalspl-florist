@@ -764,7 +764,8 @@
             emoji: currentProduct.emoji || '',
             quantity: quantity,
             addons: addons,
-            deliveryDays: currentProduct.delivery_days || 1
+            deliveryDays: currentProduct.delivery_days || 1,
+            isPreorder: currentProduct.stock !== '現貨'
         });
         localStorage.setItem('royalspl_cart', JSON.stringify(cart));
         updateCartBadge();
@@ -809,7 +810,8 @@
             emoji: currentProduct.emoji || '',
             quantity: quantity,
             addons: addons,
-            deliveryDays: currentProduct.delivery_days || 1
+            deliveryDays: currentProduct.delivery_days || 1,
+            isPreorder: currentProduct.stock !== '現貨'
         }];
         sessionStorage.setItem('royalspl_buynow', JSON.stringify(buyNowItems));
         window.location.href = 'buynow.html';

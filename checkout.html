@@ -948,7 +948,7 @@
 
     function selectHour(element, hour) { document.querySelectorAll('.hour-pill').forEach(el => el.classList.remove('selected-hour')); element.classList.add('selected-hour'); selectedHour = hour; renderSummary(); }
 
-    function getMaxDeliveryDays() { let maxDays = 0; cart.forEach(item => { if (item.deliveryDays && item.deliveryDays > 1) { maxDays = Math.max(maxDays, item.deliveryDays); } }); return maxDays; }
+    function getMaxDeliveryDays() { let maxDays = 0; cart.forEach(item => { if (item.deliveryDays && item.deliveryDays > 1) { if (item.isPreorder === undefined || item.isPreorder) { maxDays = Math.max(maxDays, item.deliveryDays); } } }); return maxDays; }
 
     function setupDatePicker() {
         const dateInput = document.getElementById('deliveryDate');
