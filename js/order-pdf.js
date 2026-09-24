@@ -288,12 +288,21 @@ function buildOrderEmailHtml(o) {
         + '</tr>'
         + rows
         + '</table>'
-        // 金額
-        + '<table role="presentation" width="58%" cellpadding="0" cellspacing="0" align="right" style="font-size:13px;margin-top:14px;">'
-        + '<tr><td style="padding:4px 0;">商品小計：</td><td style="padding:4px 0;text-align:right;">HK$' + fmtMoney(o.subtotal) + '</td></tr>'
-        + '<tr><td style="padding:4px 0;">配送費：</td><td style="padding:4px 0;text-align:right;">HK$' + fmtMoney(o.deliveryFee) + '</td></tr>'
-        + '<tr style="font-size:17px;font-weight:bold;"><td style="padding:6px 0;border-top:1px solid #ccc;">總計：</td><td style="padding:6px 0;border-top:1px solid #ccc;text-align:right;">HK$' + fmtMoney(o.total) + '</td></tr>'
-        + '</table>'
+        // 金額 / 退款資料
+        + (o.refundAmount != null
+            ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;font-size:13px;border-collapse:collapse;">'
+                + '<tr><td colspan="2" style="background:#FBE9E7;padding:9px 12px;border:1px solid #E8B4B4;font-weight:bold;color:#c0392b;font-size:15px;">退款資料 / Refund Details</td></tr>'
+                + '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;width:110px;"><b>訂單編號</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;">' + e(o.orderCode) + '</td></tr>'
+                + '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;"><b>退款金額</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;font-weight:700;color:#c0392b;font-size:17px;">HK$' + fmtMoney(o.refundAmount) + '</td></tr>'
+                + '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;"><b>退款方式</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;">' + e(o.refundMethod) + '</td></tr>'
+                + (o.refundNote ? '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;"><b>備註</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;">' + o.refundNote + '</td></tr>' : '')
+                + '<tr><td colspan="2" style="padding:8px 12px;border:1px solid #E8B4B4;color:#666;font-size:12px;">' + (o.refundMessage || '款項將按原付款方式退回，一般 3-10 個工作日到賬。Your refund is being processed via the original payment method, typically 3-10 business days.') + '</td></tr>'
+            + '</table>'
+            : '<table role="presentation" width="58%" cellpadding="0" cellspacing="0" align="right" style="font-size:13px;margin-top:14px;">'
+                + '<tr><td style="padding:4px 0;">商品小計：</td><td style="padding:4px 0;text-align:right;">HK$' + fmtMoney(o.subtotal) + '</td></tr>'
+                + '<tr><td style="padding:4px 0;">配送費：</td><td style="padding:4px 0;text-align:right;">HK$' + fmtMoney(o.deliveryFee) + '</td></tr>'
+                + '<tr style="font-size:17px;font-weight:bold;"><td style="padding:6px 0;border-top:1px solid #ccc;">總計：</td><td style="padding:6px 0;border-top:1px solid #ccc;text-align:right;">HK$' + fmtMoney(o.total) + '</td></tr>'
+            + '</table>')
         + (o.cardMessage ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;"><tr><td style="background:#FFF8E1;padding:10px 14px;border-left:4px solid #FFC107;font-size:13px;"><b>心意卡：</b>' + o.cardMessage + '</td></tr></table>' : '')
         + (o.remarks ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;"><tr><td style="background:#F0F4F8;padding:10px 14px;border-left:4px solid #8BC8EA;font-size:13px;"><b>特別事項：</b>' + o.remarks + '</td></tr></table>' : '')
         + '<p style="text-align:center;margin-top:22px;font-size:11px;color:#888;">感謝您的訂購！如有疑問請聯絡 ' + shop.name + '</p>'

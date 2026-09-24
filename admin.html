@@ -6799,29 +6799,26 @@ async function saveProduct() {
     async function sendRefundNotificationEmail(order, refundAmount, refundMethod, refundNote) {
         if (!order.customer_email) { console.log('無客戶電郵，跳過退款通知'); return; }
         var methodText = (refundMethod === 'stripe') ? 'Stripe 原路退款（Apple Pay / Google Pay / 信用卡）' : (refundMethod || '');
-        var html = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">' +
-            '<div style="text-align:center;padding:20px 0;border-bottom:2px solid #1a1a1a;">' +
-            '<h1 style="margin:0;font-size:22px;color:#1a1a1a;">退款通知 / Refund Notice</h1>' +
-            '<div style="font-size:13px;color:#888;">RoyalSpl Florist</div></div>' +
-            '<div style="padding:25px 0;line-height:1.8;">' +
-            '<p>親愛的 ' + (order.customer_name || order.recipient_name || '顧客') + '：</p>' +
-            '<p>您的訂單 <b>' + order.order_code + '</b> 已辦理退款，詳情如下：</p>' +
-            '<table style="width:100%;border-collapse:collapse;margin:15px 0;font-size:14px;">' +
-            '<tr><td style="padding:8px 10px;border:1px solid #eee;background:#fafafa;">訂單編號</td><td style="padding:8px 10px;border:1px solid #eee;">' + order.order_code + '</td></tr>' +
-            '<tr><td style="padding:8px 10px;border:1px solid #eee;background:#fafafa;">退款金額</td><td style="padding:8px 10px;border:1px solid #eee;font-weight:700;color:#c0392b;">HK$' + refundAmount + '</td></tr>' +
-            '<tr><td style="padding:8px 10px;border:1px solid #eee;background:#fafafa;">退款方式</td><td style="padding:8px 10px;border:1px solid #eee;">' + methodText + '</td></tr>' +
-            (refundNote ? '<tr><td style="padding:8px 10px;border:1px solid #eee;background:#fafafa;">備註</td><td style="padding:8px 10px;border:1px solid #eee;">' + refundNote + '</td></tr>' : '') +
-            '</table>' +
-            '<p>退款將按照原付款方式處理，款項到賬時間視乎銀行/支付機構而定（一般 3-10 個工作日）。如有任何疑問，歡迎隨時聯繫我們。</p>' +
-            '<p>Your refund is being processed via the original payment method. It may take 3-10 business days to appear, depending on your bank. If you have any questions, feel free to contact us.</p>' +
-            '</div>' +
-            '<div style="text-align:center;padding:15px 0;border-top:1px solid #eee;font-size:12px;color:#999;">RoyalSpl Florist | 香港鮮花速遞 | 謝謝您的支持</div>' +
-            '</div>';
         try {
+            // 用收據模板版式（buildOrderEmailHtml），內容改為退款資料
+            var emailHtml = buildOrderEmailHtml({
+                title: '退款通知 / Refund Notice',
+                message: '您的訂單 ' + order.order_code + ' 已辦理退款，詳情如下：',
+                orderCode: order.order_code, status: '已退款',
+                deliveryDate: order.delivery_date, deliveryTime: order.delivery_time_slot, deliveryArea: order.delivery_area,
+                customerName: order.customer_name, customerEmail: order.customer_email, customerPhone: order.customer_phone,
+                recipientName: order.recipient_name, recipientPhone: order.recipient_phone,
+                address: order.recipient_address,
+                items: order.items, productNames: order.product_names, productImages: order.product_images,
+                subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount,
+                cardMessage: order.card_message, remarks: order.remarks,
+                refundAmount: refundAmount, refundMethod: methodText, refundNote: refundNote,
+                refundMessage: '款項將按原付款方式退回，一般 3-10 個工作日到賬。Your refund is being processed via the original payment method, typically 3-10 business days.'
+            });
             var resp = await fetch('/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: order.customer_email, subject: '退款通知 Refund Notice - ' + order.order_code, html: html })
+                body: JSON.stringify({ to: order.customer_email, subject: '退款通知 Refund Notice - ' + order.order_code, html: emailHtml })
             });
             var result = await resp.json();
             if (result.id || result.success) { showToast('退款通知郵件已發送'); }
