@@ -34,10 +34,13 @@ export async function onRequestPost(context) {
     } = body;
 
     // 構建 Stripe Checkout Session
+    // 用請求來源域決定返回地址（支援 www.royalspl.shop / royalspl.pages.dev 等任何訪問方式）
+    const requestHost = request.headers.get('host') || 'www.royalspl.shop';
+    const baseUrl = 'https://' + requestHost;
     const formData = new URLSearchParams();
     formData.append('mode', 'payment');
-    formData.append('success_url', 'https://royalspl.shop/order-success.html');
-    formData.append('cancel_url', 'https://royalspl.shop/checkout.html');
+    formData.append('success_url', baseUrl + '/order-success.html');
+    formData.append('cancel_url', baseUrl + '/checkout.html');
     formData.append('line_items[0][price_data][currency]', 'hkd');
     formData.append('line_items[0][price_data][product_data][name]', 'RoyalSpl Florist 花禮訂單');
     formData.append('line_items[0][price_data][unit_amount]', Math.round(totalAmount * 100));
