@@ -3383,6 +3383,7 @@
             'pending_payment': '待確認付款',
             'paid': '已付款',
             'shipped': '已出貨',
+            'refunded': '已退款',
             'cancelled': '已取消',
             'archived': '已封存'
         };
@@ -3795,7 +3796,7 @@
             var sub1 = document.getElementById('statVisitorsSub');
             if (sub1) sub1.textContent = '按IP去重統計 · ' + rangeText;
 
-            var orderRes = await supabaseClient.from('orders').select('id,total_amount,status').gte('created_at', startStr);
+            var orderRes = await supabaseClient.from('orders').select('id,total_amount,status,refund_amount').gte('created_at', startStr);
             var orderCount = 0, salesAmount = 0;
             if (orderRes.data) {
                 orderRes.data.forEach(function(o) {
@@ -3803,6 +3804,11 @@
                     var s = o.status || '';
                     if (s === 'paid' || s === 'completed' || s === 'shipped') {
                         salesAmount += parseFloat(o.total_amount) || 0;
+                    } else if (s === 'refunded') {
+                        // 退款訂單：全額退款不計入，部分退款按剩餘金額計入
+                        var refundedAmt = parseFloat(o.refund_amount) || 0;
+                        var remainAmt = (parseFloat(o.total_amount) || 0) - refundedAmt;
+                        if (remainAmt > 0) salesAmount += remainAmt;
                     }
                 });
             }
@@ -3831,7 +3837,7 @@
         // 同步刷新顶部三個範圍統計卡片
         loadAnalyticsStats();
 
-        var orderRes = await supabaseClient.from('orders').select('id,total_amount,status,created_at,items').gte('created_at', startStr);
+        var orderRes = await supabaseClient.from('orders').select('id,total_amount,status,created_at,items,refund_amount').gte('created_at', startStr);
         var orders = orderRes.data || [];
         
         var visitorRes = await supabaseClient.from('visitor_logs').select('*').gte('created_at', startStr);
@@ -3863,6 +3869,11 @@
                     var s = o.status || '';
                     if (s === 'paid' || s === 'completed' || s === 'shipped') {
                         daySales += parseFloat(o.total_amount) || 0;
+                    } else if (s === 'refunded') {
+                        // 退款訂單：全額退款不計入，部分退款按剩餘金額計入
+                        var refundedAmt = parseFloat(o.refund_amount) || 0;
+                        var remainAmt = (parseFloat(o.total_amount) || 0) - refundedAmt;
+                        if (remainAmt > 0) daySales += remainAmt;
                     }
                 }
             });
@@ -5874,15 +5885,15 @@ async function saveProduct() {
         for (var i = 0; i < orders.length; i++) {
             var o = orders[i];
             h += '<tr><td class="checkbox-col"><input type="checkbox" class="order-check" value="' + o.id + '"></td>';
-            h += '<td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + '</td>';
-            h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="pending_payment"' + (o.status === 'pending_payment' ? ' selected' : '') + '>待確認付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option></select></td>';
+            h += '<td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + (o.refund_status ? '<div style="font-size:11px;color:#c0392b;font-weight:600;">已退 HK$' + (o.refund_amount || 0) + '</div>' : '') + '</td>';
+            h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="pending_payment"' + (o.status === 'pending_payment' ? ' selected' : '') + '>待確認付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option><option value="refunded"' + (o.status === 'refunded' ? ' selected' : '') + '>已退款</option></select></td>';
             var actionBtns = '<button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button> ';
             actionBtns += '<button class="btn btn-secondary btn-small" onclick="downloadOrderPDFById(' + o.id + ')">PDF</button> ';
             actionBtns += '<button class="btn btn-secondary btn-small" onclick="sendReceiptEmail(' + o.id + ')">發收據</button> ';
             actionBtns += '<button class="btn btn-secondary btn-small" onclick="copyOrderDetail(' + o.id + ')">複製轉發</button> ';
             if (o.status === 'unpaid') { actionBtns += '<button class="btn btn-primary btn-small" onclick="createStripePayment(' + o.id + ')">收款</button> '; }
             if (o.status === 'pending_payment') { actionBtns += '<button class="btn btn-success btn-small" onclick="markOrderPaid(' + o.id + ')">核對付款</button> '; }
-            if (o.status === 'paid' && o.stripe_payment_intent_id) { actionBtns += '<button class="btn btn-danger btn-small" onclick="showRefundForm(' + o.id + ')">退款</button> '; }
+            if ((o.status === 'paid' || o.status === 'shipped') && !o.refund_status) { actionBtns += '<button class="btn btn-danger btn-small" onclick="showRefundForm(' + o.id + ')">退款</button> '; }
             h += '<td><div class="btn-group">' + actionBtns + '</div></td></tr>';
         }
         h += '</tbody></table>';
@@ -6333,10 +6344,13 @@ async function saveProduct() {
                 '<span style="font-size:24px;">📧</span><span style="font-size:18px;font-weight:600;">發送收據到郵箱</span></div>' +
                 '<div onclick="archiveOrder()" style="display:flex;align-items:center;gap:15px;padding:15px 10px;cursor:pointer;border-radius:8px;" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
                 '<span style="font-size:24px;">📦</span><span style="font-size:18px;font-weight:600;">封存訂單</span></div>' +
+                (((o.status === 'paid' || o.status === 'shipped') && !o.refund_status) ?
+                '<div onclick="showRefundForm(' + o.id + ');document.getElementById(\'mobileOrderActions\').style.display=\'none\'" style="display:flex;align-items:center;gap:15px;padding:15px 10px;cursor:pointer;border-radius:8px;" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
+                '<span style="font-size:24px;">💳</span><span style="font-size:18px;font-weight:600;color:#c0392b;">退款</span></div>' : '') +
                 '</div></div></div>';
         } else {
             // 電腦端：按鈕放在黑色背景上
-            v.innerHTML = '<div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:0;padding:15px 20px;background:#1a1a1a;border-radius:10px 10px 0 0;"><button onclick="closeOrderDetail()" style="padding:10px 20px;background:white;color:#1a1a1a;border:none;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">返回列表</button><button onclick="downloadOrderPDF()" style="padding:10px 20px;background:#333;color:white;border:1px solid #555;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">下載 PDF</button><button onclick="sendReceiptEmail(' + o.id + ')" style="padding:10px 20px;background:#333;color:white;border:1px solid #555;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">發送收據</button><button onclick="copyOrderDetail(' + o.id + ')" style="padding:10px 20px;background:#333;color:white;border:1px solid #555;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">複製轉發</button></div>';
+            v.innerHTML = '<div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:0;padding:15px 20px;background:#1a1a1a;border-radius:10px 10px 0 0;"><button onclick="closeOrderDetail()" style="padding:10px 20px;background:white;color:#1a1a1a;border:none;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">返回列表</button><button onclick="downloadOrderPDF()" style="padding:10px 20px;background:#333;color:white;border:1px solid #555;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">下載 PDF</button><button onclick="sendReceiptEmail(' + o.id + ')" style="padding:10px 20px;background:#333;color:white;border:1px solid #555;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">發送收據</button><button onclick="copyOrderDetail(' + o.id + ')" style="padding:10px 20px;background:#333;color:white;border:1px solid #555;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">複製轉發</button>' + (((o.status === 'paid' || o.status === 'shipped') && !o.refund_status) ? '<button onclick="showRefundForm(' + o.id + ')" style="padding:10px 20px;background:#c0392b;color:white;border:none;border-radius:5px;font-size:14px;font-weight:600;cursor:pointer;">退款</button>' : '') + '</div>';
         }
         v.innerHTML += '<div class="form-container" style="max-width:100%;padding-top:0;background:transparent;box-shadow:none;"><input type="hidden" id="orderDetailId" value="' + o.id + '">';
         // 店鋪資料（居中顯示）
@@ -6362,6 +6376,17 @@ async function saveProduct() {
             if (o.fps_screenshot) { v.innerHTML += '<div class="form-group"><label class="form-label">付款截圖</label><a href="' + o.fps_screenshot + '" target="_blank"><img src="' + o.fps_screenshot + '" style="max-width:220px;max-height:220px;object-fit:contain;border:1px solid #ddd;border-radius:6px;cursor:zoom-in;"></a></div>'; }
         }
         v.innerHTML += '<div class="form-group"><label class="form-label">總價</label><input type="number" class="form-input" id="detailTotalAmount" value="' + (o.total_amount || 0) + '"></div>';
+        if (o.refund_status) {
+            v.innerHTML += '<div style="background:#fdf3f2;border:1px solid #e6b4ae;border-radius:10px;padding:15px;margin-top:15px;">' +
+                '<div style="font-size:14px;font-weight:700;color:#c0392b;margin-bottom:10px;">退款信息</div>' +
+                '<div style="font-size:13px;color:#555;line-height:1.9;">' +
+                '退款狀態：' + (o.refund_status === 'partial' ? '部分退款' : '已退款') + '<br>' +
+                '退款金額：HK$' + (o.refund_amount || 0) + '<br>' +
+                '退款時間：' + ((o.refund_time || '').replace('T',' ').slice(0,19)) + '<br>' +
+                '退款方式：' + (o.refund_method || '-') + '<br>' +
+                (o.refund_note ? '退款備註：' + o.refund_note + '<br>' : '') +
+                '</div></div>';
+        }
         v.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveOrderDetail()">保存修改</button></div></div>';
     }
     function closeOrderDetail() { 
@@ -6715,22 +6740,92 @@ async function saveProduct() {
         for (var i = 0; i < allOrders.length; i++) { if (allOrders[i].id === orderId) { order = allOrders[i]; break; } }
         if (!order) return;
         var amount = prompt('退款金額 (HKD)：\n全額退款請輸入 ' + order.total_amount + '\n部分退款請輸入金額', order.total_amount);
-        if (!amount) return;
+        if (amount === null || amount === '') return;
         var refundAmount = parseFloat(amount);
-        if (refundAmount <= 0) { showToast('請輸入有效金額'); return; }
+        if (isNaN(refundAmount) || refundAmount <= 0) { showToast('請輸入有效金額'); return; }
         if (refundAmount > order.total_amount) { showToast('退款金額不能超過訂單總額'); return; }
-        processRefund(order, refundAmount);
+
+        var refundMethod = 'stripe';
+        var refundNote = '';
+        // Stripe 信用卡訂單自動走真實退款；現金 / FPS / 其他需手動標記
+        if (!order.stripe_payment_intent_id) {
+            refundMethod = prompt('退款方式：\n1. 現金\n2. 轉數快 FPS\n3. 其他', '1');
+            if (refundMethod === null) return;
+            if (refundMethod === '1') { refundMethod = '現金'; }
+            else if (refundMethod === '2') { refundMethod = '轉數快 FPS'; }
+            else if (refundMethod === '3') { refundMethod = '其他'; }
+            else { refundMethod = '其他'; }
+            refundNote = prompt('退款備註（可留空）：', '');
+            if (refundNote === null) return;
+        }
+        var confirmMsg = '確定退款 HK$' + refundAmount + '？\n訂單：' + order.order_code + '\n方式：' + (order.stripe_payment_intent_id ? '信用卡 (Stripe)' : refundMethod);
+        if (refundNote) confirmMsg += '\n備註：' + refundNote;
+        if (!confirm(confirmMsg)) return;
+        processRefund(order, refundAmount, refundMethod, refundNote);
     }
-    async function processRefund(order, refundAmount) {
+    async function processRefund(order, refundAmount, refundMethod, refundNote) {
         try {
-            var res = await fetch('/stripe-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'refund', paymentIntentId: order.stripe_payment_intent_id, refundAmount: refundAmount }) });
-            var data = await res.json();
-            if (data.success) { await supabaseClient.from('orders').update({ refund_status: 'refunded', status: 'cancelled' }).eq('id', order.id); showToast('退款成功'); loadOrders(); } else { showToast('退款失敗：' + (data.error || '未知錯誤')); }
-        } catch (e) { showToast('網絡錯誤'); }
+            // 1) Stripe 信用卡：真實退款到客戶卡
+            if (order.stripe_payment_intent_id) {
+                var res = await fetch('/stripe-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'refund', paymentIntentId: order.stripe_payment_intent_id, refundAmount: refundAmount }) });
+                var data = await res.json();
+                if (!data.success) { showToast('退款失敗：' + (data.error || '未知錯誤')); return; }
+            }
+            // 2) 更新訂單：狀態改為已退款，記錄退款明細
+            var updateData = {
+                status: 'refunded',
+                refund_status: refundAmount >= (parseFloat(order.total_amount) || 0) ? 'refunded' : 'partial',
+                refund_amount: refundAmount,
+                refund_time: new Date().toISOString(),
+                refund_method: refundMethod,
+                refund_note: refundNote || ''
+            };
+            var upd = await supabaseClient.from('orders').update(updateData).eq('id', order.id);
+            if (upd.error) { showToast('更新訂單失敗：' + upd.error.message); return; }
+            // 3) 自動發郵件通知客人
+            sendRefundNotificationEmail(order, refundAmount, refundMethod, refundNote);
+            showToast('退款成功：HK$' + refundAmount + ' 已退款');
+            loadOrders();
+            // 4) 若有成交提醒，刷新徽章
+            if (typeof updateNotificationBadge === 'function') updateNotificationBadge();
+        } catch (e) { showToast('網絡錯誤：' + e.message); }
+    }
+    // 退款通知郵件
+    async function sendRefundNotificationEmail(order, refundAmount, refundMethod, refundNote) {
+        if (!order.customer_email) { console.log('無客戶電郵，跳過退款通知'); return; }
+        var methodText = (refundMethod === 'stripe') ? '信用卡（Stripe）' : (refundMethod || '');
+        var html = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">' +
+            '<div style="text-align:center;padding:20px 0;border-bottom:2px solid #1a1a1a;">' +
+            '<h1 style="margin:0;font-size:22px;color:#1a1a1a;">退款通知 / Refund Notice</h1>' +
+            '<div style="font-size:13px;color:#888;">RoyalSpl Florist</div></div>' +
+            '<div style="padding:25px 0;line-height:1.8;">' +
+            '<p>親愛的 ' + (order.customer_name || order.recipient_name || '顧客') + '：</p>' +
+            '<p>您的訂單 <b>' + order.order_code + '</b> 已辦理退款，詳情如下：</p>' +
+            '<table style="width:100%;border-collapse:collapse;margin:15px 0;font-size:14px;">' +
+            '<tr><td style="padding:8px 10px;border:1px solid #eee;background:#fafafa;">訂單編號</td><td style="padding:8px 10px;border:1px solid #eee;">' + order.order_code + '</td></tr>' +
+            '<tr><td style="padding:8px 10px;border:1px solid #eee;background:#fafafa;">退款金額</td><td style="padding:8px 10px;border:1px solid #eee;font-weight:700;color:#c0392b;">HK$' + refundAmount + '</td></tr>' +
+            '<tr><td style="padding:8px 10px;border:1px solid #eee;background:#fafafa;">退款方式</td><td style="padding:8px 10px;border:1px solid #eee;">' + methodText + '</td></tr>' +
+            (refundNote ? '<tr><td style="padding:8px 10px;border:1px solid #eee;background:#fafafa;">備註</td><td style="padding:8px 10px;border:1px solid #eee;">' + refundNote + '</td></tr>' : '') +
+            '</table>' +
+            '<p>退款將按照原付款方式處理，款項到賬時間視乎銀行/支付機構而定（一般 3-10 個工作日）。如有任何疑問，歡迎隨時聯繫我們。</p>' +
+            '<p>Your refund is being processed via the original payment method. It may take 3-10 business days to appear, depending on your bank. If you have any questions, feel free to contact us.</p>' +
+            '</div>' +
+            '<div style="text-align:center;padding:15px 0;border-top:1px solid #eee;font-size:12px;color:#999;">RoyalSpl Florist | 香港鮮花速遞 | 謝謝您的支持</div>' +
+            '</div>';
+        try {
+            var resp = await fetch('/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to: order.customer_email, subject: '退款通知 Refund Notice - ' + order.order_code, html: html })
+            });
+            var result = await resp.json();
+            if (result.id || result.success) { showToast('退款通知郵件已發送'); }
+            else { console.log('退款通知郵件發送失敗：', result); }
+        } catch (e) { console.log('退款通知郵件發送失敗：', e); }
     }
     function exportOrdersCSV() {
         if (!allOrders || !allOrders.length) { alert('暫無訂單可導出'); return; }
-        var headers = ['訂單編號','下單時間','送貨日期','送貨時段','送貨小時','送貨區域','運費','商品小計','訂單總額','訂單狀態','付款方式','收貨人姓名','收貨人電話','收貨地址','訂購人姓名','訂購人電話','訂購人電郵','備註','心意卡內容','商品名稱','Stripe付款ID','退款狀態','FPS參考號','FPS截圖','用戶ID','訂單ID'];
+        var headers = ['訂單編號','下單時間','送貨日期','送貨時段','送貨小時','送貨區域','運費','商品小計','訂單總額','訂單狀態','付款方式','收貨人姓名','收貨人電話','收貨地址','訂購人姓名','訂購人電話','訂購人電郵','備註','心意卡內容','商品名稱','Stripe付款ID','退款狀態','退款金額','退款時間','退款方式','退款備註','FPS參考號','FPS截圖','用戶ID','訂單ID'];
         var rows = [headers.join(',')];
         for (var i = 0; i < allOrders.length; i++) {
             var o = allOrders[i];
@@ -6757,6 +6852,10 @@ async function saveProduct() {
                 (o.product_names || '').replace(/,/g, '，'),
                 o.stripe_payment_intent_id || '',
                 o.refund_status || '',
+                o.refund_amount || '',
+                o.refund_time || '',
+                o.refund_method || '',
+                o.refund_note || '',
                 o.fps_ref || '',
                 o.fps_screenshot || '',
                 o.user_id || '',
@@ -8258,7 +8357,7 @@ async function saveProduct() {
                         React.createElement('button', { onClick: () => document.execCommand('indent') }, renderIcon('Indent')),
                         React.createElement('div', { className: 'divider' }),
                         React.createElement('button', { onClick: () => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = async (e) => { const file = e.target.files[0]; if (file) { const fd = new FormData(); fd.append('file', file); const res = await fetch('/r2-upload', { method: 'POST', body: fd }); const data = await res.json(); if (data.url) { document.execCommand('insertImage', false, data.url); } } }; input.click(); } }, renderIcon('Image')),
-                        React.createElement('button', { onClick: () => { const url = prompt('輸入圖片連結網址：'); if (url) { const img = window.getSelection()?.anchorNode?.parentElement?.closest('img'); if (img) { const a = document.createElement('a'); a.href = url; a.target = '_blank'; img.parentNode.insertBefore(a, img); a.appendChild(img); } else { alert('請先點擊選中圖片'); } } }, renderIcon('Link2')),
+                        React.createElement('button', { onClick: () => { const url = prompt('輸入圖片連結網址：'); if (url) { const img = window.getSelection()?.anchorNode?.parentElement?.closest('img'); if (img) { const a = document.createElement('a'); a.href = url; a.target = '_blank'; img.parentNode.insertBefore(a, img); a.appendChild(img); } else { alert('請先點擊選中圖片'); } } } }, renderIcon('Link2')),
                         React.createElement('button', { onClick: () => insertBlock('image', blocks[blocks.length - 1]?.id) }, renderIcon('ImagePlus')),
                         React.createElement('div', { className: 'divider' }),
                         React.createElement('button', { onClick: () => setIsDragging(!isDragging) }, renderIcon('GripVertical')),
