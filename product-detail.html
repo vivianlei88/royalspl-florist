@@ -262,6 +262,38 @@
         "url": "https://www.royalspl.shop/product-detail.html",
         "priceCurrency": "HKD",
         "availability": "https://schema.org/InStock",
+        "hasMerchantReturnPolicy": {
+          "@type": "MerchantReturnPolicy",
+          "applicableCountry": "HK",
+          "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted"
+        },
+        "shippingDetails": {
+          "@type": "OfferShippingDetails",
+          "shippingRate": {
+            "@type": "MonetaryAmount",
+            "value": "90",
+            "currency": "HKD"
+          },
+          "shippingDestination": {
+            "@type": "DefinedRegion",
+            "addressCountry": "HK"
+          },
+          "deliveryTime": {
+            "@type": "ShippingDeliveryTime",
+            "handlingTime": {
+              "@type": "QuantitativeValue",
+              "minValue": 1,
+              "maxValue": 2,
+              "unitCode": "DAY"
+            },
+            "transitTime": {
+              "@type": "QuantitativeValue",
+              "minValue": 1,
+              "maxValue": 1,
+              "unitCode": "DAY"
+            }
+          }
+        },
         "seller": {
           "@type": "Organization",
           "name": "RoyalSpl Florist Hong Kong"
@@ -428,6 +460,62 @@
             const script = document.getElementById('productJsonLd');
             if (!script) return;
             const productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
+            // 庫存狀態：現貨 = InStock，預訂 = PreOrder（跟網站付款頁面一致）
+            var isPreorder = product.stock !== '現貨';
+            var offers = {
+                "@type": "Offer",
+                "url": "https://www.royalspl.shop/product-detail.html?id=" + (product.id || ""),
+                "priceCurrency": "HKD",
+                "price": product.price || 0,
+                "availability": isPreorder ? "https://schema.org/PreOrder" : "https://schema.org/InStock",
+                "inventoryLevel": {
+                    "@type": "QuantitativeValue",
+                    "value": 9999,
+                    "unitCode": "C62"
+                },
+                "hasMerchantReturnPolicy": {
+                    "@type": "MerchantReturnPolicy",
+                    "applicableCountry": "HK",
+                    "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted"
+                },
+                "shippingDetails": {
+                    "@type": "OfferShippingDetails",
+                    "shippingRate": {
+                        "@type": "MonetaryAmount",
+                        "value": "90",
+                        "currency": "HKD"
+                    },
+                    "shippingDestination": {
+                        "@type": "DefinedRegion",
+                        "addressCountry": "HK"
+                    },
+                    "deliveryTime": {
+                        "@type": "ShippingDeliveryTime",
+                        "handlingTime": {
+                            "@type": "QuantitativeValue",
+                            "minValue": 1,
+                            "maxValue": 2,
+                            "unitCode": "DAY"
+                        },
+                        "transitTime": {
+                            "@type": "QuantitativeValue",
+                            "minValue": 1,
+                            "maxValue": 1,
+                            "unitCode": "DAY"
+                        }
+                    }
+                },
+                "seller": {
+                    "@type": "Organization",
+                    "name": "RoyalSpl Florist Hong Kong"
+                }
+            };
+            // 預訂商品：加「預計開始供應日期」（今天 + 預訂日數）
+            if (isPreorder) {
+                var startDate = new Date();
+                startDate.setDate(startDate.getDate() + (parseInt(product.delivery_days) || 3));
+                offers.availabilityStarts = startDate.toISOString().split('T')[0];
+            }
             const data = {
                 "@context": "https://schema.org",
                 "@type": "Product",
@@ -438,17 +526,7 @@
                     "@type": "Brand",
                     "name": "RoyalSpl Florist"
                 },
-                "offers": {
-                    "@type": "Offer",
-                    "url": "https://www.royalspl.shop/product-detail.html?id=" + (product.id || ""),
-                    "priceCurrency": "HKD",
-                    "price": product.price || 0,
-                    "availability": product.status === 'active' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-                    "seller": {
-                        "@type": "Organization",
-                        "name": "RoyalSpl Florist Hong Kong"
-                    }
-                }
+                "offers": offers
             };
             script.textContent = JSON.stringify(data);
         } catch (e) {
