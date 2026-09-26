@@ -443,6 +443,28 @@
         loadStyleCategories();
     }
 
+    // Tag 中英對照（節慶場合 / 常用分類）
+    var TAG_TRANSLATIONS = {
+        '情人節':'Valentine\'s Day','情人節花束':'Valentine\'s Day Bouquet','母親節':'Mother\'s Day','母親節花束':'Mother\'s Day Bouquet','母亲节':'Mother\'s Day',
+        '中秋節':'Mid-Autumn Festival','聖誕節':'Christmas','生日':'Birthday','生日花束':'Birthday Bouquet','生日派對花束':'Birthday Party Bouquet','生日禮物':'Birthday Gift',
+        '紀念日':'Anniversary','纪念日':'Anniversary','周年紀念':'Anniversary','喬遷':'Housewarming','商務送禮':'Corporate Gifting','商務花束':'Corporate Bouquet','商務花藝':'Corporate Floristry',
+        '探病':'Get Well Soon','婚禮':'Wedding','婚禮花球':'Wedding Bouquet','新娘花禮':'Bridal Flowers','新娘手捧花':'Bridal Bouquet','新娘花球':'Bridal Bouquet',
+        '畢業季':'Graduation','畢業禮花束':'Graduation Bouquet','求婚':'Proposal','開張':'Grand Opening','感恩':'Thanksgiving','謝禮':'Thank You Gift','探訪':'Visit',
+        '戀愛':'Romance','愛情':'Romance','進口鮮花':'Imported Flowers','香港花店':'Hong Kong Florist','鮮花速遞':'Flower Delivery','即日鮮花':'Same-Day Flowers','高級花藝':'Premium Floristry',
+        '玫瑰':'Rose','玫瑰花束':'Rose Bouquet','紅玫瑰':'Red Roses','白玫瑰':'White Roses','粉玫瑰':'Pink Roses','厄瓜多爾玫瑰':'Ecuadorian Roses','進口玫瑰':'Imported Roses',
+        '芍藥':'Peony','芍藥花束':'Peony Bouquet','牡丹':'Tree Peony','牡丹花束':'Tree Peony Bouquet','進口牡丹/芍藥花':'Imported Peony','進口芍藥':'Imported Peony','進口千代':'Imported Senryo',
+        '康乃馨':'Carnation','鬱金香':'Tulip','鬱金香花束':'Tulip Bouquet','繡球花':'Hydrangea','粉繡球':'Pink Hydrangea','飛燕草':'Delphinium','飞燕草':'Delphinium',
+        '尤加利葉':'Eucalyptus','尤加利':'Eucalyptus','洋桔梗':'Lisianthus','蕾絲花':'Queen Anne\'s Lace','蕾丝花':'Queen Anne\'s Lace','蕾丝花':'Queen Anne\'s Lace',
+        '蝴蝶蘭':'Phalaenopsis Orchid','進口蝴蝶蘭':'Imported Phalaenopsis Orchid','蘭花':'Orchid','百合':'Lily','風鈴草':'Bluebell','風鈴花':'Campanula','薰衣草':'Lavender',
+        '法式田園自然風':'French Country Natural Style','法式自然風':'French Natural Style','法式清新':'French Fresh Style','日式鮮花束':'Japanese Fresh Bouquet','日式永生花':'Japanese Preserved Flowers','永生花':'Preserved Flowers','不凋花':'Preserved Flowers',
+        '韓式自然風':'Korean Natural Style','自然森系':'Forest Natural Style','簡約風格':'Minimalist Style','簡約':'Minimalist','莫蘭迪色':'Morandi Colors','粉色花束':'Pink Bouquet','白色花束':'White Bouquet','香檳色':'Champagne',
+        '高級鮮花定制':'Premium Custom Flowers','RoyalSpl 花藝':'RoyalSpl Floristry','婚禮套裝':'Wedding Set','新郎襟花':'Boutonniere','中式婚禮':'Chinese Wedding','粉色婚禮':'Pink Wedding','紫色婚禮':'Purple Wedding',
+        '配草':'Greenery','文竹':'Asparagus Fern','大麗花':'Dahlia','奧斯汀玫瑰':'Austrian Rose','庭園玫瑰':'Garden Rose','Juliet玫瑰':'Juliet Rose','灰紫玫瑰':'Grey Purple Rose','深紅玫瑰':'Deep Red Rose','弗洛伊德玫瑰':'Freud Rose','戴安娜玫瑰':'Diana Rose','水果玫瑰':'Sweetheart Rose','海洋之歌':'Ocean Song','大頭玫瑰':'Large-Head Rose','裸粉色':'Nude Pink','鼠尾草綠':'Sage Green',
+        '乒乓':'Ping Pong','乒乓球菊':'Ping Pong Chrysanthemum','洋甘菊':'Chamomile','鳶尾花':'Iris','陸蓮花':'Ranunculus','馬蹄蓮':'Calla Lily','白馬蹄蓮':'White Calla Lily','紫罗兰':'Violet','紫羅蘭':'Violet','铁筷子':'Hellebore','鐵筷子':'Hellebore','星芹':'Astrantia','石斛蘭':'Dendrobium Orchid','向日葵':'Sunflower','橄欖枝':'Olive Branch','小白菊':'Daisy','紅豆':'Red Bean','吊米':'Drooping Brim','抱抱桶':'Hug Bucket','禮盒':'Gift Box','高腳花':'Tall Vase Arrangement','垂墜花束':'Cascade Bouquet','XL花束':'XL Bouquet','小花束':'Small Bouquet','大朵花束':'Large-Flower Bouquet','絲帶花束':'Ribbon Bouquet',
+        'HK$800+':'HK$800+','HK$300-600':'HK$300-600','HK$1200+':'HK$1200+','HK$300內':'Under HK$300','500-1000':'HK$500-1000','1000-2000':'HK$1000-2000','企業周年':'Corporate Anniversary','酒會花藝':'Reception Floristry','婚禮佈置':'Wedding Decor','婚禮佈置':'Wedding Decor','奢華':'Luxury','經典':'Classic','猩紅色':'Scarlet','粉色花束':'Pink Bouquet','白色系':'White Series','紅色系':'Red Series',
+        '男性花束':'Men\'s Bouquet','男士花束':'Men\'s Bouquet','閨蜜贈禮':'Gift for Bestie','闺蜜赠礼':'Gift for Bestie'
+    };
+
     // 動態 SEO：根據當前選定的分類/標籤設定 title 與 meta description（分類頁要有獨有名稱）
     function updateDynamicSeo() {
         var isEn = window.location.pathname.indexOf('/en/') === 0;
@@ -467,8 +489,9 @@
             }
         } else if (selectedTags.length > 0) {
             var tagName = selectedTags[0];
-            seoTitle = tagName + (isEn ? ' | RoyalSpl Florist Hong Kong Florist' : ' | RoyalSpl Florist 香港花店');
-            seoDesc = isEn ? 'Shop ' + tagName + ' flowers at RoyalSpl Florist. Fresh, handcrafted bouquets delivered across Hong Kong.' : '瀏覽 RoyalSpl Florist ' + tagName + ' 花藝產品，香港頂級花藝設計，新鮮花材，品質保證。';
+            var displayTag = isEn ? (TAG_TRANSLATIONS[tagName] || tagName) : tagName;
+            seoTitle = displayTag + (isEn ? ' | RoyalSpl Florist Hong Kong Florist' : ' | RoyalSpl Florist 香港花店');
+            seoDesc = isEn ? 'Shop ' + displayTag + ' flowers at RoyalSpl Florist. Fresh, handcrafted bouquets delivered across Hong Kong.' : '瀏覽 RoyalSpl Florist ' + displayTag + ' 花藝產品，香港頂級花藝設計，新鮮花材，品質保證。';
         }
         if (seoTitle) { document.title = seoTitle; }
         if (seoDesc) {
