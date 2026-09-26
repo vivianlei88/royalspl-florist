@@ -343,6 +343,9 @@
     })();
     </script>
 
+    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/product-detail.html">
+    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/product-detail.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/product-detail.html">
 </head>
 <body>
     <header class="header">
@@ -459,6 +462,17 @@
         try {
             const script = document.getElementById('productJsonLd');
             if (!script) return;
+            // 更新 canonical + hreflang（帶商品 id，避免所有商品頁被當成重複內容）
+            try {
+                var pageId = product.id || '';
+                var canonLink = document.querySelector('link[rel="canonical"]');
+                if (canonLink && pageId) canonLink.href = 'https://www.royalspl.shop/product-detail.html?id=' + pageId;
+                var hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]');
+                hreflangs.forEach(function(l) {
+                    if (l.hreflang === 'zh-HK' || l.hreflang === 'x-default') l.href = 'https://www.royalspl.shop/product-detail.html?id=' + pageId;
+                    else if (l.hreflang === 'en') l.href = 'https://www.royalspl.shop/en/product-detail.html?id=' + pageId;
+                });
+            } catch (e2) { console.error('更新 canonical/hreflang 失敗:', e2); }
             const productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
             // 庫存狀態：現貨 = InStock，預訂 = PreOrder（跟網站付款頁面一致）
             var isPreorder = product.stock !== '現貨';

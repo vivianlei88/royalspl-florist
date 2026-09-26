@@ -210,6 +210,9 @@
     })();
     </script>
 
+    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/blog-detail.html">
+    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/blog-detail.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/blog-detail.html">
 </head>
 <body>
     <div class="container">
@@ -254,6 +257,17 @@
             try {
                 const script = document.getElementById('blogJsonLd');
                 if (!script) return;
+                // 更新 canonical + hreflang（帶文章 id）
+                try {
+                    var postId = post.id || '';
+                    var canonLink = document.querySelector('link[rel="canonical"]');
+                    if (canonLink && postId) canonLink.href = 'https://www.royalspl.shop/blog-detail.html?id=' + postId;
+                    var hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]');
+                    hreflangs.forEach(function(l) {
+                        if (l.hreflang === 'zh-HK' || l.hreflang === 'x-default') l.href = 'https://www.royalspl.shop/blog-detail.html?id=' + postId;
+                        else if (l.hreflang === 'en') l.href = 'https://www.royalspl.shop/en/blog-detail.html?id=' + postId;
+                    });
+                } catch (e2) { console.error('更新 canonical/hreflang 失敗:', e2); }
                 const data = {
                     "@context": "https://schema.org",
                     "@type": "BlogPosting",

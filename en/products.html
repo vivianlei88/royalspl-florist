@@ -271,6 +271,9 @@
         }
     })();
     </script>
+    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/products.html">
+    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/products.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/products.html">
 
 </head>
 <body>
@@ -694,6 +697,32 @@
         if (count) { count.textContent = filteredProducts.length + ' Products'; }
         if (filteredProducts.length === 0) { grid.innerHTML = ''; if (noResults) noResults.style.display = 'block'; return; }
         if (noResults) noResults.style.display = 'none';
+        // 更新 ItemList 結構化數據（帶實際產品）
+        try {
+            var itemScript = null;
+            var scripts = document.querySelectorAll('script[type="application/ld+json"]');
+            for (var si = 0; si < scripts.length; si++) {
+                try {
+                    var parsed = JSON.parse(scripts[si].textContent);
+                    if (parsed['@type'] === 'ItemList') { itemScript = scripts[si]; break; }
+                } catch (e3) {}
+            }
+            if (itemScript) {
+                var items = filteredProducts.map(function(p, idx) {
+                    return {
+                        "@type": "ListItem",
+                        "position": idx + 1,
+                        "name": p.name_en || p.name_zh || '',
+                        "url": "https://www.royalspl.shop/en/product-detail.html?id=" + p.id
+                    };
+                });
+                try {
+                    var itemData = JSON.parse(itemScript.textContent);
+                    itemData.itemListElement = items;
+                    itemScript.textContent = JSON.stringify(itemData);
+                } catch (e4) {}
+            }
+        } catch (e5) { console.error('更新 ItemList 失敗:', e5); }
         var html = '';
         for (var i = 0; i < filteredProducts.length; i++) {
             var p = filteredProducts[i];
