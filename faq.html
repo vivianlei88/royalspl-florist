@@ -252,6 +252,28 @@
                 `;
                 container.appendChild(div);
             });
+
+            // 生成 FAQPage 結構化數據（Google 常見問題 rich result）
+            try {
+                const faqJsonLd = {
+                    "@context": "https://schema.org",
+                    "@type": "FAQPage",
+                    "mainEntity": data.map(faq => ({
+                        "@type": "Question",
+                        "name": faq.question || faq.question_en || '',
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": faq.answer || faq.answer_en || ''
+                        }
+                    }))
+                };
+                const script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.textContent = JSON.stringify(faqJsonLd);
+                document.head.appendChild(script);
+            } catch (e) {
+                console.error('生成 FAQ 結構化數據失敗:', e);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', loadFaqs);
