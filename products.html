@@ -240,8 +240,10 @@
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data && data.length > 0) {
             var seo = data[0];
-            if (seo.title) document.title = seo.title;
-            if (seo.description) {
+            // 有分類/標籤過濾時由 updateDynamicSeo 設定獨有 title，避免被統一 seo_overrides 覆蓋
+            var hasFilter = window.location.search.indexOf('category=') > -1 || window.location.search.indexOf('tag=') > -1;
+            if (!hasFilter && seo.title) document.title = seo.title;
+            if (!hasFilter && seo.description) {
                 var meta = document.querySelector('meta[name="description"]');
                 if (meta) meta.setAttribute('content', seo.description);
                 else {
@@ -441,6 +443,40 @@
         loadStyleCategories();
     }
 
+    // 動態 SEO：根據當前選定的分類/標籤設定 title 與 meta description（分類頁要有獨有名稱）
+    function updateDynamicSeo() {
+        var isEn = window.location.pathname.indexOf('/en/') === 0;
+        var seoTitle = '';
+        var seoDesc = '';
+        if (selectedCategory) {
+            var catInfo = null;
+            var catsData = window.allCategories || [];
+            for (var ci = 0; ci < catsData.length; ci++) {
+                if (catsData[ci].name_zh === selectedCategory) { catInfo = catsData[ci]; break; }
+            }
+            if (catInfo) {
+                var catName = isEn ? (catInfo.name_en || catInfo.name_zh) : catInfo.name_zh;
+                seoTitle = catName + (isEn ? ' | RoyalSpl Florist Hong Kong Florist' : ' | RoyalSpl Florist 香港花店');
+                seoDesc = (isEn ? (catInfo.description_en || '') : (catInfo.description || ''));
+                if (seoDesc) { seoDesc = seoDesc.substring(0, 150); }
+                else {
+                    seoDesc = isEn ? 'Browse ' + catName + ' bouquets at RoyalSpl Florist. Fresh, handcrafted flowers delivered across Hong Kong.' : '瀏覽 RoyalSpl Florist ' + catName + ' 花藝產品，香港頂級花藝設計，新鮮花材，品質保證。';
+                }
+            } else {
+                seoTitle = selectedCategory + (isEn ? ' | RoyalSpl Florist Hong Kong Florist' : ' | RoyalSpl Florist 香港花店');
+            }
+        } else if (selectedTags.length > 0) {
+            var tagName = selectedTags[0];
+            seoTitle = tagName + (isEn ? ' | RoyalSpl Florist Hong Kong Florist' : ' | RoyalSpl Florist 香港花店');
+            seoDesc = isEn ? 'Shop ' + tagName + ' flowers at RoyalSpl Florist. Fresh, handcrafted bouquets delivered across Hong Kong.' : '瀏覽 RoyalSpl Florist ' + tagName + ' 花藝產品，香港頂級花藝設計，新鮮花材，品質保證。';
+        }
+        if (seoTitle) { document.title = seoTitle; }
+        if (seoDesc) {
+            var meta = document.querySelector('meta[name="description"]');
+            if (meta) { meta.setAttribute('content', seoDesc); }
+        }
+    }
+
     async function loadStyleCategories() {
         var container = document.getElementById('filterStyle');
         if (!container) return;
@@ -459,6 +495,7 @@
             container.innerHTML = html;
             // 分類映射就緒後，若 URL 已帶選定分類則重新渲染（避免競態：products 先載入而 categoryIdMap 未就緒時顯示 0 款）
             if (selectedCategory) { updateFilterUI(); renderProducts(); }
+            updateDynamicSeo();
         } catch (err) {
             console.error('載入分類失敗:', err);
         }
@@ -636,6 +673,7 @@
                 if (foundName) selectedCategory = foundName;
             }
         }
+        updateDynamicSeo();
         loadProducts();
         updateCartBadge();
     });
