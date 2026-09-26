@@ -236,7 +236,7 @@
 
             let query = supabaseClient
                 .from('blog_posts')
-                .select('title, content, image_url, created_at, title_en, content_en, excerpt, category')
+                .select('id, title, content, image_url, created_at, title_en, content_en, excerpt, category')
                 .eq('is_published', true);
             if (id) {
                 query = query.eq('id', id);
@@ -259,7 +259,7 @@
                 if (!script) return;
                 // 更新 canonical + hreflang（帶文章 id）
                 try {
-                    var postId = post.id || '';
+                    var postId = post.id || new URLSearchParams(window.location.search).get('id') || '';
                     var canonLink = document.querySelector('link[rel="canonical"]');
                     if (canonLink && postId) canonLink.href = 'https://www.royalspl.shop/en/blog-detail.html?id=' + postId;
                     var hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]');
