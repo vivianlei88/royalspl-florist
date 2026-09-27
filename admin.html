@@ -4218,7 +4218,17 @@ staticPages.forEach(page => {
             } catch(e) { return u; }
         }
         
-        function classifySource(v) {
+        function toggleOtherSites(btn) {
+        var list = document.getElementById('otherSitesList');
+        if (!list) return;
+        var all = list.querySelectorAll('[data-site]');
+        var expanded = btn.getAttribute('data-expanded') === '1';
+        for (var i = 0; i < all.length; i++) { all[i].style.display = expanded ? 'none' : 'flex'; }
+        btn.textContent = expanded ? ('展開全部 (' + all.length + ' 個) ▾') : '收起 ▲';
+        btn.setAttribute('data-expanded', expanded ? '0' : '1');
+    }
+    
+    function classifySource(v) {
             var url = (v.page_url || '').toLowerCase();
             var ref = (v.referrer || '').toLowerCase();
             
@@ -4303,17 +4313,22 @@ staticPages.forEach(page => {
                 html += '<div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;">';
                 html += '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:4px;transition:width 0.5s ease;"></div>';
                 html += '</div>';
-                // 「其他網站」顯示具體網站地址（最多 5 個）
+                // 「其他網站」顯示具體網站地址（全部，可展開）
                 if (name === '其他網站' && Object.keys(otherSites).length > 0) {
-                    var siteEntries = Object.entries(otherSites).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
-                    html += '<div style="margin:8px 0 2px 18px;display:flex;flex-direction:column;gap:4px;">';
-                    siteEntries.forEach(function(site) {
+                    var siteEntries = Object.entries(otherSites).sort(function(a, b) { return b[1] - a[1]; });
+                    var SHOW_FIRST = 5;
+                    var showAll = siteEntries.length <= SHOW_FIRST;
+                    html += '<div style="margin:8px 0 2px 18px;display:flex;flex-direction:column;gap:4px;" id="otherSitesList">';
+                    siteEntries.forEach(function(site, idx) {
                         var sitePct = count > 0 ? (site[1] / count * 100).toFixed(0) : 0;
-                        html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#888;">';
+                        html += '<div style="display:' + ((showAll || idx < SHOW_FIRST) ? 'flex' : 'none') + ';justify-content:space-between;align-items:center;font-size:12px;color:#888;" data-site="' + idx + '">';
                         html += '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">' + site[0] + '</span>';
                         html += '<span>' + site[1] + ' 次 (' + sitePct + '%)</span>';
                         html += '</div>';
                     });
+                    if (!showAll) {
+                        html += '<button onclick="toggleOtherSites(this)" data-expanded="0" style="margin-top:4px;border:none;background:none;color:#C9A961;font-size:12px;cursor:pointer;text-align:left;padding:0;">展開全部 (' + siteEntries.length + ' 個) ▾</button>';
+                    }
                     html += '</div>';
                 }
                 html += '</div>';
