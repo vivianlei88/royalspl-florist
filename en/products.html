@@ -786,7 +786,7 @@
             });
         }
         // 默認排序：分類內跟後台分類設定嘅 sort_order_in_category（未設值排最後）
-        if (!currentSort && selectedCategory) {
+        if (currentSort === 'default' && selectedCategory) {
             filtered.sort(function(a, b) {
                 var sa = (a.sort_order_in_category == null) ? 99999 : a.sort_order_in_category;
                 var sb = (b.sort_order_in_category == null) ? 99999 : b.sort_order_in_category;
