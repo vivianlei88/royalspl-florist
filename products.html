@@ -637,6 +637,15 @@
                        (p.tags && p.tags.some(function(tag) { return tag.indexOf(searchKeyword) > -1; }));
             });
         }
+        // 默認排序：分類內跟後台分類設定嘅 sort_order_in_category（未設值排最後）
+        if (!currentSort && selectedCategory) {
+            filtered.sort(function(a, b) {
+                var sa = (a.sort_order_in_category == null) ? 99999 : a.sort_order_in_category;
+                var sb = (b.sort_order_in_category == null) ? 99999 : b.sort_order_in_category;
+                if (sa !== sb) return sa - sb;
+                return a.id - b.id;
+            });
+        }
         if (currentSort === 'price_asc') { filtered.sort(function(a,b) { return a.price - b.price; }); }
         else if (currentSort === 'price_desc') { filtered.sort(function(a,b) { return b.price - a.price; }); }
         return filtered;
