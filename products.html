@@ -499,6 +499,24 @@
             var meta = document.querySelector('meta[name="description"]');
             if (meta) { meta.setAttribute('content', seoDesc); }
         }
+        // 同步更新 Open Graph 標籤
+        var ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle && seoTitle) { ogTitle.setAttribute('content', seoTitle); }
+        var ogDesc = document.querySelector('meta[property="og:description"]');
+        if (ogDesc && seoDesc) { ogDesc.setAttribute('content', seoDesc); }
+        var ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl) { ogUrl.setAttribute('content', window.location.href.split('#')[0]); }
+        if (selectedCategory) {
+            var ogImage = document.querySelector('meta[property="og:image"]');
+            if (ogImage) {
+                var catInfo2 = null;
+                var catsData2 = window.allCategories || [];
+                for (var ci2 = 0; ci2 < catsData2.length; ci2++) {
+                    if (catsData2[ci2].name_zh === selectedCategory) { catInfo2 = catsData2[ci2]; break; }
+                }
+                ogImage.setAttribute('content', (catInfo2 && catInfo2.image_url) ? catInfo2.image_url : 'https://www.royalspl.shop/assets/hero.webp');
+            }
+        }
     }
 
     async function loadStyleCategories() {

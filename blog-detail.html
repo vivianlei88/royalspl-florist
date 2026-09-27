@@ -299,6 +299,18 @@
                     document.title = post.title + ' | RoyalSpl Florist 香港花店';
                     const metaDesc = document.querySelector('meta[name="description"]');
                     if (metaDesc) metaDesc.setAttribute('content', (post.excerpt || post.title || '').substring(0, 160));
+                    const ogTitle = document.querySelector('meta[property="og:title"]');
+                    if (ogTitle) ogTitle.setAttribute('content', post.title + ' | RoyalSpl Florist 香港花店');
+                    const ogDesc = document.querySelector('meta[property="og:description"]');
+                    if (ogDesc) ogDesc.setAttribute('content', (post.excerpt || post.title || '').substring(0, 160));
+                    const ogUrl = document.querySelector('meta[property="og:url"]');
+                    if (ogUrl) ogUrl.setAttribute('content', window.location.href.split('#')[0]);
+                }
+                if (post.image_url) {
+                    const ogImage = document.querySelector('meta[property="og:image"]');
+                    if (ogImage) ogImage.setAttribute('content', post.image_url);
+                    const twImage = document.querySelector('meta[name="twitter:image"]');
+                    if (twImage) twImage.setAttribute('content', post.image_url);
                 }
             } catch (e) {
                 console.error('更新部落格結構化數據失敗:', e);

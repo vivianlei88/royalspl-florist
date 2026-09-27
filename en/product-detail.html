@@ -148,7 +148,7 @@
     <meta property="og:url" content="https://www.royalspl.shop/product-detail.html">
     <meta property="og:type" content="product">
     <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
-    <meta property="og:locale" content="zh_HK">
+    <meta property="og:locale" content="en_HK">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Product Details | RoyalSpl Florist Hong Kong">
     <meta name="twitter:description" content="View RoyalSpl Florist product details including flower materials, price, delivery info. Premium floral design in Hong Kong.">
@@ -470,6 +470,8 @@
         if (ogTitle) ogTitle.setAttribute('content', productTitle);
         var ogDesc = document.querySelector('meta[property="og:description"]');
         if (ogDesc) ogDesc.setAttribute('content', productDesc);
+        var ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl) ogUrl.setAttribute('content', window.location.href.split('#')[0]);
         var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
         if (productImages.length > 0) {
             var ogImage = document.querySelector('meta[property="og:image"]');

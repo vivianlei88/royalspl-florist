@@ -563,6 +563,8 @@
         if (ogTitle) ogTitle.setAttribute('content', productTitle);
         var ogDesc = document.querySelector('meta[property="og:description"]');
         if (ogDesc) ogDesc.setAttribute('content', productDesc);
+        var ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl) ogUrl.setAttribute('content', window.location.href.split('#')[0]);
         var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
         if (productImages.length > 0) {
             var ogImage = document.querySelector('meta[property="og:image"]');
