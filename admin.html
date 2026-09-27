@@ -2593,11 +2593,11 @@
             const repoName = 'royalspl-florist';
 
             // 2. 讀取所有商品
-            const { data: products } = await supabaseClient.from('products').select('id, updated_at').eq('status', 'active');
+            const { data: products } = await supabaseClient.from('products').select('id, updated_at').eq('is_active', true);
             // 3. 讀取所有分類
             const { data: categories } = await supabaseClient.from('categories').select('id, updated_at');
             // 4. 讀取所有已發布部落格
-            const { data: posts } = await supabaseClient.from('blog_posts').select('id, updated_at').eq('status', 'published');
+            const { data: posts } = await supabaseClient.from('blog_posts').select('id, updated_at').eq('is_published', true);
 
             // 5. 生成 sitemap XML
             let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -2616,6 +2616,14 @@
                 xml += '  </url>\n';
             });
             
+staticPages.forEach(page => {
+                xml += '  <url>\n';
+                xml += '    <loc>' + baseUrl + 'en/' + page + '</loc>\n';
+                xml += '    <lastmod>' + today + '</lastmod>\n';
+                xml += '    <changefreq>weekly</changefreq>\n';
+                xml += '    <priority>' + (page === '' ? '1.0' : '0.8') + '</priority>\n';
+                xml += '  </url>\n';
+            });
             (products || []).forEach(p => {
                 const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
@@ -2626,6 +2634,15 @@
                 xml += '  </url>\n';
             });
             
+(products || []).forEach(p => {
+                const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
+                xml += '  <url>\n';
+                xml += '    <loc>' + baseUrl + 'en/product-detail.html?id=' + p.id + '</loc>\n';
+                xml += '    <lastmod>' + lastmod + '</lastmod>\n';
+                xml += '    <changefreq>weekly</changefreq>\n';
+                xml += '    <priority>0.7</priority>\n';
+                xml += '  </url>\n';
+            });
             (categories || []).forEach(c => {
                 const lastmod = c.updated_at ? c.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
@@ -2636,6 +2653,15 @@
                 xml += '  </url>\n';
             });
             
+(categories || []).forEach(c => {
+                const lastmod = c.updated_at ? c.updated_at.split('T')[0] : today;
+                xml += '  <url>\n';
+                xml += '    <loc>' + baseUrl + 'en/categories.html?id=' + c.id + '</loc>\n';
+                xml += '    <lastmod>' + lastmod + '</lastmod>\n';
+                xml += '    <changefreq>weekly</changefreq>\n';
+                xml += '    <priority>0.6</priority>\n';
+                xml += '  </url>\n';
+            });
             (posts || []).forEach(p => {
                 const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
@@ -2646,6 +2672,15 @@
                 xml += '  </url>\n';
             });
             
+(posts || []).forEach(p => {
+                const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
+                xml += '  <url>\n';
+                xml += '    <loc>' + baseUrl + 'en/blog-detail.html?id=' + p.id + '</loc>\n';
+                xml += '    <lastmod>' + lastmod + '</lastmod>\n';
+                xml += '    <changefreq>monthly</changefreq>\n';
+                xml += '    <priority>0.5</priority>\n';
+                xml += '  </url>\n';
+            });
             xml += '</urlset>';
 
             const totalUrls = staticPages.length + (products || []).length + (categories || []).length + (posts || []).length;
