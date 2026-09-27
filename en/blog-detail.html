@@ -13,7 +13,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Floral Articles | RoyalSpl Florist Hong Kong Florist</title>
+    <title>Floral Articles | RoyalSpl Florist Hong Kong</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
@@ -328,8 +328,8 @@
                 const data = {
                     "@context": "https://schema.org",
                     "@type": "BlogPosting",
-                    "headline": post.title || "RoyalSpl Florist 花藝Blog",
-                    "description": (post.excerpt || post.title || "RoyalSpl Florist 花藝Blog").substring(0, 200),
+                    "headline": (post.title_en || post.title) || "RoyalSpl Florist Blog",
+                    "description": (post.excerpt || post.title_en || post.title || "RoyalSpl Florist Blog").substring(0, 200),
                     "image": post.image_url || "https://pub-ebfb5c01afbe4b9c938f7f160be93eb3.r2.dev/QQ%E5%9B%BE%E7%89%8720240128122925_edited_edited.jpg",
                     "datePublished": post.created_at || new Date().toISOString(),
                     "dateModified": post.updated_at || post.created_at || new Date().toISOString(),
@@ -353,11 +353,11 @@
                 script.textContent = JSON.stringify(data);
                 // 同時更新頁面 title and meta description
                 if (post.title) {
-                    document.title = post.title + ' | RoyalSpl Florist Hong Kong Florist';
+                    document.title = (post.title_en || post.title) + ' | RoyalSpl Florist Hong Kong';
                     const metaDesc = document.querySelector('meta[name="description"]');
-                    if (metaDesc) metaDesc.setAttribute('content', (post.excerpt || post.title || '').substring(0, 160));
+                    if (metaDesc) metaDesc.setAttribute('content', (post.excerpt || post.title_en || post.title || '').substring(0, 160));
                     const ogTitle = document.querySelector('meta[property="og:title"]');
-                    if (ogTitle) ogTitle.setAttribute('content', post.title + ' | RoyalSpl Florist Hong Kong Florist');
+                    if (ogTitle) ogTitle.setAttribute('content', (post.title_en || post.title) + ' | RoyalSpl Florist Hong Kong');
                     const ogDesc = document.querySelector('meta[property="og:description"]');
                     if (ogDesc) ogDesc.setAttribute('content', (post.excerpt || post.title || '').substring(0, 160));
                     const ogUrl = document.querySelector('meta[property="og:url"]');
@@ -382,12 +382,12 @@
                 if (bcNav) {
                     bcNav.innerHTML = '<a href="/en/index.html" style="color:#888;text-decoration:none;">Home</a><span style="color:#ccc;">›</span>' +
                         '<a href="/en/blog.html" style="color:#888;text-decoration:none;">Blog</a>' +
-                        '<span style="color:#ccc;">›</span><span style="color:#383431;font-weight:500;">' + (post.title || '') + '</span>';
+                        '<span style="color:#ccc;">›</span><span style="color:#383431;font-weight:500;">' + (post.title_en || post.title || '') + '</span>';
                 }
             } catch (e) { console.error('Breadcrumb failed:', e); }
             const container = document.getElementById('articleContent');
             let html = `
-                <h1 class="article-title">${post.title}</h1>
+                <h1 class="article-title">${post.title_en || post.title}</h1>
                 <p class="article-date">${new Date(post.created_at).toLocaleDateString('zh-HK')}</p>
                 ${post.image_url ? `<img src="${post.image_url}" class="article-cover" alt="${post.title}">` : ''}
             `;

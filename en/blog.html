@@ -13,7 +13,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Floral Blog | RoyalSpl Florist Hong Kong Florist</title>
+    <title>Floral Blog | RoyalSpl Florist Hong Kong</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
@@ -307,7 +307,7 @@
             }
             const { data, error } = await supabaseClient
                 .from('blog_posts')
-                .select('id, title, content, image_url, created_at')
+                .select('id, title, title_en, content, image_url, created_at')
                 .eq('is_published', true)
                 .order('created_at', { ascending: false })
                 .range(totalLoaded, totalLoaded + PAGE_SIZE - 1);
@@ -336,7 +336,7 @@
                 card.innerHTML = `
                     ${post.image_url ? `<img src="${post.image_url}" class="post-cover">` : ''}
                     <div class="post-body">
-                        <h2 class="post-title"><a href="blog-detail.html?id=${post.id}">${post.title}</a></h2>
+                        <h2 class="post-title"><a href="blog-detail.html?id=${post.id}">${post.title_en || post.title}</a></h2>
                         <p class="post-summary">${summary}</p>
                         <p class="post-date">${new Date(post.created_at).toLocaleDateString('zh-HK')}</p>
                     </div>
