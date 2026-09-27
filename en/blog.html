@@ -334,7 +334,7 @@
                 const card = document.createElement('div');
                 card.className = 'post-card';
                 card.innerHTML = `
-                    ${post.image_url ? `<img src="${post.image_url}" class="post-cover">` : ''}
+                    ${post.image_url ? `<img src="${post.image_url}" class="post-cover" alt="${post.title_en || post.title} - RoyalSpl Florist 香港花店">` : ''}
                     <div class="post-body">
                         <h2 class="post-title"><a href="blog-detail.html?id=${post.id}">${post.title_en || post.title}</a></h2>
                         <p class="post-summary">${summary}</p>
