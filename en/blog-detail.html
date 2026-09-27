@@ -273,6 +273,7 @@
 
     <div class="container">
         <a href="/en/blog.html" class="back-btn">←</a>
+        <nav class="breadcrumb-nav" id="breadcrumbNav" aria-label="Breadcrumb" style="font-size: 13px; color: #888; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 16px;"></nav>
         <div id="articleContent"></div>
     </div>
 
@@ -375,6 +376,15 @@
 
         function renderArticle(post) {
             updateBlogJsonLd(post);
+            // Visual breadcrumb
+            try {
+                var bcNav = document.getElementById('breadcrumbNav');
+                if (bcNav) {
+                    bcNav.innerHTML = '<a href="/en/index.html" style="color:#888;text-decoration:none;">Home</a><span style="color:#ccc;">›</span>' +
+                        '<a href="/en/blog.html" style="color:#888;text-decoration:none;">Blog</a>' +
+                        '<span style="color:#ccc;">›</span><span style="color:#383431;font-weight:500;">' + (post.title || '') + '</span>';
+                }
+            } catch (e) { console.error('Breadcrumb failed:', e); }
             const container = document.getElementById('articleContent');
             let html = `
                 <h1 class="article-title">${post.title}</h1>

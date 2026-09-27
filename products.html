@@ -335,6 +335,7 @@
     </div>
 
     <main class="products-page">
+        <nav class="breadcrumb-nav" id="breadcrumbNav" aria-label="Breadcrumb" style="margin-bottom: 14px; font-size: 13px; color: #888; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;"></nav>
         <div class="section-header">
             <span class="section-subtitle-en">THE COLLECTION</span>
             <h2 class="section-title-zh">所有花藝</h2>
@@ -469,6 +470,24 @@
     // 動態 SEO：根據當前選定的分類/標籤設定 title 與 meta description（分類頁要有獨有名稱）
     function updateDynamicSeo() {
         var isEn = window.location.pathname.indexOf('/en/') === 0;
+        // 視覺麵包屑
+        try {
+            var bcNav = document.getElementById('breadcrumbNav');
+            if (bcNav) {
+                var bcCat = '';
+                if (selectedCategory) {
+                    var ci2 = window.allCategories || [];
+                    for (var i2 = 0; i2 < ci2.length; i2++) {
+                        if (ci2[i2].name_zh === selectedCategory) { bcCat = ci2[i2].name_zh; break; }
+                    }
+                    if (!bcCat) bcCat = selectedCategory;
+                }
+                var bc = '<a href="index.html" style="color:#888;text-decoration:none;">首頁</a><span style="color:#ccc;">›</span>' +
+                         '<a href="products.html" style="color:#888;text-decoration:none;">所有花藝</a>' +
+                         (bcCat ? '<span style="color:#ccc;">›</span><a href="products.html?category=' + encodeURIComponent(bcCat) + '" style="color:#888;text-decoration:none;">' + bcCat + '</a>' : '');
+                bcNav.innerHTML = bc;
+            }
+        } catch (e) { console.error('麵包屑生成失敗:', e); }
         var seoTitle = '';
         var seoDesc = '';
         if (selectedCategory) {

@@ -311,7 +311,7 @@
     </div>
 
     <main class="detail-page">
-        <div style="margin-bottom: 10px;"><a href="/en/products.html" style="font-size: 14px; color: #383431;">← Back to All Flowers</a></div>
+        <nav class="breadcrumb-nav" id="breadcrumbNav" aria-label="Breadcrumb" style="margin-bottom: 12px; font-size: 13px; color: #888; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;"></nav>
         <div class="section-header" style="padding: 0;">
             <span class="section-subtitle-en">PRODUCT DETAILS</span>
             <h2 class="section-title-zh" style="font-size: 28px;">Product Details</h2>
@@ -455,7 +455,32 @@
         }
     }
 
-    function renderProductDetail(product) {
+        async function loadBreadcrumbCats() {
+        try {
+            var r = await supabaseClient.from('categories').select('id, name_zh, name_en').eq('is_active', true);
+            if (r.data) window.allCats = r.data;
+        } catch (e) { console.error('Category load failed:', e); }
+    }
+    loadBreadcrumbCats();
+function renderProductDetail(product) {
+        // Visual breadcrumb
+        try {
+            var bcNav = document.getElementById('breadcrumbNav');
+            if (bcNav) {
+                var catName = '';
+                if (product.category_ids && product.category_ids.length > 0 && window.allCats) {
+                    for (var ci = 0; ci < window.allCats.length; ci++) {
+                        if (window.allCats[ci].id === product.category_ids[0]) { catName = window.allCats[ci].name_en || window.allCats[ci].name_zh || ''; break; }
+                    }
+                }
+                if (!catName && product.categories && product.categories.length > 0) { catName = product.categories[0]; }
+                var bc = '<a href="/en/index.html" style="color:#888;text-decoration:none;">Home</a><span style="color:#ccc;">›</span>' +
+                         '<a href="/en/products.html" style="color:#888;text-decoration:none;">All Flowers</a>' +
+                         (catName ? '<span style="color:#ccc;">›</span><a href="/en/products.html?category=' + encodeURIComponent(catName) + '" style="color:#888;text-decoration:none;">' + catName + '</a>' : '') +
+                         '<span style="color:#ccc;">›</span><span style="color:#383431;font-weight:500;">' + (product.name_en || product.name_zh || '') + '</span>';
+                bcNav.innerHTML = bc;
+            }
+        } catch (e) { console.error('Breadcrumb failed:', e); }
         updateProductJsonLd(product);
         var container = document.getElementById('detailContainer');
         var specs = product.specs || {};

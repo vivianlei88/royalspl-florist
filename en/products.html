@@ -335,6 +335,7 @@
     </div>
 
     <main class="products-page">
+        <nav class="breadcrumb-nav" id="breadcrumbNav" aria-label="Breadcrumb" style="margin-bottom: 14px; font-size: 13px; color: #888; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;"></nav>
         <div class="section-header">
             <span class="section-subtitle-en">THE COLLECTION</span>
             <h2 class="section-title-zh" id="productsPageTitle">All Flowers</h2>
@@ -616,6 +617,24 @@
     // Dynamic SEO: set unique title/meta description based on selected category or tag
     function updateDynamicSeo() {
         var isEn = window.location.pathname.indexOf('/en/') === 0;
+        // Visual breadcrumb
+        try {
+            var bcNav = document.getElementById('breadcrumbNav');
+            if (bcNav) {
+                var bcCat = '';
+                if (selectedCategory) {
+                    var ci2 = window.allCategories || [];
+                    for (var i2 = 0; i2 < ci2.length; i2++) {
+                        if (ci2[i2].name_zh === selectedCategory) { bcCat = ci2[i2].name_en || ci2[i2].name_zh; break; }
+                    }
+                    if (!bcCat) bcCat = selectedCategory;
+                }
+                var bc = '<a href="/en/index.html" style="color:#888;text-decoration:none;">Home</a><span style="color:#ccc;">›</span>' +
+                         '<a href="/en/products.html" style="color:#888;text-decoration:none;">All Flowers</a>' +
+                         (bcCat ? '<span style="color:#ccc;">›</span><a href="/en/products.html?category=' + encodeURIComponent(bcCat) + '" style="color:#888;text-decoration:none;">' + bcCat + '</a>' : '');
+                bcNav.innerHTML = bc;
+            }
+        } catch (e) { console.error('Breadcrumb failed:', e); }
         var seoTitle = '';
         var seoDesc = '';
         if (selectedCategory) {
