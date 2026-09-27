@@ -3733,7 +3733,8 @@ staticPages.forEach(page => {
         html += '<div style="display:flex;gap:10px;align-items:center;background:white;padding:8px 15px;border-radius:30px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">';
         html += '<span style="font-size:13px;color:#666;">時間範圍</span>';
         html += '<select id="analyticsRange" onchange="loadAnalyticsData()" style="padding:6px 12px;border:1px solid #eee;border-radius:20px;font-size:13px;background:#f8f8f8;cursor:pointer;outline:none;">';
-        html += '<option value="7">最近7天</option>';
+        html += '<option value="0">當天</option>';
+        html += '<option value="7" selected>最近7天</option>';
         html += '<option value="30">最近30天</option>';
         html += '</select>';
         html += '</div></div></div>';
@@ -3815,12 +3816,12 @@ staticPages.forEach(page => {
     // 加载范围统计数据（跟随時間範圍選擇器：最近7天/30天）
     async function loadAnalyticsStats() {
         try {
-            var days = parseInt(document.getElementById('analyticsRange').value) || 7;
+            var rawDays = document.getElementById('analyticsRange').value; var days = parseInt(rawDays); if (isNaN(days) || days < 0) days = 7;
             var start = new Date();
             start.setDate(start.getDate() - days);
             start.setHours(0, 0, 0, 0);
             var startStr = start.toISOString();
-            var rangeText = '最近' + days + '天';
+            var rangeText = days === 0 ? '當天' : '最近' + days + '天';
 
             var visitorRes = await supabaseClient.from('visitor_logs').select('ip').gte('created_at', startStr);
             var uniqueIps = new Set();
@@ -3864,7 +3865,7 @@ staticPages.forEach(page => {
     
     // 加载分析数据
     async function loadAnalyticsData() {
-        var days = parseInt(document.getElementById('analyticsRange').value) || 7;
+        var rawDays = document.getElementById('analyticsRange').value; var days = parseInt(rawDays); if (isNaN(days) || days < 0) days = 7;
         var startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
         startDate.setHours(0, 0, 0, 0);
@@ -3892,7 +3893,7 @@ staticPages.forEach(page => {
         var salesData = [];
         var orderData = [];
         
-        for (var i = days - 1; i >= 0; i--) {
+        var dayList = (days === 0) ? [0] : Array.from({length: days}, function(_, k) { return days - 1 - k; }); dayList.forEach(function(i) {
             var d = new Date();
             d.setDate(d.getDate() - i);
             var dateStr = d.toISOString().slice(0, 10);
@@ -3915,7 +3916,7 @@ staticPages.forEach(page => {
             });
             salesData.push(daySales);
             orderData.push(dayOrders);
-        }
+        });
         
         var ctx = document.getElementById('salesTrendChart');
         if (!ctx) return;
