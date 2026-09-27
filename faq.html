@@ -226,47 +226,73 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function loadFaqs() {
-            const { data, error } = await supabaseClient
-                .from('faq_items')
-                .select('question, question_en, answer, answer_en')
-                .eq('is_published', true)
-                .order('sort_order', { ascending: true });
-
+                async function loadFaqs() {
+            // 優先讀取結構化 faq_items；冇資料時 fallback 到後台「文案內容」site_settings.faq_content
+            var faqs = [];
+            var isEn = window.location.pathname.indexOf('/en/') === 0;
+            try {
+                const { data } = await supabaseClient
+                    .from('faq_items')
+                    .select('question, question_en, answer, answer_en')
+                    .eq('is_published', true)
+                    .order('sort_order', { ascending: true });
+                if (data && data.length > 0) {
+                    faqs = data.map(f => ({
+                        question: isEn ? (f.question_en || f.question || '') : (f.question || f.question_en || ''),
+                        answer: isEn ? (f.answer_en || f.answer || '') : (f.answer || f.answer_en || '')
+                    }));
+                }
+            } catch (e) { console.error('faq_items 讀取失敗:', e); }
+            if (faqs.length === 0) {
+                try {
+                    const { data: ss } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'faq_content').maybeSingle();
+                    if (ss && ss.setting_value) {
+                        var raw = ss.setting_value;
+                        // 去掉 HTML 標籤保留文本
+                        var txt = raw.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim();
+                        // 按段落拆分，問題行以？結尾，後續段落為答案
+                        var paras = txt.split(/\n\s*\n|\r?\n/).map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+                        var i = 0;
+                        while (i < paras.length) {
+                            var q = paras[i];
+                            if (/[？?]/.test(q)) {
+                                var ans = [];
+                                var j = i + 1;
+                                while (j < paras.length && !/[？?]$/.test(paras[j])) { ans.push(paras[j]); j++; }
+                                faqs.push({ question: q, answer: ans.join(' ') });
+                                i = j;
+                            } else { i++; }
+                        }
+                    }
+                } catch (e2) { console.error('site_settings FAQ 讀取失敗:', e2); }
+            }
             const container = document.getElementById('faqList');
-            if (error) {
-                console.error('載入常見問題失敗:', error);
-                container.innerHTML = '<div class="empty-state">載入失敗，請稍後再試</div>';
+            if (faqs.length === 0) {
+                container.innerHTML = '<div class="empty-state"></div>';
                 return;
             }
-            if (!data || data.length === 0) {
-                container.innerHTML = '<div class="empty-state">尚無常見問題</div>';
-                return;
-            }
-
-            data.forEach(faq => {
+            faqs.forEach(faq => {
                 const div = document.createElement('div');
-                div.className = 'faq-item';
-                const question = faq.question || faq.question_en || '';
-                const answer = faq.answer || faq.answer_en || '';
+                div.style.marginBottom = '20px';
+                const question = faq.question || '';
+                const answer = faq.answer || '';
                 div.innerHTML = `
                     <div class="question">${question}</div>
                     <div class="answer">${answer}</div>
                 `;
                 container.appendChild(div);
             });
-
             // 生成 FAQPage 結構化數據（Google 常見問題 rich result）
             try {
                 const faqJsonLd = {
                     "@context": "https://schema.org",
                     "@type": "FAQPage",
-                    "mainEntity": data.map(faq => ({
+                    "mainEntity": faqs.map(faq => ({
                         "@type": "Question",
-                        "name": faq.question || faq.question_en || '',
+                        "name": faq.question || '',
                         "acceptedAnswer": {
                             "@type": "Answer",
-                            "text": faq.answer || faq.answer_en || ''
+                            "text": faq.answer || ''
                         }
                     }))
                 };
@@ -275,11 +301,11 @@
                 script.textContent = JSON.stringify(faqJsonLd);
                 document.head.appendChild(script);
             } catch (e) {
-                console.error('生成 FAQ 結構化數據失敗:', e);
+                console.error('FAQ 結構化數據生成失敗:', e);
             }
         }
-
         document.addEventListener('DOMContentLoaded', loadFaqs);
+
     </script>
     <script src="js/ai-chat-v2.js"></script>
     <script>
