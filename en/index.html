@@ -480,7 +480,9 @@
             var categories = result.data || [];
             if (!categories.length) { container.innerHTML = ''; return; }
             
-            // 固定顯示後台設定順序（sort_order）前6個，唔做隨機輪換             var displayCount = Math.min(6, categories.length);             var cards = categories.slice(0, displayCount);
+            // 固定顯示後台設定順序（sort_order）前6個，唔做隨機輪換
+            var displayCount = Math.min(6, categories.length);
+            var cards = categories.slice(0, displayCount);
             
             var html = '';
             for (var i = 0; i < cards.length; i++) {
