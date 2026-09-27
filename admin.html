@@ -1512,11 +1512,18 @@
         }
         if (!currentTitle) { alert('請輸入標題'); return; }
         try {
+            var blogId = currentBlogId;
             if (currentBlogId) {
                 await supabaseClient.from('blog_posts').update(data).eq('id', currentBlogId);
             } else {
                 if (!data.slug && data.title) data.slug = data.title;
-                await supabaseClient.from('blog_posts').insert(data);
+                var blogIns = await supabaseClient.from('blog_posts').insert(data);
+                if (blogIns.error) throw blogIns.error;
+                if (blogIns.data && blogIns.data.length > 0) blogId = blogIns.data[0].id;
+            }
+            // 百度收錄推送（僅發布時）
+            if (publish && blogId) {
+                try { await pushToBaidu(['https://www.royalspl.shop/blog-detail.html?id=' + blogId]); } catch (e2) { console.error('百度推送失敗:', e2); }
             }
             alert(publish ? '發布成功' : '保存成功');
             window.currentPage = 'blog';
@@ -5074,6 +5081,16 @@ staticPages.forEach(page => {
         }
     }
     
+async function pushToBaidu(urls) {
+        try {
+            var body = (typeof urls === 'string' ? urls : urls.join('\n'));
+            var r = await fetch('/baidu-push', { method: 'POST', body: body });
+            var t = await r.text();
+            console.log('百度推送:', t);
+            return t;
+        } catch (e) { console.error('百度推送失敗:', e); return null; }
+    }
+    
 async function saveProduct() {
         var id = document.getElementById('productId').value;
         var data = {
@@ -5110,6 +5127,10 @@ async function saveProduct() {
             if (productId) {
                 await supabaseClient.from('product_variants').delete().eq('product_id', productId);
                 for (var i = 0; i < variants.length; i++) { if (variants[i].name && variants[i].price) { await supabaseClient.from('product_variants').insert({ product_id: productId, variant_name: variants[i].name, variant_price: parseFloat(variants[i].price) }); } }
+            }
+            // 百度收錄推送（僅上架商品）
+            if (productId && data.is_active) {
+                try { await pushToBaidu(['https://www.royalspl.shop/product-detail?id=' + productId]); } catch (e2) { console.error('百度推送失敗:', e2); }
             }
             showToast('保存成功'); showProductsList();
         } catch (err) { showToast('保存失敗：' + err.message); }
