@@ -36,7 +36,8 @@ export async function onRequestPost(context) {
     }
 
     const token = env.BAIDU_PUSH_TOKEN || DEFAULT_TOKEN;
-    const resp = await fetch('http://data.zz.baidu.com/urls?site=' + encodeURIComponent(site) + '&token=' + encodeURIComponent(token), {
+    // 百度 API 要求 site/token 用原始字符串拼接（不可 URL 編碼，否則 site init fail）
+    const resp = await fetch('http://data.zz.baidu.com/urls?site=' + site + '&token=' + token, {
       method: 'POST',
       body: urls.join('\n'),
       headers: { 'Content-Type': 'text/plain' },
