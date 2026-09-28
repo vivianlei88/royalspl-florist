@@ -4694,7 +4694,7 @@ staticPages.forEach(page => {
             // 手機端：只保留搜尋和新增商品
             c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row" style="flex-wrap:wrap;gap:10px;"><h2 class="page-title" style="margin:0;font-size:22px;width:100%;">商品管理</h2><input type="text" class="products-search" id="productSearch" placeholder="搜尋商品名稱..." oninput="filterProducts()" style="flex:1;min-width:0;"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
         } else {
-            c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載勾選 CSV</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;"> 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
+            c.innerHTML = '<div id="productsListView"><div class="products-sticky-header"><div class="products-header-row"><h2 class="page-title" style="margin:0;font-size:22px;">商品管理</h2><div style="margin-left:auto;display:flex;align-items:center;gap:10px;"><input type="text" class="products-search" id="productSearch" placeholder="搜索商品名稱..." oninput="filterProducts()"><div class="btn-group"><button class="btn btn-secondary btn-small" onclick="exportCSV()">下載勾選 CSV</button><button class="btn btn-secondary btn-small" onclick="pushSelectedToBaidu()" style="background:#4c6ef5;color:white;border:none;">推送百度收錄</button><button class="btn btn-secondary btn-small" onclick="document.getElementById(\'csvFileInput\').click()">上傳 CSV</button><input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"><button class="btn btn-primary btn-small" onclick="showAddForm()">新增商品</button></div></div></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'現貨\')">批量設現貨</button><button class="btn btn-secondary btn-small" onclick="bulkSetStock(\'預訂\')">批量設預訂</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(true)">批量上架</button><button class="btn btn-secondary btn-small" onclick="bulkSetActive(false)">批量下架</button><button class="btn btn-danger btn-small" onclick="bulkDelete()">批量刪除</button><button class="btn btn-secondary btn-small" onclick="batchTranslate(&apos;products&apos;)" style="background:#10b981;color:white;border:none;"> 一鍵翻譯為英文</button></div></div><div id="productsTable"></div></div><div id="productFormView" style="display:none;"></div>';
         }
         loadProducts();
     }
@@ -5199,6 +5199,24 @@ async function saveProduct() {
     }
     function toggleCheckAll() { var c = document.getElementById('checkAll'); document.querySelectorAll('.row-check').forEach(function(cb) { cb.checked = c.checked; }); }
     function getCheckedIds() { var ids = []; document.querySelectorAll('.row-check:checked').forEach(function(cb) { ids.push(parseInt(cb.value)); }); return ids; }
+    async function pushSelectedToBaidu() {
+        var ids = getCheckedIds();
+        if (!ids.length) { showToast('請先勾選要推送的商品'); return; }
+        var active = allProducts.filter(function(p) { return ids.indexOf(p.id) !== -1 && p.is_active !== false; });
+        var skipped = ids.length - active.length;
+        if (!active.length) { showToast('勾選的商品都不是上架狀態，無法推送'); return; }
+        var urls = active.map(function(p) { return 'https://www.royalspl.shop/product-detail?id=' + p.id; });
+        if (urls.length > 10) { showToast('一次最多推送 10 條（百度配額限制），請分批勾選'); return; }
+        if (skipped > 0) { showToast('已跳過 ' + skipped + ' 個下架商品'); }
+        showToast('正在推送百度...');
+        var res = await pushToBaidu(urls);
+        try {
+            var j = JSON.parse(res || '{}');
+            if (j.success !== undefined) { showToast('百度收錄：成功 ' + j.success + ' 條，剩餘配額 ' + j.remain); }
+            else if (j.error) { showToast('百度推送失敗：' + j.message); }
+            else { showToast('百度推送失敗'); }
+        } catch (e) { showToast('百度推送失敗：' + e.message); }
+    }
     async function bulkSetStock(s) { var ids = getCheckedIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('products').update({ stock: s }).in('id', ids); showToast('完成'); loadProducts(); }
     async function bulkSetActive(a) { var ids = getCheckedIds(); if (!ids.length) { showToast('請先勾選'); return; } await supabaseClient.from('products').update({ is_active: a }).in('id', ids); showToast('完成'); loadProducts(); }
     async function bulkDelete() { var ids = getCheckedIds(); if (!ids.length) { showToast('請先勾選'); return; } if (!confirm('刪除 ' + ids.length + ' 個？')) return; await supabaseClient.from('products').delete().in('id', ids); showToast('完成'); loadProducts(); }
