@@ -11,6 +11,7 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const action = url.searchParams.get('action') || 'sites';
   const keyword = url.searchParams.get('keyword') || '';
+  const inspectUrl = url.searchParams.get('url') || '';
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -338,6 +339,44 @@ export async function onRequestGet(context) {
       results.push({ path: 'https://www.royalspl.shop/sitemap.xml', submitStatus: putC.status });
 
       return json({ ok: true, client_email: sa.client_email, siteUrl: siteC, results: results }, 200, corsHeaders);
+    }
+
+    // ===== URL Inspection：核实单个 URL 真实收录状态（读操作）=====
+    if (action === 'inspect') {
+      if (!inspectUrl) return json({ ok: false, error: '缺少 url 參數（如 ?action=inspect&url=https://...）' }, 400, corsHeaders);
+      const sitesRespI = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const sitesDataI = await sitesRespI.json();
+      const entriesI = sitesDataI.siteEntry || [];
+      if (entriesI.length === 0) return json({ ok: false, error: '服务账号未授权任何 Search Console 資源' }, 200, corsHeaders);
+      const wwwI = entriesI.find(s => s.siteUrl.indexOf('https://www.royalspl.shop') === 0);
+      const domI = entriesI.find(s => s.siteUrl.indexOf('sc-domain:royalspl.shop') === 0);
+      const siteI = (wwwI || domI || entriesI[0]).siteUrl;
+
+      const respI = await fetch('https://searchconsole.googleapis.com/v1/urlInspection/index/inspect', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inspectionUrl: inspectUrl, siteUrl: siteI })
+      });
+      const dataI = await respI.json();
+      if (dataI.error) return json({ ok: false, error: dataI.error.message, status: dataI.error.status }, 200, corsHeaders);
+      const rr = dataI.inspectionResult || {};
+      const ir = rr.inspectionResult || {};
+      const si = ir.sitemap || [];
+      return json({
+        ok: true,
+        url: inspectUrl,
+        indexStatus: ir.indexStatus,
+        coverageState: ir.coverageState,
+        robotsTxtState: ir.robotsTxtState,
+        indexingState: ir.indexingState,
+        lastCrawlTime: ir.lastCrawlTime,
+        pageFetchState: ir.pageFetchState,
+        googleCanonical: ir.googleCanonical,
+        userCanonical: ir.userCanonical,
+        referringSitemaps: si.map(x => x.path)
+      }, 200, corsHeaders);
     }
 
     // 查询关键词真实数据
