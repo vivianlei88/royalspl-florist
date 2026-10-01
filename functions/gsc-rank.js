@@ -385,6 +385,40 @@ export async function onRequestGet(context) {
       }, 200, corsHeaders);
     }
 
+    // ===== 按 page 维度核实有搜索展示的页面（有展示=已收录且有流量）=====
+    if (action === 'pages') {
+      const sitesRespP = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const sitesDataP = await sitesRespP.json();
+      const entriesP = sitesDataP.siteEntry || [];
+      if (entriesP.length === 0) return json({ ok: false, error: '服务账号未授权任何 Search Console 資源' }, 200, corsHeaders);
+      const wwwP = entriesP.find(s => s.siteUrl.indexOf('https://www.royalspl.shop') === 0);
+      const domP = entriesP.find(s => s.siteUrl.indexOf('sc-domain:royalspl.shop') === 0);
+      const siteP = (wwwP || domP || entriesP[0]).siteUrl;
+
+      const endP = new Date();
+      const startP = new Date();
+      startP.setDate(endP.getDate() - 27);
+      const fP = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      const bodyP = { startDate: fP(startP), endDate: fP(endP), dimensions: ['page'], rowLimit: 1000 };
+      const respP = await fetch('https://www.googleapis.com/webmasters/v3/sites/' + encodeURIComponent(siteP) + '/searchAnalytics/query', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyP)
+      });
+      const dataP = await respP.json();
+      if (dataP.error) return json({ ok: false, error: dataP.error.message }, 200, corsHeaders);
+      const rowsP = dataP.rows || [];
+      const top = rowsP.map(r => ({
+        url: r.keys[0],
+        clicks: r.clicks,
+        impressions: r.impressions,
+        position: r.position ? Math.round(r.position * 100) / 100 : null
+      })).slice(0, 50);
+      return json({ ok: true, siteUrl: siteP, totalPagesWithImpressions: rowsP.length, top: top }, 200, corsHeaders);
+    }
+
     // 查询关键词真实数据
     const keywordList = action === 'all'
       ? ['香港花店', '香港鮮花配送', '網上花店', '生日花束 香港', '情人節花束', '母親節花束', '港島花店', 'Hong Kong florist', 'flower delivery Hong Kong', 'online florist HK', 'birthday bouquet Hong Kong', "Valentine's Day flowers HK", "Mother's Day bouquet HK", 'Hong Kong Island florist']
