@@ -373,7 +373,7 @@ export async function onRequestGet(context) {
       return json({
         ok: true,
         url: inspectUrl,
-        indexStatus: ir.indexStatus,
+        indexStatus: rr.indexStatus,
         coverageState: ir.coverageState,
         robotsTxtState: ir.robotsTxtState,
         indexingState: ir.indexingState,
