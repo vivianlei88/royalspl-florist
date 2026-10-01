@@ -93,7 +93,7 @@ export async function onRequestGet(context) {
         const header2 = { alg: 'RS256', typ: 'JWT', kid: sa.private_key_id };
         const claimSet2 = {
           iss: sa.client_email,
-          scope: 'https://www.googleapis.com/auth/webmasters.readonly',
+          scope: 'https://www.googleapis.com/auth/webmasters',
           aud: 'https://oauth2.googleapis.com/token',
           iat: now2,
           exp: now2 + 3600
