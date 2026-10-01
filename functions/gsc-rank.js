@@ -359,7 +359,13 @@ export async function onRequestGet(context) {
         headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
         body: JSON.stringify({ inspectionUrl: inspectUrl, siteUrl: siteI })
       });
-      const dataI = await respI.json();
+      const textI = await respI.text();
+      let dataI;
+      try {
+        dataI = JSON.parse(textI);
+      } catch (e) {
+        return json({ ok: false, httpStatus: respI.status, rawHead: textI.slice(0, 400) }, 200, corsHeaders);
+      }
       if (dataI.error) return json({ ok: false, error: dataI.error.message, status: dataI.error.status }, 200, corsHeaders);
       const rr = dataI.inspectionResult || {};
       const ir = rr.inspectionResult || {};
