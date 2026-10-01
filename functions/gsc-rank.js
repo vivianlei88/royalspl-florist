@@ -303,6 +303,43 @@ export async function onRequestGet(context) {
       }, 200, corsHeaders);
     }
 
+    // ===== 清理异常 Sitemap 记录 + 重新提交主 Sitemap =====
+    if (action === 'sitemap-cleanup') {
+      const sitesRespC = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const sitesDataC = await sitesRespC.json();
+      const entriesC = sitesDataC.siteEntry || [];
+      if (entriesC.length === 0) return json({ ok: false, error: '服务账号未授权任何 Search Console 資源' }, 200, corsHeaders);
+      const wwwC = entriesC.find(s => s.siteUrl.indexOf('https://www.royalspl.shop') === 0);
+      const domC = entriesC.find(s => s.siteUrl.indexOf('sc-domain:royalspl.shop') === 0);
+      const siteC = (wwwC || domC || entriesC[0]).siteUrl;
+      const baseC = 'https://www.googleapis.com/webmasters/v3/sites/' + encodeURIComponent(siteC) + '/sitemaps/';
+      const results = [];
+
+      // 删除 2 条带 %3C/loc%3E 的异常历史记录
+      const badPaths = [
+        'https://www.royalspl.shop/store-products-sitemap.xml%3C/loc%3E',
+        'https://www.royalspl.shop/en/store-products-sitemap.xml%3C/loc%3E'
+      ];
+      for (const p of badPaths) {
+        const delC = await fetch(baseC + encodeURIComponent(p), {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        results.push({ path: p, deleteStatus: delC.status });
+      }
+
+      // 重新提交正确的主 sitemap.xml
+      const putC = await fetch(baseC + encodeURIComponent('https://www.royalspl.shop/sitemap.xml'), {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      results.push({ path: 'https://www.royalspl.shop/sitemap.xml', submitStatus: putC.status });
+
+      return json({ ok: true, client_email: sa.client_email, siteUrl: siteC, results: results }, 200, corsHeaders);
+    }
+
     // 查询关键词真实数据
     const keywordList = action === 'all'
       ? ['香港花店', '香港鮮花配送', '網上花店', '生日花束 香港', '情人節花束', '母親節花束', '港島花店', 'Hong Kong florist', 'flower delivery Hong Kong', 'online florist HK', 'birthday bouquet Hong Kong', "Valentine's Day flowers HK", "Mother's Day bouquet HK", 'Hong Kong Island florist']
