@@ -498,7 +498,7 @@
             }
             if (catInfo) {
                 var catName = isEn ? (catInfo.name_en || catInfo.name_zh) : catInfo.name_zh;
-                seoTitle = catName + (isEn ? ' | RoyalSpl Florist Hong Kong Florist' : ' | RoyalSpl Florist 香港花店');
+                seoTitle = catName + (isEn ? ' | Hong Kong Florist | RoyalSpl Flower Delivery' : '｜香港花店鮮花速遞｜RoyalSpl Florist');
                 seoDesc = (isEn ? (catInfo.description_en || '') : (catInfo.description || ''));
                 // 視覺分類介紹
                 try {
@@ -517,16 +517,16 @@
                 } catch (e3) { console.error('分類介紹失敗:', e3); }
                 if (seoDesc) { seoDesc = seoDesc.substring(0, 150); }
                 else {
-                    seoDesc = isEn ? 'Browse ' + catName + ' bouquets at RoyalSpl Florist. Fresh, handcrafted flowers delivered across Hong Kong.' : '瀏覽 RoyalSpl Florist ' + catName + ' 花藝產品，香港頂級花藝設計，新鮮花材，品質保證。';
+                    seoDesc = isEn ? 'Shop ' + catName + ' bouquets at RoyalSpl, Hong Kong premium florist. Fresh flowers with fast delivery across HK - ideal for birthdays, Valentine\'s Day and anniversaries.' : '瀏覽 ' + catName + ' 花藝系列，香港花店 RoyalSpl Florist 提供新鮮花材與全港鮮花速遞，生日、情人節、紀念日送禮首選。';
                 }
             } else {
-                seoTitle = selectedCategory + (isEn ? ' | RoyalSpl Florist Hong Kong Florist' : ' | RoyalSpl Florist 香港花店');
+                seoTitle = selectedCategory + (isEn ? ' | Hong Kong Florist | RoyalSpl Flower Delivery' : '｜香港花店鮮花速遞｜RoyalSpl Florist');
             }
         } else if (selectedTags.length > 0) {
             var tagName = selectedTags[0];
             var displayTag = isEn ? (TAG_TRANSLATIONS[tagName] || tagName) : tagName;
-            seoTitle = displayTag + (isEn ? ' | RoyalSpl Florist Hong Kong Florist' : ' | RoyalSpl Florist 香港花店');
-            seoDesc = isEn ? 'Shop ' + displayTag + ' flowers at RoyalSpl Florist. Fresh, handcrafted bouquets delivered across Hong Kong.' : '瀏覽 RoyalSpl Florist ' + displayTag + ' 花藝產品，香港頂級花藝設計，新鮮花材，品質保證。';
+            seoTitle = displayTag + (isEn ? ' Flowers | Hong Kong Florist | RoyalSpl Delivery' : ' 花束｜香港花店鮮花速遞｜RoyalSpl Florist');
+            seoDesc = isEn ? 'Shop ' + displayTag + ' flowers at RoyalSpl, Hong Kong florist. Fresh, handcrafted bouquets delivered across HK.' : '瀏覽 ' + displayTag + ' 花束系列，香港花店 RoyalSpl Florist 新鮮直送全港，生日、情人節、節日送禮首選。';
         }
         if (seoTitle) { document.title = seoTitle; }
         if (seoDesc) {
