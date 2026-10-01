@@ -246,6 +246,63 @@ export async function onRequestGet(context) {
       return json({ ok: true, client_email: sa.client_email, sites: siteList }, 200, corsHeaders);
     }
 
+    // ===== 整体自然搜索 + 收录情况 =====
+    if (action === 'overview' || action === 'sitemaps') {
+      const sitesResp0 = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const sitesData0 = await sitesResp0.json();
+      const entries0 = sitesData0.siteEntry || [];
+      if (entries0.length === 0) return json({ ok: false, error: '服务账号未授权任何 Search Console 資源' }, 200, corsHeaders);
+      const www0 = entries0.find(s => s.siteUrl.indexOf('https://www.royalspl.shop') === 0);
+      const dom0 = entries0.find(s => s.siteUrl.indexOf('sc-domain:royalspl.shop') === 0);
+      const site0 = (www0 || dom0 || entries0[0]).siteUrl;
+
+      // 收录情况（sitemaps）
+      const sm0 = await fetch('https://www.googleapis.com/webmasters/v3/sites/' + encodeURIComponent(site0) + '/sitemaps', {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const smD0 = await sm0.json();
+      let totalSub = 0, totalIdx = 0;
+      const sitemaps = (smD0.sitemap || []).map(e => {
+        const c = (e.contents && e.contents[0]) || {};
+        totalSub += c.submitted || 0;
+        totalIdx += c.indexed || 0;
+        return { path: e.path, submitted: c.submitted || 0, indexed: c.indexed || 0, status: e.status };
+      });
+
+      if (action === 'sitemaps') {
+        return json({ ok: true, client_email: sa.client_email, siteUrl: site0, sitemaps: { count: sitemaps.length, submitted: totalSub, indexed: totalIdx, list: sitemaps } }, 200, corsHeaders);
+      }
+
+      // 整体自然搜索数据（最近28天，无 query filter）
+      const endD = new Date();
+      const startD = new Date();
+      startD.setDate(endD.getDate() - 27);
+      const fD = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      const body = { startDate: fD(startD), endDate: fD(endD), dimensions: [] };
+      const r0 = await fetch('https://www.googleapis.com/webmasters/v3/sites/' + encodeURIComponent(site0) + '/searchAnalytics/query', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const d0 = await r0.json();
+      if (d0.error) return json({ ok: false, error: d0.error.message }, 200, corsHeaders);
+      const row = (d0.rows || [])[0] || {};
+      return json({
+        ok: true,
+        client_email: sa.client_email,
+        siteUrl: site0,
+        overall: {
+          clicks: row.clicks || 0,
+          impressions: row.impressions || 0,
+          ctr: Math.round((row.ctr || 0) * 10000) / 100,
+          position: row.position ? Math.round(row.position * 100) / 100 : null
+        },
+        sitemaps: { count: sitemaps.length, submitted: totalSub, indexed: totalIdx, list: sitemaps }
+      }, 200, corsHeaders);
+    }
+
     // 查询关键词真实数据
     const keywordList = action === 'all'
       ? ['香港花店', '香港鮮花配送', '網上花店', '生日花束 香港', '情人節花束', '母親節花束', '港島花店', 'Hong Kong florist', 'flower delivery Hong Kong', 'online florist HK', 'birthday bouquet Hong Kong', "Valentine's Day flowers HK", "Mother's Day bouquet HK", 'Hong Kong Island florist']
