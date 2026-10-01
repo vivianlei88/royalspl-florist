@@ -354,7 +354,7 @@ export async function onRequestGet(context) {
       const domI = entriesI.find(s => s.siteUrl.indexOf('sc-domain:royalspl.shop') === 0);
       const siteI = (wwwI || domI || entriesI[0]).siteUrl;
 
-      const respI = await fetch('https://searchconsole.googleapis.com/v1/urlInspection/index/inspect', {
+      const respI = await fetch('https://searchconsole.googleapis.com/v1/urlInspection/index:inspect', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
         body: JSON.stringify({ inspectionUrl: inspectUrl, siteUrl: siteI })
