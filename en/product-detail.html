@@ -694,6 +694,29 @@ function renderProductDetail(product) {
             return originTranslations[text] || text;
         }
         
+        // 翻译规格变体名称（组合式规则：数字枝 / 花球 / 襟花 等）
+        function translateVariantName(name) {
+            if (!name) return '';
+            if (/^[a-zA-Z0-9\s\+\-\,\.\(\)\'\/]+$/.test(name)) return name;
+            var result = name;
+            // 数字+枝 → "N Stems of "，末尾无内容时去掉 of
+            result = result.replace(/(\d+)\s*枝/g, '$1 Stems of ');
+            result = result.replace(/\s*of\s*$/g, '');
+            // 全角/半角逗号 → " + "
+            result = result.replace(/[，,]/g, ' + ');
+            var termMap = {
+                '粉芍藥': 'Pink Peony', '白芍藥': 'White Peony', '進口粉芍藥': 'Imported Pink Peony',
+                '粉繡球': 'Pink Hydrangea', '繡球': 'Hydrangea', '芍藥': 'Peony',
+                '花球': 'Bouquet', '襟花': 'Boutonnière', '直徑': 'Diameter', '套裝': 'Set'
+            };
+            for (var tk in termMap) { result = result.split(tk).join(termMap[tk]); }
+            // 半角 + 号两侧补空格；组合词（BouquetDiameter）拆分
+            result = result.replace(/\+/g, ' + ');
+            result = result.replace(/([a-z])([A-Z])/g, '$1 $2');
+            result = result.replace(/\s+/g, ' ').trim();
+            return result;
+        }
+
         // 翻译规格
         function translateSpecs(text) {
             if (!text) return 'N/A';
@@ -772,7 +795,7 @@ function renderProductDetail(product) {
         if (productVariants.length > 0) {
             html += '<div class="variant-selector"><p class="variant-label">Select Option<\/p>';
             for (var vi = 0; vi < productVariants.length; vi++) {
-                html += '<button type="button" class="variant-option' + (vi === selectedVariantIndex ? ' active' : '') + '" onclick="selectVariant(' + vi + ')">' + productVariants[vi].variant_name + ' — HK$' + productVariants[vi].variant_price + '<\/button>';
+                html += '<button type="button" class="variant-option' + (vi === selectedVariantIndex ? ' active' : '') + '" onclick="selectVariant(' + vi + ')">' + translateVariantName(productVariants[vi].variant_name) + ' — HK$' + productVariants[vi].variant_price + '<\/button>';
             }
             html += '<\/div>';
         }
@@ -984,7 +1007,7 @@ function renderProductDetail(product) {
 
     function getCurrentVariantName() {
         if (productVariants.length > 0 && selectedVariantIndex >= 0 && productVariants[selectedVariantIndex]) {
-            return productVariants[selectedVariantIndex].variant_name || '';
+            return translateVariantName(productVariants[selectedVariantIndex].variant_name || '');
         }
         return '';
     }
