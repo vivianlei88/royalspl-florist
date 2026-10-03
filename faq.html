@@ -399,12 +399,6 @@
     var navDrawer = document.getElementById('navDrawer');
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // 先隱藏默認Hero文字，等待數據庫設置載入
-        var heroContent = document.querySelector('.hero-content');
-        if (heroContent) heroContent.style.display = 'none';
-
 </script>
 </body>
 </html>
