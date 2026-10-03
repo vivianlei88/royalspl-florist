@@ -8623,80 +8623,6 @@ async function saveProduct() {
             );
         }
 
-        function FaqEditor() {
-            const [faqs, setFaqs] = useState([]);
-            const [question, setQuestion] = useState('');
-            const [answer, setAnswer] = useState('');
-            const [questionEn, setQuestionEn] = useState('');
-            const [answerEn, setAnswerEn] = useState('');
-            const [editingId, setEditingId] = useState(null);
-
-            const loadFaqs = async () => {
-                const { data } = await window.supabaseClient.from('faq_items').select('*').order('sort_order', { ascending: true });
-                setFaqs(data || []);
-            };
-            useEffect(() => { loadFaqs(); }, []);
-
-            const handleSubmit = async () => {
-                if (!question.trim() || !answer.trim()) return alert('請填寫問題與答案');
-                const payload = { question: question.trim(), answer: answer.trim(), question_en: questionEn.trim(), answer_en: answerEn.trim() };
-                if (editingId) {
-                    await window.supabaseClient.from('faq_items').update(payload).eq('id', editingId);
-                    setEditingId(null);
-                } else {
-                    await window.supabaseClient.from('faq_items').insert(payload);
-                }
-                setQuestion(''); setAnswer(''); setQuestionEn(''); setAnswerEn('');
-                loadFaqs();
-            };
-            const handleEdit = (faq) => { setEditingId(faq.id); setQuestion(faq.question); setAnswer(faq.answer); setQuestionEn(faq.question_en || ''); setAnswerEn(faq.answer_en || ''); };
-            const handleDelete = async (id) => { if (!confirm('確定刪除？')) return; await window.supabaseClient.from('faq_items').delete().eq('id', id); loadFaqs(); };
-            const togglePublish = async (id, current) => { await window.supabaseClient.from('faq_items').update({ is_published: !current }).eq('id', id); loadFaqs(); };
-
-            return React.createElement('div', null,
-                React.createElement('div', { className: 'page-header' },
-                    React.createElement('h3', { style: { fontSize: '20px', fontWeight: '600' } }, '常見問題管理')
-                ),
-                React.createElement('div', { style: { background: '#f9f9f9', padding: '15px', borderRadius: '8px', marginBottom: '20px' } },
-                    React.createElement('div', { style: { fontSize: '14px', fontWeight: '600', marginBottom: '10px' } }, '中文'),
-                    React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '15px' } },
-                        React.createElement('input', { type: 'text', placeholder: '問題（中文）', value: question, onChange: (e) => setQuestion(e.target.value), className: 'form-input', style: { flex: 1 } }),
-                        React.createElement('textarea', { placeholder: '答案（中文）', value: answer, onChange: (e) => setAnswer(e.target.value), className: 'form-textarea', style: { flex: 1, minHeight: '60px' } })
-                    ),
-                    React.createElement('div', { style: { fontSize: '14px', fontWeight: '600', marginBottom: '10px' } }, 'English'),
-                    React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '15px' } },
-                        React.createElement('input', { type: 'text', placeholder: 'Question (English)', value: questionEn, onChange: (e) => setQuestionEn(e.target.value), className: 'form-input', style: { flex: 1 } }),
-                        React.createElement('textarea', { placeholder: 'Answer (English)', value: answerEn, onChange: (e) => setAnswerEn(e.target.value), className: 'form-textarea', style: { flex: 1, minHeight: '60px' } })
-                    ),
-                    React.createElement('button', { className: 'btn btn-primary', onClick: handleSubmit }, editingId ? '更新' : '新增')
-                ),
-                React.createElement('table', { className: 'data-table' },
-                    React.createElement('thead', null,
-                        React.createElement('tr', null,
-                            React.createElement('th', null, '問題'),
-                            React.createElement('th', null, '答案'),
-                            React.createElement('th', null, '英文'),
-                            React.createElement('th', null, '狀態'),
-                            React.createElement('th', null, '操作')
-                        )
-                    ),
-                    React.createElement('tbody', null,
-                        faqs.map(faq => React.createElement('tr', { key: faq.id },
-                            React.createElement('td', null, faq.question),
-                            React.createElement('td', null, faq.answer),
-                            React.createElement('td', null, faq.question_en ? '已翻譯' : '未翻譯'),
-                            React.createElement('td', null, faq.is_published ? '已發佈' : '草稿'),
-                            React.createElement('td', null,
-                                React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => handleEdit(faq), style: { marginRight: '5px' } }, '編輯'),
-                                React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => togglePublish(faq.id, faq.is_published), style: { marginRight: '5px' } }, faq.is_published ? '取消發佈' : '發佈'),
-                                React.createElement('button', { className: 'btn btn-danger btn-small', onClick: () => handleDelete(faq.id) }, '刪除')
-                            )
-                        ))
-                    )
-                )
-            );
-        }
-
         function ContactEditor() {
             const [shopLogo, setShopLogo] = useState('');
             const [shopPhone, setShopPhone] = useState('');
@@ -9186,7 +9112,6 @@ async function saveProduct() {
             const sidebarItems = [
                 { key: 'overview', label: '總覽', icon: 'LayoutDashboard' },
                 { key: 'articles', label: '文章', icon: 'FileText' },
-                { key: 'faq', label: '常見問題', icon: 'HelpCircle' },
                 { key: 'contact', label: '聯絡我們', icon: 'Mail' },
                 { key: 'privacy', label: '私隱政策', icon: 'Shield' },
                 { key: 'flowercare', label: '花材護理', icon: 'Flower' },
@@ -9218,7 +9143,6 @@ async function saveProduct() {
                             React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.history.back() }, '上一步'),
                             React.createElement('h3', { style: { fontSize: '18px', fontWeight: '600' } },
                                 activeSection === 'articles' ? '文章管理' :
-                                activeSection === 'faq' ? '常見問題管理' :
                                 activeSection === 'contact' ? '聯絡我們設定' :
                                 activeSection === 'privacy' ? '私隱政策管理' :
                                 activeSection === 'flowercare' ? '花材護理知識管理' :
@@ -9230,7 +9154,7 @@ async function saveProduct() {
                             )
                         ),
                         React.createElement('div', { className: 'editor-topbar-right' },
-                            activeSection === 'articles' || activeSection === 'faq' ? React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('preview-content')) }, '預覽') : null,
+                            activeSection === 'articles' ? React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('preview-content')) }, '預覽') : null,
                             activeSection === 'articles' ? React.createElement('button', { className: 'btn btn-primary btn-small', onClick: () => window.dispatchEvent(new CustomEvent('publish-content')) }, '發佈') : null,
                             React.createElement('button', { className: 'btn btn-secondary btn-small', onClick: () => {
                                 if (activeSection === 'contact') { window.dispatchEvent(new CustomEvent('save-contact')); }
@@ -9293,7 +9217,6 @@ async function saveProduct() {
                         ),
                         activeSection === 'categories' && React.createElement(CategoryManager),
                         activeSection === 'tags' && React.createElement(TagManager),
-                        activeSection === 'faq' && React.createElement(FaqEditor),
                         activeSection === 'contact' && React.createElement(ContactEditor),
                         activeSection === 'privacy' && React.createElement(PrivacyPolicyEditor),
                         activeSection === 'flowercare' && React.createElement(FlowerCareEditor),

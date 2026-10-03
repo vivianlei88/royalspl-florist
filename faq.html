@@ -293,24 +293,9 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
                 async function loadFaqs() {
-            // 優先讀取結構化 faq_items；冇資料時 fallback 到後台「文案內容」site_settings.faq_content
+            // 唯一來源：後台「文案內容」site_settings.faq_content
             var faqs = [];
-            var isEn = window.location.pathname.indexOf('/en/') === 0;
             try {
-                const { data } = await supabaseClient
-                    .from('faq_items')
-                    .select('question, question_en, answer, answer_en')
-                    .eq('is_published', true)
-                    .order('sort_order', { ascending: true });
-                if (data && data.length > 0) {
-                    faqs = data.map(f => ({
-                        question: isEn ? (f.question_en || f.question || '') : (f.question || f.question_en || ''),
-                        answer: isEn ? (f.answer_en || f.answer || '') : (f.answer || f.answer_en || '')
-                    }));
-                }
-            } catch (e) { console.error('faq_items 讀取失敗:', e); }
-            if (faqs.length === 0) {
-                try {
                     const { data: ss } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'faq_content').maybeSingle();
                     if (ss && ss.setting_value) {
                         var raw = ss.setting_value;
@@ -330,8 +315,7 @@
                             } else { i++; }
                         }
                     }
-                } catch (e2) { console.error('site_settings FAQ 讀取失敗:', e2); }
-            }
+                } catch (e) { console.error('site_settings FAQ 讀取失敗:', e); }
             const container = document.getElementById('faqList');
             if (faqs.length === 0) {
                 container.innerHTML = '<div class="empty-state"></div>';
