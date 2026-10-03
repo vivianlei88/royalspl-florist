@@ -425,7 +425,7 @@
                 </div>
                 <div class="tier-item" data-tier="tier5" data-fee="300" onclick="manualSelectTier('tier5')">
                     <div class="tier-item-header"><span class="tier-item-label">Tier 5</span><span class="tier-item-fee">+HK$300</span></div>
-                    <p class="tier-item-area">South Lantau/愉景灣/Ma Wan/離島/機場/Disneylandetc.</p>
+                    <p class="tier-item-area">South Lantau / Discovery Bay / Ma Wan / Outlying Islands / Airport / Disneyland etc.</p>
                 </div>
             </div>
             <p class="tier-list-note"> System Auto-detect Priority；If detection fails，Please click aboveDistrictManual Selection</p>
@@ -486,7 +486,7 @@
                 <div class="payment-method selected" id="pmFps" onclick="selectPaymentMethod('fps')">
                     <div class="payment-method-icon">🏦</div>
                     <div class="payment-method-info">
-                        <div class="payment-method-name">FPS FPS（手動）</div>
+                        <div class="payment-method-name">FPS (Manual)</div>
                         <div class="payment-method-desc">Hong KongMost Used・Scan to transfer・Upload Payment Proof</div>
                     </div>
                     <div class="payment-method-check">✓</div>
@@ -514,7 +514,7 @@
                 <div class="fps-qr-box">
                     <img class="fps-qr-img" src="https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/royalspl-florist/1788410704473-vyasp2.jpg" alt="FPS Payment QR Code">
                     <div class="fps-qr-info">
-                        <div class="fps-label">收款人</div>
+                        <div class="fps-label">Payee</div>
                         <div class="fps-value">RoyalSpl Florist</div>
                         <div class="fps-label">FPS FPS ID</div>
                         <div class="fps-value" id="fpsIdDisplay">113431563</div>
@@ -524,9 +524,9 @@
                 </div>
                 <div class="fps-steps">
                     <b>Payment Steps：</b><br>
-                    1. 用銀行 App Scan the QR code above（or Enter FPS ID <b>113431563</b>）轉賬<br>
-                    2. 轉賬完成後，Upload Payment Screenshot<br>
-                    3. Enter Transaction Reference Number（After bank transfer App 會顯示）<br>
+                    1. Use your bank app to scan the QR code above (or enter FPS ID <b>113431563</b>) and transfer<br>
+                    2. After the transfer, upload your payment screenshot<br>
+                    3. Enter the transaction reference number (shown in your bank app after the transfer)<br>
                     4. After submitting order，We will verify payment，Status is「PendingConfirmPayment」
                 </div>
                 <div class="fps-upload-row">
@@ -535,7 +535,7 @@
                     </label>
                     <img class="fps-preview" id="fpsScreenshotPreview" alt="Payment Screenshot Preview">
                 </div>
-                <input type="text" class="fps-ref-input" id="fpsRef" placeholder="Please enter transactionReference Number (例: 20260903123456)">
+                <input type="text" class="fps-ref-input" id="fpsRef" placeholder="Please enter the transaction reference number (e.g. 20260903123456)">
                 <div class="fps-hint" id="fpsRefError" style="color:#c0392b; display:none;">Please Enter Transaction Reference Number，or Upload Payment Screenshot</div>
             </div>
 
@@ -628,7 +628,7 @@
     function updatePaymentBtn() {
         const btn = document.getElementById('paymentBtn');
         if (!btn) return;
-        btn.textContent = (selectedPaymentMethod === 'fps') ? 'Submit訂單（FPS）' : 'Payment（Credit Card / Apple Pay / Google Pay）';
+        btn.textContent = (selectedPaymentMethod === 'fps') ? 'Submit Order (FPS)' : 'Pay (Credit Card / Apple Pay / Google Pay)';
     }
 
     function previewFpsScreenshot(event) {
@@ -658,7 +658,7 @@
             });
             const data = await resp.json();
             if (!data.clientSecret || !data.publishableKey) {
-                document.getElementById('card-element').innerHTML = '<p class="pm-note">Stripe 尚Not配置，請選擇FPS FPS Payment，或Contact Us。</p>';
+                document.getElementById('card-element').innerHTML = '<p class="pm-note">Stripe is not configured yet. Please choose FPS payment or contact us.</p>';
                 return;
             }
             stripeClientSecret = data.clientSecret;
@@ -674,7 +674,7 @@
             stripeLoaded = true;
         } catch (e) {
             console.error('Stripe 載入Failed:', e);
-            document.getElementById('card-element').innerHTML = '<p class="pm-note">Stripe 暫時無法Apply，請選擇FPS FPS Payment。</p>';
+            document.getElementById('card-element').innerHTML = '<p class="pm-note">Stripe is temporarily unavailable. Please choose FPS payment.</p>';
         }
     }
 
@@ -693,7 +693,7 @@
                 await loadStripeElement();
             }
             if (!stripePromise) {
-                walletContainer.innerHTML = '<p class="pm-note">Stripe 尚Not配置，請選擇Credit Card或FPS Payment。</p>';
+                walletContainer.innerHTML = '<p class="pm-note">Stripe is not configured yet. Please choose Credit Card or FPS payment.</p>';
                 return;
             }
         }
@@ -776,15 +776,15 @@
                     } catch (err) {
                         console.error('Wallet PaymentError:', err);
                         ev.complete('fail');
-                        showToast('Payment處理Failed，Please retry');
+                        showToast('Payment processing failed. Please retry.');
                     }
                 });
             } else {
-                walletContainer.innerHTML = '<p class="pm-note" style="text-align:center;padding:20px;">您的設備或Browse器不支援 Apple Pay / Google Pay<br>請改用Credit Card，或在 iPhone（Safari）/ 安卓（Chrome）手機上打開此Page面</p>';
+                walletContainer.innerHTML = '<p class="pm-note" style="text-align:center;padding:20px;">Your device or browser does not support Apple Pay / Google Pay<br>Please use Credit Card, or open this page on an iPhone (Safari) / Android (Chrome) phone</p>';
             }
         } catch (e) {
             console.error('Wallet 按鈕初始化Failed:', e);
-            walletContainer.innerHTML = '<p class="pm-note">Apple Pay / Google Pay 暫時無法Apply，請選擇Credit Card。</p>';
+            walletContainer.innerHTML = '<p class="pm-note">Apple Pay / Google Pay is temporarily unavailable. Please choose Credit Card.</p>';
         }
     }
 
@@ -792,7 +792,7 @@
     async function createOrderForWallet(paymentMethod) {
         let orderExtra = {};
         try { orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}'); } catch(e) {}
-        if (cart.length === 0) return { success: false, error: 'Shopping Cartis空' };
+        if (cart.length === 0) return { success: false, error: 'Shopping cart is empty' };
         if (!validateForm()) return { success: false, error: 'Please fill inDelivery Information' };
 
         let customerEmail = (orderExtra.customerEmail || '').trim();
@@ -913,7 +913,7 @@
         if (detected) {
             detectedArea = detected; manualArea = '';
             document.getElementById('autoDetectTierZh').textContent = `District detected: ${areaNames[detected].zh}`;
-            document.getElementById('autoDetectTierEn').textContent = `Detected: ${areaNames[detected].en} | 附加費: HK$${areaFees[detected]}`;
+            document.getElementById('autoDetectTierEn').textContent = `Detected: ${areaNames[detected].en} | Surcharge: HK$${areaFees[detected]}`;
             document.getElementById('autoDetectBanner').classList.add('show');
             highlightTierItem(detected);
         } else {
@@ -960,8 +960,8 @@
         if (!dateInput) return;
         const maxDeliveryDays = getMaxDeliveryDays();
         let minDate = new Date();
-        if (maxDeliveryDays > 0) { minDate.setDate(minDate.getDate() + maxDeliveryDays); hint.textContent = `⚠️ Shopping Cart含Pre-orderProduct，最早可Delivery Dateis ${maxDeliveryDays} Day後`; }
-        else { minDate.setDate(minDate.getDate() + 1); hint.textContent = '✓ 現貨Product，可選擇明日及Not來日期'; }
+        if (maxDeliveryDays > 0) { minDate.setDate(minDate.getDate() + maxDeliveryDays); hint.textContent = `⚠️ Cart contains pre-order items, earliest delivery date is ${maxDeliveryDays} days from now`; }
+        else { minDate.setDate(minDate.getDate() + 1); hint.textContent = '✓ In-stock item, delivery available from tomorrow onwards'; }
         dateInput.setAttribute('min', minDate.toISOString().split('T')[0]);
     }
 
@@ -1005,7 +1005,7 @@
         if (!recipientPhone || !/^[0-9+\-\s]{8,}$/.test(recipientPhone)) { document.getElementById('recipientPhoneError').style.display = 'block'; isValid = false; } else { document.getElementById('recipientPhoneError').style.display = 'none'; }
         if (!recipientAddress) { document.getElementById('recipientAddressError').style.display = 'block'; isValid = false; } else { document.getElementById('recipientAddressError').style.display = 'none'; }
         if (!validateDeliveryDate()) isValid = false;
-        if (!getEffectiveArea()) { showToast('Please enterAddress或Manual SelectionDeliveryDistrict'); isValid = false; }
+        if (!getEffectiveArea()) { showToast('Please enter your address or manually select a delivery district'); isValid = false; }
         return isValid;
     }
 
@@ -1015,7 +1015,7 @@
             return await submitOrderFps();
         }
         if (selectedPaymentMethod === 'wallet') {
-            showToast('Please click above Apple Pay / Google Pay 按鈕完成Payment');
+            showToast('Please click the Apple Pay / Google Pay button above to complete payment');
             return;
         }
         return await submitOrderCard();
@@ -1028,21 +1028,21 @@
         try {
             orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}');
         } catch(e) {}
-        if (cart.length === 0) { showToast('Shopping Cartis空'); window.location.href = 'products.html'; return; }
+        if (cart.length === 0) { showToast('Shopping cart is empty'); window.location.href = 'products.html'; return; }
         if (!validateForm()) return;
 
         // 校驗FPS：需上傳截圖 或 填寫Reference Number（至少一項）
         const fpsRef = document.getElementById('fpsRef').value.trim();
         if (!fpsScreenshotFile && !fpsRef) {
             document.getElementById('fpsRefError').style.display = 'block';
-            showToast('請Upload Payment Screenshot或Enter Transaction Reference Number');
+            showToast('Please upload a payment screenshot or enter the transaction reference number');
             return;
         }
         document.getElementById('fpsRefError').style.display = 'none';
 
         const btn = document.getElementById('paymentBtn');
         btn.disabled = true;
-        btn.textContent = '正在Submit訂單...';
+        btn.textContent = 'Submitting order...';
 
         // Get Orderer InfoEmail
         let customerEmail = (orderExtra.customerEmail || '').trim();
@@ -1170,8 +1170,8 @@
                             to: customerEmail,
                             subject: '【RoyalSpl Florist】Order Confirmation Notice ' + orderCode,
                             html: buildOrderEmailHtml({
-                                title: '訂單ConfirmBook',
-                                message: '親愛的顧客，Thank You for Your Order！您的Order has beenEstablished，Payment Method：FPS FPS。After we verify your paymentConfirm訂單。',
+                                title: 'Order Confirmed',
+                                message: 'Dear Customer, thank you for your order! Your order has been placed. Payment method: FPS. We will confirm your order after verifying your payment.',
                                 orderCode: orderCode,
                                 status: 'PendingConfirmPayment',
                                 deliveryDate: orderData.deliveryDate,
@@ -1238,7 +1238,7 @@
         try {
             orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}');
         } catch(e) {}
-        if (cart.length === 0) { showToast('Shopping Cartis空'); window.location.href = 'products.html'; return; }
+        if (cart.length === 0) { showToast('Shopping cart is empty'); window.location.href = 'products.html'; return; }
         if (!validateForm()) return;
 
         const btn = document.getElementById('paymentBtn');
