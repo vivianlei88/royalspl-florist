@@ -293,12 +293,20 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
                 async function loadFaqs() {
-            // 唯一來源：後台「文案內容」site_settings.faq_content
+            // 英文版讀 site_settings.faq_content_en，中文版讀 faq_content；英文無內容時 fallback 中文
             var faqs = [];
+            var isEn = window.location.pathname.indexOf('/en/') === 0;
+            var contentKey = isEn ? 'faq_content_en' : 'faq_content';
             try {
-                    const { data: ss } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'faq_content').maybeSingle();
-                    if (ss && ss.setting_value) {
-                        var raw = ss.setting_value;
+                    let ssData = null;
+                    const { data: ss } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', contentKey).maybeSingle();
+                    if (ss && ss.setting_value) ssData = ss;
+                    if (isEn && !ssData) {
+                        const { data: ss2 } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'faq_content').maybeSingle();
+                        if (ss2 && ss2.setting_value) ssData = ss2;
+                    }
+                    if (ssData) {
+                        var raw = ssData.setting_value;
                         // 去掉 HTML 標籤保留文本
                         var txt = raw.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim();
                         // 按段落拆分，問題行以？結尾，後續段落為答案
