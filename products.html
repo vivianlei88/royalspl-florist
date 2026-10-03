@@ -396,6 +396,7 @@
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var allProducts = [];
+    var variantMinMap = {};
     var selectedTags = [];
     var selectedCategory = '';
     var categoryIdMap = {};
@@ -702,7 +703,7 @@
             html += '<div class="product-status ' + stockClass + '">' + stockText + '<\/div>';
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
-            html += '<p class="product-price">HK$' + p.price + '<\/p>';
+            html += '<p class="product-price">' + (variantMinMap[p.id] ? 'HK$' + variantMinMap[p.id] + ' 起' : 'HK$' + p.price) + '<\/p>';
             html += '<div class="product-tags">';
             for (var j = 0; j < Math.min(tags.length, 4); j++) { html += '<span class="tag-pill">' + tags[j] + '<\/span>'; }
             html += '<\/div>';
@@ -717,6 +718,13 @@
             var result = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: true });
             if (result.error) throw result.error;
             allProducts = result.data || [];
+            try {
+                var vr = await supabaseClient.from('product_variants').select('product_id,variant_price');
+                (vr.data || []).forEach(function(v) {
+                    var vp = parseFloat(v.variant_price);
+                    if (!variantMinMap[v.product_id] || vp < variantMinMap[v.product_id]) { variantMinMap[v.product_id] = vp; }
+                });
+            } catch (e2) {}
             renderProducts();
         } catch (err) {
             console.error('載入商品失敗:', err);

@@ -333,6 +333,7 @@
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var featuredProductsData = [];
+    var variantMinMap = {};
 
     var heroSlideIndex = 0;
     var heroSlideTimer = null;
@@ -512,6 +513,13 @@
     async function loadFeaturedProducts() {
         var container = document.getElementById('featuredProducts');
         try {
+            try {
+                var vr = await supabaseClient.from('product_variants').select('product_id,variant_price');
+                (vr.data || []).forEach(function(v) {
+                    var vp = parseFloat(v.variant_price);
+                    if (!variantMinMap[v.product_id] || vp < variantMinMap[v.product_id]) { variantMinMap[v.product_id] = vp; }
+                });
+            } catch (e2) {}
             // 優先讀後台Featured Flowers（featured_products 表），按後台排序顯示
             var fpResult = await supabaseClient.from('featured_products').select('*').eq('is_active', true).order('sort_order', { ascending: true });
             if (fpResult.error) throw fpResult.error;
@@ -709,7 +717,7 @@
             html += '<div class="product-card-info">';
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
-            html += '<p class="product-price">HK$' + p.price + '<\/p>';
+            html += '<p class="product-price">' + (variantMinMap[p.id] ? 'From HK$' + variantMinMap[p.id] : 'HK$' + p.price) + '<\/p>';
             html += '<div class="product-tags">';
             for (var j = 0; j < Math.min(tags.length, 3); j++) { html += '<span class="tag-pill">' + translateTag(tags[j]) + '<\/span>'; }
             html += '<\/div>';
