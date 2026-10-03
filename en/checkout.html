@@ -435,7 +435,12 @@
             <h2 class="checkout-section-title">Delivery Date</h2>
             <div class="form-group">
                 <label class="form-label">Select Date *</label>
-                <input type="date" class="date-input" id="deliveryDate" onchange="validateDeliveryDate()">
+                <input type="date" class="date-input" id="deliveryDate" onchange="validateDeliveryDate()" style="display:none;">
+                <div class="date-selects" style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <select class="date-select" id="selDay" onchange="updateDeliveryDate()" style="flex:1;min-width:72px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;background:#fff;font-size:15px;"><option value="">Day</option></select>
+                    <select class="date-select" id="selMonth" onchange="updateDeliveryDate()" style="flex:1;min-width:110px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;background:#fff;font-size:15px;"><option value="">Month</option></select>
+                    <select class="date-select" id="selYear" onchange="updateDeliveryDate()" style="flex:1;min-width:88px;padding:10px;border:1px solid #ddd;border-radius:5px;font-family:inherit;background:#fff;font-size:15px;"><option value="">Year</option></select>
+                </div>
                 <p class="form-error" id="deliveryDateError">Please select Delivery Date</p>
                 <p class="date-hint" id="dateHint"></p>
             </div>
@@ -664,7 +669,7 @@
             stripeClientSecret = data.clientSecret;
             window.__STRIPE_PK__ = data.publishableKey;
             stripePromise = Stripe(data.publishableKey);
-            stripeElements = stripePromise.elements({ clientSecret: data.clientSecret });
+            stripeElements = stripePromise.elements({ clientSecret: data.clientSecret, locale: 'en' });
             const element = stripeElements.create('payment', {
                 layout: 'tabs',
                 fields: { billingDetails: { name: 'always' } },
@@ -963,6 +968,44 @@
         if (maxDeliveryDays > 0) { minDate.setDate(minDate.getDate() + maxDeliveryDays); hint.textContent = `⚠️ Cart contains pre-order items, earliest delivery date is ${maxDeliveryDays} days from now`; }
         else { minDate.setDate(minDate.getDate() + 1); hint.textContent = '✓ In-stock item, delivery available from tomorrow onwards'; }
         dateInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+        populateDateSelects(minDate);
+    }
+
+    function populateDateSelects(minDate) {
+        const daySel = document.getElementById('selDay');
+        const monthSel = document.getElementById('selMonth');
+        const yearSel = document.getElementById('selYear');
+        if (!daySel || !monthSel || !yearSel) return;
+        const minYear = minDate.getFullYear();
+        const maxYear = minYear + 2;
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        yearSel.innerHTML = '<option value="">Year</option>';
+        for (let y = minYear; y <= maxYear; y++) { yearSel.innerHTML += `<option value="${y}">${y}</option>`; }
+        monthSel.innerHTML = '<option value="">Month</option>';
+        months.forEach((m, idx) => { monthSel.innerHTML += `<option value="${idx + 1}">${m}</option>`; });
+        function refreshDays() {
+            const y = parseInt(yearSel.value), m = parseInt(monthSel.value);
+            daySel.innerHTML = '<option value="">Day</option>';
+            if (!y || !m) return;
+            const maxDay = new Date(y, m, 0).getDate();
+            for (let d = 1; d <= maxDay; d++) { daySel.innerHTML += `<option value="${d}">${d}</option>`; }
+            if (y === minDate.getFullYear() && m === minDate.getMonth() + 1 && minDate.getDate() <= maxDay) {
+                daySel.value = String(minDate.getDate());
+            }
+        }
+        yearSel.onchange = function() { refreshDays(); updateDeliveryDate(); };
+        monthSel.onchange = function() { refreshDays(); updateDeliveryDate(); };
+        refreshDays();
+    }
+
+    function updateDeliveryDate() {
+        const d = document.getElementById('selDay').value;
+        const m = document.getElementById('selMonth').value;
+        const y = document.getElementById('selYear').value;
+        const dateInput = document.getElementById('deliveryDate');
+        if (d && m && y) { dateInput.value = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`; }
+        else { dateInput.value = ''; }
+        validateDeliveryDate();
     }
 
     function validateDeliveryDate() { const dateInput = document.getElementById('deliveryDate'); const error = document.getElementById('deliveryDateError'); if (!dateInput.value) { error.style.display = 'block'; return false; } error.style.display = 'none'; return true; }
