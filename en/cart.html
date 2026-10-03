@@ -412,7 +412,7 @@
             return `<div class="cart-item">
                 ${itemImg}
                 <div class="cart-item-info">
-                    <p class="cart-item-name">${item.name || 'Products'}</p>
+                    <p class="cart-item-name">${item.name || 'Products'}${item.variantName ? ' <span style="font-weight:400;font-size:14px;color:#8a857f;">· ' + item.variantName + '</span>' : ''}</p>
                     <p class="cart-item-name-en">${item.nameEn || ''}</p>
                     ${addonsHtml}
                     <p class="cart-item-price">HK$${itemTotal}</p>

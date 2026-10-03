@@ -56,6 +56,11 @@
         .detail-subtitle-en { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; color: #383431; }
         .detail-title-zh { font-size: 40px; font-weight: 500; font-style: italic; margin: 10px 0; }
         .detail-price { font-size: 32px; font-weight: 700; margin: 20px 0; }
+        .variant-selector { margin: 15px 0; }
+        .variant-label { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: #8a857f; margin-bottom: 8px; }
+        .variant-option { display: inline-block; margin: 4px 8px 4px 0; padding: 10px 16px; border: 1px solid #d8d2cb; border-radius: 4px; background: #fff; font-size: 14px; color: #383431; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .variant-option:hover { border-color: #1A1A1A; }
+        .variant-option.active { background: #1A1A1A; color: #FAF8F5; border-color: #1A1A1A; }
         .detail-status { display: inline-block; padding: 6px 16px; font-size: 14px; font-weight: 600; border-radius: 3px; margin-bottom: 20px; }
         .status-in-stock { background-color: #1A1A1A; color: #FAF8F5; }
         .status-pre-order { border: 1px solid #1A1A1A; color: #1A1A1A; }
@@ -431,6 +436,8 @@
 
     var currentProduct = null;
     var quantity = 1;
+    var productVariants = [];
+    var selectedVariantIndex = -1;
 
     function getUrlParam(param) { return new URLSearchParams(window.location.search).get(param); }
 
@@ -451,6 +458,11 @@
             if (!result.data) { window.location.href = 'products.html'; return; }
             
             currentProduct = result.data;
+            try {
+                var vRes = await supabaseClient.from('product_variants').select('*').eq('product_id', currentProduct.id).order('id');
+                productVariants = (vRes && vRes.data) || [];
+            } catch (e2) { productVariants = []; }
+            selectedVariantIndex = productVariants.length > 0 ? 0 : -1;
             renderProductDetail(currentProduct);
         } catch (err) {
             console.error('載入商品失敗:', err);
@@ -480,7 +492,7 @@
                 "@type": "Offer",
                 "url": "https://www.royalspl.shop/product-detail.html?id=" + (product.id || ""),
                 "priceCurrency": "HKD",
-                "price": product.price || 0,
+                "price": getCurrentPrice() || product.price || 0,
                 "availability": isPreorder ? "https://schema.org/PreOrder" : "https://schema.org/InStock",
                 "inventoryLevel": {
                     "@type": "QuantitativeValue",
@@ -579,7 +591,7 @@
         var specs = product.specs || {};
         
         // 動態設置 SEO：title、meta description、Open Graph
-        var productTitle = (product.name_zh || product.name_en || '花藝產品') + ' | HK$' + product.price + ' | RoyalSpl Florist 香港花店';
+        var productTitle = (product.name_zh || product.name_en || '花藝產品') + ' | HK$' + getCurrentPrice() + ' | RoyalSpl Florist 香港花店';
         var productDesc = (product.description_zh || product.description || 'RoyalSpl Florist 精心設計的花藝產品').substring(0, 150);
         document.title = productTitle;
         var metaDesc = document.querySelector('meta[name="description"]');
@@ -643,7 +655,14 @@
         html += '<p class="detail-subtitle-en">' + (product.name_en || '').toUpperCase() + '<\/p>';
         html += '<h1 class="detail-title-zh">' + product.name_zh + '<\/h1>';
         html += '<div class="detail-status ' + stockClass + '">' + stockText + '<\/div>';
-        html += '<p class="detail-price">HK$' + product.price + '<\/p>';
+        html += '<p class="detail-price">HK$' + getCurrentPrice() + '<\/p>';
+        if (productVariants.length > 0) {
+            html += '<div class="variant-selector"><p class="variant-label">選擇規格<\/p>';
+            for (var vi = 0; vi < productVariants.length; vi++) {
+                html += '<button type="button" class="variant-option' + (vi === selectedVariantIndex ? ' active' : '') + '" onclick="selectVariant(' + vi + ')">' + productVariants[vi].variant_name + ' — HK$' + productVariants[vi].variant_price + '<\/button>';
+            }
+            html += '<\/div>';
+        }
         html += '<p class="detail-description">' + (product.description || '') + '<\/p>';
         
         if (scentNotes.length > 0) {
@@ -666,7 +685,7 @@
         html += '<button class="qty-btn" onclick="changeQuantity(1)">+<\/button>';
         html += '<\/div>';
         
-        html += '<div class="total-display" id="totalDisplay">總計：HK$' + product.price + '<\/div>';
+        html += '<div class="total-display" id="totalDisplay">總計：HK$' + getCurrentPrice() + '<\/div>';
         html += '<div class="purchase-actions">';
         html += '<button class="add-to-cart-btn" onclick="handleAddToCart()">加入購物車<\/button>';
         html += '<button class="buy-now-btn" onclick="handleBuyNow()">立即購買<\/button>';
@@ -843,6 +862,29 @@
         }
     }
 
+    function getCurrentPrice() {
+        if (productVariants.length > 0 && selectedVariantIndex >= 0 && productVariants[selectedVariantIndex]) {
+            return parseFloat(productVariants[selectedVariantIndex].variant_price) || parseFloat(currentProduct.price) || 0;
+        }
+        return parseFloat(currentProduct.price) || 0;
+    }
+
+    function getCurrentVariantName() {
+        if (productVariants.length > 0 && selectedVariantIndex >= 0 && productVariants[selectedVariantIndex]) {
+            return productVariants[selectedVariantIndex].variant_name || '';
+        }
+        return '';
+    }
+
+    function selectVariant(i) {
+        selectedVariantIndex = i;
+        var opts = document.querySelectorAll('.variant-option');
+        for (var oi = 0; oi < opts.length; oi++) { opts[oi].classList.toggle('active', oi === i); }
+        var priceEl = document.querySelector('.detail-price');
+        if (priceEl) priceEl.textContent = 'HK$' + getCurrentPrice();
+        updateTotal();
+    }
+
     function changeQuantity(delta) {
         quantity = Math.max(1, quantity + delta);
         document.getElementById('qtyDisplay').textContent = quantity;
@@ -859,7 +901,7 @@
                 selectedAddonIds.push(parseInt(cb.getAttribute('data-id')));
             }
         });
-        var total = (parseFloat(currentProduct.price) + addonTotal) * quantity;
+        var total = (getCurrentPrice() + addonTotal) * quantity;
         document.getElementById('totalDisplay').textContent = '總計：HK$' + total;
     }
 
@@ -879,7 +921,8 @@
             productId: currentProduct.id,
             name: currentProduct.name_zh,
             nameEn: currentProduct.name_en,
-            price: parseFloat(currentProduct.price),
+            price: getCurrentPrice(),
+            variantName: getCurrentVariantName(),
             emoji: currentProduct.emoji || '',
             quantity: quantity,
             addons: addons,
@@ -893,11 +936,11 @@
         if (typeof gtag === 'function') {
             gtag('event', 'add_to_cart', {
                 currency: 'HKD',
-                value: parseFloat(currentProduct.price) * quantity,
+                value: getCurrentPrice() * quantity,
                 items: [{
                     item_id: currentProduct.id,
                     item_name: currentProduct.name_zh,
-                    price: parseFloat(currentProduct.price),
+                    price: getCurrentPrice(),
                     quantity: quantity
                 }]
             });
@@ -925,7 +968,8 @@
             productId: currentProduct.id,
             name: currentProduct.name_zh,
             nameEn: currentProduct.name_en,
-            price: parseFloat(currentProduct.price),
+            price: getCurrentPrice(),
+            variantName: getCurrentVariantName(),
             emoji: currentProduct.emoji || '',
             quantity: quantity,
             addons: addons,
