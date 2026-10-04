@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery &amp; Shipping Policy | Hong Kong Flower Delivery, Worldwide Dried &amp; Preserved Flowers | RoyalSpl Florist</title>
+    <meta name="description" content="RoyalSpl Florist delivery policy: free Hong Kong flower delivery on orders over HK$500; worldwide shipping (dried &amp; preserved flowers) to Asia, Middle East, Europe, North America by size tier with optional DHL Express 2-3 days. Dried flowers are perfect for home decor, space styling and interior design.">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 760px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .dlv-card { background: #fff; border: 1px solid #ede8e2; border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .dlv-card h2 { font-size: 18px; color: #1A1A1A; margin: 0 0 12px; }
+        .dlv-card ul { margin: 0 0 6px 18px; padding: 0; font-size: 14px; line-height: 2; color: #383431; }
+        .dlv-card p { margin: 6px 0; font-size: 14px; line-height: 1.9; color: #383431; }
+        .dlv-table-wrap { overflow-x: auto; margin: 10px 0 6px; }
+        table.dlv-table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+        table.dlv-table th, table.dlv-table td { padding: 8px 10px; border: 1px solid #e5dccb; text-align: left; white-space: nowrap; }
+        table.dlv-table th { background: #f7f1e8; font-weight: 600; color: #1A1A1A; }
+        .dlv-tag { display: inline-block; background: #f7f1e8; color: #8a7355; border-radius: 20px; padding: 2px 10px; font-size: 12px; margin-bottom: 10px; }
+        .dlv-note { font-size: 13px; color: #8a7355; }
+        .dlv-link { color: #1A1A1A; text-decoration: underline; text-underline-offset: 3px; }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .dlv-card { padding: 16px 16px; }
+            table.dlv-table { min-width: 560px; }
+            .dlv-card h2 { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="/en/index.html" class="logo">
+                <div class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="/delivery.html" onclick="localStorage.setItem('royalspl_lang_manual','zh')" class="user-icon" aria-label="中文" style="margin-right:10px;font-size:14px;font-weight:600;">中</a>
+                <a href="/en/account.html" class="user-icon" aria-label="Member Center">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+                <a href="/en/cart.html" class="cart-icon" aria-label="Shopping Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">Menu</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="/en/index.html" class="nav-link"><span class="nav-zh">Home</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="/en/products.html" class="nav-link"><span class="nav-zh">All Flowers</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item" data-expandable>
+                <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">Occasions</span><span class="nav-en">OCCASIONS</span><span class="nav-plus">+</span></div>
+                <div class="nav-submenu">
+                    <a href="products.html?tag=情人節" class="nav-sub-link">Valentine's Day</a>
+                    <a href="products.html?tag=母親節" class="nav-sub-link">Mother's Day</a>
+                    <a href="products.html?tag=中秋節" class="nav-sub-link">Mid-Autumn</a>
+                    <a href="products.html?tag=生日" class="nav-sub-link">Birthday</a>
+                    <a href="products.html?tag=婚禮" class="nav-sub-link">Wedding</a>
+                    <a href="products.html?tag=開張" class="nav-sub-link">Grand Opening</a>
+                    <a href="products.html?tag=商務送禮" class="nav-sub-link">Business Gift</a>
+                </div>
+            </div>
+            <div class="nav-item" data-expandable>
+                <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">Flower Types</span><span class="nav-en">FLOWER TYPES</span><span class="nav-plus">+</span></div>
+                <div class="nav-submenu">
+                    <a href="products.html?tag=玫瑰" class="nav-sub-link">Rose</a>
+                    <a href="products.html?tag=鬱金香" class="nav-sub-link">Tulip</a>
+                    <a href="products.html?tag=芍藥" class="nav-sub-link">Peony</a>
+                    <a href="products.html?tag=荷花" class="nav-sub-link">Lotus</a>
+                    <a href="products.html?tag=進口鮮花" class="nav-sub-link">Imported Flowers</a>
+                    <a href="products.html?tag=大麗花" class="nav-sub-link">Dahlia</a>
+                </div>
+            </div>
+            <div class="nav-item"><a href="/en/blog.html" class="nav-link"><span class="nav-zh">Blog</span><span class="nav-en">BLOG</span></a></div>
+        </nav>
+    </div>
+
+
+    <div class="container">
+        <a href="/en/index.html" class="back-btn">←</a>
+        <h1 style="text-align:center;margin-bottom:6px;">Delivery &amp; Shipping Policy</h1>
+        <p style="text-align:center;color:#8a7355;font-size:14px;margin:0 0 24px;">Hong Kong Fresh Flower Delivery · Worldwide Dried &amp; Preserved Flower Shipping</p>
+
+        <div class="dlv-card">
+            <h2>🌿 Hong Kong Local Delivery</h2>
+            <ul>
+                <li><b>Delivery hours</b>: every day 10:00–18:00, courier delivery</li>
+                <li><b>Free delivery</b>: orders over HK$500 — free delivery to Hong Kong Island / Kowloon / New Territories urban areas (no time slot)</li>
+                <li><b>Outlying islands</b>: HK$300 surcharge</li>
+                <li><b>Same-day / urgent delivery &amp; time slots</b>: additional charge (as shown at checkout)</li>
+                <li>We deliver to homes, offices, malls, schools, hotels and Hong Kong International Airport (non-restricted areas only)</li>
+                <li>Fresh flowers last approx. 5–7 days, depending on environment, climate and temperature</li>
+            </ul>
+            <p class="dlv-note">Final shipping fee is calculated in real time at checkout.</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>🌏 Worldwide Delivery (Dried &amp; Preserved Flowers)</h2>
+            <p><span class="dlv-tag">Global Delivery</span></p>
+            <p>Items marked "Global Delivery" (dried &amp; preserved flowers) can be shipped worldwide. Shipping is charged by <b>package size tier</b> (Standard / Medium / Large, set by product tag) and <b>destination region</b>:</p>
+            <div class="dlv-table-wrap" id="globalZoneTable">Loading…</div>
+            <p>International courier: estimated <b>7–14 business days</b> (subject to destination customs &amp; logistics).</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>⚡ DHL Express Delivery (2–3 days)</h2>
+            <p>Choose DHL Express for worldwide orders — surcharge: <b>+HK$350 (Standard) / +HK$800 (Medium) / +HK$1600 (Large)</b>. Simply tick "DHL Express Delivery" at checkout.</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>💳 Payment Methods for International Orders</h2>
+            <p>International orders support <b>Credit Card / Apple Pay / Google Pay</b> only (no cash or FPS). Select your country at checkout and the shipping fee is calculated automatically.</p>
+            <p>Fresh flower products are delivered within Hong Kong only.</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>🏠 Dried Flowers for Home Decor &amp; Interior Design</h2>
+            <p>Dried &amp; preserved flowers need no watering and last for years — they are the perfect choice for <b>home decor, space styling and interior design</b>. Ideal for entryways, living rooms, studies, dining tables, offices and commercial spaces, and as elegant gifts.</p>
+            <p>Looking for the right arrangement for your space? <a href="/en/products.html?tag=全球配送" class="dlv-link">Browse the Global Delivery collection</a>.</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>📦 Order &amp; Delivery Notes</h2>
+            <ul>
+                <li>For pre-order items, please order at least 1 day before the delivery date to ensure flower quality</li>
+                <li>Changes to order content or delivery date must be requested 48 hours before the delivery date</li>
+                <li>We reserve the right to charge a fee for delivery at a specified time</li>
+                <li>For returns / exchange policy, please see our <a href="/en/faq.html" class="dlv-link">FAQ</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadGlobalZones() {
+            const el = document.getElementById('globalZoneTable');
+            if (!el) return;
+            let zones = null;
+            try {
+                const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_shipping_zones').maybeSingle();
+                if (data && data.setting_value) zones = JSON.parse(data.setting_value);
+            } catch(e) { zones = null; }
+            if (!zones || !zones.length) {
+                zones = [
+                    { zone: 'Asia', fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: 'Middle East', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: 'Oceania', fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: 'North America', fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: 'Europe', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 } }
+                ];
+            }
+            let rows = '<tr><th>Region</th><th>Standard</th><th>Medium</th><th>Large</th><th>DHL Surcharge</th></tr>';
+            (zones || []).forEach(function(z) {
+                const f = z.fees || {};
+                const e = z.express || {};
+                rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + '</td></tr>';
+            });
+            el.innerHTML = '<table class="dlv-table">' + rows + '</table>';
+        }
+        loadGlobalZones();
+    </script>
+    <script src="js/ai-chat-v2.js"></script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title, referrer: document.referrer })
+        }).catch(function() {});
+    })();
+    </script>
+<script>
+    function toggleNavSection(element) {
+        var submenu = element.nextElementSibling;
+        var plus = element.querySelector('.nav-plus');
+        if (submenu) { submenu.classList.toggle('open'); if (plus) plus.textContent = submenu.classList.contains('open') ? '−' : '+'; }
+    }
+
+    var menuBtn = document.getElementById('menuBtn');
+    var navCloseBtn = document.getElementById('navCloseBtn');
+    var navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+</script>
+</body>
+</html>
