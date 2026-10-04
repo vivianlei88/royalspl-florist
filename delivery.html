@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<!-- Google tag (gtag.js) GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6V4WKR9VS6');
+  gtag('config', 'AW-16678811911');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配送規則 | 香港本地鮮花配送・全球乾花永生花寄送 | RoyalSpl Florist</title>
+    <meta name="description" content="RoyalSpl Florist 香港花店配送規則：香港本地鮮花速遞滿HK$500市區免費；全球配送（乾花/永生花）覆蓋亞洲、中東、歐洲、北美等地區，按標準件/中件/大件計費，可選 DHL 特快 2-3 天送達。乾花永生花適合作家居擺設、空間展示與室內設計點綴。">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
+        .container { max-width: 760px; margin: 40px auto; padding: 20px; }
+        .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
+        .back-btn:hover { background: #f0f0f0; }
+        .dlv-card { background: #fff; border: 1px solid #ede8e2; border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .dlv-card h2 { font-size: 18px; color: #1A1A1A; margin: 0 0 12px; }
+        .dlv-card ul { margin: 0 0 6px 18px; padding: 0; font-size: 14px; line-height: 2; color: #383431; }
+        .dlv-card p { margin: 6px 0; font-size: 14px; line-height: 1.9; color: #383431; }
+        .dlv-table-wrap { overflow-x: auto; margin: 10px 0 6px; }
+        table.dlv-table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+        table.dlv-table th, table.dlv-table td { padding: 8px 10px; border: 1px solid #e5dccb; text-align: left; white-space: nowrap; }
+        table.dlv-table th { background: #f7f1e8; font-weight: 600; color: #1A1A1A; }
+        .dlv-tag { display: inline-block; background: #f7f1e8; color: #8a7355; border-radius: 20px; padding: 2px 10px; font-size: 12px; margin-bottom: 10px; }
+        .dlv-note { font-size: 13px; color: #8a7355; }
+        .dlv-link { color: #1A1A1A; text-decoration: underline; text-underline-offset: 3px; }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .dlv-card { padding: 16px 16px; }
+            table.dlv-table { min-width: 560px; }
+            .dlv-card h2 { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-container">
+            <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
+            <a href="index.html" class="logo">
+                <div class="logo-text">RoyalSpl Florist</h1>
+                <p class="logo-subtext">HONG KONG</p>
+            </a>
+            <div class="header-actions">
+                <a href="/en/delivery.html" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>
+                <a href="account.html" class="user-icon" aria-label="會員中心">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+                <a href="cart.html" class="cart-icon" aria-label="購物車">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-header">
+            <h2 class="nav-drawer-title">選單</h2>
+            <button class="nav-close-btn" id="navCloseBtn">✕</button>
+        </div>
+        <nav class="nav-drawer-content">
+            <div class="nav-item"><a href="index.html" class="nav-link"><span class="nav-zh">首頁</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item" data-expandable>
+                <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">節慶場合</span><span class="nav-en">OCCASIONS</span><span class="nav-plus">+</span></div>
+                <div class="nav-submenu">
+                    <a href="products.html?tag=情人節" class="nav-sub-link">情人節</a>
+                    <a href="products.html?tag=母親節" class="nav-sub-link">母親節</a>
+                    <a href="products.html?tag=中秋節" class="nav-sub-link">中秋節</a>
+                    <a href="products.html?tag=生日" class="nav-sub-link">生日</a>
+                    <a href="products.html?tag=婚禮" class="nav-sub-link">婚禮</a>
+                    <a href="products.html?tag=開張" class="nav-sub-link">開張</a>
+                    <a href="products.html?tag=商務送禮" class="nav-sub-link">商務送禮</a>
+                </div>
+            </div>
+            <div class="nav-item" data-expandable>
+                <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">花材種類</span><span class="nav-en">FLOWER TYPES</span><span class="nav-plus">+</span></div>
+                <div class="nav-submenu">
+                    <a href="products.html?tag=玫瑰" class="nav-sub-link">玫瑰</a>
+                    <a href="products.html?tag=鬱金香" class="nav-sub-link">鬱金香</a>
+                    <a href="products.html?tag=芍藥" class="nav-sub-link">芍藥(牡丹)</a>
+                    <a href="products.html?tag=荷花" class="nav-sub-link">荷花</a>
+                    <a href="products.html?tag=進口鮮花" class="nav-sub-link">進口鮮花</a>
+                    <a href="products.html?tag=大麗花" class="nav-sub-link">大麗花</a>
+                </div>
+            </div>
+            <div class="nav-item"><a href="blog.html" class="nav-link"><span class="nav-zh">部落格</span><span class="nav-en">BLOG</span></a></div>
+        </nav>
+    </div>
+
+
+    <div class="container">
+        <a href="index.html" class="back-btn">←</a>
+        <h1 style="text-align:center;margin-bottom:6px;">配送規則</h1>
+        <p style="text-align:center;color:#8a7355;font-size:14px;margin:0 0 24px;">香港本地鮮花速遞・全球乾花永生花寄送</p>
+
+        <div class="dlv-card">
+            <h2>🌿 香港本地配送</h2>
+            <ul>
+                <li><b>派送時間</b>：每天 10:00–18:00，專人速遞配送</li>
+                <li><b>免費送貨</b>：訂單滿 HK$500，港島／九龍／新界市區免費送貨（不指定時間）</li>
+                <li><b>離島地區</b>：另收 HK$300 附加費</li>
+                <li><b>即日／緊急送貨及指定時段</b>：另收附加費（以結賬頁顯示為準）</li>
+                <li>可送達住宅、辦公室、商場、學校、酒店及香港國際機場（僅非限制區域）</li>
+                <li>鮮花鑑賞期約 5–7 天，實際視環境、氣候、溫度而定</li>
+            </ul>
+            <p class="dlv-note">詳細運費以結賬頁實時計算為準。</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>🌏 全球配送（乾花／永生花）</h2>
+            <p><span class="dlv-tag">Global Delivery</span></p>
+            <p>標示「全球配送」的商品（乾花／永生花）可寄送至全球多個國家及地區。運費按商品<b>尺寸檔位</b>（標準件／中件／大件，以商品標籤為準）及<b>目的地地區</b>計算：</p>
+            <div class="dlv-table-wrap" id="globalZoneTable">載入中…</div>
+            <p>國際快遞預計 <b>7–14 個工作天</b>送達（實際以目的地海關及物流為準）。</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>⚡ DHL 特快配送（2–3 天送達）</h2>
+            <p>全球配送可選 DHL 特快，加收附加費：<b>標準件 +HK$350／中件 +HK$800／大件 +HK$1600</b>。於結賬頁勾選「DHL 特快配送」即可。</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>💳 全球訂單付款方式</h2>
+            <p>國際訂單僅支援 <b>信用卡／Apple Pay／Google Pay</b> 付款，不設現金或 FPS。結賬時選擇國家／地區即自動計算運費。</p>
+            <p>新鮮鮮花產品僅提供香港本地配送。</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>🏠 乾花永生花・家居擺設應用</h2>
+            <p>乾花／永生花無需澆水打理，可保存數年，是<b>家居擺設、空間展示與室內設計</b>的理想點綴。適用於玄關、客廳、書房、餐桌、辦公室及商業空間陳列，亦可作禮品贈送，為空間注入自然優雅的氛圍。</p>
+            <p>想為您的空間挑選合適的乾花永生花？<a href="products.html?tag=全球配送" class="dlv-link">瀏覽全球配送系列</a>。</p>
+        </div>
+
+        <div class="dlv-card">
+            <h2>📦 訂單與配送須知</h2>
+            <ul>
+                <li>預訂商品請於送貨日期前 1 天訂購，以確保花材品質</li>
+                <li>更改訂單內容或配送日期，請於預訂送貨日期前 48 小時通知</li>
+                <li>如須指定時間配送，本店保留收取指定時間配送費的權利</li>
+                <li>有關退貨／換貨政策，請參閱 <a href="faq.html" class="dlv-link">常見問題</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadGlobalZones() {
+            const el = document.getElementById('globalZoneTable');
+            if (!el) return;
+            let zones = null;
+            try {
+                const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_shipping_zones').maybeSingle();
+                if (data && data.setting_value) zones = JSON.parse(data.setting_value);
+            } catch(e) { zones = null; }
+            if (!zones || !zones.length) {
+                zones = [
+                    { zone: '亞洲', fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: '中東', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: '大洋洲', fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: '北美洲', fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: '歐洲', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
+                    { zone: '其他地區', fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 } }
+                ];
+            }
+            let rows = '<tr><th>地區</th><th>標準件</th><th>中件</th><th>大件</th><th>DHL 附加費</th></tr>';
+            (zones || []).forEach(function(z) {
+                const f = z.fees || {};
+                const e = z.express || {};
+                rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + '</td></tr>';
+            });
+            el.innerHTML = '<table class="dlv-table">' + rows + '</table>';
+        }
+        loadGlobalZones();
+    </script>
+    <script src="js/ai-chat-v2.js"></script>
+    <script>
+    (function() {
+        fetch('/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page_url: window.location.href, page_title: document.title, referrer: document.referrer })
+        }).catch(function() {});
+    })();
+    </script>
+<script>
+    function toggleNavSection(element) {
+        var submenu = element.nextElementSibling;
+        var plus = element.querySelector('.nav-plus');
+        if (submenu) { submenu.classList.toggle('open'); if (plus) plus.textContent = submenu.classList.contains('open') ? '−' : '+'; }
+    }
+
+    var menuBtn = document.getElementById('menuBtn');
+    var navCloseBtn = document.getElementById('navCloseBtn');
+    var navDrawer = document.getElementById('navDrawer');
+    if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
+    if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+</script>
+</body>
+</html>
