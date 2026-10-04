@@ -6009,12 +6009,19 @@ async function saveProduct() {
                     lastDate = dateDisplay;
                 }
                 
-                // 商品圖片
+                // 商品圖片（product_images 為 JSON 字串，需解析後取第一張）
                 var productImg = '';
-                if (o.product_images && o.product_images.length > 0) {
-                    productImg = o.product_images[0];
-                } else if (o.items && o.items.length > 0 && o.items[0].image) {
-                    productImg = o.items[0].image;
+                if (o.product_images) {
+                    try {
+                        var parsedImg = JSON.parse(o.product_images);
+                        productImg = Array.isArray(parsedImg) ? (parsedImg[0] || '') : parsedImg;
+                    } catch (e) {
+                        productImg = (o.product_images || '').split('|')[0] || '';
+                    }
+                }
+                if (!productImg) {
+                    var itemsArr2 = (typeof o.items === 'string') ? (function(){ try { return JSON.parse(o.items); } catch(e2) { return []; } })() : (o.items || []);
+                    if (itemsArr2.length > 0 && itemsArr2[0].image) { productImg = itemsArr2[0].image; }
                 }
                 
                 // 狀態標籤
