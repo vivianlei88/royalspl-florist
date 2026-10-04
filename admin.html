@@ -2489,8 +2489,8 @@
             + '<div style="display:flex;gap:10px;margin-top:10px;align-items:center;"><input id="gsTagInput" style="flex:1;padding:10px 12px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;" placeholder="全球配送"><button class="btn btn-secondary" onclick="saveGlobalScopeTag()">儲存標籤名</button></div>'
             + '</div>'
             + '<div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;">'
-            + '<div style="font-size:15px;font-weight:600;margin-bottom:4px;">地區分檔運費（標準件 / 中件 / 大件 + 加急）</div>'
-            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">商品在編輯頁打上「標準件 / 中件 / 大件」標籤決定尺寸檔位；結帳時購物車取最高檔收費。加急 = DHL 2–3 天送達，為加急附加費。國家以逗號分隔；滿額免運可填 0 表示不設。</div>'
+            + '<div style="font-size:15px;font-weight:600;margin-bottom:4px;">地區分檔運費（標準件 / 中件 / 大件 + DHL）</div>'
+            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">商品在編輯頁打上「標準件 / 中件 / 大件」標籤決定尺寸檔位；結帳時購物車取最高檔收費。DHL 特快 = 2–3 天送達，為 DHL 附加費。國家以逗號分隔；滿額免運可填 0 表示不設。</div>'
             + '<div id="gsZonesContainer"></div>'
             + '<div style="margin-top:12px;display:flex;gap:10px;"><button class="btn btn-secondary" onclick="addGlobalZoneRow()">+ 添加地區</button><button class="btn btn-primary" onclick="saveGlobalZones()">儲存運費設置</button></div>'
             + '</div>';
@@ -2536,10 +2536,10 @@
                 + '<span style="font-size:12px;color:#888;width:52px;">滿額免運</span><input data-z-i="' + i + '" data-z-f="freeAbove" type="number" value="' + (z.freeAbove || 0) + '" placeholder="0=不設" style="width:90px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '</div>'
                 + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;">'
-                + '<span style="font-size:12px;color:#1a73e8;font-weight:600;">⚡ 加急附加費（DHL）</span>'
-                + '<span style="font-size:12px;color:#888;">標準</span><input data-z-i="' + i + '" data-z-f="express.standard" type="number" value="' + (exp.standard || 0) + '" placeholder="加急HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
-                + '<span style="font-size:12px;color:#888;">中</span><input data-z-i="' + i + '" data-z-f="express.medium" type="number" value="' + (exp.medium || 0) + '" placeholder="加急HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
-                + '<span style="font-size:12px;color:#888;">大</span><input data-z-i="' + i + '" data-z-f="express.large" type="number" value="' + (exp.large || 0) + '" placeholder="加急HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#1a73e8;font-weight:600;">⚡ DHL 附加費</span>'
+                + '<span style="font-size:12px;color:#888;">標準</span><input data-z-i="' + i + '" data-z-f="express.standard" type="number" value="' + (exp.standard || 0) + '" placeholder="DHL附加HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;">中</span><input data-z-i="' + i + '" data-z-f="express.medium" type="number" value="' + (exp.medium || 0) + '" placeholder="DHL附加HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;">大</span><input data-z-i="' + i + '" data-z-f="express.large" type="number" value="' + (exp.large || 0) + '" placeholder="DHL附加HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '</div>'
                 + '</div>';
         }
