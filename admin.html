@@ -2489,8 +2489,8 @@
             + '<div style="display:flex;gap:10px;margin-top:10px;align-items:center;"><input id="gsTagInput" style="flex:1;padding:10px 12px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;" placeholder="全球配送"><button class="btn btn-secondary" onclick="saveGlobalScopeTag()">儲存標籤名</button></div>'
             + '</div>'
             + '<div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;">'
-            + '<div style="font-size:15px;font-weight:600;margin-bottom:4px;">地區分檔運費</div>'
-            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">按地區設定運費（HK$）與滿額免運門檻；國家以逗號分隔。前台結帳時客人按國家/地區選擇，系統自動套用該地區運費。</div>'
+            + '<div style="font-size:15px;font-weight:600;margin-bottom:4px;">地區分檔運費（標準件 / 中件 / 大件 + 加急）</div>'
+            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">商品在編輯頁打上「標準件 / 中件 / 大件」標籤決定尺寸檔位；結帳時購物車取最高檔收費。加急 = DHL 2–3 天送達，為加急附加費。國家以逗號分隔；滿額免運可填 0 表示不設。</div>'
             + '<div id="gsZonesContainer"></div>'
             + '<div style="margin-top:12px;display:flex;gap:10px;"><button class="btn btn-secondary" onclick="addGlobalZoneRow()">+ 添加地區</button><button class="btn btn-primary" onclick="saveGlobalZones()">儲存運費設置</button></div>'
             + '</div>';
@@ -2500,13 +2500,14 @@
             if (r.data && r.data.setting_value) { try { zones = JSON.parse(r.data.setting_value); } catch(e) {} }
             if (!zones || !zones.length) {
                 zones = [
-                    { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fee: 120, freeAbove: 800 },
-                    { zone: '大洋洲', countries: ['澳洲','新西蘭'], fee: 200, freeAbove: 1200 },
-                    { zone: '北美洲', countries: ['美國','加拿大'], fee: 260, freeAbove: 1500 },
-                    { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fee: 280, freeAbove: 1500 },
-                    { zone: '其他地區', countries: ['其他'], fee: 300, freeAbove: 2000 }
+                    { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 },
+                    { zone: '大洋洲', countries: ['澳洲','新西蘭'], fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 },
+                    { zone: '北美洲', countries: ['美國','加拿大'], fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 },
+                    { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 },
+                    { zone: '其他地區', countries: ['其他'], fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 }
                 ];
             }
+            zones.forEach(function(z) { if (!z.fees) { z.fees = { standard: z.fee || 0, medium: z.fee || 0, large: z.fee || 0 }; } if (!z.express) { z.express = { standard: 0, medium: 0, large: 0 }; } });
             globalZonesEditing = zones;
             var r2 = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_scope_tag').maybeSingle();
             if (r2.data && r2.data.setting_value) { document.getElementById('gsTagLabel').textContent = r2.data.setting_value; document.getElementById('gsTagInput').value = r2.data.setting_value; }
@@ -2520,12 +2521,26 @@
         var h = '';
         for (var i = 0; i < globalZonesEditing.length; i++) {
             var z = globalZonesEditing[i];
-            h += '<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">'
-                + '<input data-z-i="' + i + '" data-z-f="zone" value="' + z.zone + '" placeholder="地區名稱" style="width:120px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
+            var fees = z.fees || {};
+            var exp = z.express || {};
+            h += '<div style="border:1px solid #eee;border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fafafa;">'
+                + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">'
+                + '<input data-z-i="' + i + '" data-z-f="zone" value="' + z.zone + '" placeholder="地區名稱" style="width:110px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
                 + '<input data-z-i="' + i + '" data-z-f="countries" value="' + (z.countries || []).join(',') + '" placeholder="國家（逗號分隔）" style="flex:1;min-width:170px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
-                + '<input data-z-i="' + i + '" data-z-f="fee" type="number" value="' + (z.fee || 0) + '" placeholder="運費HK$" style="width:88px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
-                + '<input data-z-i="' + i + '" data-z-f="freeAbove" type="number" value="' + (z.freeAbove || 0) + '" placeholder="滿額免運HK$" style="width:108px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
                 + '<button class="btn btn-danger btn-small" onclick="removeGlobalZoneRow(' + i + ')">刪除</button>'
+                + '</div>'
+                + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
+                + '<span style="font-size:12px;color:#888;width:52px;">標準件</span><input data-z-i="' + i + '" data-z-f="fees.standard" type="number" value="' + (fees.standard || 0) + '" placeholder="運費HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;width:52px;">中件</span><input data-z-i="' + i + '" data-z-f="fees.medium" type="number" value="' + (fees.medium || 0) + '" placeholder="運費HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;width:52px;">大件</span><input data-z-i="' + i + '" data-z-f="fees.large" type="number" value="' + (fees.large || 0) + '" placeholder="運費HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;width:52px;">滿額免運</span><input data-z-i="' + i + '" data-z-f="freeAbove" type="number" value="' + (z.freeAbove || 0) + '" placeholder="0=不設" style="width:90px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '</div>'
+                + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;">'
+                + '<span style="font-size:12px;color:#1a73e8;font-weight:600;">⚡ 加急附加費（DHL）</span>'
+                + '<span style="font-size:12px;color:#888;">標準</span><input data-z-i="' + i + '" data-z-f="express.standard" type="number" value="' + (exp.standard || 0) + '" placeholder="加急HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;">中</span><input data-z-i="' + i + '" data-z-f="express.medium" type="number" value="' + (exp.medium || 0) + '" placeholder="加急HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;">大</span><input data-z-i="' + i + '" data-z-f="express.large" type="number" value="' + (exp.large || 0) + '" placeholder="加急HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '</div>'
                 + '</div>';
         }
         c.innerHTML = h;
@@ -2533,13 +2548,19 @@
             inp.addEventListener('input', function() {
                 var idx = parseInt(inp.getAttribute('data-z-i'));
                 var f = inp.getAttribute('data-z-f');
-                if (f === 'fee' || f === 'freeAbove') globalZonesEditing[idx][f] = parseInt(inp.value) || 0;
-                else if (f === 'countries') globalZonesEditing[idx][f] = inp.value.split(',').map(function(s){return s.trim();}).filter(Boolean);
+                if (f === 'countries') { globalZonesEditing[idx][f] = inp.value.split(',').map(function(s){return s.trim();}).filter(Boolean); return; }
+                if (f.indexOf('.') > -1) {
+                    var parts = f.split('.');
+                    if (!globalZonesEditing[idx][parts[0]]) globalZonesEditing[idx][parts[0]] = {};
+                    globalZonesEditing[idx][parts[0]][parts[1]] = parseInt(inp.value) || 0;
+                    return;
+                }
+                if (f === 'freeAbove') globalZonesEditing[idx][f] = parseInt(inp.value) || 0;
                 else globalZonesEditing[idx][f] = inp.value;
             });
         });
     }
-    function addGlobalZoneRow() { globalZonesEditing.push({ zone: '', countries: [], fee: 0, freeAbove: 0 }); renderGlobalZoneRows(); }
+    function addGlobalZoneRow() { globalZonesEditing.push({ zone: '', countries: [], fees: { standard: 0, medium: 0, large: 0 }, express: { standard: 0, medium: 0, large: 0 }, freeAbove: 0 }); renderGlobalZoneRows(); }
     function removeGlobalZoneRow(i) { globalZonesEditing.splice(i, 1); renderGlobalZoneRows(); }
     async function saveGlobalZones() {
         if (!globalZonesEditing.length) { showToast('請至少保留一個地區'); return; }
