@@ -444,6 +444,10 @@
                 <select id="globalCountrySelect" onchange="onGlobalCountryChange(this)" style="width:100%;padding:12px 15px;border:1px solid #1A1A1A;border-radius:6px;font-size:15px;font-family:inherit;background:#fff;"></select>
             </div>
             <p class="tier-list-note" id="globalShippingInfo">請選擇國家 / 地區以計算運費</p>
+            <label style="display:flex;align-items:center;gap:8px;margin:10px 0 4px;font-size:14px;cursor:pointer;background:#fff;border:1px solid #eee;border-radius:8px;padding:10px 12px;">
+                <input type="checkbox" id="globalExpressCheck" onchange="toggleGlobalExpress(this.checked)" style="width:18px;height:18px;accent-color:#1A1A1A;">
+                <span>⚡ 加急配送（DHL，2–3 天送達）<b id="expressSurchargeLabel">+HK$0</b></span>
+            </label>
             <p class="tier-list-note">🌏 全球商品（乾花 / 永生花）以國際快遞寄送，預計送達時間：7–14 個工作天（實際以目的地海關及物流為準）</p>
         </div>
         </div>
@@ -604,6 +608,7 @@
     let globalShippingZones = null;
     let globalScopeTag = '全球配送';
     let globalZone = '';
+    let globalExpress = false;
     let deliveryMode = 'hk';   // hk | global | mixed
     let selectedTimeFee = 90;
     let detectedArea = '';
@@ -905,11 +910,11 @@
         } catch(e) {}
         if (!globalShippingZones || !globalShippingZones.length) {
             globalShippingZones = [
-                { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fee: 120, freeAbove: 800 },
-                { zone: '大洋洲', countries: ['澳洲','新西蘭'], fee: 200, freeAbove: 1200 },
-                { zone: '北美洲', countries: ['美國','加拿大'], fee: 260, freeAbove: 1500 },
-                { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fee: 280, freeAbove: 1500 },
-                { zone: '其他地區', countries: ['其他'], fee: 300, freeAbove: 2000 }
+                { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 },
+                { zone: '大洋洲', countries: ['澳洲','新西蘭'], fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 },
+                { zone: '北美洲', countries: ['美國','加拿大'], fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 },
+                { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 },
+                { zone: '其他地區', countries: ['其他'], fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1500 }, freeAbove: 0 }
             ];
         }
         applyDeliveryMode();
@@ -963,15 +968,63 @@
         sel.innerHTML = h;
     }
 
+    function getCartSizeTier() {
+        if (!cart.length) return 'standard';
+        let tier = 'standard';
+        cart.forEach(item => {
+            const tags = item.tags || [];
+            if (tags.indexOf('大件') > -1) tier = 'large';
+            else if (tags.indexOf('中件') > -1 && tier !== 'large') tier = 'medium';
+        });
+        return tier;
+    }
+    function getTierNameZh(t) { return t === 'large' ? '大件' : (t === 'medium' ? '中件' : '標準件'); }
+    function getZoneFeeByTier(z, tier) {
+        if (!z) return 0;
+        if (z.fees && z.fees[tier]) return z.fees[tier];
+        return z.fee || 0;  // 兼容舊數據
+    }
+    function getZoneExpressByTier(z, tier) {
+        if (!z || !z.express) return 0;
+        return z.express[tier] || z.express.standard || 0;
+    }
+    function toggleGlobalExpress(checked) {
+        globalExpress = !!checked;
+        updateExpressLabel();
+        const info = document.getElementById('globalShippingInfo');
+        if (info && globalZone) onGlobalCountryChange({ value: globalZone });
+        renderSummary();
+    }
+    function updateExpressLabel() {
+        const el = document.getElementById('expressSurchargeLabel');
+        if (el) {
+            const tier = getCartSizeTier();
+            const zoneName = globalZone ? globalZone.split('|')[0] : '';
+            const z = (globalShippingZones || []).find(x => x.zone === zoneName);
+            const sur = getZoneExpressByTier(z, tier);
+            el.textContent = '+HK$' + sur + '（' + getTierNameZh(tier) + '）';
+        }
+    }
     function onGlobalCountryChange(sel) {
         globalZone = sel.value || '';
+        updateExpressLabel();
         const info = document.getElementById('globalShippingInfo');
         if (info) {
             if (!globalZone) { info.textContent = '請選擇國家 / 地區以計算運費'; }
             else {
                 const zoneName = globalZone.split('|')[0];
                 const z = (globalShippingZones || []).find(x => x.zone === zoneName);
-                info.textContent = z ? (getSubtotal() >= (z.freeAbove || 0) ? ('✓ 滿 HK$' + z.freeAbove + ' 免運費（' + zoneName + '）') : ('運費：HK$' + (z.fee || 0) + '（' + zoneName + '）' + (z.freeAbove ? '，滿 HK$' + z.freeAbove + ' 免運費' : ''))) : '';
+                if (z) {
+                    const tier = getCartSizeTier();
+                    const fee = getZoneFeeByTier(z, tier);
+                    const sur = getZoneExpressByTier(z, tier);
+                    const expressTotal = fee + sur;
+                    if (z.freeAbove && getSubtotal() >= z.freeAbove) {
+                        info.textContent = '✓ 滿 HK$' + z.freeAbove + ' 免運費（' + zoneName + '）';
+                    } else {
+                        info.textContent = '運費：HK$' + fee + '（' + zoneName + '・' + getTierNameZh(tier) + '）' + (sur ? '；加急 +HK$' + sur + ' → 共 HK$' + expressTotal : '') + (z.freeAbove ? '，滿 HK$' + z.freeAbove + ' 免運費' : '');
+                    }
+                }
             }
         }
         renderSummary();
@@ -982,8 +1035,11 @@
         const zoneName = globalZone.split('|')[0];
         const z = globalShippingZones.find(x => x.zone === zoneName);
         if (!z) return 0;
-        if (getSubtotal() >= (z.freeAbove || 0)) return 0;
-        return z.fee || 0;
+        if (z.freeAbove && getSubtotal() >= (z.freeAbove || 0)) return 0;
+        const tier = getCartSizeTier();
+        let fee = getZoneFeeByTier(z, tier);
+        if (globalExpress) fee += getZoneExpressByTier(z, tier);
+        return fee;
     }
 
     function getGlobalZoneLabel() { return globalZone ? globalZone.split('|')[1] || '' : ''; }
@@ -1105,7 +1161,7 @@
             ${itemsHtml}
             <div class="summary-divider"></div>
             <div class="summary-item"><span>商品小計</span><span>HK$${subtotal}</span></div>
-            <div class="summary-item"><span>配送費 ${selectedHour ? '(' + selectedHour + ')' : ''}</span><span>${deliveryFee === 0 ? '免費' : 'HK$' + deliveryFee}</span></div>
+            <div class="summary-item"><span>配送費 ${deliveryMode === 'global' ? (globalExpress ? '（加急DHL）' : '（' + getTierNameZh(getCartSizeTier()) + '）') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? '免費' : 'HK$' + deliveryFee}</span></div>
             ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 HK$${selectedTimeFee}, 地區費 HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>總計</span><span>HK$${total}</span></div>
@@ -1192,7 +1248,7 @@
             deliveryDate: document.getElementById('deliveryDate').value,
             deliveryTimeSlot: selectedTimeSlot,
             deliveryHour: selectedHour,
-            deliveryArea: deliveryMode === 'global' ? ('國際配送:' + getGlobalZoneLabel()) : getEffectiveArea(),
+            deliveryArea: deliveryMode === 'global' ? ('國際配送:' + getGlobalZoneLabel() + (globalExpress ? '（加急DHL）' : '')) : getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
             totalAmount: getTotal(),
@@ -1393,7 +1449,7 @@
             deliveryDate: document.getElementById('deliveryDate').value,
             deliveryTimeSlot: selectedTimeSlot,
             deliveryHour: selectedHour,
-            deliveryArea: deliveryMode === 'global' ? ('國際配送:' + getGlobalZoneLabel()) : getEffectiveArea(),
+            deliveryArea: deliveryMode === 'global' ? ('國際配送:' + getGlobalZoneLabel() + (globalExpress ? '（加急DHL）' : '')) : getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
             totalAmount: getTotal(),
