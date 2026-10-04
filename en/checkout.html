@@ -445,7 +445,7 @@
             <p class="tier-list-note" id="globalShippingInfo">Please select your country to calculate shipping fee</p>
             <label style="display:flex;align-items:center;gap:8px;margin:10px 0 4px;font-size:14px;cursor:pointer;background:#fff;border:1px solid #eee;border-radius:8px;padding:10px 12px;">
                 <input type="checkbox" id="globalExpressCheck" onchange="toggleGlobalExpress(this.checked)" style="width:18px;height:18px;accent-color:#1A1A1A;">
-                <span>⚡ Express Delivery (DHL, 2–3 days) <b id="expressSurchargeLabel">+HK$0</b></span>
+                <span>⚡ DHL Express Delivery (2–3 days) <b id="expressSurchargeLabel">+HK$0</b></span>
             </label>
             <p class="tier-list-note">🌏 Worldwide items (dried &amp; preserved flowers) ship via international courier, estimated delivery: 7–14 business days (subject to destination customs &amp; logistics)</p>
         </div>
@@ -1026,7 +1026,7 @@
                     if (z.freeAbove && getSubtotal() >= z.freeAbove) {
                         info.textContent = '✓ Free shipping over HK$' + z.freeAbove + ' (' + zoneName + ')';
                     } else {
-                        info.textContent = 'Shipping: HK$' + fee + ' (' + zoneName + ' · ' + getTierNameEn(tier) + ')' + (sur ? '; Express +HK$' + sur + ' → HK$' + expressTotal : '') + (z.freeAbove ? ', free over HK$' + z.freeAbove : '');
+                        info.textContent = 'Shipping: HK$' + fee + ' (' + zoneName + ' · ' + getTierNameEn(tier) + ')' + (sur ? '; DHL +HK$' + sur + ' → HK$' + expressTotal : '') + (z.freeAbove ? ', free over HK$' + z.freeAbove : '');
                     }
                 }
             }
@@ -1203,7 +1203,7 @@
             ${itemsHtml}
             <div class="summary-divider"></div>
             <div class="summary-item"><span>Product Subtotal</span><span>HK$${subtotal}</span></div>
-            <div class="summary-item"><span>Delivery Fee ${deliveryMode === 'global' ? (globalExpress ? ' (Express DHL)' : ' (' + getTierNameEn(getCartSizeTier()) + ')') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? 'Free' : 'HK$' + deliveryFee}</span></div>
+            <div class="summary-item"><span>Delivery Fee ${deliveryMode === 'global' ? (globalExpress ? ' (DHL)' : ' (' + getTierNameEn(getCartSizeTier()) + ')') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? 'Free' : 'HK$' + deliveryFee}</span></div>
             ${area ? `<div class="delivery-fee-formula">Formula: Max(Time Slot Fee HK$${selectedTimeFee}, District Fee HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>Total</span><span>HK$${total}</span></div>
@@ -1290,7 +1290,7 @@
             deliveryDate: document.getElementById('deliveryDate').value,
             deliveryTimeSlot: selectedTimeSlot,
             deliveryHour: selectedHour,
-            deliveryArea: deliveryMode === 'global' ? ('International:' + getGlobalZoneLabel() + (globalExpress ? ' (Express DHL)' : '')) : getEffectiveArea(),
+            deliveryArea: deliveryMode === 'global' ? ('International:' + getGlobalZoneLabel() + (globalExpress ? ' (DHL)' : '')) : getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
             totalAmount: getTotal(),
@@ -1491,7 +1491,7 @@
             deliveryDate: document.getElementById('deliveryDate').value,
             deliveryTimeSlot: selectedTimeSlot,
             deliveryHour: selectedHour,
-            deliveryArea: deliveryMode === 'global' ? ('International:' + getGlobalZoneLabel() + (globalExpress ? ' (Express DHL)' : '')) : getEffectiveArea(),
+            deliveryArea: deliveryMode === 'global' ? ('International:' + getGlobalZoneLabel() + (globalExpress ? ' (DHL)' : '')) : getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
             totalAmount: getTotal(),
