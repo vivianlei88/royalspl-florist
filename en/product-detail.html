@@ -833,6 +833,7 @@ function renderProductDetail(product) {
         container.innerHTML = html;
         loadLinkedAddons(product);
         loadRecommendProducts(product, container);
+        loadDeliveryRulesContent();
     }
 
     var allAddons = [];
