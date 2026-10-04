@@ -697,6 +697,7 @@
         container.innerHTML = html;
         loadLinkedAddons(product);
         loadRecommendProducts(product, container);
+        loadDeliveryRulesContent();
     }
 
     var allAddons = [];
@@ -1086,7 +1087,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadProduct();
         updateCartBadge();
         loadFlowerCareContent();
-        loadPrivacyPolicyContent();
+        loadDeliveryRulesContent();
     });
     </script>
     <script>
