@@ -543,6 +543,7 @@
                     <div class="sidebar-item sidebar-subitem" data-page="products" onclick="switchPage('products')">商品管理</div>
                     <div class="sidebar-item sidebar-subitem" data-page="categories" onclick="switchPage('categories')">商品分類</div>
                     <div class="sidebar-item sidebar-subitem" data-page="addons" onclick="switchPage('addons')">加購配件</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="globalshipping" onclick="switchPage('globalshipping')">全球運費</div>
                 </div>
             </div>
             <div class="sidebar-item" data-page="orders" onclick="switchPage('orders')">訂單管理</div>
@@ -2477,6 +2478,81 @@
         }
     }
 
+    // ==================== 全球運費設置 ====================
+    var globalZonesEditing = null;
+    async function renderGlobalShippingPage(c) {
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">全球運費設置</h2></div>'
+            + '<div style="background:#FFF8E1;border:1px solid #E6C86B;color:#8a6d1a;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;line-height:1.7;">🌏 <b>全球售卖（乾花/永生花）設定：</b>商品在編輯頁打上「全球配送」標籤後即可全球寄送；購物車全為全球商品時，結帳頁自動切換為「國際配送」模式（選國家/地區，僅支援信用卡 / Apple Pay / Google Pay 付款）。</div>'
+            + '<div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;margin-bottom:16px;">'
+            + '<div style="font-size:15px;font-weight:600;margin-bottom:6px;">全球配送標籤</div>'
+            + '<div style="font-size:13px;color:#666;line-height:1.7;">目前標記用標籤：<b id="gsTagLabel">全球配送</b>（商品編輯頁點選此標籤即為全球商品；如無此標籤選項，可在商品標籤欄手動輸入）</div>'
+            + '<div style="display:flex;gap:10px;margin-top:10px;align-items:center;"><input id="gsTagInput" style="flex:1;padding:10px 12px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;" placeholder="全球配送"><button class="btn btn-secondary" onclick="saveGlobalScopeTag()">儲存標籤名</button></div>'
+            + '</div>'
+            + '<div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;">'
+            + '<div style="font-size:15px;font-weight:600;margin-bottom:4px;">地區分檔運費</div>'
+            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">按地區設定運費（HK$）與滿額免運門檻；國家以逗號分隔。前台結帳時客人按國家/地區選擇，系統自動套用該地區運費。</div>'
+            + '<div id="gsZonesContainer"></div>'
+            + '<div style="margin-top:12px;display:flex;gap:10px;"><button class="btn btn-secondary" onclick="addGlobalZoneRow()">+ 添加地區</button><button class="btn btn-primary" onclick="saveGlobalZones()">儲存運費設置</button></div>'
+            + '</div>';
+        try {
+            var r = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_shipping_zones').maybeSingle();
+            var zones = null;
+            if (r.data && r.data.setting_value) { try { zones = JSON.parse(r.data.setting_value); } catch(e) {} }
+            if (!zones || !zones.length) {
+                zones = [
+                    { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fee: 120, freeAbove: 800 },
+                    { zone: '大洋洲', countries: ['澳洲','新西蘭'], fee: 200, freeAbove: 1200 },
+                    { zone: '北美洲', countries: ['美國','加拿大'], fee: 260, freeAbove: 1500 },
+                    { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fee: 280, freeAbove: 1500 },
+                    { zone: '其他地區', countries: ['其他'], fee: 300, freeAbove: 2000 }
+                ];
+            }
+            globalZonesEditing = zones;
+            var r2 = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_scope_tag').maybeSingle();
+            if (r2.data && r2.data.setting_value) { document.getElementById('gsTagLabel').textContent = r2.data.setting_value; document.getElementById('gsTagInput').value = r2.data.setting_value; }
+            else { document.getElementById('gsTagInput').value = '全球配送'; }
+            renderGlobalZoneRows();
+        } catch(e) { console.error('載入全球運費失敗:', e); globalZonesEditing = []; renderGlobalZoneRows(); }
+    }
+    function renderGlobalZoneRows() {
+        var c = document.getElementById('gsZonesContainer');
+        if (!c) return;
+        var h = '';
+        for (var i = 0; i < globalZonesEditing.length; i++) {
+            var z = globalZonesEditing[i];
+            h += '<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">'
+                + '<input data-z-i="' + i + '" data-z-f="zone" value="' + z.zone + '" placeholder="地區名稱" style="width:120px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
+                + '<input data-z-i="' + i + '" data-z-f="countries" value="' + (z.countries || []).join(',') + '" placeholder="國家（逗號分隔）" style="flex:1;min-width:170px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
+                + '<input data-z-i="' + i + '" data-z-f="fee" type="number" value="' + (z.fee || 0) + '" placeholder="運費HK$" style="width:88px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
+                + '<input data-z-i="' + i + '" data-z-f="freeAbove" type="number" value="' + (z.freeAbove || 0) + '" placeholder="滿額免運HK$" style="width:108px;padding:9px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:13px;">'
+                + '<button class="btn btn-danger btn-small" onclick="removeGlobalZoneRow(' + i + ')">刪除</button>'
+                + '</div>';
+        }
+        c.innerHTML = h;
+        c.querySelectorAll('input[data-z-i]').forEach(function(inp) {
+            inp.addEventListener('input', function() {
+                var idx = parseInt(inp.getAttribute('data-z-i'));
+                var f = inp.getAttribute('data-z-f');
+                if (f === 'fee' || f === 'freeAbove') globalZonesEditing[idx][f] = parseInt(inp.value) || 0;
+                else if (f === 'countries') globalZonesEditing[idx][f] = inp.value.split(',').map(function(s){return s.trim();}).filter(Boolean);
+                else globalZonesEditing[idx][f] = inp.value;
+            });
+        });
+    }
+    function addGlobalZoneRow() { globalZonesEditing.push({ zone: '', countries: [], fee: 0, freeAbove: 0 }); renderGlobalZoneRows(); }
+    function removeGlobalZoneRow(i) { globalZonesEditing.splice(i, 1); renderGlobalZoneRows(); }
+    async function saveGlobalZones() {
+        if (!globalZonesEditing.length) { showToast('請至少保留一個地區'); return; }
+        await upsertSetting('global_shipping_zones', JSON.stringify(globalZonesEditing));
+        showToast('全球運費設置已儲存');
+    }
+    async function saveGlobalScopeTag() {
+        var v = document.getElementById('gsTagInput').value.trim();
+        if (!v) { showToast('標籤名不能為空'); return; }
+        await upsertSetting('global_scope_tag', v);
+        document.getElementById('gsTagLabel').textContent = v;
+        showToast('配送標籤已儲存');
+    }
     // ==================== 管理員管理頁面 ====================
     async function renderAdminsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">管理員管理</h2><button class="btn btn-primary" onclick="showAddAdminForm()">新增管理員</button></div>';
@@ -3162,6 +3238,7 @@ staticPages.forEach(page => {
         else if (page === 'products') { renderProductsPage(c); }
         else if (page === 'categories') { renderCategoriesPage(c); }
         else if (page === 'addons') { renderAddonsPage(c); }
+        else if (page === 'globalshipping') { renderGlobalShippingPage(c); }
         else if (page === 'orders') { renderOrdersPage(c); }
         else if (page === 'inbox') { renderInboxPage(c); }
         else if (page === 'members') { renderMembersPage(c); }
