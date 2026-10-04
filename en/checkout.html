@@ -1542,11 +1542,11 @@
                 actionsEl.innerHTML = '';
             } else {
                 // Not logged in: prompt to login/register
-                textEl.innerHTML = '🎁 <strong>Member Exclusive</strong>: Login to earn <strong>' + points + ' points</strong> (worth HK$' + pointsValue + ') with this order, redeemable next time!';
+                textEl.innerHTML = '<strong>Member Exclusive</strong>: Login to earn <strong>' + points + ' points</strong> (worth HK$' + pointsValue + ') with this order, redeemable next time!';
                 actionsEl.innerHTML = '<button class="points-btn points-btn-primary" onclick="location.href=\'/en/login.html?redirect=/en/checkout.html\'">Login</button><button class="points-btn points-btn-secondary" onclick="location.href=\'/en/register.html\'">Register</button>';
             }
         } catch(e) {
-            textEl.innerHTML = '🎁 <strong>Member Exclusive</strong>: Login to earn <strong>' + points + ' points</strong> (worth HK$' + pointsValue + ') with this order, redeemable next time!';
+            textEl.innerHTML = '<strong>Member Exclusive</strong>: Login to earn <strong>' + points + ' points</strong> (worth HK$' + pointsValue + ') with this order, redeemable next time!';
             actionsEl.innerHTML = '<button class="points-btn points-btn-primary" onclick="location.href=\'/en/login.html?redirect=/en/checkout.html\'">Login</button><button class="points-btn points-btn-secondary" onclick="location.href=\'/en/register.html\'">Register</button>';
         }
     }
