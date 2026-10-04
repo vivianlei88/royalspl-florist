@@ -499,7 +499,9 @@ function renderProductDetail(product) {
         
         // 動態設置 SEO：title、meta description、Open Graph
         var productTitle = (product.name_en || (product.name_en || product.name_zh) || 'Flower Product') + ' | HK$' + getCurrentPrice() + ' | RoyalSpl Florist Hong Kong';
-        var productDesc = (product.description_en || product.description || 'RoyalSpl Florist premium flower product').substring(0, 150);
+        var isGlobalItem = (product.tags || []).indexOf('全球配送') > -1;
+        var descBase = (product.description_en || product.description || 'RoyalSpl Florist premium flower product').substring(0, 150);
+        var productDesc = isGlobalItem ? (descBase + ' Perfect for home decor, space styling and interior design; ships worldwide.').substring(0, 190) : descBase;
         document.title = productTitle;
         var metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) metaDesc.setAttribute('content', productDesc);
@@ -783,8 +785,8 @@ function renderProductDetail(product) {
         html += '<div class="detail-seo-section" style="margin-top:30px;">';
         // 花材護理知識（默认内容，后续异步更新）
         html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Flower Care Tips <span>+<\/span><\/div><div class="seo-content" id="flowerCareContent">Flower Care Tips:<br>1. Change water daily<br>2. Trim stems at 45 degrees<br>3. Avoid direct sunlight<br>4. Remove wilted petals regularly<\/div><\/div>';
-        // 香港隱私條例（折叠展开）
-        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Hong Kong Privacy Policy <span>+<\/span><\/div><div class="seo-content" id="privacyContent">Loading...<\/div><\/div>';
+        // Delivery Policy (Local + Worldwide, collapsible)
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Delivery Policy <span>+<\/span><\/div><div class="seo-content" id="deliveryContent">Loading...<\/div><\/div>';
         html += '<\/div>';
         html += '<\/div>';
         html += '<div class="detail-info-area">';
@@ -1171,30 +1173,54 @@ function renderProductDetail(product) {
         } catch(e) { console.log('花材護理知識加载失败:', e); }
     }
 
-    // 从数据库加载隐私政策
-    async function loadPrivacyPolicyContent() {
+    // Delivery Policy: Local + Worldwide (generated from global_shipping_zones)
+    async function loadDeliveryRulesContent() {
+        const el = document.getElementById('deliveryContent');
+        if (!el) return;
+        let zones = null;
         try {
-            const { data, error } = await supabaseClient.from('privacy_policy').select('*').eq('is_published', true).limit(1).maybeSingle();
-            const el = document.getElementById('privacyContent');
-            if (el) {
-                if (data && (data.content_en || data.content)) {
-                    el.innerHTML = parseMarkdown(data.content_en || data.content);
-                } else {
-                    el.innerHTML = 'No content';
-                }
-            }
-        } catch(e) { 
-            console.log('Privacy policy load failed:', e); 
-            const el = document.getElementById('privacyContent');
-            if (el) el.innerHTML = 'No content';
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_shipping_zones').maybeSingle();
+            if (data && data.setting_value) zones = JSON.parse(data.setting_value);
+        } catch(e) { zones = null; }
+        if (!zones || !zones.length) {
+            zones = [
+                { zone: 'Asia', fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 } },
+                { zone: 'Middle East', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
+                { zone: 'Oceania', fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 } },
+                { zone: 'North America', fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 } },
+                { zone: 'Europe', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
+                { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 } }
+            ];
         }
+        let rows = '';
+        (zones || []).forEach(function(z) {
+            const f = z.fees || {};
+            const e = z.express || {};
+            rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + '</td></tr>';
+        });
+        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">Region</th><th style="padding:6px;border:1px solid #e5dccb;">Standard</th><th style="padding:6px;border:1px solid #e5dccb;">Medium</th><th style="padding:6px;border:1px solid #e5dccb;">Large</th><th style="padding:6px;border:1px solid #e5dccb;">DHL Surcharge</th></tr>' + rows + '</table>' : '';
+        el.innerHTML = '<h4 style="margin:4px 0 6px;font-size:14px;">Hong Kong Local Delivery</h4>'
+            + '<ul style="margin:0 0 12px 18px;font-size:13px;line-height:1.9;">'
+            + '<li>Delivery hours: every day 10:00–18:00, courier delivery</li>'
+            + '<li>Free delivery on orders over HK$500 (HK Island / Kowloon / New Territories urban areas)</li>'
+            + '<li>Outlying islands: HK$300 surcharge</li>'
+            + '<li>Same-day / urgent delivery &amp; time slots: additional charge (as shown at checkout)</li>'
+            + '<li>Fresh flowers last approx. 5–7 days depending on environment</li>'
+            + '</ul>'
+            + '<h4 style="margin:4px 0 6px;font-size:14px;">Worldwide Delivery (Dried &amp; Preserved Flowers)</h4>'
+            + '<p style="margin:0 0 6px;font-size:13px;line-height:1.8;">Items marked "Global Delivery" ship worldwide. Shipping is charged by package size tier (Standard / Medium / Large, set by product tag) and destination region:</p>'
+            + table
+            + '<p style="margin:6px 0;font-size:13px;line-height:1.8;">⚡ <b>DHL Express Delivery</b>: 2–3 days, surcharge +HK$350 (Standard) / +HK$800 (Medium) / +HK$1600 (Large).</p>'
+            + '<p style="margin:0 0 6px;font-size:13px;line-height:1.8;">International courier: estimated <b>7–14 business days</b> (subject to destination customs &amp; logistics).</p>'
+            + '<p style="margin:0;font-size:13px;line-height:1.8;">International orders support <b>Credit Card / Apple Pay / Google Pay</b> only. Select your country at checkout for the fee.</p>'
+            + '<p style="margin:10px 0 0;"><a href="/en/delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">View full delivery policy →</a></p>';
     }
 
 document.addEventListener('DOMContentLoaded', function() {
         loadProduct();
         updateCartBadge();
         loadFlowerCareContent();
-        loadPrivacyPolicyContent();
+        loadDeliveryRulesContent();
     });
     </script>
     <script>
