@@ -387,6 +387,7 @@
         </div>
 
         <div class="checkout-section">
+            <div id="mixedCartNotice" style="display:none;background:#FFF8E1;border:1px solid #E6C86B;color:#8a6d1a;padding:12px 15px;border-radius:8px;margin-bottom:15px;font-size:14px;line-height:1.6;">⚠️ 您的購物車同時包含香港本地鮮花與全球配送商品（乾花/永生花）。為確保配送準確，建議分開下單：本地鮮花與全球商品各下一張訂單。</div>
             <h2 class="checkout-section-title">收花人資料</h2>
             <div class="form-group">
                 <label class="form-label">收花人姓名 *</label>
@@ -410,7 +411,7 @@
         </div>
 
         <div class="checkout-section">
-            <h2 class="checkout-section-title">配送地區及附加費</h2>
+            <h2 class="checkout-section-title" id="hkDeliverySection">配送地區及附加費</h2>
             <div class="tier-list" id="tierList">
                 <div class="tier-item" data-tier="tier1" data-fee="90" onclick="manualSelectTier('tier1')">
                     <div class="tier-item-header"><span class="tier-item-label">Tier 1</span><span class="tier-item-fee">滿HK$500免費，否則HK$90</span></div>
@@ -436,8 +437,19 @@
             <p class="tier-list-note"> 系統自動偵測優先；若偵測失靈，請點擊上方地區手動選擇</p>
         </div>
 
+        <div class="checkout-section" id="globalShippingSection" style="display:none;">
+            <h2 class="checkout-section-title">國際配送（全球）</h2>
+            <div class="form-group">
+                <label class="form-label">選擇國家 / 地區 *</label>
+                <select id="globalCountrySelect" onchange="onGlobalCountryChange(this)" style="width:100%;padding:12px 15px;border:1px solid #1A1A1A;border-radius:6px;font-size:15px;font-family:inherit;background:#fff;"></select>
+            </div>
+            <p class="tier-list-note" id="globalShippingInfo">請選擇國家 / 地區以計算運費</p>
+            <p class="tier-list-note">🌏 全球商品（乾花 / 永生花）以國際快遞寄送，預計送達時間：7–14 個工作天（實際以目的地海關及物流為準）</p>
+        </div>
+        </div>
+
         <div class="checkout-section">
-            <h2 class="checkout-section-title">配送日期</h2>
+            <h2 class="checkout-section-title" id="deliveryDateSection">配送日期</h2>
             <div class="form-group">
                 <label class="form-label">選擇日期 *</label>
                 <input type="date" class="date-input" id="deliveryDate" onchange="validateDeliveryDate()">
@@ -447,7 +459,7 @@
         </div>
 
         <div class="checkout-section">
-            <h2 class="checkout-section-title">派送時段</h2>
+            <h2 class="checkout-section-title" id="timeSlotSection">派送時段</h2>
             <div class="time-slot-options" id="timeSlotOptions">
                 <div class="time-slot-option selected" data-slot="full_day" data-fee="90" onclick="selectTimeSlot(this)">
                     <div class="time-slot-main"><span class="time-slot-name">① 全日派送 (10:00–18:00)</span><span class="time-slot-fee">滿HK$500免費，否則HK$90</span></div>
@@ -487,6 +499,7 @@
 
         <div class="checkout-section">
             <h2 class="checkout-section-title">付款方式</h2>
+            <p id="globalPayHint" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;color:#2D5016;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13.5px;">🌏 全球訂單僅支援信用卡 / Apple Pay / Google Pay 付款</p>
             <div class="payment-methods">
                 <div class="payment-method selected" id="pmFps" onclick="selectPaymentMethod('fps')">
                     <div class="payment-method-icon">🏦</div>
@@ -588,6 +601,10 @@
     }
     
     let selectedTimeSlot = 'full_day';
+    let globalShippingZones = null;
+    let globalScopeTag = '全球配送';
+    let globalZone = '';
+    let deliveryMode = 'hk';   // hk | global | mixed
     let selectedTimeFee = 90;
     let detectedArea = '';
     let manualArea = '';
@@ -878,6 +895,98 @@
     };
 
     function getEffectiveArea() { return detectedArea || manualArea; }
+
+    async function loadGlobalShippingConfig() {
+        try {
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_shipping_zones').maybeSingle();
+            if (data && data.setting_value) { try { globalShippingZones = JSON.parse(data.setting_value); } catch(e) { globalShippingZones = null; } }
+            const { data: d2 } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_scope_tag').maybeSingle();
+            if (d2 && d2.setting_value) globalScopeTag = d2.setting_value;
+        } catch(e) {}
+        if (!globalShippingZones || !globalShippingZones.length) {
+            globalShippingZones = [
+                { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fee: 120, freeAbove: 800 },
+                { zone: '大洋洲', countries: ['澳洲','新西蘭'], fee: 200, freeAbove: 1200 },
+                { zone: '北美洲', countries: ['美國','加拿大'], fee: 260, freeAbove: 1500 },
+                { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fee: 280, freeAbove: 1500 },
+                { zone: '其他地區', countries: ['其他'], fee: 300, freeAbove: 2000 }
+            ];
+        }
+        applyDeliveryMode();
+    }
+
+    function getDeliveryMode() {
+        if (!cart.length) return 'hk';
+        let globalCount = 0;
+        cart.forEach(item => {
+            const tags = item.tags || [];
+            if (tags.indexOf(globalScopeTag) > -1) globalCount++;
+        });
+        if (globalCount === 0) return 'hk';
+        if (globalCount === cart.length) return 'global';
+        return 'mixed';
+    }
+
+    function hideSection(id) { const el = document.getElementById(id); if (el) { const sec = el.closest('.checkout-section'); if (sec) sec.style.display = 'none'; } }
+    function showSection(id) { const el = document.getElementById(id); if (el) { const sec = el.closest('.checkout-section'); if (sec) sec.style.display = ''; } }
+
+    function applyDeliveryMode() {
+        const mode = getDeliveryMode();
+        deliveryMode = mode;
+        const notice = document.getElementById('mixedCartNotice');
+        if (notice) notice.style.display = (mode === 'mixed') ? 'block' : 'none';
+        if (mode === 'global') {
+            hideSection('hkDeliverySection'); hideSection('deliveryDateSection'); hideSection('timeSlotSection');
+            const gs = document.getElementById('globalShippingSection'); if (gs) gs.style.display = '';
+            renderGlobalCountrySelect();
+            const pmFps = document.getElementById('pmFps'); if (pmFps) pmFps.style.display = 'none';
+            const fpsPanel = document.getElementById('fpsPanel'); if (fpsPanel) fpsPanel.classList.remove('active');
+            const hint = document.getElementById('globalPayHint'); if (hint) hint.style.display = 'block';
+            if (selectedPaymentMethod === 'fps') selectPaymentMethod('card');
+        } else {
+            showSection('hkDeliverySection'); showSection('deliveryDateSection'); showSection('timeSlotSection');
+            const gs = document.getElementById('globalShippingSection'); if (gs) gs.style.display = 'none';
+            const pmFps = document.getElementById('pmFps'); if (pmFps) pmFps.style.display = '';
+            const hint = document.getElementById('globalPayHint'); if (hint) hint.style.display = 'none';
+        }
+    }
+
+    function renderGlobalCountrySelect() {
+        const sel = document.getElementById('globalCountrySelect');
+        if (!sel) return;
+        let h = '<option value="">請選擇國家 / 地區</option>';
+        (globalShippingZones || []).forEach(z => {
+            h += '<optgroup label="' + z.zone + '">';
+            (z.countries || []).forEach(c => { h += '<option value="' + z.zone + '|' + c + '">' + c + '</option>'; });
+            h += '</optgroup>';
+        });
+        sel.innerHTML = h;
+    }
+
+    function onGlobalCountryChange(sel) {
+        globalZone = sel.value || '';
+        const info = document.getElementById('globalShippingInfo');
+        if (info) {
+            if (!globalZone) { info.textContent = '請選擇國家 / 地區以計算運費'; }
+            else {
+                const zoneName = globalZone.split('|')[0];
+                const z = (globalShippingZones || []).find(x => x.zone === zoneName);
+                info.textContent = z ? (getSubtotal() >= (z.freeAbove || 0) ? ('✓ 滿 HK$' + z.freeAbove + ' 免運費（' + zoneName + '）') : ('運費：HK$' + (z.fee || 0) + '（' + zoneName + '）' + (z.freeAbove ? '，滿 HK$' + z.freeAbove + ' 免運費' : ''))) : '';
+            }
+        }
+        renderSummary();
+    }
+
+    function getGlobalZoneFee() {
+        if (!globalZone || !globalShippingZones) return 0;
+        const zoneName = globalZone.split('|')[0];
+        const z = globalShippingZones.find(x => x.zone === zoneName);
+        if (!z) return 0;
+        if (getSubtotal() >= (z.freeAbove || 0)) return 0;
+        return z.fee || 0;
+    }
+
+    function getGlobalZoneLabel() { return globalZone ? globalZone.split('|')[1] || '' : ''; }
     function getEffectiveAreaFee() { const area = getEffectiveArea(); return area ? areaFees[area] : 0; }
     async function syncCartWithDatabase() {
         if (!cart.length) { renderSummary(); return; }
@@ -895,7 +1004,8 @@
                         name: product.name_zh,
                         nameEn: product.name_en || '',
                         price: product.price,
-                        emoji: product.emoji || ''
+                        emoji: product.emoji || '',
+                        tags: product.tags || []
                     };
                 }
                 return item;
@@ -912,7 +1022,7 @@
     }
 
     function getSubtotal() { return cart.reduce((sum, item) => { const addons = item.addons || []; const addonsTotal = addons.reduce((a, addon) => a + (addon.price || 0), 0); return sum + ((item.price || 0) + addonsTotal) * (item.quantity || 1); }, 0); }
-    function getDeliveryFee() { const subtotal = getSubtotal(); const area = getEffectiveArea(); const areaFee = getEffectiveAreaFee(); let fee = Math.max(areaFee, selectedTimeFee); if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 500) { fee = 0; } return fee; }
+    function getDeliveryFee() { if (deliveryMode === 'global') { return getGlobalZoneFee(); } const subtotal = getSubtotal(); const area = getEffectiveArea(); const areaFee = getEffectiveAreaFee(); let fee = Math.max(areaFee, selectedTimeFee); if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 500) { fee = 0; } return fee; }
     function getTotal() { return getSubtotal() + getDeliveryFee(); }
 
     function autoDetectArea(address) {
@@ -978,6 +1088,7 @@
     function validateDeliveryDate() { const dateInput = document.getElementById('deliveryDate'); const error = document.getElementById('deliveryDateError'); if (!dateInput.value) { error.style.display = 'block'; return false; } error.style.display = 'none'; return true; }
 
     function renderSummary() {
+        applyDeliveryMode();
         const container = document.getElementById('orderSummary');
         if (!container) return;
         const subtotal = getSubtotal();
@@ -1014,8 +1125,12 @@
         if (!recipientName) { document.getElementById('recipientNameError').style.display = 'block'; isValid = false; } else { document.getElementById('recipientNameError').style.display = 'none'; }
         if (!recipientPhone || !/^[0-9+\-\s]{8,}$/.test(recipientPhone)) { document.getElementById('recipientPhoneError').style.display = 'block'; isValid = false; } else { document.getElementById('recipientPhoneError').style.display = 'none'; }
         if (!recipientAddress) { document.getElementById('recipientAddressError').style.display = 'block'; isValid = false; } else { document.getElementById('recipientAddressError').style.display = 'none'; }
-        if (!validateDeliveryDate()) isValid = false;
-        if (!getEffectiveArea()) { showToast('請輸入地址或手動選擇配送地區'); isValid = false; }
+        if (deliveryMode === 'global') {
+            if (!globalZone) { showToast('請選擇國家 / 地區'); isValid = false; }
+        } else {
+            if (!validateDeliveryDate()) isValid = false;
+            if (!getEffectiveArea()) { showToast('請輸入地址或手動選擇配送地區'); isValid = false; }
+        }
         return isValid;
     }
 
@@ -1077,7 +1192,7 @@
             deliveryDate: document.getElementById('deliveryDate').value,
             deliveryTimeSlot: selectedTimeSlot,
             deliveryHour: selectedHour,
-            deliveryArea: getEffectiveArea(),
+            deliveryArea: deliveryMode === 'global' ? ('國際配送:' + getGlobalZoneLabel()) : getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
             totalAmount: getTotal(),
@@ -1278,7 +1393,7 @@
             deliveryDate: document.getElementById('deliveryDate').value,
             deliveryTimeSlot: selectedTimeSlot,
             deliveryHour: selectedHour,
-            deliveryArea: getEffectiveArea(),
+            deliveryArea: deliveryMode === 'global' ? ('國際配送:' + getGlobalZoneLabel()) : getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
             totalAmount: getTotal(),
@@ -1510,6 +1625,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         updateCartBadge();
+        loadGlobalShippingConfig();
         syncCartWithDatabase();
         setupDatePicker();
         fillDefaultAddressIfLoggedIn();
