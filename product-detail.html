@@ -590,10 +590,12 @@
         var container = document.getElementById('detailContainer');
         var specs = product.specs || {};
         
-        // 動態設置 SEO：title、meta description、Open Graph
-        var productTitle = (product.name_zh || product.name_en || '花藝產品') + ' | HK$' + getCurrentPrice() + ' | RoyalSpl Florist 香港花店';
+        // 動態設置 SEO：title、meta description、Open Graph（優先使用後台 seo_title / seo_description）
+        var productTitle = (product.seo_title && product.seo_title.trim())
+            ? product.seo_title.trim()
+            : ((product.name_zh || product.name_en || '花藝產品') + ' | HK$' + getCurrentPrice() + ' | RoyalSpl Florist 香港花店');
         var isGlobalItem = (product.tags || []).indexOf('全球配送') > -1;
-        var descBase = (product.description_zh || product.description || 'RoyalSpl Florist 精心設計的花藝產品').substring(0, 150);
+        var descBase = (product.seo_description || product.description_zh || product.description || 'RoyalSpl Florist 精心設計的花藝產品').substring(0, 150);
         var productDesc = isGlobalItem ? (descBase + ' 適合家居擺設、空間展示與室內設計點綴，可全球配送。').substring(0, 170) : descBase;
         document.title = productTitle;
         var metaDesc = document.querySelector('meta[name="description"]');
