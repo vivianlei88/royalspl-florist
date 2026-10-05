@@ -779,10 +779,15 @@ function renderProductDetail(product) {
         } else {
             html += '<div class="detail-image-area"><span class="detail-emoji">' + (product.emoji || '') + '<\/span><\/div>';
         }
+        // Tags hidden from page; inject <link rel="tag"> SEO links instead (invisible to visitors, crawlable by search engines)
         if (tags.length > 0) {
-            html += '<div class="detail-tags-below">';
-            for (var ti = 0; ti < tags.length; ti++) { html += '<span class="detail-tag">' + translateTag(tags[ti]) + '<\/span>'; }
-            html += '<\/div>';
+            var headEl = document.head || document.getElementsByTagName('head')[0];
+            for (var ti = 0; ti < tags.length; ti++) {
+                var tagLink = document.createElement('link');
+                tagLink.rel = 'tag';
+                tagLink.href = 'products.html?tag=' + encodeURIComponent(tags[ti]);
+                headEl.appendChild(tagLink);
+            }
         }
         html += '<div class="detail-seo-section" style="margin-top:30px;">';
         // 花材護理知識（默认内容，后续异步更新）
