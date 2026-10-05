@@ -497,10 +497,12 @@ function renderProductDetail(product) {
         var container = document.getElementById('detailContainer');
         var specs = product.specs || {};
         
-        // 動態設置 SEO：title、meta description、Open Graph
-        var productTitle = (product.name_en || (product.name_en || product.name_zh) || 'Flower Product') + ' | HK$' + getCurrentPrice() + ' | RoyalSpl Florist Hong Kong';
+        // 動態設置 SEO：title、meta description、Open Graph（優先使用後台 seo_title / seo_description）
+        var productTitle = (product.seo_title && product.seo_title.trim())
+            ? product.seo_title.trim()
+            : ((product.name_en || product.name_zh || 'Flower Product') + ' | HK$' + getCurrentPrice() + ' | RoyalSpl Florist Hong Kong');
         var isGlobalItem = (product.tags || []).indexOf('全球配送') > -1;
-        var descBase = (product.description_en || product.description || 'RoyalSpl Florist premium flower product').substring(0, 150);
+        var descBase = (product.description_en || product.seo_description || product.description || 'RoyalSpl Florist premium flower product').substring(0, 150);
         var productDesc = isGlobalItem ? (descBase + ' Perfect for home decor, space styling and interior design; ships worldwide.').substring(0, 190) : descBase;
         document.title = productTitle;
         var metaDesc = document.querySelector('meta[name="description"]');
