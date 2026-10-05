@@ -643,10 +643,15 @@
         } else {
             html += '<div class="detail-image-area"><span class="detail-emoji">' + (product.emoji || '') + '<\/span><\/div>';
         }
+        // 標籤不在頁面顯示，改為寫入 <link rel="tag"> SEO 標籤連結（顧客不可見，搜索引擎可收錄）
         if (tags.length > 0) {
-            html += '<div class="detail-tags-below">';
-            for (var ti = 0; ti < tags.length; ti++) { html += '<span class="detail-tag">' + tags[ti] + '<\/span>'; }
-            html += '<\/div>';
+            var headEl = document.head || document.getElementsByTagName('head')[0];
+            for (var ti = 0; ti < tags.length; ti++) {
+                var tagLink = document.createElement('link');
+                tagLink.rel = 'tag';
+                tagLink.href = 'products.html?tag=' + encodeURIComponent(tags[ti]);
+                headEl.appendChild(tagLink);
+            }
         }
         html += '<div class="detail-seo-section" style="margin-top:30px;">';
         // 花材護理知識（默认内容，后续异步更新）
