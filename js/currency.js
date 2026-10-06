@@ -40,7 +40,8 @@
     var ipCached = null;
     try { ipCached = localStorage.getItem(IP_KEY); } catch (e) {}
     function apply(country) {
-      var isHK = country === 'HK' || country === 'MO';
+      // 香港/澳門/中國大陸/台灣 → 港幣；其他地區 → 美金
+      var isHK = country === 'HK' || country === 'MO' || country === 'CN' || country === 'TW';
       try {
         localStorage.setItem(IP_KEY, country || '');
         localStorage.setItem(KEY, isHK ? 'hkd' : 'usd');
