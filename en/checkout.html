@@ -983,7 +983,7 @@
         });
         return tier;
     }
-    function getTierNameEn(t) { return t === 'large' ? 'Large' : (t === 'medium' ? 'Medium' : 'Standard'); }
+    
     function getZoneFeeByTier(z, tier) {
         if (!z) return 0;
         if (z.fees && z.fees[tier]) return z.fees[tier];
@@ -1007,7 +1007,7 @@
             const zoneName = globalZone ? globalZone.split('|')[0] : '';
             const z = (globalShippingZones || []).find(x => x.zone === zoneName);
             const sur = getZoneExpressByTier(z, tier);
-            el.textContent = '+HK$' + sur + ' (' + getTierNameEn(tier) + ')';
+            el.textContent = '+HK$' + sur;
         }
     }
     function onGlobalCountryChange(sel) {
@@ -1027,7 +1027,7 @@
                     if (z.freeAbove && getSubtotal() >= z.freeAbove) {
                         info.textContent = '✓ Free shipping over HK$' + z.freeAbove + ' (' + zoneName + ')';
                     } else {
-                        info.textContent = 'Shipping: HK$' + fee + ' (' + zoneName + ' · ' + getTierNameEn(tier) + ')' + (sur ? '; DHL +HK$' + sur + ' → HK$' + expressTotal : '') + (z.freeAbove ? ', free over HK$' + z.freeAbove : '');
+                        info.textContent = 'Shipping: HK$' + fee + ' (' + zoneName + ')' + (sur ? '; DHL +HK$' + sur + ' → HK$' + expressTotal : '') + (z.freeAbove ? ', free over HK$' + z.freeAbove : '');
                     }
                 }
             }
@@ -1204,7 +1204,7 @@
             ${itemsHtml}
             <div class="summary-divider"></div>
             <div class="summary-item"><span>Product Subtotal</span><span>HK$${subtotal}</span></div>
-            <div class="summary-item"><span>Delivery Fee ${deliveryMode === 'global' ? (globalExpress ? ' (DHL)' : ' (' + getTierNameEn(getCartSizeTier()) + ')') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? 'Free' : 'HK$' + deliveryFee}</span></div>
+            <div class="summary-item"><span>Delivery Fee ${deliveryMode === 'global' ? (globalExpress ? ' (DHL)' : '') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? 'Free' : 'HK$' + deliveryFee}</span></div>
             ${area ? `<div class="delivery-fee-formula">Formula: Max(Time Slot Fee HK$${selectedTimeFee}, District Fee HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>Total</span><span>HK$${total}</span></div>
