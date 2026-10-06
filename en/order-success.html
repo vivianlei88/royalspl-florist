@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -255,9 +256,9 @@
                     // 显示订单信息
                     document.getElementById('orderInfo').innerHTML = `
                         <div class="order-row"><span class="order-label">訂單號</span><span class="order-value">${order.orderCode}</span></div>
-                        <div class="order-row"><span class="order-label">Products金額</span><span class="order-value">HK$${order.subtotal}</span></div>
-                        <div class="order-row"><span class="order-label">配送費</span><span class="order-value">${order.deliveryFee === 0 ? '免費' : 'HK$' + order.deliveryFee}</span></div>
-                        <div class="order-row"><span class="order-label">總計</span><span class="order-value" style="font-size:18px;font-weight:700;">HK$${order.total}</span></div>
+                        <div class="order-row"><span class="order-label">Products金額</span><span class="order-value">${siteMoney(order.subtotal)}</span></div>
+                        <div class="order-row"><span class="order-label">配送費</span><span class="order-value">${order.deliveryFee === 0 ? '免費' : siteMoney(order.deliveryFee)}</span></div>
+                        <div class="order-row"><span class="order-label">總計</span><span class="order-value" style="font-size:18px;font-weight:700;">${siteMoney(order.total)}</span></div>
                         ${isFps ? '<div class="order-row"><span class="order-label">PaymentStatus</span><span class="order-value" style="color:#c0392b;">待ConfirmPayment（FPS）</span></div>' : ''}
                     `;
                     
@@ -270,7 +271,7 @@
                             body: JSON.stringify({
                                 to: userEmail,
                                 subject: '【RoyalSpl Florist】PaymentSuccess通知 ' + order.orderCode,
-                                html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">PaymentSuccess</h2><p>親愛的顧客，您的訂單AlreadyPaymentSuccess！</p><p><strong>訂單號：</strong>' + order.orderCode + '</p><p><strong>Payment金額：</strong>HK$' + order.total + '</p><p>We will arrange delivery as soon as possible，配送日期：' + (order.recipient?.date || '') + ' ' + (order.recipient?.timeSlot || '') + '</p><p style="color:#888;font-size:12px;margin-top:30px;">如有任何疑問，請聯繫我們。</p></div>'
+                                html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">PaymentSuccess</h2><p>親愛的顧客，您的訂單AlreadyPaymentSuccess！</p><p><strong>訂單號：</strong>' + order.orderCode + '</p><p><strong>Payment金額：</strong>' + siteMoney(order.total) + '</p><p>We will arrange delivery as soon as possible，配送日期：' + (order.recipient?.date || '') + ' ' + (order.recipient?.timeSlot || '') + '</p><p style="color:#888;font-size:12px;margin-top:30px;">如有任何疑問，請聯繫我們。</p></div>'
                             })
                         }).catch(e => console.warn('SendPaymentSuccess郵件Failed:', e));
                     }
@@ -311,6 +312,7 @@
                 document.querySelector('.success-desc').innerHTML = 'Thank you for your order！<br>我們會核對您的FPSPayment（待ConfirmPayment），Confirm後會以電郵通知您。';
             }
         }
+        siteInitCurrency(); siteRenderCurrencyBtn();
         confirmPayment();
     </script>
     <script src="/js/ai-chat-v2.js"></script>
