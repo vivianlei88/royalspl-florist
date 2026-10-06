@@ -911,12 +911,11 @@
         } catch(e) {}
         if (!globalShippingZones || !globalShippingZones.length) {
             globalShippingZones = [
-                { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-{ zone: '中東', countries: ['阿聯酋','沙特阿拉伯','卡塔爾','科威特','以色列','巴林','阿曼'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '大洋洲', countries: ['澳洲','新西蘭'], fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '北美洲', countries: ['美國','加拿大'], fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '其他地區', countries: ['其他'], fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 }
+                { zone: '亞洲', countries: ['澳門','中國內地','台灣','泰國','韓國','馬來西亞','新加坡','日本','印尼'], fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
+                { zone: '中東', countries: ['阿聯酋','卡達','沙烏地阿拉伯'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
+                { zone: '大洋洲', countries: ['澳洲','紐西蘭'], fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
+                { zone: '歐洲', countries: ['芬蘭','瑞典','挪威','丹麥','德國','荷蘭','瑞士','盧森堡','比利時','英國','法國','冰島'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
+                { zone: '北美洲', countries: ['加拿大','美國'], fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 }
             ];
         }
         applyDeliveryMode();
