@@ -304,8 +304,8 @@ button {
 .hero-cta {
     display: inline-block;
     padding: 14px 40px;
-    background-color: var(--white);
-    color: var(--primary-text);
+    background-color: #C9A227;
+    color: #1A1A1A;
     font-size: 16px;
     font-weight: 600;
     border-radius: 3px;
@@ -313,7 +313,7 @@ button {
 }
 
 .hero-cta:hover {
-    background-color: var(--card-bg);
+    background-color: #B8922B;
     transform: translateY(-2px);
 }
 
