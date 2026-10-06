@@ -962,6 +962,7 @@
         const sel = document.getElementById('globalCountrySelect');
         if (!sel) return;
         let h = '<option value="">請選擇國家 / 地區</option>';
+        h += '<option value="hk|香港">香港（Hong Kong）</option>';
         (globalShippingZones || []).forEach(z => {
             h += '<optgroup label="' + z.zone + '">';
             (z.countries || []).forEach(c => { h += '<option value="' + z.zone + '|' + c + '">' + c + '</option>'; });
@@ -1013,6 +1014,7 @@
         const info = document.getElementById('globalShippingInfo');
         if (info) {
             if (!globalZone) { info.textContent = '請選擇國家 / 地區以計算運費'; }
+            else if (globalZone === 'hk|香港') { info.textContent = '✓ 香港本地配送 · 免運費'; }
             else {
                 const zoneName = globalZone.split('|')[0];
                 const z = (globalShippingZones || []).find(x => x.zone === zoneName);
@@ -1033,6 +1035,7 @@
     }
 
     function getGlobalZoneFee() {
+        if (globalZone === 'hk|香港') return 0;
         if (!globalZone || !globalShippingZones) return 0;
         const zoneName = globalZone.split('|')[0];
         const z = globalShippingZones.find(x => x.zone === zoneName);
@@ -1250,7 +1253,7 @@
             deliveryDate: document.getElementById('deliveryDate').value,
             deliveryTimeSlot: selectedTimeSlot,
             deliveryHour: selectedHour,
-            deliveryArea: deliveryMode === 'global' ? ('國際配送:' + getGlobalZoneLabel() + (globalExpress ? '（DHL）' : '')) : getEffectiveArea(),
+            deliveryArea: deliveryMode === 'global' ? (globalZone === 'hk|香港' ? '香港本地配送' : ('國際配送:' + getGlobalZoneLabel() + (globalExpress ? '（DHL）' : ''))) : getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
             totalAmount: getTotal(),
@@ -1451,7 +1454,7 @@
             deliveryDate: document.getElementById('deliveryDate').value,
             deliveryTimeSlot: selectedTimeSlot,
             deliveryHour: selectedHour,
-            deliveryArea: deliveryMode === 'global' ? ('國際配送:' + getGlobalZoneLabel() + (globalExpress ? '（DHL）' : '')) : getEffectiveArea(),
+            deliveryArea: deliveryMode === 'global' ? (globalZone === 'hk|香港' ? '香港本地配送' : ('國際配送:' + getGlobalZoneLabel() + (globalExpress ? '（DHL）' : ''))) : getEffectiveArea(),
             deliveryFee: getDeliveryFee(),
             subtotal: getSubtotal(),
             totalAmount: getTotal(),
