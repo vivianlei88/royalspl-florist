@@ -5919,6 +5919,28 @@ async function saveProduct() {
             html += '<div style="color:#999;">（無內容）</div>';
         }
         
+        // 附件区（图片预览 / 文件下载）
+        if (email.attachments && email.attachments.length > 0) {
+            html += '<div style="border-top:1px solid #eee;padding-top:15px;margin-top:20px;">';
+            html += '<div style="font-weight:bold;margin-bottom:10px;">附件（' + email.attachments.length + '）</div>';
+            html += '<div style="display:flex;flex-wrap:wrap;gap:12px;">';
+            email.attachments.forEach(function(a) {
+                var isImage = a.content_type && a.content_type.indexOf('image/') === 0;
+                if (isImage) {
+                    html += '<div style="text-align:center;max-width:170px;">';
+                    html += '<a href="' + a.url + '" target="_blank"><img src="' + a.url + '" style="max-width:160px;max-height:160px;border:1px solid #ddd;border-radius:6px;object-fit:cover;" /></a>';
+                    html += '<div style="font-size:12px;color:#666;margin-top:4px;word-break:break-all;">' + a.filename + '</div>';
+                    html += '</div>';
+                } else {
+                    html += '<div style="border:1px solid #eee;border-radius:6px;padding:10px 12px;background:#fafafa;min-width:160px;max-width:240px;">';
+                    html += '<div><a href="' + a.url + '" target="_blank" style="word-break:break-all;font-weight:bold;">📎 ' + a.filename + '</a></div>';
+                    if (a.size) html += '<div style="font-size:12px;color:#999;margin-top:4px;">' + (a.size / 1024).toFixed(1) + ' KB</div>';
+                    html += '</div>';
+                }
+            });
+            html += '</div></div>';
+        }
+        
         html += '</div>';
         
         detailView.innerHTML = html;
