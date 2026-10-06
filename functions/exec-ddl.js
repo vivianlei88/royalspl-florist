@@ -34,8 +34,8 @@ export async function onRequestPost(context) {
       });
     }
 
-    // 僅允許 ALTER TABLE（防止任意 SQL 濫用）
-    if (!/^\s*ALTER\s+TABLE/i.test(sql.trim())) {
+    // 僅允許 ALTER TABLE（防止任意 SQL 濫用）；支持空格或 /**/ 注释分隔
+    if (!/^\s*ALTER(?:\s|\/\*[^*]*\*\/)+\s*TABLE/i.test(sql.trim())) {
       return new Response(JSON.stringify({ error: 'only ALTER TABLE allowed' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
