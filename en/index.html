@@ -738,9 +738,20 @@
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
             html += '<p class="product-price">' + (variantMinMap[p.id] ? 'From HK$' + variantMinMap[p.id] : 'HK$' + p.price) + '<\/p>';
-            html += '<div class="product-tags">';
-            for (var j = 0; j < Math.min(tags.length, 3); j++) { html += '<span class="tag-pill">' + translateTag(tags[j]) + '<\/span>'; }
-            html += '<\/div>';
+            // Tags hidden from customers, written as <link rel="tag"> for SEO (crawler-visible)
+            if (tags.length > 0) {
+                var headEl = document.head || document.getElementsByTagName('head')[0];
+                for (var ti = 0; ti < tags.length; ti++) {
+                    var tagKey = 'tag:' + tags[ti];
+                    if (window._featuredTagAdded && window._featuredTagAdded[tagKey]) continue;
+                    if (!window._featuredTagAdded) window._featuredTagAdded = {};
+                    window._featuredTagAdded[tagKey] = true;
+                    var tagLink = document.createElement('link');
+                    tagLink.rel = 'tag';
+                    tagLink.href = 'products.html?tag=' + encodeURIComponent(tags[ti]);
+                    headEl.appendChild(tagLink);
+                }
+            }
             html += '<button class="add-to-cart-btn" onclick="event.preventDefault(); event.stopPropagation(); addToCart(' + p.id + ')">Add to Cart<\/button>';
             html += '<\/div>';
             html += '<\/a>';
