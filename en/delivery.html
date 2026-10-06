@@ -14,7 +14,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delivery &amp; Shipping Policy | Hong Kong Flower Delivery, Worldwide Dried &amp; Preserved Flowers | RoyalSpl Florist</title>
-    <meta name="description" content="RoyalSpl Florist delivery policy: free Hong Kong flower delivery on orders over HK$500; worldwide shipping (dried &amp; preserved flowers) to Asia, Middle East, Europe, North America by size tier with optional DHL Express 2-3 days. Dried flowers are perfect for home decor, space styling and interior design.">
+    <meta name="description" content="RoyalSpl Florist delivery policy: free Hong Kong flower delivery on orders over HK$500; worldwide shipping (dried &amp; preserved flowers) to Asia, Middle East, Europe, North America by package size with optional DHL Express 2-3 days. Dried flowers are perfect for home decor, space styling and interior design.">
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
@@ -120,14 +120,14 @@
         <div class="dlv-card">
             <h2>🌏 Worldwide Delivery (Dried &amp; Preserved Flowers)</h2>
             <p><span class="dlv-tag">Global Delivery</span></p>
-            <p>Items marked "Global Delivery" (dried &amp; preserved flowers) can be shipped worldwide. Shipping is charged by <b>package size tier</b> (Standard / Medium / Large, set by product tag) and <b>destination region</b>:</p>
+            <p>Items marked "Global Delivery" (dried &amp; preserved flowers) can be shipped worldwide. Shipping is charged by <b>package size</b> (S / M / L) and <b>destination region</b>:</p>
             <div class="dlv-table-wrap" id="globalZoneTable">Loading…</div>
             <p>International courier: estimated <b>7–14 business days</b> (subject to destination customs &amp; logistics).</p>
         </div>
 
         <div class="dlv-card">
             <h2>⚡ DHL Express Delivery (2–3 days)</h2>
-            <p>Choose DHL Express for worldwide orders — surcharge: <b>+HK$350 (Standard) / +HK$800 (Medium) / +HK$1600 (Large)</b>. Simply tick "DHL Express Delivery" at checkout.</p>
+            <p>Choose DHL Express for worldwide orders — surcharge: <b>+HK$350 (S) / +HK$800 (M) / +HK$1600 (L)</b>. Simply tick "DHL Express Delivery" at checkout.</p>
         </div>
 
         <div class="dlv-card">
@@ -176,7 +176,7 @@
                     { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 } }
                 ];
             }
-            let rows = '<tr><th>Region</th><th>Standard</th><th>Medium</th><th>Large</th><th>DHL Surcharge</th></tr>';
+            let rows = '<tr><th>Region</th><th>S</th><th>M</th><th>L</th><th>DHL Surcharge</th></tr>';
             (zones || []).forEach(function(z) {
                 const f = z.fees || {};
                 const e = z.express || {};
