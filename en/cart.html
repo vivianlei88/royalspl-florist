@@ -417,6 +417,7 @@
                     <p class="cart-item-name-en">${item.nameEn || ''}</p>
                     ${addonsHtml}
                     <p class="cart-item-price">HK$${itemTotal}</p>
+                    ${(item.tags || []).indexOf('全球配送') > -1 ? `<span style="font-size:12px;color:#8a6d1a;display:block;margin-top:2px;">≈ US$${Math.round(itemTotal / 7.8)}</span>` : ''}
                 </div>
                 <div class="cart-item-quantity">
                     <button class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
@@ -427,6 +428,7 @@
             </div>`;
         }).join('');
         const subtotal = cart.reduce((sum, item) => { const addons = item.addons || []; const addonsTotal = addons.reduce((a, addon) => a + (addon.price || 0), 0); return sum + ((item.price || 0) + addonsTotal) * (item.quantity || 1); }, 0);
+        const allGlobal = cart.length > 0 && cart.every(item => (item.tags || []).indexOf('全球配送') > -1);
         const cardSectionOpen = cardType === 'yes' || cardType === 'blank';
         const showTextarea = cardType === 'yes' || cardType === 'blank';
         container.innerHTML = `
@@ -469,6 +471,7 @@
                 <div class="summary-row"><span>Subtotal</span><span>HK$${subtotal}</span></div>
                 <div class="summary-row"><span>Shipping</span><span>Calculated at Checkout</span></div>
                 <div class="summary-row total"><span>Total</span><span>HK$${subtotal}</span></div>
+                ${allGlobal ? `<div class="summary-row" style="font-size:12px;color:#8a6d1a;"><span></span><span>≈ US$${Math.round(subtotal / 7.8)} (ref.)</span></div>` : ''}
                 <button class="checkout-btn" onclick="goCheckout()">Checkout</button>
             </div>
         `;
