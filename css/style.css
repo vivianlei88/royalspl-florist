@@ -59,6 +59,7 @@ button {
     justify-content: space-between;
     align-items: center;
     height: 70px;
+    position: relative;
 }
 
 /* 漢堡按鈕 */
@@ -80,8 +81,11 @@ button {
 
 /* Logo */
 .logo {
-    flex: 1;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     text-align: center;
+    white-space: nowrap;
 }
 
 .logo-text {
