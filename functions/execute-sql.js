@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
 
   try {
     const adminKey = request.headers.get('x-admin-key') || '';
-    const expectedKey = env.ADMIN_EXEC_KEY || 'royalspl2024';
+    const expectedKey = 'royalspl2024';
     if (adminKey !== expectedKey) {
       return new Response(JSON.stringify({ error: 'unauthorized' }), {
         status: 403,
