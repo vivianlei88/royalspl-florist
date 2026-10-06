@@ -2,7 +2,8 @@
 <html lang="zh-HK">
 <head>
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -326,7 +327,7 @@
                 <span class="logo-subtext">HONG KONG</span>
             </a>
             <div class="header-actions">
-<a href="/en/checkout.html" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>
+<a href="/en/checkout.html" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>                 <span class="site-currency-switch" style="margin-right:10px;"></span>
                 <a href="account.html" class="user-icon" aria-label="會員中心">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
@@ -1022,7 +1023,7 @@
             const zoneName = globalZone ? globalZone.split('|')[0] : '';
             const z = (globalShippingZones || []).find(x => x.zone === zoneName);
             const sur = getZoneExpressByTier(z, tier);
-            el.textContent = '+HK$' + sur;
+            el.textContent = '+' + siteMoney(sur);
         }
     }
     function onGlobalCountryChange(sel) {
@@ -1041,15 +1042,15 @@
                     const sur = getZoneExpressByTier(z, tier);
                     const expressTotal = fee + sur;
                     if (z.freeAbove && getSubtotal() >= z.freeAbove) {
-                        info.textContent = '✓ 滿 HK$' + z.freeAbove + ' 免運費（' + zoneName + '）';
+                        info.textContent = '✓ 滿 ' + siteMoney(z.freeAbove) + ' 免運費（' + zoneName + '）';
                     } else {
                         var rows = '';
-                        rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;"><span>普通國際快遞（7–14 個工作天）</span><b>HK$' + fee + '</b></div>';
+                        rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;"><span>普通國際快遞（7–14 個工作天）</span><b>' + siteMoney(fee) + '</b></div>';
                         if (globalExpress && sur > 0) {
-                            rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;"><span>DHL 特快配送（3–5 天送達）</span><b>+HK$' + sur + '</b></div>';
-                            rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;border-top:1px dashed rgba(26,26,26,0.25);margin-top:4px;"><span>合計運費</span><b>HK$' + expressTotal + '</b></div>';
+                            rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;"><span>DHL 特快配送（3–5 天送達）</span><b>+' + siteMoney(sur) + '</b></div>';
+                            rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;border-top:1px dashed rgba(26,26,26,0.25);margin-top:4px;"><span>合計運費</span><b>' + siteMoney(expressTotal) + '</b></div>';
                         }
-                        if (z.freeAbove) { rows += '<div style="font-size:13px;color:#8a6d1a;margin-top:6px;">滿 HK$' + z.freeAbove + ' 免運費</div>'; }
+                        if (z.freeAbove) { rows += '<div style="font-size:13px;color:#8a6d1a;margin-top:6px;">滿 ' + siteMoney(z.freeAbove) + ' 免運費</div>'; }
                         info.innerHTML = rows;
                     }
                 }
@@ -1118,7 +1119,7 @@
         if (detected) {
             detectedArea = detected; manualArea = '';
             document.getElementById('autoDetectTierZh').textContent = `已偵測地區：${areaNames[detected].zh}`;
-            document.getElementById('autoDetectTierEn').textContent = `Detected: ${areaNames[detected].en} | 附加費: HK$${areaFees[detected]}`;
+            document.getElementById('autoDetectTierEn').textContent = `Detected: ${areaNames[detected].en} | 附加費: ${siteMoney(areaFees[detected])}`;
             document.getElementById('autoDetectBanner').classList.add('show');
             highlightTierItem(detected);
         } else {
@@ -1133,7 +1134,7 @@
         manualArea = tier; detectedArea = '';
         highlightTierItem(tier);
         document.getElementById('autoDetectTierZh').textContent = `已手動選擇：${areaNames[tier].zh}`;
-        document.getElementById('autoDetectTierEn').textContent = `Manual: ${areaNames[tier].en} | 附加費: HK$${areaFees[tier]}`;
+        document.getElementById('autoDetectTierEn').textContent = `Manual: ${areaNames[tier].en} | 附加費: ${siteMoney(areaFees[tier])}`;
         document.getElementById('autoDetectBanner').classList.add('show');
         renderSummary();
     }
@@ -1183,23 +1184,23 @@
         const areaFee = getEffectiveAreaFee();
         const itemsHtml = cart.map(item => {
                 const itemImg = item.image ? `<img src="${item.image}" class="summary-item-img">` : `<span class="summary-item-emoji">${item.emoji || ''}</span>`;
-                return `<div class="summary-item"><span class="summary-item-info">${itemImg}<span class="summary-item-name">${item.name || '商品'} × ${item.quantity || 1}</span></span><span>HK$${((item.price || 0) * (item.quantity || 1))}</span></div>`;
+                return `<div class="summary-item"><span class="summary-item-info">${itemImg}<span class="summary-item-name">${item.name || '商品'} × ${item.quantity || 1}</span></span><span>${siteMoney((item.price || 0) * (item.quantity || 1))}</span></div>`;
             }).join('');
         container.innerHTML = `
             <h3 class="summary-title">訂單摘要</h3>
             ${itemsHtml}
             <div class="summary-divider"></div>
-            <div class="summary-item"><span>商品小計</span><span>HK$${subtotal}</span></div>
-            <div class="summary-item"><span>配送費 ${deliveryMode === 'global' ? (globalExpress ? '（DHL）' : '') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? '免費' : 'HK$' + deliveryFee}</span></div>
-            ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 HK$${selectedTimeFee}, 地區費 HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
+            <div class="summary-item"><span>商品小計</span><span>${siteMoney(subtotal)}</span></div>
+            <div class="summary-item"><span>配送費 ${deliveryMode === 'global' ? (globalExpress ? '（DHL）' : '') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? '免費' : siteMoney(deliveryFee)}</span></div>
+            ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 ${siteMoney(selectedTimeFee)}, 地區費 ${siteMoney(areaFee)}) = ${siteMoney(deliveryFee)}</div>` : ''}
             <div class="summary-divider"></div>
-            <div class="summary-total"><span>總計</span><span>HK$${total}</span></div>
-            ${deliveryMode === 'global' ? `<div class="summary-total-usd" style="font-size:12px;color:#8a6d1a;text-align:right;margin-top:4px;">≈ US$${Math.round(total / 7.8)}（參考匯率 7.8，結帳以港幣計算）</div>` : ''}
+            <div class="summary-total"><span>總計</span><span>${siteMoney(total)}</span></div>
+            ${deliveryMode === 'global' && siteIsUSD() ? `<div class="summary-total-usd" style="font-size:12px;color:#8a6d1a;text-align:right;margin-top:4px;">結算以港幣為準（HK$${total}），美金僅供參考</div>` : ''}
             <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">提交訂單（轉數快）</button>
         `;
         // 更新轉數快應付金額
         const fpsAmount = document.getElementById('fpsAmountDisplay');
-        if (fpsAmount) fpsAmount.textContent = 'HK$' + total;
+        if (fpsAmount) fpsAmount.textContent = siteMoney(total);
         updatePaymentBtn();
     }
 
@@ -1696,20 +1697,22 @@
                     currentPoints = profile?.points || 0;
                 } catch(e) {}
                 
-                textEl.innerHTML = '✅ 此單完成後，您將獲得 <strong>' + points + ' 積分</strong>（價值 HK$' + pointsValue + '）<br>累計積分：' + currentPoints.toLocaleString() + '，下次購物可直接抵扣';
+                textEl.innerHTML = '✅ 此單完成後，您將獲得 <strong>' + points + ' 積分</strong>（價值 ' + siteMoney(pointsValue) + '）<br>累計積分：' + currentPoints.toLocaleString() + '，下次購物可直接抵扣';
                 actionsEl.innerHTML = '';
             } else {
                 // 未登入：提示登入/註冊
-                textEl.innerHTML = '<strong>會員專屬</strong>：登入後此單可獲得 <strong>' + points + ' 積分</strong>（價值 HK$' + pointsValue + '），下次購物直接抵扣！';
+                textEl.innerHTML = '<strong>會員專屬</strong>：登入後此單可獲得 <strong>' + points + ' 積分</strong>（價值 ' + siteMoney(pointsValue) + '），下次購物直接抵扣！';
                 actionsEl.innerHTML = '<button class="points-btn points-btn-primary" onclick="location.href=\'login.html?redirect=checkout.html\'">立即登入</button><button class="points-btn points-btn-secondary" onclick="location.href=\'register.html\'">註冊會員</button>';
             }
         } catch(e) {
-            textEl.innerHTML = '<strong>會員專屬</strong>：登入後此單可獲得 <strong>' + points + ' 積分</strong>（價值 HK$' + pointsValue + '），下次購物直接抵扣！';
+            textEl.innerHTML = '<strong>會員專屬</strong>：登入後此單可獲得 <strong>' + points + ' 積分</strong>（價值 ' + siteMoney(pointsValue) + '），下次購物直接抵扣！';
             actionsEl.innerHTML = '<button class="points-btn points-btn-primary" onclick="location.href=\'login.html?redirect=checkout.html\'">立即登入</button><button class="points-btn points-btn-secondary" onclick="location.href=\'register.html\'">註冊會員</button>';
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        siteInitCurrency();
+        siteRenderCurrencyBtn();
         updateCartBadge();
         loadGlobalShippingConfig();
         syncCartWithDatabase();
