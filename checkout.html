@@ -1170,6 +1170,7 @@
             ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 HK$${selectedTimeFee}, 地區費 HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>總計</span><span>HK$${total}</span></div>
+            ${deliveryMode === 'global' ? `<div class="summary-total-usd" style="font-size:12px;color:#8a6d1a;text-align:right;margin-top:4px;">≈ US$${Math.round(total / 7.8)}（參考匯率 7.8，結帳以港幣計算）</div>` : ''}
             <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">提交訂單（轉數快）</button>
         `;
         // 更新轉數快應付金額
