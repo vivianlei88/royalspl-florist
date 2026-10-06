@@ -979,7 +979,7 @@
         });
         return tier;
     }
-    function getTierNameZh(t) { return t === 'large' ? '大件' : (t === 'medium' ? '中件' : '標準件'); }
+    
     function getZoneFeeByTier(z, tier) {
         if (!z) return 0;
         if (z.fees && z.fees[tier]) return z.fees[tier];
@@ -1003,7 +1003,7 @@
             const zoneName = globalZone ? globalZone.split('|')[0] : '';
             const z = (globalShippingZones || []).find(x => x.zone === zoneName);
             const sur = getZoneExpressByTier(z, tier);
-            el.textContent = '+HK$' + sur + '（' + getTierNameZh(tier) + '）';
+            el.textContent = '+HK$' + sur;
         }
     }
     function onGlobalCountryChange(sel) {
@@ -1023,7 +1023,7 @@
                     if (z.freeAbove && getSubtotal() >= z.freeAbove) {
                         info.textContent = '✓ 滿 HK$' + z.freeAbove + ' 免運費（' + zoneName + '）';
                     } else {
-                        info.textContent = '運費：HK$' + fee + '（' + zoneName + '・' + getTierNameZh(tier) + '）' + (sur ? '；DHL +HK$' + sur + ' → 共 HK$' + expressTotal : '') + (z.freeAbove ? '，滿 HK$' + z.freeAbove + ' 免運費' : '');
+                        info.textContent = '運費：HK$' + fee + '（' + zoneName + '）' + (sur ? '；DHL +HK$' + sur + ' → 共 HK$' + expressTotal : '') + (z.freeAbove ? '，滿 HK$' + z.freeAbove + ' 免運費' : '');
                     }
                 }
             }
@@ -1162,7 +1162,7 @@
             ${itemsHtml}
             <div class="summary-divider"></div>
             <div class="summary-item"><span>商品小計</span><span>HK$${subtotal}</span></div>
-            <div class="summary-item"><span>配送費 ${deliveryMode === 'global' ? (globalExpress ? '（DHL）' : '（' + getTierNameZh(getCartSizeTier()) + '）') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? '免費' : 'HK$' + deliveryFee}</span></div>
+            <div class="summary-item"><span>配送費 ${deliveryMode === 'global' ? (globalExpress ? '（DHL）' : '') : (selectedHour ? '(' + selectedHour + ')' : '')}</span><span>${deliveryFee === 0 ? '免費' : 'HK$' + deliveryFee}</span></div>
             ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 HK$${selectedTimeFee}, 地區費 HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>總計</span><span>HK$${total}</span></div>
