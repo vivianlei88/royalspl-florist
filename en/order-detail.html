@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -297,8 +298,8 @@
                 const imgHtml = item.image 
                     ? (item.productId ? '<a href="product-detail.html?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" alt="' + item.name + '"></a>' : '<img src="' + item.image + '" alt="' + item.name + '">')
                     : '<div class="product-img-placeholder"></div>';
-                const priceHtml = item.price ? 'HK$' + item.price : '-';
-                const subtotal = item.price && item.quantity ? 'HK$' + (item.price * item.quantity) : '';
+                const priceHtml = item.price ? siteMoney(item.price) : '-';
+                const subtotal = item.price && item.quantity ? siteMoney(item.price * item.quantity) : '';
                 productsHtml += '<div class="product-item">' +
                     imgHtml +
                     '<div class="product-info">' +
@@ -358,9 +359,9 @@
             // 7. 金額明細
             html += '<div class="detail-section">';
             html += '<div class="section-title">金額明細</div>';
-            html += '<div class="detail-row"><span class="detail-label">ProductsSubtotal</span><span class="detail-value">HK$' + (order.subtotal || '-') + '</span></div>';
-            html += '<div class="detail-row"><span class="detail-label">Shipping Fee</span><span class="detail-value">' + (order.delivery_fee === 0 ? '免費' : 'HK$' + (order.delivery_fee || '-')) + '</span></div>';
-            html += '<div class="total-row"><span>總金額</span><span>HK$' + (order.total_amount || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">ProductsSubtotal</span><span class="detail-value">' + siteMoney(order.subtotal || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Shipping Fee</span><span class="detail-value">' + (order.delivery_fee === 0 ? '免費' : siteMoney(order.delivery_fee || '-')) + '</span></div>';
+            html += '<div class="total-row"><span>總金額</span><span>' + siteMoney(order.total_amount || '-') + '</span></div>';
             html += '</div>';
 
             // 未Payment：总金额下面显示立即Pay按钮
