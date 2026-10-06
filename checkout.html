@@ -447,11 +447,11 @@
                 <select id="globalCountrySelect" onchange="onGlobalCountryChange(this)" style="width:100%;padding:14px 16px;border:1px solid #1A1A1A;border-radius:6px;font-size:16px;font-family:inherit;background:#fff;"></select>
             </div>
             <p id="globalShippingInfo" class="global-fee-card">請選擇國家 / 地區以計算運費</p>
+            <p class="global-note">全球商品（乾花 / 永生花）以普通國際快遞寄送，預計送達時間：7–14 個工作天（實際以目的地海關及物流為準）</p>
             <label style="display:flex;align-items:center;gap:10px;margin:12px 0 6px;font-size:16px;cursor:pointer;background:#fff;border:2px solid rgba(26,26,26,0.2);border-radius:8px;padding:15px 18px;">
                 <input type="checkbox" id="globalExpressCheck" onchange="toggleGlobalExpress(this.checked)" style="width:22px;height:22px;accent-color:#1A1A1A;flex-shrink:0;">
-                <span>⚡ DHL 特快配送（2–3 天送達）<b id="expressSurchargeLabel">+HK$0</b></span>
+                <span>DHL 特快配送（3–5 天送達）<b id="expressSurchargeLabel">+HK$0</b></span>
             </label>
-            <p class="global-note">🌏 全球商品（乾花 / 永生花）以國際快遞寄送，預計送達時間：7–14 個工作天（實際以目的地海關及物流為準）</p>
         </div>
         </div>
 
@@ -1042,7 +1042,14 @@
                     if (z.freeAbove && getSubtotal() >= z.freeAbove) {
                         info.textContent = '✓ 滿 HK$' + z.freeAbove + ' 免運費（' + zoneName + '）';
                     } else {
-                        info.textContent = '運費：HK$' + fee + '（' + zoneName + '）' + (sur ? '；DHL +HK$' + sur + ' → 共 HK$' + expressTotal : '') + (z.freeAbove ? '，滿 HK$' + z.freeAbove + ' 免運費' : '');
+                        var rows = '';
+                        rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;"><span>普通國際快遞（7–14 個工作天）</span><b>HK$' + fee + '</b></div>';
+                        if (globalExpress && sur > 0) {
+                            rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;"><span>DHL 特快配送（3–5 天送達）</span><b>+HK$' + sur + '</b></div>';
+                            rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;border-top:1px dashed rgba(26,26,26,0.25);margin-top:4px;"><span>合計運費</span><b>HK$' + expressTotal + '</b></div>';
+                        }
+                        if (z.freeAbove) { rows += '<div style="font-size:13px;color:#8a6d1a;margin-top:6px;">滿 HK$' + z.freeAbove + ' 免運費</div>'; }
+                        info.innerHTML = rows;
                     }
                 }
             }
