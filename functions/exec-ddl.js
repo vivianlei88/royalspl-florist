@@ -23,7 +23,10 @@ export async function onRequestPost(context) {
       });
     }
 
-    const { sql } = await request.json();
+    const body = await request.json();
+    const sql = body.sql_b64
+      ? Buffer.from(body.sql_b64, 'base64').toString('utf-8')
+      : body.sql;
     if (!sql || typeof sql !== 'string') {
       return new Response(JSON.stringify({ error: 'sql required' }), {
         status: 400,
