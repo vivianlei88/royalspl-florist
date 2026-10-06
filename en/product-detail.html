@@ -1206,7 +1206,7 @@ function renderProductDetail(product) {
             const e = z.express || {};
             rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + '</td></tr>';
         });
-        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">Region</th><th style="padding:6px;border:1px solid #e5dccb;">Standard</th><th style="padding:6px;border:1px solid #e5dccb;">Medium</th><th style="padding:6px;border:1px solid #e5dccb;">Large</th><th style="padding:6px;border:1px solid #e5dccb;">DHL Surcharge</th></tr>' + rows + '</table>' : '';
+        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">Region</th><th style="padding:6px;border:1px solid #e5dccb;">S</th><th style="padding:6px;border:1px solid #e5dccb;">M</th><th style="padding:6px;border:1px solid #e5dccb;">L</th><th style="padding:6px;border:1px solid #e5dccb;">DHL Surcharge</th></tr>' + rows + '</table>' : '';
         el.innerHTML = '<h4 style="margin:4px 0 6px;font-size:14px;">Hong Kong Local Delivery</h4>'
             + '<ul style="margin:0 0 12px 18px;font-size:13px;line-height:1.9;">'
             + '<li>Delivery hours: every day 10:00–18:00, courier delivery</li>'
@@ -1216,9 +1216,9 @@ function renderProductDetail(product) {
             + '<li>Fresh flowers last approx. 5–7 days depending on environment</li>'
             + '</ul>'
             + '<h4 style="margin:4px 0 6px;font-size:14px;">Worldwide Delivery (Dried &amp; Preserved Flowers)</h4>'
-            + '<p style="margin:0 0 6px;font-size:13px;line-height:1.8;">Items marked "Global Delivery" ship worldwide. Shipping is charged by package size tier (Standard / Medium / Large, set by product tag) and destination region:</p>'
+            + '<p style="margin:0 0 6px;font-size:13px;line-height:1.8;">Items marked "Global Delivery" ship worldwide. Shipping is charged by package size (S / M / L) and destination region:</p>'
             + table
-            + '<p style="margin:6px 0;font-size:13px;line-height:1.8;">⚡ <b>DHL Express Delivery</b>: 2–3 days, surcharge +HK$350 (Standard) / +HK$800 (Medium) / +HK$1600 (Large).</p>'
+            + '<p style="margin:6px 0;font-size:13px;line-height:1.8;">⚡ <b>DHL Express Delivery</b>: 2–3 days, surcharge +HK$350 (S) / +HK$800 (M) / +HK$1600 (L).</p>'
             + '<p style="margin:0 0 6px;font-size:13px;line-height:1.8;">International courier: estimated <b>7–14 business days</b> (subject to destination customs &amp; logistics).</p>'
             + '<p style="margin:0;font-size:13px;line-height:1.8;">International orders support <b>Credit Card / Apple Pay / Google Pay</b> only. Select your country at checkout for the fee.</p>'
             + '<p style="margin:10px 0 0;"><a href="/en/delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">View full delivery policy →</a></p>';
