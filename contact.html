@@ -458,10 +458,10 @@
                     <div class="partner-direct-label">WhatsApp</div>
                     <div class="partner-direct-value">+852 6503 6907</div>
                 </a>
-                <a href="mailto:royalspl@gmail.com" class="partner-direct-card">
+                <a href="mailto:info@royalspl.xyz" class="partner-direct-card">
                     <div class="partner-direct-icon">✉️</div>
                     <div class="partner-direct-label">Email</div>
-                    <div class="partner-direct-value">royalspl@gmail.com</div>
+                    <div class="partner-direct-value">info@royalspl.xyz</div>
                 </a>
                 <a href="https://www.instagram.com/royalspl" target="_blank" rel="noopener" class="partner-direct-card">
                     <div class="partner-direct-icon">📷</div>
@@ -470,9 +470,6 @@
                 </a>
             </div>
         </div>
-
-        <!-- 動態店鋪資訊 -->
-        <div id="contactContent"></div>
 
         <!-- ===== 合作 FAQ ===== -->
         <div class="partner-section">
@@ -504,80 +501,6 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        async function loadContact() {
-            const { data, error } = await supabaseClient
-                .from('contact_settings')
-                .select('*')
-                .eq('is_published', true)
-                .limit(1)
-                .maybeSingle();
-
-            const container = document.getElementById('contactContent');
-
-            if (error) {
-                console.error('載入聯絡資料失敗:', error);
-                return;
-            }
-
-            if (!data) {
-                return;
-            }
-
-            let html = '<div class="contact-card">';
-
-            if (data.shop_logo) {
-                html += `<img src="${data.shop_logo}" alt="RoyalSpl Florist" class="shop-logo">`;
-            }
-
-            if (data.shop_phone) {
-                html += `
-                    <div class="contact-item">
-                        <div class="contact-icon">📞</div>
-                        <div>
-                            <div class="contact-label">電話</div>
-                            <div class="contact-value"><a href="tel:${data.shop_phone}">${data.shop_phone}</a></div>
-                        </div>
-                    </div>`;
-            }
-
-            if (data.shop_email) {
-                html += `
-                    <div class="contact-item">
-                        <div class="contact-icon"></div>
-                        <div>
-                            <div class="contact-label">電郵</div>
-                            <div class="contact-value"><a href="mailto:${data.shop_email}">${data.shop_email}</a></div>
-                        </div>
-                    </div>`;
-            }
-
-            if (data.shop_address) {
-                html += `
-                    <div class="contact-item">
-                        <div class="contact-icon"></div>
-                        <div>
-                            <div class="contact-label">地址</div>
-                            <div class="contact-value">${data.shop_address}</div>
-                        </div>
-                    </div>`;
-            }
-
-            html += '</div>';
-
-            if (data.map_url) {
-                html += `
-                    <div class="map-container">
-                        <iframe src="${data.map_url}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                    </div>`;
-            }
-
-            container.innerHTML = html;
-        }
-
         // 合作表格提交
         function submitPartnerInquiry(method) {
             var name = document.getElementById('piName').value.trim();
@@ -613,7 +536,7 @@
                 var waUrl = 'https://wa.me/85265036907?text=' + encodeURIComponent(text);
                 window.open(waUrl, '_blank');
             } else {
-                var mailto = 'mailto:royalspl@gmail.com?subject=' + encodeURIComponent('設計師及商務合作查詢 - ' + name) + '&body=' + encodeURIComponent(text);
+                var mailto = 'mailto:info@royalspl.xyz?subject=' + encodeURIComponent('設計師及商務合作查詢 - ' + name) + '&body=' + encodeURIComponent(text);
                 window.location.href = mailto;
             }
         }
@@ -634,7 +557,6 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', loadContact);
     </script>
     <script src="js/ai-chat-v2.js"></script>
     <script>
