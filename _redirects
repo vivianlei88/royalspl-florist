@@ -1,5 +1,8 @@
 /post/*    /blog-detail.html?slug=:splat    301
 
+# 特殊slug產品（含空格/+）：精確重定向到替代品
+/product-page/結婚花球 + 新郎襟花 粉繡球+玫瑰    /product-detail.html?id=323    301
+
 # WIX 舊產品 URL 301 重定向到新網站（保持谷歌排名權重）
 /product-page/*    /product-detail.html?slug=:splat    301
 /en/product-page/*    /en/product-detail.html?slug=:splat    301
