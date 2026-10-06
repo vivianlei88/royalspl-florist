@@ -431,7 +431,7 @@
     var heroSlideIndex = 0;
     var heroSlideTimer = null;
     
-    function initHeroSlides(images) {
+    function initHeroSlides(images, links, fallbackLink) {
         var slidesContainer = document.getElementById('heroSlides');
         var dotsContainer = document.getElementById('heroDots');
         if (!slidesContainer || !images || images.length === 0) return;
@@ -443,6 +443,14 @@
             var slide = document.createElement('div');
             slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
             slide.style.backgroundImage = 'url(' + images[i] + ')';
+            // 每張圖獨立跳轉連結（沒有則回退全局 CTA 連結）
+            var slideLink = (links && links[i]) ? links[i] : (fallbackLink || '');
+            if (slideLink) {
+                slide.style.cursor = 'pointer';
+                (function(url){
+                    slide.onclick = function(e) { if (e && e.stopPropagation) e.stopPropagation(); window.location.href = url; };
+                })(slideLink);
+            }
             slidesContainer.appendChild(slide);
             
             if (dotsContainer) {
@@ -534,14 +542,17 @@
                 }
             }
             
-            // Hero Banner 轮播
+            // Hero Banner 轮播（支援每張圖獨立連結：hero_images 元素可為字串或 {url, link}）
             var heroImages = [];
+            var heroImageLinks = [];
+            var heroCtaLink = settings.hero_cta_link || '';
             if (settings.hero_images && settings.hero_images.length > 0) {
-                heroImages = settings.hero_images;
+                heroImages = settings.hero_images.map(function(x) { return typeof x === 'string' ? x : x.url; });
+                heroImageLinks = settings.hero_images.map(function(x) { return typeof x === 'string' ? '' : (x.link || ''); });
             } else if (settings.hero_image) {
                 heroImages = [settings.hero_image];
             }
-            initHeroSlides(heroImages);
+            initHeroSlides(heroImages, heroImageLinks, heroCtaLink);
             
             if (!hasAnyText && heroContent) {
                 heroContent.style.display = 'none';
@@ -558,7 +569,7 @@
             // 出錯時也嘗試顯示圖片
             try {
                 if (settings && settings.hero_images && settings.hero_images.length > 0) {
-                    initHeroSlides(settings.hero_images);
+                    initHeroSlides(settings.hero_images.map(function(x) { return typeof x === 'string' ? x : x.url; }), settings.hero_images.map(function(x) { return typeof x === 'string' ? '' : (x.link || ''); }), settings.hero_cta_link || '');
                 } else if (settings && settings.hero_image) {
                     initHeroSlides([settings.hero_image]);
                 }
