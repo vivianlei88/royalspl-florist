@@ -5246,10 +5246,12 @@ function setShippingScope(v) {
         if (scope === 'global') { if (gi === -1) selectedTags.push('全球配送'); }
         else if (gi > -1) { selectedTags.splice(gi, 1); }
         var tier = window._shippingTier || 'standard';
+        var tierNames = { standard: '標準件', medium: '中件', large: '大件' };
+        var tierName = tierNames[tier] || '標準件';
         var tiers = ['標準件', '中件', '大件'];
         for (var i = 0; i < tiers.length; i++) {
             var idx = selectedTags.indexOf(tiers[i]);
-            if (tiers[i] === tier) { if (idx === -1) selectedTags.push(tiers[i]); }
+            if (tiers[i] === tierName) { if (idx === -1) selectedTags.push(tiers[i]); }
             else if (idx > -1) { selectedTags.splice(idx, 1); }
         }
     }
