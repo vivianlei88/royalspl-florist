@@ -232,7 +232,7 @@
 <script>
 // 動態應用後台設置的 SEO Meta 標籤
 (function() {
-    var pageUrl = window.location.pathname.split('/').pop() || 'index.html';
+    var pageUrl = window.location.pathname.replace(/^\//,'') || 'index.html';
     if (pageUrl === '') pageUrl = 'index.html';
     fetch('https://gefqlrmozxbgfhxgngtg.supabase.co/rest/v1/seo_overrides?page_url=eq.' + encodeURIComponent(pageUrl), {
         headers: {
@@ -347,7 +347,7 @@
         <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
         <div class="footer-links">
             <div class="footer-column"><a href="products.html" class="footer-link">所有花藝</a><a href="products.html?tag=情人節" class="footer-link">節慶場合</a><a href="products.html?category=%E5%AE%B6%E5%B1%85%E8%88%87%E7%A9%BA%E9%96%93%E7%BE%8E%E5%AD%B8" class="footer-link">空間美學</a></div>
-            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">常見問題</a><a href="contact.html" class="footer-link">聯絡我們</a></div>
+            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">常見問題</a><a href="contact.html" class="footer-link">設計師及商務合作</a></div>
         </div>
         <div class="footer-bottom"><a href="privacy.html" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
