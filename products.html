@@ -2,7 +2,8 @@
 <html lang="zh-HK">
 <head>
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -289,7 +290,7 @@
                 <span class="logo-subtext">HONG KONG</span>
             </a>
             <div class="header-actions">
-<a href="/en/products.html" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>
+<a href="/en/products.html" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>                 <span class="site-currency-switch" style="margin-right:10px;"></span>
                 <a href="account.html" class="user-icon" aria-label="會員中心">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
@@ -728,11 +729,7 @@
             html += '<div class="product-status ' + stockClass + '">' + stockText + '<\/div>';
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
-            html += '<p class="product-price">' + (variantMinMap[p.id] ? 'HK$' + variantMinMap[p.id] + ' 起' : 'HK$' + p.price) + '<\/p>';
-            if ((p.tags || []).indexOf('全球配送') > -1) {
-                var usdShow = variantMinMap[p.id] ? '≈ US$' + Math.round(variantMinMap[p.id] / 7.8) + ' 起' : '≈ US$' + Math.round(p.price / 7.8);
-                html += '<p class="product-price-usd" style="font-size:13px;color:#8a6d1a;margin:2px 0 0;">' + usdShow + '<\/p>';
-            }
+            html += '<p class="product-price">' + (variantMinMap[p.id] ? siteMoney(variantMinMap[p.id]) + ' 起' : siteMoney(p.price)) + '<\/p>';
             html += '<\/a>';
         }
         grid.innerHTML = html;
@@ -770,7 +767,7 @@
         if (submenu) { submenu.classList.toggle('open'); if (plus) plus.textContent = submenu.classList.contains('open') ? '−' : '+'; }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {         siteInitCurrency();         siteRenderCurrencyBtn();
         initFilterPills();
         var searchInput = document.getElementById('searchInput');
         var sortSelect = document.getElementById('sortSelect');
