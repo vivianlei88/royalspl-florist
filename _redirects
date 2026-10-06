@@ -6,3 +6,28 @@
 # WIX 舊產品 URL 301 重定向到新網站（保持谷歌排名權重）
 /product-page/*    /product-detail.html?slug=:splat    301
 /en/product-page/*    /en/product-detail.html?slug=:splat    301
+
+# 英文舊博客（en/post/ → 英文博客詳情）
+/en/post/*    /en/blog-detail.html?slug=:splat    301
+
+# 日文舊站頁面（新站無日文版）→ 中文對應頁
+/ja/product-page/*    /products.html    301
+/ja/category/*    /products.html    301
+/ja/post/*    /blog.html    301
+/ja/blog    /blog.html    301
+
+# WIX 舊分類頁 → 新站分類/標籤頁
+/category/芍藥系    /products.html?category=進口牡丹芍藥花    301
+/category/婚禮花球    /products.html?tag=婚禮    301
+/category/母親節花束    /products.html?tag=母親節    301
+/category/royalspl推薦    /products.html    301
+/en/category/即日鮮花    /en/products.html?category=即日鮮花    301
+
+# WIX 舊博客標籤頁 → 博客列表
+/blog/tags/*    /blog.html    301
+/en/blog/tags/*    /en/blog.html    301
+
+# 其他舊頁面 → 首頁
+/home    /    301
+/loyalty    /    301
+/enRoyalSpl*    /    301
