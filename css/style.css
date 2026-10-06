@@ -278,12 +278,12 @@ button {
     position: absolute;
     bottom: 16%;
     left: 0;
-    right: 0;
     z-index: 10;
-    text-align: center;
+    text-align: left;
     color: var(--white);
-    padding: 20px;
+    padding: 20px 40px;
     box-sizing: border-box;
+    max-width: 62%;
 }
 
 .hero-title {
@@ -662,6 +662,8 @@ button {
 @media (max-width: 768px) {
     .hero-content {
         bottom: 12%;
+        max-width: 85%;
+        padding: 15px 20px;
     }
     
     .hero-title {
