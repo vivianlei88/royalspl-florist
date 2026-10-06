@@ -2482,15 +2482,10 @@
     var globalZonesEditing = null;
     async function renderGlobalShippingPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">全球運費設置</h2></div>'
-            + '<div style="background:#FFF8E1;border:1px solid #E6C86B;color:#8a6d1a;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;line-height:1.7;">🌏 <b>全球售卖（乾花/永生花）設定：</b>商品在編輯頁打上「全球配送」標籤後即可全球寄送；購物車全為全球商品時，結帳頁自動切換為「國際配送」模式（選國家/地區，僅支援信用卡 / Apple Pay / Google Pay 付款）。</div>'
-            + '<div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;margin-bottom:16px;">'
-            + '<div style="font-size:15px;font-weight:600;margin-bottom:6px;">全球配送標籤</div>'
-            + '<div style="font-size:13px;color:#666;line-height:1.7;">目前標記用標籤：<b id="gsTagLabel">全球配送</b>（商品編輯頁點選此標籤即為全球商品；如無此標籤選項，可在商品標籤欄手動輸入）</div>'
-            + '<div style="display:flex;gap:10px;margin-top:10px;align-items:center;"><input id="gsTagInput" style="flex:1;padding:10px 12px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;" placeholder="全球配送"><button class="btn btn-secondary" onclick="saveGlobalScopeTag()">儲存標籤名</button></div>'
-            + '</div>'
-            + '<div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;">'
+            + '<div style="background:#FFF8E1;border:1px solid #E6C86B;color:#8a6d1a;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;line-height:1.7;">🌏 <b>全球售卖（乾花/永生花）設定：</b>商品在編輯頁的「配送選項」中選擇「全球配送」即可全球寄送（尺寸檔位決定國際運費）；購物車全為全球商品時，結帳頁自動切換為「國際配送」模式（選國家/地區，僅支援信用卡 / Apple Pay / Google Pay 付款）。</div>'
+'<div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;">'
             + '<div style="font-size:15px;font-weight:600;margin-bottom:4px;">地區分檔運費（標準件 / 中件 / 大件 + DHL）</div>'
-            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">商品在編輯頁打上「標準件 / 中件 / 大件」標籤決定尺寸檔位；結帳時購物車取最高檔收費。DHL 特快 = 2–3 天送達，為 DHL 附加費。國家以逗號分隔；滿額免運可填 0 表示不設。</div>'
+            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">商品在編輯頁的「配送選項」中選擇尺寸檔位（標準件 / 中件 / 大件）決定國際運費；結帳時購物車取最高檔收費。DHL 特快 = 2–3 天送達，為 DHL 附加費。國家以逗號分隔；滿額免運可填 0 表示不設。</div>'
             + '<div id="gsZonesContainer"></div>'
             + '<div style="margin-top:12px;display:flex;gap:10px;"><button class="btn btn-secondary" onclick="addGlobalZoneRow()">+ 添加地區</button><button class="btn btn-primary" onclick="saveGlobalZones()">儲存運費設置</button></div>'
             + '</div>';
@@ -2510,9 +2505,6 @@
             }
             zones.forEach(function(z) { if (!z.fees) { z.fees = { standard: z.fee || 0, medium: z.fee || 0, large: z.fee || 0 }; } if (!z.express) { z.express = { standard: 0, medium: 0, large: 0 }; } });
             globalZonesEditing = zones;
-            var r2 = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_scope_tag').maybeSingle();
-            if (r2.data && r2.data.setting_value) { document.getElementById('gsTagLabel').textContent = r2.data.setting_value; document.getElementById('gsTagInput').value = r2.data.setting_value; }
-            else { document.getElementById('gsTagInput').value = '全球配送'; }
             renderGlobalZoneRows();
         } catch(e) { console.error('載入全球運費失敗:', e); globalZonesEditing = []; renderGlobalZoneRows(); }
     }
@@ -2568,13 +2560,7 @@
         await upsertSetting('global_shipping_zones', JSON.stringify(globalZonesEditing));
         showToast('全球運費設置已儲存');
     }
-    async function saveGlobalScopeTag() {
-        var v = document.getElementById('gsTagInput').value.trim();
-        if (!v) { showToast('標籤名不能為空'); return; }
-        await upsertSetting('global_scope_tag', v);
-        document.getElementById('gsTagLabel').textContent = v;
-        showToast('配送標籤已儲存');
-    }
+    
     // ==================== 管理員管理頁面 ====================
     async function renderAdminsPage(c) {
         c.innerHTML = '<div class="page-header"><h2 class="page-title">管理員管理</h2><button class="btn btn-primary" onclick="showAddAdminForm()">新增管理員</button></div>';
@@ -4855,9 +4841,10 @@ staticPages.forEach(page => {
         
         f.innerHTML += '<div class="form-group"><label class="form-label">規格變體（Variants）</label><div id="variantsList"></div><button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>';
+        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button></span></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費；香港本地不受影響。</div></div>';
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = []; variants = []; selectedAddons = []; selectedTags = [];
-        toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea();
+        toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea(); initShippingOptions();
     }
     var productsScrollPos = 0;
     function showProductsList() {
@@ -4893,10 +4880,11 @@ staticPages.forEach(page => {
         
         f.innerHTML += '<div class="form-group"><label class="form-label">規格變體（Variants）</label><div id="variantsList"></div><button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>';
+        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button></span></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費；香港本地不受影響。</div></div>';
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
         selectedAddons = p.linked_addons || [];
-        selectedTags = p.tags || [];
+        selectedTags = p.tags || [];         initShippingOptions();
         var catIds = p.category_ids || [];
         var catNames = p.categories || [];
         // 兼容旧数据：如果没有数组字段但有单值，转换为数组
@@ -5226,7 +5214,41 @@ async function pushToBaidu(urls) {
         } catch (e) { console.error('百度推送失敗:', e); return null; }
     }
     
-async function saveProduct() {
+function setShippingScope(v) { /* 選擇配送範圍，保存時同步到標籤 */ }
+    function setShippingTier(t) {
+        window._shippingTier = t;
+        var btns = document.querySelectorAll('#shippingTierGroup button');
+        for (var i = 0; i < btns.length; i++) {
+            var b = btns[i];
+            if (b.getAttribute('data-tier') === t) { b.classList.add('active'); b.style.background = '#1A1A1A'; b.style.color = '#fff'; }
+            else { b.classList.remove('active'); b.style.background = '#f5f5f5'; b.style.color = '#333'; }
+        }
+    }
+    function initShippingOptions() {
+        var scopeSel = document.getElementById('shippingScopeSelect');
+        var hasGlobal = selectedTags.indexOf('全球配送') > -1;
+        if (scopeSel) scopeSel.value = hasGlobal ? 'global' : 'local';
+        var tier = 'standard';
+        if (selectedTags.indexOf('大件') > -1) tier = 'large';
+        else if (selectedTags.indexOf('中件') > -1) tier = 'medium';
+        window._shippingTier = tier;
+        setShippingTier(tier);
+    }
+    function syncShippingToTags() {
+        var scopeSel = document.getElementById('shippingScopeSelect');
+        var scope = scopeSel ? scopeSel.value : 'local';
+        var gi = selectedTags.indexOf('全球配送');
+        if (scope === 'global') { if (gi === -1) selectedTags.push('全球配送'); }
+        else if (gi > -1) { selectedTags.splice(gi, 1); }
+        var tier = window._shippingTier || 'standard';
+        var tiers = ['標準件', '中件', '大件'];
+        for (var i = 0; i < tiers.length; i++) {
+            var idx = selectedTags.indexOf(tiers[i]);
+            if (tiers[i] === tier) { if (idx === -1) selectedTags.push(tiers[i]); }
+            else if (idx > -1) { selectedTags.splice(idx, 1); }
+        }
+    }
+    async function saveProduct() {         syncShippingToTags();
         var id = document.getElementById('productId').value;
         var data = {
             name_zh: document.getElementById('nameZh').value.trim(),
