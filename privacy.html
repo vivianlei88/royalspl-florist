@@ -302,8 +302,8 @@
         <div id="privacyContent" class="content-card"></div>
     </div>
     <script>
-        const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
+        var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 简单 Markdown 解析
@@ -369,11 +369,6 @@
     var navDrawer = document.getElementById('navDrawer');
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // 先隱藏默認Hero文字，等待數據庫設置載入
-        var heroContent = document.querySelector('.hero-content');
-        if (heroContent) heroContent.style.display = 'none';
 
 </script>
 </body>
