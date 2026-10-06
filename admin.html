@@ -2315,7 +2315,7 @@
             });
             var homepage = await supabaseClient.from('homepage_settings').select('hero_images,about_image');
             (homepage.data || []).forEach(function(h) {
-                if (h.hero_images) { try { JSON.parse(h.hero_images).forEach(function(img) { images.push({url: img, source: '首頁Banner'}); }); } catch(e) {} }
+                if (h.hero_images) { try { JSON.parse(h.hero_images).forEach(function(img) { images.push({url: typeof img === 'string' ? img : img.url, source: '首頁Banner'}); }); } catch(e) {} }
                 if (h.about_image) images.push({url: h.about_image, source: '關於我們'});
             });
             // 去重
@@ -4538,7 +4538,7 @@ staticPages.forEach(page => {
             var res = await fetch('/r2-upload', { method: 'POST', body: fd }); 
             var data = await res.json(); 
             if (data.url) { 
-                heroUploadedImages.push(data.url); 
+                heroUploadedImages.push({ url: data.url, link: '' }); 
                 renderHeroImagesPreview(); 
                 showToast('圖片上傳成功'); 
             } else { 
@@ -4554,13 +4554,37 @@ staticPages.forEach(page => {
         if (heroUploadedImages.length === 0) { preview.innerHTML = ''; return; }
         var h = '';
         for (var i = 0; i < heroUploadedImages.length; i++) {
-            h += '<div style="position:relative;width:160px;height:90px;border-radius:8px;overflow:hidden;">';
-            h += '<img src="' + heroUploadedImages[i] + '" style="width:100%;height:100%;object-fit:cover;">';
-            h += '<button onclick="removeHeroImage(' + i + ')" style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.6);color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;">×</button>';
-            h += '<span style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;">' + (i+1) + '</span>';
+            var it = heroUploadedImages[i];
+            var u = typeof it === 'string' ? it : it.url;
+            var lk = typeof it === 'string' ? '' : (it.link || '');
+            h += '<div style="width:230px;border:1px solid #eee;border-radius:8px;padding:6px;background:#fff;">';
+            h += '<div style="position:relative;width:100%;height:90px;border-radius:6px;overflow:hidden;">';
+            h += '<img src="' + u + '" style="width:100%;height:100%;object-fit:cover;">';
+            h += '<button onclick="removeHeroImage(' + i + ')" title="刪除" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;">×</button>';
+            h += '<span style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;">第 ' + (i+1) + ' 張</span>';
+            h += '</div>';
+            h += '<input value="' + lk + '" placeholder="此圖跳轉連結（可選，留空用下方 CTA 連結）" oninput="setHeroLink(' + i + ', this.value)" style="width:100%;box-sizing:border-box;margin-top:6px;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;">';
+            h += '<div style="margin-top:6px;display:flex;gap:5px;justify-content:space-between;">';
+            h += '<span style="font-size:11px;color:#888;line-height:26px;">' + (i+1) + '/' + heroUploadedImages.length + '</span>';
+            h += '<span>';
+            h += '<button onclick="moveHeroImage(' + i + ',-1)" ' + (i===0?'disabled':'') + ' style="background:#f0f0f0;border:1px solid #ddd;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:12px;">↑ 上移</button> ';
+            h += '<button onclick="moveHeroImage(' + i + ',1)" ' + (i===heroUploadedImages.length-1?'disabled':'') + ' style="background:#f0f0f0;border:1px solid #ddd;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:12px;">↓ 下移</button>';
+            h += '</span>';
+            h += '</div>';
             h += '</div>';
         }
         preview.innerHTML = h;
+    }
+    function setHeroLink(index, val) {
+        if (heroUploadedImages[index] && typeof heroUploadedImages[index] === 'object') { heroUploadedImages[index].link = val.trim(); }
+    }
+    function moveHeroImage(index, delta) {
+        var target = index + delta;
+        if (target < 0 || target >= heroUploadedImages.length) return;
+        var tmp = heroUploadedImages[index];
+        heroUploadedImages[index] = heroUploadedImages[target];
+        heroUploadedImages[target] = tmp;
+        renderHeroImagesPreview();
     }
     function removeHeroImage(index) {
         heroUploadedImages.splice(index, 1);
@@ -4577,7 +4601,9 @@ staticPages.forEach(page => {
                 document.getElementById('heroCtaLink').value = d.hero_cta_link || '';
                 var aboutEl = document.getElementById('aboutText');
                 if (aboutEl) aboutEl.innerHTML = d.about_text || '';
-                heroUploadedImages = d.hero_images && d.hero_images.length > 0 ? d.hero_images.slice() : (d.hero_image ? [d.hero_image] : []);
+                heroUploadedImages = ((d.hero_images && d.hero_images.length > 0 ? d.hero_images : (d.hero_image ? [d.hero_image] : [])).map(function(x){
+                    return typeof x === 'string' ? { url: x, link: '' } : { url: x.url || '', link: x.link || '' };
+                }));
                 renderHeroImagesPreview();
             }
         } catch (e) {}
@@ -4587,7 +4613,7 @@ staticPages.forEach(page => {
         var data = {
             hero_title: document.getElementById('heroTitle').value.trim(),
             hero_subtitle: document.getElementById('heroSubtitle').value.trim(),
-            hero_image: heroUploadedImages.length > 0 ? heroUploadedImages[0] : null,
+            hero_image: heroUploadedImages.length > 0 ? (typeof heroUploadedImages[0] === 'string' ? heroUploadedImages[0] : heroUploadedImages[0].url) : null,
             hero_images: heroUploadedImages,
             hero_cta_text: document.getElementById('heroCtaText').value.trim(),
             hero_cta_link: document.getElementById('heroCtaLink').value.trim(),
