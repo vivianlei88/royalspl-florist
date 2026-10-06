@@ -2,7 +2,8 @@
 <html lang="zh-HK">
 <head>
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -605,7 +606,7 @@
                 html += '<div class="account-order-info">';
                 html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;"><div class="account-order-code">' + order.order_code + '</div></a>';
                 html += '<div class="account-order-meta">成立：' + createdDate + ' | 送貨：' + (order.delivery_date || '-') + '</div>';
-                html += '<div class="account-order-price">HK$' + order.total_amount + '</div>';
+                html += '<div class="account-order-price">' + siteMoney(order.total_amount) + '</div>';
                 html += '</div>';
                 html += '<div class="account-order-right">';
                 html += '<span class="status-badge-sm status-' + order.status + '">' + (statusMap[order.status] || order.status) + '</span>';
