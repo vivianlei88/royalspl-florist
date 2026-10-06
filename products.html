@@ -729,6 +729,10 @@
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
             html += '<p class="product-price">' + (variantMinMap[p.id] ? 'HK$' + variantMinMap[p.id] + ' 起' : 'HK$' + p.price) + '<\/p>';
+            if ((p.tags || []).indexOf('全球配送') > -1) {
+                var usdShow = variantMinMap[p.id] ? '≈ US$' + Math.round(variantMinMap[p.id] / 7.8) + ' 起' : '≈ US$' + Math.round(p.price / 7.8);
+                html += '<p class="product-price-usd" style="font-size:13px;color:#8a6d1a;margin:2px 0 0;">' + usdShow + '<\/p>';
+            }
             html += '<\/a>';
         }
         grid.innerHTML = html;
