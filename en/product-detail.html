@@ -802,6 +802,7 @@ function renderProductDetail(product) {
         html += '<h1 class="detail-title-zh">' + (product.name_en || product.name_zh) + '<\/h1>';
         html += '<div class="detail-status ' + stockClass + '">' + stockText + '<\/div>';
         html += '<p class="detail-price">HK$' + getCurrentPrice() + '<\/p>';
+            if (isGlobalItem) { html += '<p class="detail-price-usd" id="detailPriceUsd" style="font-size:15px;color:#8a6d1a;margin:-10px 0 0;">≈ US$' + Math.round(getCurrentPrice() / 7.8) + '<\/p>'; }
         if (productVariants.length > 0) {
             html += '<div class="variant-selector"><p class="variant-label">Select Option<\/p>';
             for (var vi = 0; vi < productVariants.length; vi++) {
@@ -832,6 +833,7 @@ function renderProductDetail(product) {
         html += '<\/div>';
         
         html += '<div class="total-display" id="totalDisplay">Total: HK$' + getCurrentPrice() + '<\/div>';
+            if (isGlobalItem) { html += '<div class="total-display-usd" id="totalUsd" style="font-size:13px;color:#8a6d1a;margin-top:4px;">≈ US$' + Math.round(getCurrentPrice() / 7.8) + ' (ref.)<\/div>'; }
         html += '<div class="purchase-actions">';
         html += '<button class="add-to-cart-btn" onclick="handleAddToCart()">' + (isInStock ? 'Add to Cart' : 'Pre-order') + '<\/button>';
         html += '<button class="buy-now-btn" onclick="handleBuyNow()">' + (isInStock ? 'Buy Now' : 'Pre-order Now') + '<\/button>';
@@ -1029,6 +1031,8 @@ function renderProductDetail(product) {
         for (var oi = 0; oi < opts.length; oi++) { opts[oi].classList.toggle('active', oi === i); }
         var priceEl = document.querySelector('.detail-price');
         if (priceEl) priceEl.textContent = 'HK$' + getCurrentPrice();
+        var usdEl = document.getElementById('detailPriceUsd');
+        if (usdEl) usdEl.textContent = '≈ US$' + Math.round(getCurrentPrice() / 7.8);
         updateTotal();
     }
 
@@ -1050,6 +1054,8 @@ function renderProductDetail(product) {
         });
         var total = (getCurrentPrice() + addonTotal) * quantity;
         document.getElementById('totalDisplay').textContent = 'Total: HK$' + total;
+        var tusd = document.getElementById('totalUsd');
+        if (tusd) tusd.textContent = '≈ US$' + Math.round(total / 7.8) + ' (ref.)';
     }
 
     function handleAddToCart() {
