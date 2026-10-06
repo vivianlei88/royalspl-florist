@@ -966,6 +966,7 @@
         const sel = document.getElementById('globalCountrySelect');
         if (!sel) return;
         let h = '<option value="">Please select your country</option>';
+        h += '<option value="hk|Hong Kong">Hong Kong</option>';
         (globalShippingZones || []).forEach(z => {
             h += '<optgroup label="' + z.zone + '">';
             (z.countries || []).forEach(c => { h += '<option value="' + z.zone + '|' + c + '">' + c + '</option>'; });
@@ -1017,6 +1018,7 @@
         const info = document.getElementById('globalShippingInfo');
         if (info) {
             if (!globalZone) { info.textContent = 'Please select your country to calculate shipping fee'; }
+            else if (globalZone === 'hk|Hong Kong') { info.textContent = '✓ Hong Kong local delivery · Free shipping'; }
             else {
                 const zoneName = globalZone.split('|')[0];
                 const z = (globalShippingZones || []).find(x => x.zone === zoneName);
@@ -1037,6 +1039,7 @@
     }
 
     function getGlobalZoneFee() {
+        if (globalZone === 'hk|Hong Kong') return 0;
         if (!globalZone || !globalShippingZones) return 0;
         const zoneName = globalZone.split('|')[0];
         const z = globalShippingZones.find(x => x.zone === zoneName);
