@@ -2,7 +2,8 @@
 <html lang="zh-HK">
 <head>
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -361,7 +362,7 @@
                 <span class="logo-subtext">HONG KONG</span>
             </a>
             <div class="header-actions">
-<a href="/en/product-detail.html" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>
+<a href="/en/product-detail.html" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>                 <span class="site-currency-switch" style="margin-right:10px;"></span>
                 <a href="account.html" class="user-icon" aria-label="會員中心">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
@@ -594,7 +595,7 @@
         // 動態設置 SEO：title、meta description、Open Graph（優先使用後台 seo_title / seo_description）
         var productTitle = (product.seo_title && product.seo_title.trim())
             ? product.seo_title.trim()
-            : ((product.name_zh || product.name_en || '花藝產品') + ' | HK$' + getCurrentPrice() + ' | RoyalSpl Florist 香港花店');
+            : ((product.name_zh || product.name_en || '花藝產品') + ' | ' + siteMoney(getCurrentPrice()) + ' | RoyalSpl Florist 香港花店');
         var isGlobalItem = (product.tags || []).indexOf('全球配送') > -1;
         var descBase = (product.seo_description || product.description_zh || product.description || 'RoyalSpl Florist 精心設計的花藝產品').substring(0, 150);
         var productDesc = isGlobalItem ? (descBase + ' 適合家居擺設、空間展示與室內設計點綴，可全球配送。').substring(0, 170) : descBase;
@@ -665,12 +666,11 @@
         html += '<p class="detail-subtitle-en">' + (product.name_en || '').toUpperCase() + '<\/p>';
         html += '<h1 class="detail-title-zh">' + product.name_zh + '<\/h1>';
         html += '<div class="detail-status ' + stockClass + '">' + stockText + '<\/div>';
-        html += '<p class="detail-price">HK$' + getCurrentPrice() + '<\/p>';
-            if (isGlobalItem) { html += '<p class="detail-price-usd" id="detailPriceUsd" style="font-size:15px;color:#8a6d1a;margin:-10px 0 0;">≈ US$' + Math.round(getCurrentPrice() / 7.8) + '<\/p>'; }
+        html += '<p class="detail-price">' + siteMoney(getCurrentPrice()) + '<\/p>';
         if (productVariants.length > 0) {
             html += '<div class="variant-selector"><p class="variant-label">選擇規格<\/p>';
             for (var vi = 0; vi < productVariants.length; vi++) {
-                html += '<button type="button" class="variant-option' + (vi === selectedVariantIndex ? ' active' : '') + '" onclick="selectVariant(' + vi + ')">' + productVariants[vi].variant_name + ' — HK$' + productVariants[vi].variant_price + '<\/button>';
+                html += '<button type="button" class="variant-option' + (vi === selectedVariantIndex ? ' active' : '') + '" onclick="selectVariant(' + vi + ')">' + productVariants[vi].variant_name + ' — ' + siteMoney(productVariants[vi].variant_price) + '<\/button>';
             }
             html += '<\/div>';
         }
@@ -696,8 +696,7 @@
         html += '<button class="qty-btn" onclick="changeQuantity(1)">+<\/button>';
         html += '<\/div>';
         
-        html += '<div class="total-display" id="totalDisplay">總計：HK$' + getCurrentPrice() + '<\/div>';
-            if (isGlobalItem) { html += '<div class="total-display-usd" id="totalUsd" style="font-size:13px;color:#8a6d1a;margin-top:4px;">≈ US$' + Math.round(getCurrentPrice() / 7.8) + '（參考）<\/div>'; }
+        html += '<div class="total-display" id="totalDisplay">總計：' + siteMoney(getCurrentPrice()) + '<\/div>';
         html += '<div class="purchase-actions">';
         html += '<button class="add-to-cart-btn" onclick="handleAddToCart()">加入購物車<\/button>';
         html += '<button class="buy-now-btn" onclick="handleBuyNow()">立即購買<\/button>';
@@ -864,7 +863,7 @@
                 html += '<div class="recommend-card-img">' + (img ? '<img src="' + img + '" alt="' + p.name_zh + '">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;"></div>') + '</div>';
                 html += '<div class="recommend-card-name-en">' + (p.name_en || '') + '</div>';
                 html += '<div class="recommend-card-name">' + p.name_zh + '</div>';
-                html += '<div class="recommend-card-price">HK$' + p.price + '</div>';
+                html += '<div class="recommend-card-price">' + siteMoney(p.price) + '</div>';
                 html += '</a>';
             }
             grid.innerHTML = html;
@@ -894,9 +893,7 @@
         var opts = document.querySelectorAll('.variant-option');
         for (var oi = 0; oi < opts.length; oi++) { opts[oi].classList.toggle('active', oi === i); }
         var priceEl = document.querySelector('.detail-price');
-        if (priceEl) priceEl.textContent = 'HK$' + getCurrentPrice();
-        var usdEl = document.getElementById('detailPriceUsd');
-        if (usdEl) usdEl.textContent = '≈ US$' + Math.round(getCurrentPrice() / 7.8);
+        if (priceEl) priceEl.textContent = siteMoney(getCurrentPrice());
         updateTotal();
     }
 
@@ -917,9 +914,7 @@
             }
         });
         var total = (getCurrentPrice() + addonTotal) * quantity;
-        document.getElementById('totalDisplay').textContent = '總計：HK$' + total;
-        var tusd = document.getElementById('totalUsd');
-        if (tusd) tusd.textContent = '≈ US$' + Math.round(total / 7.8) + '（參考）';
+        document.getElementById('totalDisplay').textContent = '總計：' + siteMoney(total);
     }
 
     function handleAddToCart() {
@@ -1077,7 +1072,7 @@
         (zones || []).forEach(function(z) {
             const f = z.fees || {};
             const e = z.express || {};
-            rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + '</td></tr>';
+            rows += '<tr><td>' + z.zone + '</td><td>' + siteMoney(f.standard || 0) + '</td><td>' + siteMoney(f.medium || 0) + '</td><td>' + siteMoney(f.large || 0) + '</td><td>+' + siteMoney(e.standard || 0) + ' / ' + siteMoney(e.medium || 0) + ' / ' + siteMoney(e.large || 0) + '</td></tr>';
         });
         const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">地區</th><th style="padding:6px;border:1px solid #e5dccb;">S 碼</th><th style="padding:6px;border:1px solid #e5dccb;">M 碼</th><th style="padding:6px;border:1px solid #e5dccb;">L 碼</th><th style="padding:6px;border:1px solid #e5dccb;">DHL 附加費</th></tr>' + rows + '</table>' : '';
         el.innerHTML = '<h4 style="margin:4px 0 6px;font-size:14px;">香港本地配送</h4>'
@@ -1091,13 +1086,15 @@
             + '<h4 style="margin:4px 0 6px;font-size:14px;">全球配送（乾花／永生花）</h4>'
             + '<p style="margin:0 0 6px;font-size:13px;line-height:1.8;">標示「全球配送」的商品可寄送至全球多個國家及地區。運費按商品尺寸（S 碼／M 碼／L 碼）及目的地地區計算：</p>'
             + table
-            + '<p style="margin:6px 0;font-size:13px;line-height:1.8;">⚡ <b>DHL 特快配送</b>：2–3 天送達，加收附加費（S 碼 +HK$350／M 碼 +HK$800／L 碼 +HK$1600）。</p>'
+            + '<p style="margin:6px 0;font-size:13px;line-height:1.8;">⚡ <b>DHL 特快配送</b>：2–3 天送達，加收附加費（S 碼 +' + siteMoney(350) + '／M 碼 +' + siteMoney(800) + '／L 碼 +' + siteMoney(1600) + '）。</p>'
             + '<p style="margin:0 0 6px;font-size:13px;line-height:1.8;">國際快遞預計 <b>7–14 個工作天</b>送達（實際以目的地海關及物流為準）。</p>'
             + '<p style="margin:0;font-size:13px;line-height:1.8;">全球訂單僅支援 <b>信用卡／Apple Pay／Google Pay</b> 付款，不設現金或 FPS。結賬時選擇國家／地區即自動計算運費。</p>'
             + '<p style="margin:10px 0 0;"><a href="delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">詳見完整配送規則 →</a></p>';
     }
 
 document.addEventListener('DOMContentLoaded', function() {
+        siteInitCurrency();
+        siteRenderCurrencyBtn();
         loadProduct();
         updateCartBadge();
         loadFlowerCareContent();
