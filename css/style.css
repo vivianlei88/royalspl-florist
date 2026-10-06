@@ -85,6 +85,7 @@ button {
 }
 
 .logo-text {
+    display: block;
     font-family: var(--font-serif-english);
     font-size: 22px;
     font-weight: 600;
@@ -93,6 +94,7 @@ button {
 }
 
 .logo-subtext {
+    display: block;
     font-family: var(--font-serif-english);
     font-size: 11px;
     letter-spacing: 3px;
