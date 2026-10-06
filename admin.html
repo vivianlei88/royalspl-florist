@@ -5919,31 +5919,57 @@ async function saveProduct() {
             html += '<div style="color:#999;">（無內容）</div>';
         }
         
-        // 附件区（图片预览 / 文件下载）
-        if (email.attachments && email.attachments.length > 0) {
-            html += '<div style="border-top:1px solid #eee;padding-top:15px;margin-top:20px;">';
-            html += '<div style="font-weight:bold;margin-bottom:10px;">附件（' + email.attachments.length + '）</div>';
-            html += '<div style="display:flex;flex-wrap:wrap;gap:12px;">';
-            email.attachments.forEach(function(a) {
-                var isImage = a.content_type && a.content_type.indexOf('image/') === 0;
-                if (isImage) {
-                    html += '<div style="text-align:center;max-width:170px;">';
-                    html += '<a href="' + a.url + '" target="_blank"><img src="' + a.url + '" style="max-width:160px;max-height:160px;border:1px solid #ddd;border-radius:6px;object-fit:cover;" /></a>';
-                    html += '<div style="font-size:12px;color:#666;margin-top:4px;word-break:break-all;">' + a.filename + '</div>';
-                    html += '</div>';
-                } else {
-                    html += '<div style="border:1px solid #eee;border-radius:6px;padding:10px 12px;background:#fafafa;min-width:160px;max-width:240px;">';
-                    html += '<div><a href="' + a.url + '" target="_blank" style="word-break:break-all;font-weight:bold;">📎 ' + a.filename + '</a></div>';
-                    if (a.size) html += '<div style="font-size:12px;color:#999;margin-top:4px;">' + (a.size / 1024).toFixed(1) + ' KB</div>';
-                    html += '</div>';
-                }
-            });
-            html += '</div></div>';
+        // 附件区（异步从 /email-attachment?id= 拉取，R2 优先 / Resend API 兜底）
+        if (email.resend_id) {
+            html += '<div id="emailAttachmentArea" style="border-top:1px solid #eee;padding-top:15px;margin-top:20px;">';
+            html += '<div style="font-weight:bold;margin-bottom:10px;">附件（載入中…）</div>';
+            html += '<div id="emailAttachmentList" style="display:flex;flex-wrap:wrap;gap:12px;"></div>';
+            html += '</div>';
         }
         
         html += '</div>';
         
         detailView.innerHTML = html;
+        
+        // 异步加载附件列表
+        if (email.resend_id) {
+            loadEmailAttachments(email.resend_id);
+        }
+    }
+    
+    async function loadEmailAttachments(emailId) {
+        try {
+            var resp = await fetch('/email-attachment?id=' + encodeURIComponent(emailId));
+            var data = await resp.json();
+            var area = document.getElementById('emailAttachmentArea');
+            if (!area) return;
+            if (!data || !data.attachments || data.attachments.length === 0) {
+                area.innerHTML = '<div style="font-weight:bold;margin-bottom:10px;">附件</div><div style="color:#999;">（無附件）</div>';
+                return;
+            }
+            var attHtml = '<div style="font-weight:bold;margin-bottom:10px;">附件（' + data.attachments.length + '）</div>';
+            attHtml += '<div style="display:flex;flex-wrap:wrap;gap:12px;">';
+            data.attachments.forEach(function(a) {
+                var isImage = a.content_type && a.content_type.indexOf('image/') === 0;
+                if (isImage) {
+                    attHtml += '<div style="text-align:center;max-width:170px;">';
+                    attHtml += '<a href="' + a.url + '" target="_blank"><img src="' + a.url + '" style="max-width:160px;max-height:160px;border:1px solid #ddd;border-radius:6px;object-fit:cover;" onerror="this.style.display=\'none\'" /></a>';
+                    attHtml += '<div style="font-size:12px;color:#666;margin-top:4px;word-break:break-all;">' + a.filename + '</div>';
+                    attHtml += '</div>';
+                } else {
+                    attHtml += '<div style="border:1px solid #eee;border-radius:6px;padding:10px 12px;background:#fafafa;min-width:160px;max-width:240px;">';
+                    attHtml += '<div><a href="' + a.url + '" target="_blank" style="word-break:break-all;font-weight:bold;">📎 ' + a.filename + '</a></div>';
+                    if (a.size) attHtml += '<div style="font-size:12px;color:#999;margin-top:4px;">' + (a.size / 1024).toFixed(1) + ' KB</div>';
+                    attHtml += '</div>';
+                }
+            });
+            attHtml += '</div>';
+            area.innerHTML = attHtml;
+        } catch (e) {
+            console.log('loadEmailAttachments error:', e);
+            var area = document.getElementById('emailAttachmentArea');
+            if (area) area.innerHTML = '<div style="color:#999;">（附件載入失敗）</div>';
+        }
     }
     
     function openReplyModal(id) {
