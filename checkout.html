@@ -56,6 +56,8 @@
         .tier-item-area { font-size: 13px; }
         .tier-item.active .tier-item-area { color: #D0C8C0; }
         .tier-list-note { font-size: 12px; color: #383431; margin-top: 10px; }
+        .global-fee-card { font-size: 15px; font-weight: 700; color: #1A1A1A; background: #fff; border: 2px solid rgba(26,26,26,0.2); border-radius: 8px; padding: 15px 18px; line-height: 1.6; margin-top: 12px; }
+        .global-note { font-size: 14px; color: #383431; margin-top: 12px; line-height: 1.7; }
         .time-slot-options { display: flex; flex-direction: column; gap: 10px; }
         .time-slot-option { border: 1px solid #1A1A1A; border-radius: 8px; cursor: pointer; transition: all 0.2s; overflow: hidden; }
         .time-slot-option:hover { background-color: #F3EFEA; }
@@ -442,14 +444,14 @@
             <h2 class="checkout-section-title">國際配送（全球）</h2>
             <div class="form-group">
                 <label class="form-label">選擇國家 / 地區 *</label>
-                <select id="globalCountrySelect" onchange="onGlobalCountryChange(this)" style="width:100%;padding:12px 15px;border:1px solid #1A1A1A;border-radius:6px;font-size:15px;font-family:inherit;background:#fff;"></select>
+                <select id="globalCountrySelect" onchange="onGlobalCountryChange(this)" style="width:100%;padding:14px 16px;border:1px solid #1A1A1A;border-radius:6px;font-size:16px;font-family:inherit;background:#fff;"></select>
             </div>
-            <p class="tier-list-note" id="globalShippingInfo">請選擇國家 / 地區以計算運費</p>
-            <label style="display:flex;align-items:center;gap:8px;margin:10px 0 4px;font-size:14px;cursor:pointer;background:#fff;border:1px solid #eee;border-radius:8px;padding:10px 12px;">
-                <input type="checkbox" id="globalExpressCheck" onchange="toggleGlobalExpress(this.checked)" style="width:18px;height:18px;accent-color:#1A1A1A;">
+            <p id="globalShippingInfo" class="global-fee-card">請選擇國家 / 地區以計算運費</p>
+            <label style="display:flex;align-items:center;gap:10px;margin:12px 0 6px;font-size:16px;cursor:pointer;background:#fff;border:2px solid rgba(26,26,26,0.2);border-radius:8px;padding:15px 18px;">
+                <input type="checkbox" id="globalExpressCheck" onchange="toggleGlobalExpress(this.checked)" style="width:22px;height:22px;accent-color:#1A1A1A;flex-shrink:0;">
                 <span>⚡ DHL 特快配送（2–3 天送達）<b id="expressSurchargeLabel">+HK$0</b></span>
             </label>
-            <p class="tier-list-note">🌏 全球商品（乾花 / 永生花）以國際快遞寄送，預計送達時間：7–14 個工作天（實際以目的地海關及物流為準）</p>
+            <p class="global-note">🌏 全球商品（乾花 / 永生花）以國際快遞寄送，預計送達時間：7–14 個工作天（實際以目的地海關及物流為準）</p>
         </div>
         </div>
 
