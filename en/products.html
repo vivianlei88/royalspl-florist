@@ -38,6 +38,8 @@
         .filter-pill { padding: 8px 16px; border: 1px solid #1A1A1A; background: transparent; color: #1A1A1A; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
         .filter-pill:hover { background-color: #F3EFEA; }
         .filter-pill.active { background-color: #1A1A1A; color: #FAF8F5; }
+.filter-more { border-style: dashed; opacity: 0.7; }
+.filter-extra { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
         .products-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-top: 20px; border-top: 1px solid rgba(26,26,26,0.1); }
         .products-count { font-size: 14px; color: #383431; font-weight: 500; }
         .sort-select { padding: 8px 15px; border: 1px solid #1A1A1A; border-radius: 3px; font-size: 14px; background-color: white; cursor: pointer; font-family: inherit; }
@@ -571,6 +573,37 @@
 
     function getUrlParam(param) { return new URLSearchParams(window.location.search).get(param); }
 
+    function buildPillsHtml(tags, clickFn, containerId, dataAttr, labelFn, expandText, collapseText) {
+        var attr = dataAttr || 'data-tag';
+        var lab = labelFn || function(t) { return t; };
+        var expT = expandText || '全部 ▾';
+        var colT = collapseText || '收起 ▴';
+        var SHOW = 8;
+        var shown = tags.slice(0, SHOW);
+        var extra = tags.slice(SHOW);
+        var html = '';
+        for (var i = 0; i < shown.length; i++) {
+            html += '<button class="filter-pill" ' + attr + '="' + shown[i] + '" onclick="' + clickFn + '(\'' + shown[i] + '\')">' + lab(shown[i]) + '<\/button>';
+        }
+        if (extra.length > 0) {
+            html += '<button class="filter-pill filter-more" id="' + containerId + '-more" onclick="toggleMore(\'' + containerId + '\',\'' + expT + '\',\'' + colT + '\')">' + expT + '<\/button>';
+            html += '<div class="filter-extra" id="' + containerId + '-extra" style="display:none;">';
+            for (var j = 0; j < extra.length; j++) {
+                html += '<button class="filter-pill" ' + attr + '="' + extra[j] + '" onclick="' + clickFn + '(\'' + extra[j] + '\')">' + lab(extra[j]) + '<\/button>';
+            }
+            html += '<\/div>';
+        }
+        return html;
+    }
+    function toggleMore(containerId, expandText, collapseText) {
+        var extra = document.getElementById(containerId + '-extra');
+        var btn = document.getElementById(containerId + '-more');
+        if (!extra || !btn) return;
+        var e = expandText || '全部 ▾';
+        var c = collapseText || '收起 ▴';
+        if (extra.style.display === 'none') { extra.style.display = 'flex'; btn.innerHTML = c; }
+        else { extra.style.display = 'none'; btn.innerHTML = e; }
+    }
     async function initFilterPills() {
         await loadTagSettings();
         var dimensions = [
@@ -581,12 +614,7 @@
         dimensions.forEach(function(dim) {
             var container = document.getElementById(dim.id);
             if (container) {
-                var html = '';
-                for (var i = 0; i < dim.tags.length; i++) {
-                    var tagDisplay = translateTag(dim.tags[i]);
-                    html += '<button class="filter-pill" data-tag="' + dim.tags[i] + '" onclick="toggleTag(\'' + dim.tags[i] + '\')">' + tagDisplay + '<\/button>';
-                }
-                container.innerHTML = html;
+                container.innerHTML = buildPillsHtml(dim.tags, 'toggleTag', dim.id, 'data-tag', translateTag, 'All ▾', 'Hide ▴');
             }
         });
         loadStyleCategories();
@@ -710,14 +738,16 @@
             var categories = result.data || [];
             window.allCategories = categories;
             categoryIdMap = {};
-            var html = '';
+            var catNames = [];
             for (var i = 0; i < categories.length; i++) {
                 var cat = categories[i];
                 categoryIdMap[cat.name_zh] = cat.id;
-                var displayName = cat.name_en || cat.name_zh;
-                html += '<button class="filter-pill" data-category="' + cat.name_zh + '" onclick="toggleCategory(\'' + cat.name_zh + '\')">' + displayName + '<\/button>';
+                catNames.push({ raw: cat.name_zh, display: cat.name_en || cat.name_zh });
             }
-            container.innerHTML = html;
+            container.innerHTML = buildPillsHtml(catNames.map(function(c){ return c.raw; }), 'toggleCategory', 'filterStyle', 'data-category', function(n){ 
+                for (var i2 = 0; i2 < catNames.length; i2++) { if (catNames[i2].raw === n) return catNames[i2].display; }
+                return n; 
+            }, 'All ▾', 'Hide ▴');
             // 分類映射就緒後，若 URL 已帶選定分類則重新渲染（避免競態：products 先載入而 categoryIdMap 未就緒時顯示 0 款）
             if (selectedCategory) { updateFilterUI(); renderProducts(); }
             updateDynamicSeo();
