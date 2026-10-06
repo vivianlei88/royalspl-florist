@@ -68,6 +68,57 @@ export async function onRequestPost(context) {
                 console.log('email_id or RESEND_API_KEY missing, saving metadata only (id=' + emailId + ')');
             }
             
+            // 附件：调 Resend Attachments API → 下载 → 存 R2 → 记录永久 URL
+            let attachments = [];
+            if (emailId && RESEND_API_KEY) {
+                try {
+                    const attResp = await fetch('https://api.resend.com/emails/receiving/' + encodeURIComponent(emailId) + '/attachments', {
+                        headers: { 'Authorization': 'Bearer ' + RESEND_API_KEY }
+                    });
+                    if (attResp.ok) {
+                        const attData = await attResp.json();
+                        const list = (attData && attData.data) || [];
+                        for (const att of list) {
+                            try {
+                                if (!att.download_url) continue;
+                                if ((att.size || 0) > 20 * 1024 * 1024) {
+                                    console.log('attachment too large, skipped:', att.filename, att.size);
+                                    continue;
+                                }
+                                const dl = await fetch(att.download_url);
+                                if (!dl.ok) {
+                                    console.log('attachment download failed:', att.filename, dl.status);
+                                    continue;
+                                }
+                                const buf = await dl.arrayBuffer();
+                                const safeName = String(att.filename || ('file_' + Date.now())).replace(/[^\w.\-]+/g, '_');
+                                const r2Key = 'email-attachments/' + emailId + '/' + safeName;
+                                if (context.env.IMAGES) {
+                                    await context.env.IMAGES.put(r2Key, buf, {
+                                        httpMetadata: { contentType: att.content_type || 'application/octet-stream' }
+                                    });
+                                    attachments.push({
+                                        filename: att.filename,
+                                        content_type: att.content_type,
+                                        size: att.size,
+                                        url: 'https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/' + r2Key
+                                    });
+                                } else {
+                                    console.log('R2 IMAGES binding missing, attachment not stored:', att.filename);
+                                }
+                            } catch (err) {
+                                console.error('attachment process failed:', att.filename, err.message);
+                            }
+                        }
+                        console.log('Attachments processed:', attachments.length, 'of', list.length);
+                    } else {
+                        console.log('Resend attachments API error:', attResp.status, (await attResp.text()).substring(0, 200));
+                    }
+                } catch (err) {
+                    console.error('Resend attachments API failed:', err.message);
+                }
+            }
+            
             const emailData = {
                 resend_id: emailId,
                 from_email: fromEmail,
@@ -75,7 +126,8 @@ export async function onRequestPost(context) {
                 to_email: toEmail,
                 subject: email.subject || '(无主题)',
                 text_content: textContent || '',
-                html_content: htmlContent || ''
+                html_content: htmlContent || '',
+                attachments: attachments
             };
             
             console.log('Email data to save:', JSON.stringify(emailData).substring(0, 200));
