@@ -20,7 +20,8 @@
 </script>
 
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -232,7 +233,7 @@
                 <span class="logo-subtext">HONG KONG</span>
             </a>
             <div class="header-actions">
-<a href="/" onclick="localStorage.setItem('royalspl_lang_manual','zh')" class="user-icon" aria-label="中文" style="margin-right:10px;font-size:14px;font-weight:600;">中</a>
+<a href="/" onclick="localStorage.setItem('royalspl_lang_manual','zh')" class="user-icon" aria-label="中文" style="margin-right:10px;font-size:14px;font-weight:600;">中</a>                 <span class="site-currency-switch" style="margin-right:10px;"></span>
                 <a href="/en/account.html" class="user-icon" aria-label="Member Center">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
@@ -737,7 +738,7 @@
             html += '<div class="product-card-info">';
             html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
             html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
-            html += '<p class="product-price">' + (variantMinMap[p.id] ? 'From HK$' + variantMinMap[p.id] : 'HK$' + p.price) + '<\/p>';
+            html += '<p class="product-price">' + (variantMinMap[p.id] ? 'From ' + siteMoney(variantMinMap[p.id]) : siteMoney(p.price)) + '<\/p>';
             // Tags hidden from customers, written as <link rel="tag"> for SEO (crawler-visible)
             if (tags.length > 0) {
                 var headEl = document.head || document.getElementsByTagName('head')[0];
@@ -795,7 +796,7 @@
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {         siteInitCurrency();         siteRenderCurrencyBtn();
         // 先隱藏默認Hero文字，等待數據庫設置載入
         var heroContent = document.querySelector('.hero-content');
         if (heroContent) heroContent.style.display = 'none';
