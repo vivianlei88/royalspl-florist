@@ -4602,7 +4602,11 @@ staticPages.forEach(page => {
                 var aboutEl = document.getElementById('aboutText');
                 if (aboutEl) aboutEl.innerHTML = d.about_text || '';
                 heroUploadedImages = ((d.hero_images && d.hero_images.length > 0 ? d.hero_images : (d.hero_image ? [d.hero_image] : [])).map(function(x){
-                    return typeof x === 'string' ? { url: x, link: '' } : { url: x.url || '', link: x.link || '' };
+                    if (typeof x === 'string') {
+                        try { var o = JSON.parse(x); if (o && typeof o === 'object' && o.url) return { url: o.url, link: o.link || '' }; } catch(e) {}
+                        return { url: x, link: '' };
+                    }
+                    return { url: (x && x.url) || '', link: (x && x.link) || '' };
                 }));
                 renderHeroImagesPreview();
             }
