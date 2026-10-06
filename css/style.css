@@ -81,7 +81,7 @@ button {
 /* Logo */
 .logo {
     flex: 1;
-    text-align: left;
+    text-align: center;
 }
 
 .logo-text {
