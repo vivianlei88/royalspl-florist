@@ -275,11 +275,15 @@ button {
 }
 
 .hero-content {
-    position: relative;
+    position: absolute;
+    bottom: 16%;
+    left: 0;
+    right: 0;
     z-index: 10;
     text-align: center;
     color: var(--white);
     padding: 20px;
+    box-sizing: border-box;
 }
 
 .hero-title {
@@ -656,6 +660,10 @@ button {
    響應式設計
    ============================================ */
 @media (max-width: 768px) {
+    .hero-content {
+        bottom: 12%;
+    }
+    
     .hero-title {
         font-size: 40px;
     }
