@@ -4841,7 +4841,7 @@ staticPages.forEach(page => {
         
         f.innerHTML += '<div class="form-group"><label class="form-label">規格變體（Variants）</label><div id="variantsList"></div><button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>';
-        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button></span></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費；香港本地不受影響。</div></div>';
+        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button></span></div></div><div id="shippingFeeGroup" style="display:none;margin-top:10px;"><div style="font-size:13px;color:#666;margin-bottom:6px;">國際運費（港幣，留空則用區域默認價）：</div><div style="display:flex;gap:10px;flex-wrap:wrap;"><label style="font-size:13px;color:#333;">標準件 <input type="number" id="shippingFeeStandard" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">中件 <input type="number" id="shippingFeeMedium" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">大件 <input type="number" id="shippingFeeLarge" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費；香港本地不受影響。</div></div>';
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = []; variants = []; selectedAddons = []; selectedTags = [];
         toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea(); initShippingOptions();
@@ -4880,7 +4880,7 @@ staticPages.forEach(page => {
         
         f.innerHTML += '<div class="form-group"><label class="form-label">規格變體（Variants）</label><div id="variantsList"></div><button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>';
-        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button></span></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費；香港本地不受影響。</div></div>';
+        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button></span></div></div><div id="shippingFeeGroup" style="display:none;margin-top:10px;"><div style="font-size:13px;color:#666;margin-bottom:6px;">國際運費（港幣，留空則用區域默認價）：</div><div style="display:flex;gap:10px;flex-wrap:wrap;"><label style="font-size:13px;color:#333;">標準件 <input type="number" id="shippingFeeStandard" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">中件 <input type="number" id="shippingFeeMedium" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">大件 <input type="number" id="shippingFeeLarge" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費；香港本地不受影響。</div></div>';
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
         selectedAddons = p.linked_addons || [];
@@ -5214,7 +5214,10 @@ async function pushToBaidu(urls) {
         } catch (e) { console.error('百度推送失敗:', e); return null; }
     }
     
-function setShippingScope(v) { /* 選擇配送範圍，保存時同步到標籤 */ }
+function setShippingScope(v) {
+        var feeGroup = document.getElementById('shippingFeeGroup');
+        if (feeGroup) feeGroup.style.display = (v === 'global') ? 'block' : 'none';
+    }
     function setShippingTier(t) {
         window._shippingTier = t;
         var btns = document.querySelectorAll('#shippingTierGroup button');
@@ -5228,6 +5231,8 @@ function setShippingScope(v) { /* 選擇配送範圍，保存時同步到標籤 
         var scopeSel = document.getElementById('shippingScopeSelect');
         var hasGlobal = selectedTags.indexOf('全球配送') > -1;
         if (scopeSel) scopeSel.value = hasGlobal ? 'global' : 'local';
+        setShippingScope(scopeSel ? scopeSel.value : 'local');
+        loadProductShippingFees(document.getElementById('productId') ? document.getElementById('productId').value : '');
         var tier = 'standard';
         if (selectedTags.indexOf('大件') > -1) tier = 'large';
         else if (selectedTags.indexOf('中件') > -1) tier = 'medium';
@@ -5248,8 +5253,45 @@ function setShippingScope(v) { /* 選擇配送範圍，保存時同步到標籤 
             else if (idx > -1) { selectedTags.splice(idx, 1); }
         }
     }
+    async function loadProductShippingFees(pid) {
+        try {
+            var r = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'product_shipping_fees').maybeSingle();
+            var map = {};
+            if (r.data && r.data.setting_value) { try { map = JSON.parse(r.data.setting_value); } catch(e) {} }
+            window._productShippingFees = map;
+            var pf = (pid && map[pid]) ? map[pid] : {};
+            var s = document.getElementById('shippingFeeStandard');
+            var m = document.getElementById('shippingFeeMedium');
+            var l = document.getElementById('shippingFeeLarge');
+            if (s) s.value = pf.standard || '';
+            if (m) m.value = pf.medium || '';
+            if (l) l.value = pf.large || '';
+        } catch(e) {}
+    }
+    async function syncShippingFees(pid) {
+        if (!pid) return;
+        var s = document.getElementById('shippingFeeStandard');
+        var m = document.getElementById('shippingFeeMedium');
+        var l = document.getElementById('shippingFeeLarge');
+        var fees = {};
+        if (s && s.value !== '' && !isNaN(parseFloat(s.value))) fees.standard = Math.round(parseFloat(s.value));
+        if (m && m.value !== '' && !isNaN(parseFloat(m.value))) fees.medium = Math.round(parseFloat(m.value));
+        if (l && l.value !== '' && !isNaN(parseFloat(l.value))) fees.large = Math.round(parseFloat(l.value));
+        try {
+            var r = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'product_shipping_fees').maybeSingle();
+            var cur = {};
+            if (r.data && r.data.setting_value) { try { cur = JSON.parse(r.data.setting_value); } catch(e) {} }
+            if (Object.keys(fees).length) cur[pid] = fees;
+            else delete cur[pid];
+            var val = JSON.stringify(cur);
+            if (r.data) { await supabaseClient.from('site_settings').update({ setting_value: val }).eq('setting_key', 'product_shipping_fees'); }
+            else { await supabaseClient.from('site_settings').insert({ setting_key: 'product_shipping_fees', setting_value: val }); }
+            window._productShippingFees = cur;
+        } catch(e) { console.log('保存商品級運費失敗:', e); }
+    }
     async function saveProduct() {         syncShippingToTags();
         var id = document.getElementById('productId').value;
+        await syncShippingFees(id);
         var data = {
             name_zh: document.getElementById('nameZh').value.trim(),
             name_en: document.getElementById('nameEn').value.trim(),
