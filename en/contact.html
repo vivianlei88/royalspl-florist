@@ -13,33 +13,129 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us | RoyalSpl Florist Hong Kong</title>
+    <title>Designer &amp; Business Collaboration | RoyalSpl Florist Hong Kong</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; }
-        .container { max-width: 700px; margin: 40px auto; padding: 20px; }
+        body { font-family: 'Noto Serif TC', serif; background: #FAF8F5; margin: 0; color: #1A1A1A; }
+        .container { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
         .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #ddd; border-radius: 50%; color: #1A1A1A; text-decoration: none; font-size: 20px; margin-bottom: 20px; }
         .back-btn:hover { background: #f0f0f0; }
-        .contact-card { background: white; border-radius: 8px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .shop-logo { max-width: 180px; margin: 0 auto 25px; display: block; }
-        .contact-item { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; }
+        .page-title { text-align: center; margin-bottom: 8px; font-size: 34px; letter-spacing: 2px; }
+        .page-subtitle { text-align: center; color: #888; font-size: 15px; margin-bottom: 34px; }
+
+        /* ===== Hero ===== */
+        .partner-hero { position: relative; border-radius: 16px; overflow: hidden; margin-bottom: 44px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+        .partner-hero img { width: 100%; height: 380px; object-fit: cover; display: block; }
+        .partner-hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20,18,16,0.78) 0%, rgba(20,18,16,0.35) 55%, rgba(20,18,16,0.05) 100%); display: flex; align-items: center; }
+        .partner-hero-content { padding: 40px 44px; max-width: 620px; color: #fff; }
+        .partner-hero-kicker { font-family: 'Cormorant Garamond', serif; letter-spacing: 3px; font-size: 13px; color: #E6D3B8; text-transform: uppercase; margin-bottom: 12px; }
+        .partner-hero-title { font-size: 32px; font-weight: 600; line-height: 1.35; margin: 0 0 14px; }
+        .partner-hero-text { font-size: 15px; line-height: 1.8; color: #EFEBE4; margin: 0 0 26px; max-width: 520px; }
+        .partner-hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn-partner { display: inline-flex; align-items: center; gap: 8px; padding: 13px 26px; border-radius: 40px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+        .btn-partner-wa { background: #1A1A1A; color: #fff; }
+        .btn-partner-wa:hover { background: #333; transform: translateY(-1px); }
+        .btn-partner-form { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.75); }
+        .btn-partner-form:hover { background: rgba(255,255,255,0.15); }
+
+        /* ===== Section 標題 ===== */
+        .partner-section { margin-bottom: 44px; }
+        .partner-section-title { font-size: 22px; font-weight: 600; text-align: center; margin-bottom: 6px; letter-spacing: 1px; }
+        .partner-section-sub { text-align: center; color: #8a8a8a; font-size: 14px; margin-bottom: 26px; }
+
+        /* ===== 四宮格 ===== */
+        .partner-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        .partner-card { background: #fff; border: 1px solid #EFE9E0; border-radius: 14px; padding: 26px 22px; text-align: center; transition: all 0.25s; }
+        .partner-card:hover { transform: translateY(-4px); box-shadow: 0 10px 26px rgba(0,0,0,0.07); }
+        .partner-card-icon { width: 56px; height: 56px; margin: 0 auto 14px; background: #F3EFEA; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .partner-card-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .partner-card-text { font-size: 13.5px; color: #666; line-height: 1.75; }
+
+        /* ===== 流程 ===== */
+        .partner-flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; counter-reset: step; }
+        .partner-step { position: relative; background: #fff; border: 1px solid #EFE9E0; border-radius: 12px; padding: 22px 18px; text-align: center; }
+        .partner-step-num { width: 34px; height: 34px; margin: 0 auto 12px; background: #1A1A1A; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; }
+        .partner-step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+        .partner-step-text { font-size: 12.5px; color: #777; line-height: 1.65; }
+        .partner-step-arrow { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: #CCC5BA; font-size: 16px; }
+        .partner-step:last-child .partner-step-arrow { display: none; }
+
+        /* ===== 品牌展示 ===== */
+        .partner-brand { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; background: #fff; border: 1px solid #EFE9E0; border-radius: 16px; padding: 30px; }
+        .partner-brand img { width: 100%; border-radius: 10px; display: block; }
+        .partner-brand-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; margin-bottom: 14px; }
+        .partner-brand-text { font-size: 14.5px; color: #555; line-height: 1.85; margin-bottom: 16px; }
+        .partner-brand-points { list-style: none; padding: 0; margin: 0; }
+        .partner-brand-points li { font-size: 14px; color: #1A1A1A; padding: 7px 0 7px 26px; position: relative; }
+        .partner-brand-points li::before { content: '◆'; position: absolute; left: 0; top: 7px; color: #B49A68; font-size: 12px; }
+
+        /* ===== 表單 ===== */
+        .partner-form-wrap { background: #fff; border: 1px solid #EFE9E0; border-radius: 16px; padding: 36px 34px; }
+        .partner-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .partner-form-group { display: flex; flex-direction: column; gap: 7px; }
+        .partner-form-group.full { grid-column: 1 / -1; }
+        .partner-form-group label { font-size: 13.5px; font-weight: 600; color: #333; }
+        .partner-form-group input, .partner-form-group select, .partner-form-group textarea {
+            border: 1.5px solid #E4DDD2; border-radius: 10px; padding: 12px 14px; font-size: 14.5px; font-family: inherit; background: #FCFBF9; color: #1A1A1A; outline: none; transition: border 0.2s; }
+        .partner-form-group input:focus, .partner-form-group select:focus, .partner-form-group textarea:focus { border-color: #1A1A1A; background: #fff; }
+        .partner-form-group textarea { min-height: 110px; resize: vertical; }
+        .partner-form-note { font-size: 12.5px; color: #999; margin-top: 16px; }
+        .partner-form-btns { display: flex; gap: 14px; margin-top: 22px; flex-wrap: wrap; }
+        .btn-submit-wa { background: #25D366; color: #fff; padding: 14px 30px; border: none; border-radius: 40px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-submit-wa:hover { background: #1fb457; transform: translateY(-1px); }
+        .btn-submit-mail { background: #1A1A1A; color: #fff; padding: 14px 30px; border: none; border-radius: 40px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-submit-mail:hover { background: #333; transform: translateY(-1px); }
+
+        /* ===== 直連通道 ===== */
+        .partner-direct { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .partner-direct-card { background: #F6F2EC; border-radius: 14px; padding: 22px; text-align: center; text-decoration: none; color: #1A1A1A; transition: all 0.2s; }
+        .partner-direct-card:hover { background: #EFE7DB; transform: translateY(-2px); }
+        .partner-direct-icon { font-size: 26px; margin-bottom: 8px; }
+        .partner-direct-label { font-size: 13px; color: #888; margin-bottom: 3px; }
+        .partner-direct-value { font-size: 15.5px; font-weight: 600; word-break: break-all; }
+
+        /* ===== FAQ ===== */
+        .partner-faq { max-width: 760px; margin: 0 auto; }
+        .partner-faq-item { background: #fff; border: 1px solid #EFE9E0; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+        .partner-faq-q { padding: 16px 20px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .partner-faq-q::after { content: '+'; font-size: 20px; color: #B49A68; font-weight: 400; }
+        .partner-faq-item.open .partner-faq-q::after { content: '−'; }
+        .partner-faq-a { display: none; padding: 0 20px 16px; font-size: 14px; color: #555; line-height: 1.8; }
+
+        /* ===== 動態聯絡卡 ===== */
+        .contact-card { background: white; border-radius: 14px; padding: 28px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .shop-logo { max-width: 180px; margin: 0 auto 22px; display: block; }
+        .contact-item { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #f0f0f0; }
         .contact-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .contact-icon { width: 40px; height: 40px; background: #F3EFEA; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
         .contact-label { font-size: 13px; color: #888; margin-bottom: 4px; }
         .contact-value { font-size: 17px; color: #1A1A1A; font-weight: 500; word-break: break-all; }
         .contact-value a { color: #1A1A1A; text-decoration: none; }
         .contact-value a:hover { text-decoration: underline; }
-        .map-container { border-radius: 8px; overflow: hidden; margin-top: 20px; }
-        .map-container iframe { width: 100%; height: 300px; border: 0; border-radius: 8px; }
+        .map-container { border-radius: 14px; overflow: hidden; margin-top: 20px; }
+        .map-container iframe { width: 100%; height: 300px; border: 0; border-radius: 14px; }
         .empty-state { text-align: center; color: #888; padding: 40px; }
-        .page-title { text-align: center; margin-bottom: 30px; }
 
+        .section-card { background: #fff; border: 1px solid #EFE9E0; border-radius: 16px; padding: 34px; }
+
+    @media (max-width: 900px) {
+        .partner-grid, .partner-flow { grid-template-columns: repeat(2, 1fr); }
+        .partner-brand { grid-template-columns: 1fr; }
+        .partner-direct { grid-template-columns: 1fr; }
+        .partner-step-arrow { display: none; }
+    }
     @media (max-width: 768px) {
-        .container { padding: 20px 15px !important; }
-        .page-title { font-size: 28px !important; }
+        .container { padding: 16px 15px 50px; }
+        .page-title { font-size: 26px !important; }
+        .partner-hero img { height: 260px; }
+        .partner-hero-content { padding: 24px 22px; }
+        .partner-hero-title { font-size: 24px; }
+        .partner-form-grid { grid-template-columns: 1fr; }
+        .partner-form-btns { flex-direction: column; }
+        .btn-submit-wa, .btn-submit-mail { width: 100%; text-align: center; }
+        .partner-brand { padding: 22px 18px; }
         .contact-card { padding: 20px !important; }
-        .contact-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
         .contact-item { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
         .contact-icon { font-size: 24px !important; }
         .contact-label { font-size: 13px !important; }
@@ -47,164 +143,43 @@
         .map-container { height: 250px !important; }
     }
     @media (max-width: 480px) {
-        .page-title { font-size: 24px !important; }
-        .contact-card { padding: 15px !important; }
+        .partner-grid, .partner-flow { grid-template-columns: 1fr; }
+        .partner-form-wrap { padding: 24px 18px; }
+        .partner-hero-title { font-size: 21px; }
+        .page-title { font-size: 23px !important; }
     }
-    
-    /* ===== 手機版全面優化 ===== */
-    @media (max-width: 768px) {
-        /* 基礎字體 */
-        body { font-size: 15px; line-height: 1.6; }
-        h1 { font-size: 24px !important; }
-        h2 { font-size: 20px !important; }
-        h3 { font-size: 17px !important; }
-        p { font-size: 15px; }
-        
-        /* 導航欄優化 */
-        .nav-desktop { display: none !important; }
-        .nav-mobile { display: flex !important; }
-        .header { padding: 10px 15px !important; }
-        .logo { font-size: 18px !important; }
-        
-        /* 按鈕優化 */
-        .btn, button, input[type="submit"], input[type="button"] {
-            min-height: 44px !important;
-            padding: 12px 20px !important;
-            font-size: 15px !important;
-            border-radius: 8px !important;
-        }
-        
-        /* Form優化 */
-        input, select, textarea {
-            font-size: 15px !important;
-            padding: 12px !important;
-            min-height: 44px !important;
-            border-radius: 8px !important;
-        }
-        textarea { min-height: 100px !important; }
-        .form-group { margin-bottom: 15px !important; }
-        .form-row, .form-grid, .checkout-grid {
-            grid-template-columns: 1fr !important;
-            gap: 15px !important;
-        }
-        
-        /* 圖片響應式 */
-        img { max-width: 100%; height: auto; }
-        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
-        
-        /* 容器寬度 */
-        .container, .content-wrapper, .main-content {
-            padding: 15px !important;
-            max-width: 100% !important;
-        }
-        
-        /* 表格橫向滾動 */
-        .table-wrapper, .order-table, .cart-table, table {
-            display: block;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        table { min-width: 500px; font-size: 13px; }
-        th, td { padding: 10px 8px !important; }
-        
-        /* Shopping Cart優化 */
-        .cart-item { flex-direction: column !important; gap: 10px; }
-        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
-        .cart-item-details { width: 100% !important; text-align: center; }
-        .cart-summary { margin-top: 20px !important; }
-        
-        /* Products詳情頁 */
-        .product-detail-layout { flex-direction: column !important; }
-        .product-gallery { width: 100% !important; }
-        .product-info { width: 100% !important; padding: 15px !important; }
-        .product-price { font-size: 24px !important; }
-        
-        /* Products卡片 */
-        .products-grid, .featured-grid, .collections-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 12px !important;
-        }
-        .product-card { padding: 10px !important; }
-        .product-name { font-size: 14px !important; }
-        .product-price { font-size: 16px !important; }
-        
-        /* 頁尾 */
-        .footer { padding: 30px 15px !important; }
-        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
-        .footer-column { text-align: center; }
-        
-        /* 模態框 */
-        .modal, .modal-content {
-            width: 95% !important;
-            max-width: 95% !important;
-            margin: 10px auto !important;
-            padding: 15px !important;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        /* 統計卡片 */
-        .stats-grid, .card-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 10px !important;
-        }
-        .stat-card, .card { padding: 15px !important; }
-        
-        /* 間距優化 */
-        .section { padding: 30px 15px !important; }
-        .mb-20 { margin-bottom: 15px !important; }
-        .mt-20 { margin-top: 15px !important; }
-        .p-20 { padding: 15px !important; }
-        
-        /* 隱藏桌面端元素 */
-        .desktop-only { display: none !important; }
-        .mobile-only { display: block !important; }
-    }
-    
-    @media (max-width: 480px) {
-        body { font-size: 14px; }
-        h1 { font-size: 22px !important; }
-        h2 { font-size: 18px !important; }
-        .products-grid, .featured-grid, .collections-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 10px !important;
-        }
-        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
-        .container, .content-wrapper { padding: 12px !important; }
-    }
-    /* ===== 手機版優化結束 ===== */
-
     </style>
     <link rel="stylesheet" href="/css/ai-chat.css">
 
-    <meta name="description" content="Contact RoyalSpl Florist Hong Kong Florist，Address：2F, 2-16, Wo Liu Hang St, Fo Tan, Hong Kong。WhatsApp: +852 65036907。">
+    <meta name="description" content="Designer & Business Collaboration with RoyalSpl Florist Hong Kong: corporate floral gifts, spatial floral design, wedding florals, brand collaborations. Preserved & dried flowers ship worldwide. WhatsApp: +852 65036907.">
     <link rel="canonical" href="https://www.royalspl.shop/en/contact.html">
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebPage",
-        "name": "Contact Us | RoyalSpl Florist Hong Kong",
+        "name": "Designer & Business Collaboration | RoyalSpl Florist Hong Kong",
         "url": "https://www.royalspl.shop/en/contact.html",
+        "description": "Designer & Business Collaboration with RoyalSpl Florist Hong Kong: corporate floral gifts, spatial floral design, wedding florals, brand collaborations. Preserved & dried flowers ship worldwide.",
         "inLanguage": "en",
         "isPartOf": { "@type": "WebSite", "name": "RoyalSpl Florist Hong Kong", "url": "https://www.royalspl.shop" }
     }
     </script>
-    <meta property="og:title" content="Contact Us | RoyalSpl Florist Hong Kong">
-    <meta property="og:description" content="Contact RoyalSpl Florist Hong Kong Florist，Address：2F, 2-16, Wo Liu Hang St, Fo Tan, Hong Kong。WhatsApp: +852 65036907。">
-    <meta property="og:image" content="https://www.royalspl.shop/assets/og-share.jpg">
-    <meta property="og:url" content="https://www.royalspl.shop/contact.html">
+    <meta property="og:title" content="Designer &amp; Business Collaboration | RoyalSpl Florist Hong Kong">
+    <meta property="og:description" content="Designer & Business Collaboration with RoyalSpl Florist Hong Kong: corporate floral gifts, spatial floral design, wedding florals, brand collaborations. Preserved & dried flowers ship worldwide.">
+    <meta property="og:image" content="https://www.royalspl.shop/assets/contact-hero-aetheria-botanica-luxury-floral-space.jpg">
+    <meta property="og:url" content="https://www.royalspl.shop/en/contact.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
     <meta property="og:locale" content="en_HK">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Contact Us | RoyalSpl Florist Hong Kong">
-    <meta name="twitter:description" content="Contact RoyalSpl Florist Hong Kong Florist，Address：2F, 2-16, Wo Liu Hang St, Fo Tan, Hong Kong。WhatsApp: +852 65036907。">
-    <meta name="twitter:image" content="https://www.royalspl.shop/assets/og-share.jpg">
+    <meta name="twitter:title" content="Designer &amp; Business Collaboration | RoyalSpl Florist Hong Kong">
+    <meta name="twitter:description" content="Designer & Business Collaboration with RoyalSpl Florist Hong Kong: corporate floral gifts, spatial floral design, wedding florals, brand collaborations. Preserved & dried flowers ship worldwide.">
+    <meta name="twitter:image" content="https://www.royalspl.shop/assets/contact-hero-aetheria-botanica-luxury-floral-space.jpg">
 
 <script>
 // 動態應用後台Settings的 SEO Meta Tags
 (function() {
-    var pageUrl = window.location.pathname.split('/').pop() || 'index.html';
+    var pageUrl = window.location.pathname.replace(/^\//,'') || 'index.html';
     if (pageUrl === '') pageUrl = 'index.html';
     fetch('https://gefqlrmozxbgfhxgngtg.supabase.co/rest/v1/seo_overrides?page_url=eq.' + encodeURIComponent(pageUrl), {
         headers: {
@@ -307,12 +282,227 @@
         </nav>
     </div>
 
-
     <div class="container">
         <a href="/en/index.html" class="back-btn">←</a>
-        <h1 class="page-title">Contact Us</h1>
+
+        <!-- ===== Hero ===== -->
+        <div class="partner-hero">
+            <img src="/assets/contact-hero-aetheria-botanica-luxury-floral-space.jpg" alt="Aetheria Botanica luxury preserved floral home display RoyalSpl Florist Hong Kong" loading="lazy">
+            <div class="partner-hero-overlay">
+                <div class="partner-hero-content">
+                    <div class="partner-hero-kicker">DESIGNER &amp; BUSINESS PARTNERSHIPS</div>
+                    <h1 class="partner-hero-title">High-End Floral Art &amp; Spatial Aesthetics for Designers and Brands</h1>
+                    <p class="partner-hero-text">RoyalSpl Florist Hong Kong — corporate floral gifts, spatial floral design, weddings, events and brand collaborations. Same-day fresh flower delivery in Hong Kong; preserved &amp; dried floral art (Aetheria Botanica) ships worldwide.</p>
+                    <div class="partner-hero-btns">
+                        <a href="https://wa.me/85265036907" target="_blank" rel="noopener" class="btn-partner btn-partner-wa">Chat on WhatsApp</a>
+                        <a href="#partnerForm" class="btn-partner btn-partner-form">Send an Inquiry</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 合作方向 ===== -->
+        <div class="partner-section">
+            <h2 class="partner-section-title">Areas of Collaboration</h2>
+            <p class="partner-section-sub">Tailored floral solutions for every partner</p>
+            <div class="partner-grid">
+                <div class="partner-card">
+                    <div class="partner-card-icon">🏢</div>
+                    <div class="partner-card-title">Corporate &amp; Brands</div>
+                    <div class="partner-card-text">Corporate gifting, office styling, seasonal bulk orders and long-term partnership pricing</div>
+                </div>
+                <div class="partner-card">
+                    <div class="partner-card-icon">🛋️</div>
+                    <div class="partner-card-title">Designers &amp; Spaces</div>
+                    <div class="partner-card-text">Collaboration with interior &amp; soft furnishing designers — preserved floral displays, worldwide shipping</div>
+                </div>
+                <div class="partner-card">
+                    <div class="partner-card-icon">💐</div>
+                    <div class="partner-card-title">Weddings &amp; Events</div>
+                    <div class="partner-card-text">Bridal florals, venue styling and event decoration</div>
+                </div>
+                <div class="partner-card">
+                    <div class="partner-card-icon">📸</div>
+                    <div class="partner-card-title">Media &amp; Campaigns</div>
+                    <div class="partner-card-text">Set styling for shoots, brand events and collaborations</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 合作流程 ===== -->
+        <div class="partner-section">
+            <h2 class="partner-section-title">How We Work</h2>
+            <p class="partner-section-sub">Four steps, from concept to delivery</p>
+            <div class="partner-flow">
+                <div class="partner-step">
+                    <div class="partner-step-num">1</div>
+                    <div class="partner-step-title">Get in Touch</div>
+                    <div class="partner-step-text">Share your brief via the form or WhatsApp</div>
+                    <span class="partner-step-arrow">→</span>
+                </div>
+                <div class="partner-step">
+                    <div class="partner-step-num">2</div>
+                    <div class="partner-step-title">Brief &amp; Quotation</div>
+                    <div class="partner-step-text">We align on budget, dates and design direction</div>
+                    <span class="partner-step-arrow">→</span>
+                </div>
+                <div class="partner-step">
+                    <div class="partner-step-num">3</div>
+                    <div class="partner-step-title">Design Approval</div>
+                    <div class="partner-step-text">Confirm blooms, style and every detail</div>
+                    <span class="partner-step-arrow">→</span>
+                </div>
+                <div class="partner-step">
+                    <div class="partner-step-num">4</div>
+                    <div class="partner-step-title">Craft &amp; Delivery</div>
+                    <div class="partner-step-text">Same-day HK fresh flowers; preserved florals worldwide</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 品牌展示 ===== -->
+        <div class="partner-section">
+            <div class="partner-brand">
+                <img src="/assets/contact-aetheria-botanica-preserved-florals-eternal-curation.jpg" alt="Aetheria Botanica Eternal Curation preserved floral display RoyalSpl Florist" loading="lazy">
+                <div>
+                    <div class="partner-brand-title">Aetheria Botanica — Eternal Curation</div>
+                    <p class="partner-brand-text">A royal collection of preserved &amp; dried floral art, created for spatial design and luxury interiors. Each piece is an everlasting botanical sculpture — ideal for hotels, offices, showrooms and residences, delivered worldwide.</p>
+                    <ul class="partner-brand-points">
+                        <li>Long-term collaborations with interior designers &amp; soft furnishing teams</li>
+                        <li>Premium displays for showrooms, model flats &amp; exhibitions</li>
+                        <li>Worldwide delivery with international shipping included</li>
+                        <li>Formal quotations &amp; commercial invoices available</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 合作表格 ===== -->
+        <div class="partner-section" id="partnerForm">
+            <h2 class="partner-section-title">Partnership Inquiry</h2>
+            <p class="partner-section-sub">Tell us about your project — we reply within one business day</p>
+            <div class="partner-form-wrap">
+                <form id="partnerInquiryForm" onsubmit="return false;">
+                    <div class="partner-form-grid">
+                        <div class="partner-form-group">
+                            <label for="piName">Name *</label>
+                            <input type="text" id="piName" required placeholder="Your name">
+                        </div>
+                        <div class="partner-form-group">
+                            <label for="piCompany">Company / Brand</label>
+                            <input type="text" id="piCompany" placeholder="Company or brand name">
+                        </div>
+                        <div class="partner-form-group">
+                            <label for="piWhatsapp">WhatsApp / Phone *</label>
+                            <input type="text" id="piWhatsapp" required placeholder="+852 ...">
+                        </div>
+                        <div class="partner-form-group">
+                            <label for="piEmail">Email</label>
+                            <input type="email" id="piEmail" placeholder="name@company.com">
+                        </div>
+                        <div class="partner-form-group">
+                            <label for="piType">Type of Collaboration *</label>
+                            <select id="piType" required>
+                                <option value="">Select</option>
+                                <option value="Corporate & Brands">Corporate &amp; Brands (gifting / space styling)</option>
+                                <option value="Designers & Spaces">Designers &amp; Spaces (preserved floral displays)</option>
+                                <option value="Weddings & Events">Weddings &amp; Events</option>
+                                <option value="Media & Campaigns">Media &amp; Campaigns</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="partner-form-group">
+                            <label for="piBudget">Budget Range</label>
+                            <select id="piBudget">
+                                <option value="">Select</option>
+                                <option value="Under HK$5,000">Under HK$5,000</option>
+                                <option value="HK$5,000 - HK$20,000">HK$5,000 - HK$20,000</option>
+                                <option value="HK$20,000 - HK$50,000">HK$20,000 - HK$50,000</option>
+                                <option value="HK$50,000+">HK$50,000+</option>
+                                <option value="Long-term, discuss">Long-term partnership, discuss</option>
+                            </select>
+                        </div>
+                        <div class="partner-form-group">
+                            <label for="piDate">Target Date</label>
+                            <input type="date" id="piDate">
+                        </div>
+                        <div class="partner-form-group">
+                            <label for="piRegion">Delivery Region</label>
+                            <select id="piRegion">
+                                <option value="">Select</option>
+                                <option value="Hong Kong (fresh / dried)">Hong Kong (fresh / dried)</option>
+                                <option value="Worldwide (preserved & dried)">Worldwide (preserved &amp; dried)</option>
+                            </select>
+                        </div>
+                        <div class="partner-form-group full">
+                            <label for="piMessage">Project Details *</label>
+                            <textarea id="piMessage" required placeholder="Describe your project: scope, quantities, design direction etc."></textarea>
+                        </div>
+                    </div>
+                    <p class="partner-form-note">* Required fields. Submit via WhatsApp or Email — no account needed.</p>
+                    <div class="partner-form-btns">
+                        <button type="button" class="btn-submit-wa" onclick="submitPartnerInquiry('wa')">Submit via WhatsApp</button>
+                        <button type="button" class="btn-submit-mail" onclick="submitPartnerInquiry('mail')">Submit via Email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== 直連通道 ===== -->
+        <div class="partner-section">
+            <h2 class="partner-section-title">Contact Us Directly</h2>
+            <p class="partner-section-sub">The fastest way to reach our florists</p>
+            <div class="partner-direct">
+                <a href="https://wa.me/85265036907" target="_blank" rel="noopener" class="partner-direct-card">
+                    <div class="partner-direct-icon">💬</div>
+                    <div class="partner-direct-label">WhatsApp</div>
+                    <div class="partner-direct-value">+852 6503 6907</div>
+                </a>
+                <a href="mailto:royalspl@gmail.com" class="partner-direct-card">
+                    <div class="partner-direct-icon">✉️</div>
+                    <div class="partner-direct-label">Email</div>
+                    <div class="partner-direct-value">royalspl@gmail.com</div>
+                </a>
+                <a href="https://www.instagram.com/royalspl" target="_blank" rel="noopener" class="partner-direct-card">
+                    <div class="partner-direct-icon">📷</div>
+                    <div class="partner-direct-label">Instagram</div>
+                    <div class="partner-direct-value">@royalspl</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 動態店鋪資訊 -->
         <div id="contactContent"></div>
+
+        <!-- ===== FAQ ===== -->
+        <div class="partner-section">
+            <h2 class="partner-section-title">Partnership FAQ</h2>
+            <p class="partner-section-sub">Everything you may want to know</p>
+            <div class="partner-faq">
+                <div class="partner-faq-item">
+                    <div class="partner-faq-q">Is there a minimum order for partnerships?</div>
+                    <div class="partner-faq-a">No fixed minimum. Corporate and designer projects are quoted by scope, with special pricing for long-term partnerships.</div>
+                </div>
+                <div class="partner-faq-item">
+                    <div class="partner-faq-q">Do preserved &amp; dried flowers ship internationally?</div>
+                    <div class="partner-faq-a">Yes. The Aetheria Botanica preserved &amp; dried floral collection ships worldwide with international shipping included in the quotation. Fresh flowers are delivered within Hong Kong only.</div>
+                </div>
+                <div class="partner-faq-item">
+                    <div class="partner-faq-q">Can you provide quotations or commercial invoices?</div>
+                    <div class="partner-faq-a">Yes. Formal quotations are provided for every project, and commercial invoices can be issued for corporate clients.</div>
+                </div>
+                <div class="partner-faq-item">
+                    <div class="partner-faq-q">How quickly do you respond?</div>
+                    <div class="partner-faq-a">We reply within 24 hours on business days. For urgent projects, please contact us directly on WhatsApp.</div>
+                </div>
+                <div class="partner-faq-item">
+                    <div class="partner-faq-q">Can you style events or photoshoot sets?</div>
+                    <div class="partner-faq-a">Yes. We provide venue floral design, on-site styling and set decoration for shoots. Please contact us in advance to check availability.</div>
+                </div>
+            </div>
+        </div>
     </div>
+
     <script>
         const SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
@@ -330,12 +520,10 @@
 
             if (error) {
                 console.error('載入Contact資料Failed:', error);
-                container.innerHTML = '<div class="empty-state">載入Failed，請稍後再試</div>';
                 return;
             }
 
             if (!data) {
-                container.innerHTML = '<div class="empty-state">尚無Contact資料</div>';
                 return;
             }
 
@@ -390,6 +578,62 @@
             container.innerHTML = html;
         }
 
+        // 合作表格提交
+        function submitPartnerInquiry(method) {
+            var name = document.getElementById('piName').value.trim();
+            var company = document.getElementById('piCompany').value.trim();
+            var wa = document.getElementById('piWhatsapp').value.trim();
+            var email = document.getElementById('piEmail').value.trim();
+            var type = document.getElementById('piType').value;
+            var budget = document.getElementById('piBudget').value;
+            var date = document.getElementById('piDate').value;
+            var region = document.getElementById('piRegion').value;
+            var msg = document.getElementById('piMessage').value.trim();
+
+            if (!name || !wa || !type || !msg) {
+                alert('Please fill in Name, WhatsApp/Phone, Type of Collaboration and Project Details.');
+                return;
+            }
+
+            var lines = [
+                '【Designer & Business Collaboration Inquiry】',
+                'Name: ' + name,
+                'Company/Brand: ' + (company || '—'),
+                'WhatsApp/Phone: ' + wa,
+                'Email: ' + (email || '—'),
+                'Type: ' + type,
+                'Budget: ' + (budget || '—'),
+                'Target Date: ' + (date || '—'),
+                'Delivery Region: ' + (region || '—'),
+                'Details: ' + msg
+            ];
+            var text = lines.join('\n');
+
+            if (method === 'wa') {
+                var waUrl = 'https://wa.me/85265036907?text=' + encodeURIComponent(text);
+                window.open(waUrl, '_blank');
+            } else {
+                var mailto = 'mailto:royalspl@gmail.com?subject=' + encodeURIComponent('Designer & Business Collaboration Inquiry - ' + name) + '&body=' + encodeURIComponent(text);
+                window.location.href = mailto;
+            }
+        }
+
+        // FAQ 開合
+        document.addEventListener('DOMContentLoaded', function() {
+            var faqItems = document.querySelectorAll('.partner-faq-item');
+            faqItems.forEach(function(item) {
+                var q = item.querySelector('.partner-faq-q');
+                if (q) q.addEventListener('click', function() {
+                    var open = item.classList.contains('open');
+                    faqItems.forEach(function(i) { i.classList.remove('open'); i.querySelector('.partner-faq-a').style.display = 'none'; });
+                    if (!open) {
+                        item.classList.add('open');
+                        item.querySelector('.partner-faq-a').style.display = 'block';
+                    }
+                });
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', loadContact);
     </script>
     <script src="/js/ai-chat-v2.js"></script>
@@ -415,17 +659,12 @@
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // 先隱藏默認Hero文字，等待數據庫設置載入
-        var heroContent = document.querySelector('.hero-content');
-        if (heroContent) heroContent.style.display = 'none';
-
 </script>
 <footer class="footer">
         <div class="footer-slogan"><p class="footer-slogan-line1">Bringing You the Finest Floral Experience</p><p class="footer-slogan-line2">為您帶來最優質的花藝體驗</p></div>
         <div class="footer-links">
             <div class="footer-column"><a href="/en/products.html" class="footer-link">All Flowers</a><a href="products.html?tag=Valentine's Day" class="footer-link">Occasions</a><a href="products.html?category=%E5%AE%B6%E5%B1%85%E8%88%87%E7%A9%BA%E9%96%93%E7%BE%8E%E5%AD%B8" class="footer-link">Interior &amp; Space Aesthetics</a></div>
-            <div class="footer-column"><a href="/en/blog.html" class="footer-link">Blog</a><a href="/en/faq.html" class="footer-link">FAQ</a><a href="/en/contact.html" class="footer-link">Contact Us</a></div>
+            <div class="footer-column"><a href="/en/blog.html" class="footer-link">Blog</a><a href="/en/faq.html" class="footer-link">FAQ</a><a href="/en/contact.html" class="footer-link">Designer &amp; Business</a></div>
         </div>
         <div class="footer-bottom"><a href="/en/privacy.html" class="privacy-link">Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
