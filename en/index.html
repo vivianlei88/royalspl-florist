@@ -284,7 +284,6 @@
         <div class="hero-content">
             <h1 class="hero-title" id="heroTitle"></h1>
             <p class="hero-subtitle" id="heroSubtitle"></p>
-            <a href="/en/products.html" class="hero-cta" id="heroCta"></a>
         </div>
         <div class="hero-dots" id="heroDots"></div>
     </section>
@@ -338,7 +337,7 @@
     var heroSlideIndex = 0;
     var heroSlideTimer = null;
     
-    function initHeroSlides(images, links, fallbackLink) {
+    function initHeroSlides(images, texts, links, fallbackText, fallbackLink) {
         var slidesContainer = document.getElementById('heroSlides');
         var dotsContainer = document.getElementById('heroDots');
         if (!slidesContainer || !images || images.length === 0) return;
@@ -350,10 +349,25 @@
             var slide = document.createElement('div');
             slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
             slide.style.backgroundImage = 'url(' + images[i] + ')';
-            // Per-slide link (fallback to global CTA link)
+            // Per-slide CTA text & link (fallback to global CTA)
+            var slideText = (texts && texts[i]) ? texts[i] : (fallbackText || '');
             var slideLink = (links && links[i]) ? links[i] : (fallbackLink || '');
             if (slideLink) {
                 slide.style.cursor = 'pointer';
+            }
+            if (slideText) {
+                var btn = document.createElement('a');
+                btn.className = 'hero-slide-cta';
+                btn.textContent = slideText;
+                (function(url){
+                    btn.onclick = function(e) {
+                        if (e && e.stopPropagation) e.stopPropagation();
+                        if (url) window.location.href = url;
+                    };
+                })(slideLink);
+                slide.appendChild(btn);
+            }
+            if (slideLink) {
                 (function(url){
                     slide.onclick = function(e) { if (e && e.stopPropagation) e.stopPropagation(); window.location.href = url; };
                 })(slideLink);
@@ -430,44 +444,26 @@
                 if (s) s.style.display = 'none';
             }
             
-            if (settings.hero_cta_text && settings.hero_cta_text.trim()) {
-                var c = document.getElementById('heroCta');
-                if (c) { c.textContent = settings.hero_cta_text; c.style.display = ''; }
-                hasAnyText = true;
-            } else {
-                var c = document.getElementById('heroCta');
-                if (c) c.style.display = 'none';
-            }
-            
-            if (settings.hero_cta_link) {
-                var l = document.getElementById('heroCta');
-                if (l) l.href = settings.hero_cta_link;
-                var heroSec = document.getElementById('heroSection');
-                if (heroSec) {
-                    heroSec.style.cursor = 'pointer';
-                    heroSec.onclick = function() { window.location.href = settings.hero_cta_link; };
-                }
-            }
-            
-            // Hero Banner carousel (per-slide link: items may be URL string, JSON-string object or {url, link} object)
+            // Hero Banner carousel (per-slide CTA text & link: items may be URL string, JSON-string object or {url, link, text} object)
             function heroItem(x) {
                 if (typeof x === 'string') {
                     try { var o = JSON.parse(x); if (o && typeof o === 'object' && o.url) return o; } catch(e) {}
-                    return { url: x, link: '' };
+                    return { url: x, link: '', text: '' };
                 }
-                return { url: (x && x.url) || '', link: (x && x.link) || '' };
+                return { url: (x && x.url) || '', link: (x && x.link) || '', text: (x && x.text) || '' };
             }
             var heroImages = [];
+            var heroImageTexts = [];
             var heroImageLinks = [];
-            var heroCtaLink = settings.hero_cta_link || '';
             if (settings.hero_images && settings.hero_images.length > 0) {
                 var heroItems = settings.hero_images.map(heroItem);
                 heroImages = heroItems.map(function(o) { return o.url; });
+                heroImageTexts = heroItems.map(function(o) { return o.text; });
                 heroImageLinks = heroItems.map(function(o) { return o.link; });
             } else if (settings.hero_image) {
                 heroImages = [settings.hero_image];
             }
-            initHeroSlides(heroImages, heroImageLinks, heroCtaLink);
+            initHeroSlides(heroImages, heroImageTexts, heroImageLinks, settings.hero_cta_text || '', settings.hero_cta_link || '');
             
             if (!hasAnyText && heroContent) {
                 heroContent.style.display = 'none';
@@ -484,13 +480,11 @@
             // 出錯時也嘗試顯示圖片
             try {
                 if (settings && settings.hero_images && settings.hero_images.length > 0) {
-                    initHeroSlides(settings.hero_images.map(function(x) {
-                        if (typeof x === 'string') { try { var o3 = JSON.parse(x); if (o3 && typeof o3 === 'object' && o3.url) return o3; } catch(e3) {} return { url: x, link: '' }; }
-                        return { url: (x && x.url) || '', link: (x && x.link) || '' };
-                    }).map(function(o) { return o.url; }), settings.hero_images.map(function(x) {
-                        if (typeof x === 'string') { try { var o4 = JSON.parse(x); if (o4 && typeof o4 === 'object' && o4.url) return o4; } catch(e4) {} return { url: x, link: '' }; }
-                        return { url: (x && x.url) || '', link: (x && x.link) || '' };
-                    }).map(function(o) { return o.link; }), settings.hero_cta_link || '');
+                    var heroItems3 = settings.hero_images.map(function(x) {
+                        if (typeof x === 'string') { try { var o3 = JSON.parse(x); if (o3 && typeof o3 === 'object' && o3.url) return o3; } catch(e3) {} return { url: x, link: '', text: '' }; }
+                        return { url: (x && x.url) || '', link: (x && x.link) || '', text: (x && x.text) || '' };
+                    });
+                    initHeroSlides(heroItems3.map(function(o) { return o.url; }), heroItems3.map(function(o) { return o.text; }), heroItems3.map(function(o) { return o.link; }), settings.hero_cta_text || '', settings.hero_cta_link || '');
                 } else if (settings && settings.hero_image) {
                     initHeroSlides([settings.hero_image]);
                 }
