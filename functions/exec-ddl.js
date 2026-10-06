@@ -25,7 +25,7 @@ export async function onRequestPost(context) {
 
     const body = await request.json();
     const sql = body.sql_b64
-      ? Buffer.from(body.sql_b64, 'base64').toString('utf-8')
+      ? atob(body.sql_b64)
       : body.sql;
     if (!sql || typeof sql !== 'string') {
       return new Response(JSON.stringify({ error: 'sql required' }), {
