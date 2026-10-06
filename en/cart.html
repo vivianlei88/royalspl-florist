@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -287,7 +288,7 @@
                 <span class="logo-subtext">HONG KONG</span>
             </a>
             <div class="header-actions">
-<a href="/cart.html" onclick="localStorage.setItem('royalspl_lang_manual','zh')" class="user-icon" aria-label="中文" style="margin-right:10px;font-size:14px;font-weight:600;">中</a>
+<a href="/cart.html" onclick="localStorage.setItem('royalspl_lang_manual','zh')" class="user-icon" aria-label="中文" style="margin-right:10px;font-size:14px;font-weight:600;">中</a>                 <span class="site-currency-switch" style="margin-right:10px;"></span>
                 <a href="/en/account.html"" class="user-icon" aria-label="MemberLogin">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
@@ -416,8 +417,7 @@
                     <p class="cart-item-name">${item.nameEn || item.name || 'Products'}${item.variantName ? ' <span style="font-weight:400;font-size:14px;color:#8a857f;">· ' + item.variantName + '</span>' : ''}</p>
                     <p class="cart-item-name-en">${item.nameEn || ''}</p>
                     ${addonsHtml}
-                    <p class="cart-item-price">HK$${itemTotal}</p>
-                    ${(item.tags || []).indexOf('全球配送') > -1 ? `<span style="font-size:12px;color:#8a6d1a;display:block;margin-top:2px;">≈ US$${Math.round(itemTotal / 7.8)}</span>` : ''}
+                    <p class="cart-item-price">${siteMoney(itemTotal)}</p>
                 </div>
                 <div class="cart-item-quantity">
                     <button class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
@@ -468,10 +468,9 @@
                 <div class="cart-section-content"><div class="coupon-input"><input type="text" id="couponInput" placeholder="Enter coupon code" oninput="couponCode = this.value" value="${couponCode}"><button class="coupon-btn" onclick="applyCoupon()">Apply</button></div></div>
             </div>
             <div class="cart-summary">
-                <div class="summary-row"><span>Subtotal</span><span>HK$${subtotal}</span></div>
+                <div class="summary-row"><span>Subtotal</span><span>${siteMoney(subtotal)}</span></div>
                 <div class="summary-row"><span>Shipping</span><span>Calculated at Checkout</span></div>
-                <div class="summary-row total"><span>Total</span><span>HK$${subtotal}</span></div>
-                ${allGlobal ? `<div class="summary-row" style="font-size:12px;color:#8a6d1a;"><span></span><span>≈ US$${Math.round(subtotal / 7.8)} (ref.)</span></div>` : ''}
+                <div class="summary-row total"><span>Total</span><span>${siteMoney(subtotal)}</span></div>
                 <button class="checkout-btn" onclick="goCheckout()">Checkout</button>
             </div>
         `;
@@ -553,7 +552,7 @@
     const navDrawer = document.getElementById('navDrawer');
     if (menuBtn) menuBtn.addEventListener('click', function() { navDrawer.classList.add('open'); });
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
-    document.addEventListener('DOMContentLoaded', function() { updateCartBadge(); syncCartWithDatabase(); });
+    document.addEventListener('DOMContentLoaded', function() {         siteInitCurrency();         siteRenderCurrencyBtn(); updateCartBadge(); syncCartWithDatabase(); });
     </script>
     <script>
     (function() {
