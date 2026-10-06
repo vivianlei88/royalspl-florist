@@ -2,7 +2,8 @@
 <html lang="zh-HK">
 <head>
 <!-- Google tag (gtag.js) GA4 + Google Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
+<script src="/js/currency.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V4WKR9VS6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -258,7 +259,7 @@
                         <div class="order-code">${order.order_code}</div>
                         <div class="order-meta">成立日期：${createdDate}</div>
                         <div class="order-meta">送貨日期：${order.delivery_date || '-'}</div>
-                        <div class="order-price">HK$${order.total_amount}</div>
+                        <div class="order-price">${siteMoney(order.total_amount)}</div>
                     </div>
                     <div class="order-right">
                         <div class="status-badge status-${order.status}">${statusMap[order.status] || order.status}</div>
