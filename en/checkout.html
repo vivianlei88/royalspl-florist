@@ -1215,6 +1215,7 @@
             ${area ? `<div class="delivery-fee-formula">Formula: Max(Time Slot Fee HK$${selectedTimeFee}, District Fee HK$${areaFee}) = HK$${deliveryFee}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>Total</span><span>HK$${total}</span></div>
+            ${deliveryMode === 'global' ? `<div class="summary-total-usd" style="font-size:12px;color:#8a6d1a;text-align:right;margin-top:4px;">≈ US$${Math.round(total / 7.8)} (ref. rate 7.8, billed in HKD)</div>` : ''}
             <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">Place Order</button>
         `;
         // UpdateFPSAmount Due
