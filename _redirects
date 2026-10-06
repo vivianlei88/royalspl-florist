@@ -17,11 +17,11 @@
 /ja/blog    /blog.html    301
 
 # WIX 舊分類頁 → 新站分類/標籤頁
-/category/芍藥系    /products.html?category=進口牡丹芍藥花    301
-/category/婚禮花球    /products.html?tag=婚禮    301
-/category/母親節花束    /products.html?tag=母親節    301
-/category/royalspl推薦    /products.html    301
-/en/category/即日鮮花    /en/products.html?category=即日鮮花    301
+/category/%E8%8A%8D%E8%97%A5%E7%B3%BB    /products.html?category=進口牡丹芍藥花    301
+/category/%E5%A9%9A%E7%A6%AE%E8%8A%B1%E7%90%83    /products.html?tag=婚禮    301
+/category/%E6%AF%8D%E8%A6%AA%E7%AF%80%E8%8A%B1%E6%9D%9F    /products.html?tag=母親節    301
+/category/royalspl%E6%8E%A8%E8%96%A6    /products.html    301
+/en/category/%E5%8D%B3%E6%97%A5%E9%AE%AE%E8%8A%B1    /en/products.html?category=即日鮮花    301
 
 # WIX 舊博客標籤頁 → 博客列表
 /blog/tags/*    /blog.html    301
