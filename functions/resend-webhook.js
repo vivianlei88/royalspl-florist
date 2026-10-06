@@ -119,6 +119,8 @@ export async function onRequestPost(context) {
                 }
             }
             
+            // 附件已下载至 R2（email-attachments/{emailId}/...），后台通过 /email-attachment?id= 读取。
+            // 注：received_emails 暂未加 attachments 列，INSERT 不带该字段；R2 为附件权威存储。
             const emailData = {
                 resend_id: emailId,
                 from_email: fromEmail,
@@ -126,8 +128,7 @@ export async function onRequestPost(context) {
                 to_email: toEmail,
                 subject: email.subject || '(无主题)',
                 text_content: textContent || '',
-                html_content: htmlContent || '',
-                attachments: attachments
+                html_content: htmlContent || ''
             };
             
             console.log('Email data to save:', JSON.stringify(emailData).substring(0, 200));
