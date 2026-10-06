@@ -542,13 +542,21 @@
                 }
             }
             
-            // Hero Banner 轮播（支援每張圖獨立連結：hero_images 元素可為字串或 {url, link}）
+            // Hero Banner 轮播（支援每張圖獨立連結：hero_images 元素可為 URL 字串、JSON字串物件或 {url, link} 物件）
+            function heroItem(x) {
+                if (typeof x === 'string') {
+                    try { var o = JSON.parse(x); if (o && typeof o === 'object' && o.url) return o; } catch(e) {}
+                    return { url: x, link: '' };
+                }
+                return { url: (x && x.url) || '', link: (x && x.link) || '' };
+            }
             var heroImages = [];
             var heroImageLinks = [];
             var heroCtaLink = settings.hero_cta_link || '';
             if (settings.hero_images && settings.hero_images.length > 0) {
-                heroImages = settings.hero_images.map(function(x) { return typeof x === 'string' ? x : x.url; });
-                heroImageLinks = settings.hero_images.map(function(x) { return typeof x === 'string' ? '' : (x.link || ''); });
+                var heroItems = settings.hero_images.map(heroItem);
+                heroImages = heroItems.map(function(o) { return o.url; });
+                heroImageLinks = heroItems.map(function(o) { return o.link; });
             } else if (settings.hero_image) {
                 heroImages = [settings.hero_image];
             }
@@ -569,7 +577,11 @@
             // 出錯時也嘗試顯示圖片
             try {
                 if (settings && settings.hero_images && settings.hero_images.length > 0) {
-                    initHeroSlides(settings.hero_images.map(function(x) { return typeof x === 'string' ? x : x.url; }), settings.hero_images.map(function(x) { return typeof x === 'string' ? '' : (x.link || ''); }), settings.hero_cta_link || '');
+                    var heroItems2 = settings.hero_images.map(function(x) {
+                        if (typeof x === 'string') { try { var o2 = JSON.parse(x); if (o2 && typeof o2 === 'object' && o2.url) return o2; } catch(e2) {} return { url: x, link: '' }; }
+                        return { url: (x && x.url) || '', link: (x && x.link) || '' };
+                    });
+                    initHeroSlides(heroItems2.map(function(o) { return o.url; }), heroItems2.map(function(o) { return o.link; }), settings.hero_cta_link || '');
                 } else if (settings && settings.hero_image) {
                     initHeroSlides([settings.hero_image]);
                 }
