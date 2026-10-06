@@ -5291,7 +5291,6 @@ function setShippingScope(v) {
     }
     async function saveProduct() {         syncShippingToTags();
         var id = document.getElementById('productId').value;
-        await syncShippingFees(id);
         var data = {
             name_zh: document.getElementById('nameZh').value.trim(),
             name_en: document.getElementById('nameEn').value.trim(),
@@ -5324,6 +5323,7 @@ function setShippingScope(v) {
             var productId = id;
             if (!productId && result.data && result.data.length > 0) { productId = result.data[0].id; }
             if (productId) {
+                await syncShippingFees(productId);
                 await supabaseClient.from('product_variants').delete().eq('product_id', productId);
                 for (var i = 0; i < variants.length; i++) { if (variants[i].name && variants[i].price) { await supabaseClient.from('product_variants').insert({ product_id: productId, variant_name: variants[i].name, variant_price: parseFloat(variants[i].price) }); } }
             }
