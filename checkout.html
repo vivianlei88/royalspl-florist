@@ -610,6 +610,7 @@
     let selectedTimeSlot = 'full_day';
     let globalShippingZones = null;
     let globalScopeTag = '全球配送';
+    let productShippingFees = null;
     let globalZone = '';
     let globalExpress = false;
     let deliveryMode = 'hk';   // hk | global | mixed
@@ -910,6 +911,8 @@
             if (data && data.setting_value) { try { globalShippingZones = JSON.parse(data.setting_value); } catch(e) { globalShippingZones = null; } }
             const { data: d2 } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'global_scope_tag').maybeSingle();
             if (d2 && d2.setting_value) globalScopeTag = d2.setting_value;
+            const { data: d3 } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'product_shipping_fees').maybeSingle();
+            if (d3 && d3.setting_value) { try { productShippingFees = JSON.parse(d3.setting_value); } catch(e) { productShippingFees = null; } }
         } catch(e) {}
         if (!globalShippingZones || !globalShippingZones.length) {
             globalShippingZones = [
@@ -986,8 +989,19 @@
     
     function getZoneFeeByTier(z, tier) {
         if (!z) return 0;
-        if (z.fees && z.fees[tier]) return z.fees[tier];
-        return z.fee || 0;  // 兼容舊數據
+        let fee = (z.fees && z.fees[tier]) ? z.fees[tier] : (z.fee || 0);
+        if (productShippingFees && cart && cart.length) {
+            let override = 0;
+            cart.forEach(function(item) {
+                const tags = item.tags || [];
+                if (tags.indexOf('全球配送') > -1) {
+                    const pf = productShippingFees[item.productId];
+                    if (pf && pf[tier] && pf[tier] > override) override = pf[tier];
+                }
+            });
+            if (override > 0) return override;
+        }
+        return fee;
     }
     function getZoneExpressByTier(z, tier) {
         if (!z || !z.express) return 0;
