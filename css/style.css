@@ -317,6 +317,28 @@ button {
     transform: translateY(-2px);
 }
 
+/* 每張輪播圖自己的 CTA 按鈕（右下角） */
+.hero-slide-cta {
+    position: absolute;
+    bottom: 16%;
+    right: 40px;
+    z-index: 11;
+    display: inline-block;
+    padding: 14px 40px;
+    background-color: #C9A227;
+    color: #1A1A1A;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 3px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.hero-slide-cta:hover {
+    background-color: #B8922B;
+    transform: translateY(-2px);
+}
+
 /* Hero Banner 轮播 */
 .hero-slides {
     position: absolute;
@@ -664,6 +686,13 @@ button {
         bottom: 12%;
         max-width: 85%;
         padding: 15px 20px;
+    }
+    
+    .hero-slide-cta {
+        bottom: 12%;
+        right: 20px;
+        padding: 12px 26px;
+        font-size: 14px;
     }
     
     .hero-title {
