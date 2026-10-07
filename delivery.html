@@ -14,7 +14,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>配送規則 | 香港本地鮮花配送・全球乾花永生花寄送 | RoyalSpl Florist</title>
-    <meta name="description" content="RoyalSpl Florist 香港花店配送規則：香港本地鮮花速遞滿HK$500市區免費；全球配送（乾花/永生花）覆蓋亞洲、中東、歐洲、北美等地區，按商品尺寸計費，可選 DHL 特快 2-3 天送達。乾花永生花適合作家居擺設、空間展示與室內設計點綴。">
+    <meta name="description" content="RoyalSpl Florist 香港花店配送規則：香港本地鮮花速遞滿HK$500市區免費；全球配送（乾花/永生花）覆蓋亞洲、中東、歐洲、北美等地區，按商品尺寸計費。乾花永生花適合作家居擺設、空間展示與室內設計點綴。">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
@@ -133,10 +133,12 @@
             <p>國際快遞預計 <b>7–14 個工作天</b>送達（實際以目的地海關及物流為準）。</p>
         </div>
 
+        <!-- DHL 特快配送暫時屏蔽（待價格確定後恢復）
         <div class="dlv-card">
             <h2>⚡ DHL 特快配送（2–3 天送達）</h2>
             <p>全球配送可選 DHL 特快，加收附加費：<b>S 碼 +HK$350／M 碼 +HK$800／L 碼 +HK$1600／XL 碼 +HK$2200 起</b>（以結賬頁顯示為準）。於結賬頁勾選「DHL 特快配送」即可。</p>
         </div>
+        -->
 
         <div class="dlv-card">
             <h2>💳 全球訂單付款方式</h2>
@@ -184,11 +186,10 @@
                     { zone: '其他地區', fees: { standard: 300, medium: 800, large: 1600, xl: 3200 }, express: { standard: 350, medium: 800, large: 1600, xl: 2600 } }
                 ];
             }
-            let rows = '<tr><th>地區</th><th>S 碼</th><th>M 碼</th><th>L 碼</th><th>XL 碼</th><th>DHL 附加費</th></tr>';
+            let rows = '<tr><th>地區</th><th>S 碼</th><th>M 碼</th><th>L 碼</th><th>XL 碼</th></tr>';
             (zones || []).forEach(function(z) {
                 const f = z.fees || {};
-                const e = z.express || {};
-                rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>HK$' + (f.xl || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + ' / ' + (e.xl || 0) + '</td></tr>';
+                rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>HK$' + (f.xl || 0) + '</td></tr>';
             });
             el.innerHTML = '<table class="dlv-table">' + rows + '</table>';
         }
