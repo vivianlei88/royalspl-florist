@@ -14,8 +14,8 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商品詳情 | RoyalSpl Florist 香港花店</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Product Details | RoyalSpl Florist Hong Kong</title>
+    <link rel="stylesheet" href="/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -31,7 +31,7 @@
         .detail-main-image { position: relative; aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 10px; overflow: hidden; }
         .detail-main-image img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
         .zoom-badge { position: absolute; bottom: 12px; left: 12px; width: 36px; height: 36px; background: rgba(0,0,0,0.55); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; pointer-events: none; transition: opacity 0.2s; z-index: 2; }
-        /* 點擊放大 Lightbox */
+        /* Click-to-zoom Lightbox */
         .lightbox { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.25s ease; }
         .lightbox.open { opacity: 1; visibility: visible; }
         .lightbox-img { max-width: 92vw; max-height: 85vh; width: auto; height: auto; object-fit: contain; border-radius: 4px; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
@@ -109,7 +109,7 @@
         .addon-detail-price { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
         .addon-detail-desc { font-size: 14px; color: #383431; line-height: 1.7; margin-bottom: 16px; white-space: pre-line; }
         .addon-detail-spec { display: flex; gap: 10px; padding: 10px 0; border-top: 1px solid #ECE7E0; font-size: 14px; }
-        .addon-detail-spec .spec-k { flex: 0 0 64px; color: #8a857f; }
+        .addon-detail-spec .spec-k { flex: 0 0 70px; color: #8a857f; }
         .addon-detail-spec .spec-v { flex: 1; color: #1A1A1A; }
         .addon-detail-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.35); color: #fff; border: none; font-size: 18px; line-height: 1; cursor: pointer; z-index: 5; }
         .addon-detail-modal-wrap { position: relative; width: 100%; }
@@ -139,7 +139,7 @@
         @keyframes faqFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         @media (max-width: 768px) { .detail-container { grid-template-columns: 1fr; gap: 30px; } .detail-gallery { width: 100%; }
         .detail-main-image { position: relative; aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 10px; overflow: hidden; }
-        .detail-main-image img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+        .detail-main-image img { width: 100%; height: 100%; object-fit: cover; }
         .gallery-prev, .gallery-next { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .gallery-prev:hover, .gallery-next:hover { background: white; }
         .gallery-prev { left: 10px; }
@@ -152,159 +152,66 @@
         .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
         .detail-image-area { min-height: 300px; } .detail-emoji { font-size: 120px; } .detail-title-zh { font-size: 30px; } }
     
-    /* ===== 手機版全面優化 ===== */
+    /* ===== Mobile Optimization ===== */
     @media (max-width: 768px) {
-        /* 基礎字體 */
         body { font-size: 15px; line-height: 1.6; }
         h1 { font-size: 24px !important; }
         h2 { font-size: 20px !important; }
         h3 { font-size: 17px !important; }
-        p { font-size: 15px; }
-        
-        /* 導航欄優化 */
-        .nav-desktop { display: none !important; }
-        .nav-mobile { display: flex !important; }
-        .header { padding: 10px 15px !important; }
-        .logo { font-size: 18px !important; }
-        
-        /* 按鈕優化 */
-        .btn, button, input[type="submit"], input[type="button"] {
+        .btn, button, input[type="submit"] {
             min-height: 44px !important;
             padding: 12px 20px !important;
             font-size: 15px !important;
-            border-radius: 8px !important;
         }
-        
-        /* 表單優化 */
         input, select, textarea {
             font-size: 15px !important;
             padding: 12px !important;
             min-height: 44px !important;
-            border-radius: 8px !important;
         }
-        textarea { min-height: 100px !important; }
-        .form-group { margin-bottom: 15px !important; }
-        .form-row, .form-grid, .checkout-grid {
-            grid-template-columns: 1fr !important;
-            gap: 15px !important;
-        }
-        
-        /* 圖片響應式 */
+        .form-row, .form-grid { grid-template-columns: 1fr !important; }
         img { max-width: 100%; height: auto; }
-        .hero-image, .banner-image { height: auto !important; min-height: 250px; }
-        
-        /* 容器寬度 */
-        .container, .content-wrapper, .main-content {
-            padding: 15px !important;
-            max-width: 100% !important;
-        }
-        
-        /* 表格橫向滾動 */
-        .table-wrapper, .order-table, .cart-table, table {
-            display: block;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        table { min-width: 500px; font-size: 13px; }
-        th, td { padding: 10px 8px !important; }
-        
-        /* 購物車優化 */
-        .cart-item { flex-direction: column !important; gap: 10px; }
-        .cart-item-image { width: 100% !important; max-width: 200px; margin: 0 auto; }
-        .cart-item-details { width: 100% !important; text-align: center; }
-        .cart-summary { margin-top: 20px !important; }
-        
-        /* 商品詳情頁 */
+        .container, .content-wrapper { padding: 15px !important; }
+        table { display: block; overflow-x: auto; min-width: 500px; }
+        .products-grid, .featured-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
         .product-detail-layout { flex-direction: column !important; }
-        .product-gallery { width: 100% !important; }
-        .product-info { width: 100% !important; padding: 15px !important; }
-        .product-price { font-size: 24px !important; }
-        
-        /* 商品卡片 */
-        .products-grid, .featured-grid, .collections-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 12px !important;
-        }
-        .product-card { padding: 10px !important; }
-        .product-name { font-size: 14px !important; }
-        .product-price { font-size: 16px !important; }
-        
-        /* 頁尾 */
-        .footer { padding: 30px 15px !important; }
-        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
-        .footer-column { text-align: center; }
-        
-        /* 模態框 */
-        .modal, .modal-content {
-            width: 95% !important;
-            max-width: 95% !important;
-            margin: 10px auto !important;
-            padding: 15px !important;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        /* 統計卡片 */
-        .stats-grid, .card-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 10px !important;
-        }
-        .stat-card, .card { padding: 15px !important; }
-        
-        /* 間距優化 */
-        .section { padding: 30px 15px !important; }
-        .mb-20 { margin-bottom: 15px !important; }
-        .mt-20 { margin-top: 15px !important; }
-        .p-20 { padding: 15px !important; }
-        
-        /* 隱藏桌面端元素 */
-        .desktop-only { display: none !important; }
-        .mobile-only { display: block !important; }
+        .footer-grid { grid-template-columns: 1fr !important; }
+        .modal, .modal-content { width: 95% !important; max-width: 95% !important; }
     }
-    
     @media (max-width: 480px) {
         body { font-size: 14px; }
-        h1 { font-size: 22px !important; }
-        h2 { font-size: 18px !important; }
-        .products-grid, .featured-grid, .collections-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 10px !important;
-        }
-        .btn, button { padding: 10px 16px !important; font-size: 14px !important; }
-        .container, .content-wrapper { padding: 12px !important; }
+        .products-grid, .featured-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
     }
-    /* ===== 手機版優化結束 ===== */
 
     </style>
-    <link rel="stylesheet" href="css/ai-chat.css">
+    <link rel="stylesheet" href="/css/ai-chat.css">
 
-    <meta name="description" content="查看 RoyalSpl Florist 花藝產品詳情，包括花材介紹、價格、配送信息。香港頂級花藝設計，新鮮花材，品質保證。">
-    <link rel="canonical" href="https://www.royalspl.shop/product-detail.html">
-    <meta property="og:title" content="商品詳情 | RoyalSpl Florist 香港花店">
-    <meta property="og:description" content="查看 RoyalSpl Florist 花藝產品詳情，包括花材介紹、價格、配送信息。香港頂級花藝設計，新鮮花材，品質保證。">
+    <meta name="description" content="View RoyalSpl Florist product details including flower materials, price, delivery info. Premium floral design in Hong Kong.">
+    <link rel="canonical" href="https://www.royalspl.shop/en/product-detail.html">
+    <meta property="og:title" content="Product Details | RoyalSpl Florist Hong Kong">
+    <meta property="og:description" content="View RoyalSpl Florist product details including flower materials, price, delivery info. Premium floral design in Hong Kong.">
     <meta property="og:image" content="https://www.royalspl.shop/assets/og-share.jpg">
     <meta property="og:url" content="https://www.royalspl.shop/product-detail.html">
     <meta property="og:type" content="product">
     <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
-    <meta property="og:locale" content="zh_HK">
+    <meta property="og:locale" content="en_HK">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="商品詳情 | RoyalSpl Florist 香港花店">
-    <meta name="twitter:description" content="查看 RoyalSpl Florist 花藝產品詳情，包括花材介紹、價格、配送信息。香港頂級花藝設計，新鮮花材，品質保證。">
+    <meta name="twitter:title" content="Product Details | RoyalSpl Florist Hong Kong">
+    <meta name="twitter:description" content="View RoyalSpl Florist product details including flower materials, price, delivery info. Premium floral design in Hong Kong.">
     <meta name="twitter:image" content="https://www.royalspl.shop/assets/og-share.jpg">
     <script type="application/ld+json" id="productJsonLd">
     {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": "RoyalSpl Florist 花藝產品",
+      "name": "RoyalSpl Florist Floral Products",
       "image": "https://www.royalspl.shop/assets/og-share.jpg",
-      "description": "RoyalSpl Florist 精心設計的花藝產品，使用新鮮花材，香港配送。",
+      "description": "RoyalSpl Florist premium floral products, fresh flowers, Hong Kong delivery.",
       "brand": {
         "@type": "Brand",
         "name": "RoyalSpl Florist"
       },
       "offers": {
         "@type": "Offer",
-        "url": "https://www.royalspl.shop/product-detail.html",
+        "url": "https://www.royalspl.shop/en/product-detail.html",
         "priceCurrency": "HKD",
         "availability": "https://schema.org/InStock",
         "hasMerchantReturnPolicy": {
@@ -354,19 +261,19 @@
         {
           "@type": "ListItem",
           "position": 1,
-          "name": "首頁",
+          "name": "Home",
           "item": "https://www.royalspl.shop/"
         },
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "所有花藝",
+          "name": "All Flowers",
           "item": "https://www.royalspl.shop/products.html"
         },
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "商品詳情"
+          "name": "Product Details"
         }
       ]
     }
@@ -396,16 +303,16 @@
     <header class="header">
         <div class="header-container">
             <button class="menu-btn" id="menuBtn"><span class="menu-line"></span><span class="menu-line"></span><span class="menu-line"></span></button>
-            <a href="index.html" class="logo">
+            <a href="/en/index.html" class="logo">
                 <span class="logo-text">RoyalSpl Florist</span>
                 <span class="logo-subtext">HONG KONG</span>
             </a>
             <div class="header-actions">
-<a href="/en/product-detail.html" onclick="localStorage.setItem('royalspl_lang_manual','en')" class="user-icon" aria-label="English" style="margin-right:10px;font-size:14px;font-weight:600;">EN</a>                 <span class="site-currency-switch" style="margin-right:10px;"></span>
-                <a href="account.html" class="user-icon" aria-label="會員中心">
+<a href="/product-detail.html" onclick="localStorage.setItem('royalspl_lang_manual','zh')" class="user-icon" aria-label="中文" style="margin-right:10px;font-size:14px;font-weight:600;">中</a>                 <span class="site-currency-switch" style="margin-right:10px;"></span>
+                <a href="/en/account.html" class="user-icon" aria-label="Member Center">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
-                <a href="cart.html" class="cart-icon" aria-label="購物車">
+                <a href="/en/cart.html" class="cart-icon" aria-label="Shopping Cart">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     <span class="cart-badge" id="cartBadge">0</span>
                 </a>
@@ -415,55 +322,55 @@
 
     <div class="nav-drawer" id="navDrawer">
         <div class="nav-drawer-header">
-            <h2 class="nav-drawer-title">選單</h2>
+            <h2 class="nav-drawer-title">Menu</h2>
             <button class="nav-close-btn" id="navCloseBtn">✕</button>
         </div>
         <nav class="nav-drawer-content">
-            <div class="nav-item"><a href="index.html" class="nav-link"><span class="nav-zh">首頁</span><span class="nav-en">HOME</span></a></div>
-            <div class="nav-item"><a href="products.html" class="nav-link"><span class="nav-zh">所有花藝</span><span class="nav-en">THE COLLECTION</span></a></div>
+            <div class="nav-item"><a href="/en/index.html" class="nav-link"><span class="nav-zh">Home</span><span class="nav-en">HOME</span></a></div>
+            <div class="nav-item"><a href="/en/products.html" class="nav-link"><span class="nav-zh">All Flowers</span><span class="nav-en">THE COLLECTION</span></a></div>
             <div class="nav-item" data-expandable>
-                <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">節慶場合</span><span class="nav-en">OCCASIONS</span><span class="nav-plus">+</span></div>
+                <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">Occasions</span><span class="nav-en">OCCASIONS</span><span class="nav-plus">+</span></div>
                 <div class="nav-submenu">
-                    <a href="products.html?tag=情人節" class="nav-sub-link">情人節</a>
-                    <a href="products.html?tag=母親節" class="nav-sub-link">母親節</a>
-                    <a href="products.html?tag=中秋節" class="nav-sub-link">中秋節</a>
-                    <a href="products.html?tag=生日" class="nav-sub-link">生日</a>
-                    <a href="products.html?tag=婚禮" class="nav-sub-link">婚禮</a>
-                    <a href="products.html?tag=開張" class="nav-sub-link">開張</a>
-                    <a href="products.html?tag=商務送禮" class="nav-sub-link">商務送禮</a>
+                    <a href="products.html?tag=情人節" class="nav-sub-link">Valentine's Day</a>
+                    <a href="products.html?tag=母親節" class="nav-sub-link">Mother's Day</a>
+                    <a href="products.html?tag=中秋節" class="nav-sub-link">Mid-Autumn</a>
+                    <a href="products.html?tag=生日" class="nav-sub-link">Birthday</a>
+                    <a href="products.html?tag=婚禮" class="nav-sub-link">Wedding</a>
+                    <a href="products.html?tag=開張" class="nav-sub-link">Grand Opening</a>
+                    <a href="products.html?tag=商務送禮" class="nav-sub-link">Business Gift</a>
                 </div>
             </div>
             <div class="nav-item" data-expandable>
-                <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">花材種類</span><span class="nav-en">FLOWER TYPES</span><span class="nav-plus">+</span></div>
+                <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">Flower Types</span><span class="nav-en">FLOWER TYPES</span><span class="nav-plus">+</span></div>
                 <div class="nav-submenu">
-                    <a href="products.html?tag=玫瑰" class="nav-sub-link">玫瑰</a>
-                    <a href="products.html?tag=鬱金香" class="nav-sub-link">鬱金香</a>
-                    <a href="products.html?tag=芍藥" class="nav-sub-link">芍藥(牡丹)</a>
-                    <a href="products.html?tag=荷花" class="nav-sub-link">荷花</a>
-                    <a href="products.html?tag=進口鮮花" class="nav-sub-link">進口鮮花</a>
-                    <a href="products.html?tag=大麗花" class="nav-sub-link">大麗花</a>
+                    <a href="products.html?tag=玫瑰" class="nav-sub-link">Rose</a>
+                    <a href="products.html?tag=鬱金香" class="nav-sub-link">Tulip</a>
+                    <a href="products.html?tag=芍藥" class="nav-sub-link">Peony</a>
+                    <a href="products.html?tag=荷花" class="nav-sub-link">Lotus</a>
+                    <a href="products.html?tag=進口鮮花" class="nav-sub-link">Imported Flowers</a>
+                    <a href="products.html?tag=大麗花" class="nav-sub-link">Dahlia</a>
                 </div>
             </div>
-            <div class="nav-item"><a href="blog.html" class="nav-link"><span class="nav-zh">部落格</span><span class="nav-en">BLOG</span></a></div>
-            <div class="nav-item"><a href="contact.html" class="nav-link"><span class="nav-zh">設計師及商務合作</span><span class="nav-en">DESIGNER &amp; BUSINESS</span></a></div>
+            <div class="nav-item"><a href="/en/blog.html" class="nav-link"><span class="nav-zh">Blog</span><span class="nav-en">BLOG</span></a></div>
+            <div class="nav-item"><a href="/en/contact.html" class="nav-link"><span class="nav-zh">Designer &amp; Business</span><span class="nav-en">DESIGNER &amp; BUSINESS</span></a></div>
         </nav>
     </div>
 
     <main class="detail-page">
         <nav class="breadcrumb-nav" id="breadcrumbNav" aria-label="Breadcrumb" style="margin-bottom: 16px; font-size: 13px; color: #888; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;"></nav>
         <div class="detail-container" id="detailContainer">
-            <div style="text-align:center;padding:60px;">載入中...</div>
+            <div style="text-align:center;padding:60px;">Loading...</div>
         </div>
 
     </main>
 
     <footer class="footer">
-        <div class="footer-slogan"><p class="footer-slogan-line1">為您帶來最優質的花藝體驗</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
+        <div class="footer-slogan"><p class="footer-slogan-line1">Bringing You the Finest Floral Experience</p><p class="footer-slogan-line2">Bringing You the Finest Floral Experience</p></div>
         <div class="footer-links">
-            <div class="footer-column"><a href="products.html" class="footer-link">所有花藝</a><a href="products.html?tag=情人節" class="footer-link">節慶場合</a><a href="products.html?category=%E5%AE%B6%E5%B1%85%E8%88%87%E7%A9%BA%E9%96%93%E7%BE%8E%E5%AD%B8" class="footer-link">空間美學</a></div>
-            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">常見問題</a><a href="contact.html" class="footer-link">設計師及商務合作</a></div>
+            <div class="footer-column"><a href="/en/products.html" class="footer-link">All Flowers</a><a href="products.html?tag=Valentine's Day" class="footer-link">Occasions</a><a href="products.html?category=%E5%AE%B6%E5%B1%85%E8%88%87%E7%A9%BA%E9%96%93%E7%BE%8E%E5%AD%B8" class="footer-link">Interior &amp; Space Aesthetics</a></div>
+            <div class="footer-column"><a href="blog.html" class="footer-link">Blog</a><a href="faq.html" class="footer-link">FAQ</a><a href="contact.html" class="footer-link">Designer &amp; Business</a></div>
         </div>
-        <div class="footer-bottom"><a href="privacy.html" class="privacy-link">私隱政策 Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
+        <div class="footer-bottom"><a href="privacy.html" class="privacy-link">Privacy Policy</a><p class="copyright">© 2018 RoyalSpl Florist Hong Kong. All rights reserved.</p></div>
     </footer>
 
     <script>
@@ -503,7 +410,7 @@
             renderProductDetail(currentProduct);
         } catch (err) {
             console.error('載入商品失敗:', err);
-            container.innerHTML = '<div style="text-align:center;padding:60px;">❌ 載入失敗</div>';
+            container.innerHTML = '<div style="text-align:center;padding:60px;">❌ Loading failed</div>';
         }
     }
 
@@ -515,7 +422,7 @@
             try {
                 var pageId = product.id || '';
                 var canonLink = document.querySelector('link[rel="canonical"]');
-                if (canonLink && pageId) canonLink.href = 'https://www.royalspl.shop/product-detail.html?id=' + pageId;
+                if (canonLink && pageId) canonLink.href = 'https://www.royalspl.shop/en/product-detail.html?id=' + pageId;
                 var hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]');
                 hreflangs.forEach(function(l) {
                     if (l.hreflang === 'zh-HK' || l.hreflang === 'x-default') l.href = 'https://www.royalspl.shop/product-detail.html?id=' + pageId;
@@ -527,7 +434,7 @@
             var isPreorder = product.stock !== '現貨';
             var offers = {
                 "@type": "Offer",
-                "url": "https://www.royalspl.shop/product-detail.html?id=" + (product.id || ""),
+                "url": "https://www.royalspl.shop/en/product-detail.html?id=" + (product.id || ""),
                 "priceCurrency": "HKD",
                 "price": getCurrentPrice() || product.price || 0,
                 "availability": isPreorder ? "https://schema.org/PreOrder" : "https://schema.org/InStock",
@@ -582,9 +489,9 @@
             const data = {
                 "@context": "https://schema.org",
                 "@type": "Product",
-                "name": product.name_zh || product.name_en || "RoyalSpl Florist 花藝產品",
+                "name": (product.name_en || product.name_zh) || product.name_en || "RoyalSpl Florist Floral Products",
                 "image": productImages.length > 0 ? productImages : ["https://www.royalspl.shop/assets/og-share.jpg"],
-                "description": product.description_zh || product.description || "RoyalSpl Florist 精心設計的花藝產品，使用新鮮花材，香港配送。",
+                "description": product.description_en || product.description || "RoyalSpl Florist premium floral products, fresh flowers, Hong Kong delivery.",
                 "brand": {
                     "@type": "Brand",
                     "name": "RoyalSpl Florist"
@@ -597,43 +504,43 @@
         }
     }
 
-    async function loadBreadcrumbCats() {
+        async function loadBreadcrumbCats() {
         try {
             var r = await supabaseClient.from('categories').select('id, name_zh, name_en').eq('is_active', true);
             if (r.data) window.allCats = r.data;
-        } catch (e) { console.error('分類載入失敗:', e); }
+        } catch (e) { console.error('Category load failed:', e); }
     }
     loadBreadcrumbCats();
-    function renderProductDetail(product) {
-        updateProductJsonLd(product);
-        // 視覺麵包屑
+function renderProductDetail(product) {
+        // Visual breadcrumb
         try {
             var bcNav = document.getElementById('breadcrumbNav');
             if (bcNav) {
                 var catName = '';
                 if (product.category_ids && product.category_ids.length > 0 && window.allCats) {
                     for (var ci = 0; ci < window.allCats.length; ci++) {
-                        if (window.allCats[ci].id === product.category_ids[0]) { catName = window.allCats[ci].name_zh || ''; break; }
+                        if (window.allCats[ci].id === product.category_ids[0]) { catName = window.allCats[ci].name_en || window.allCats[ci].name_zh || ''; break; }
                     }
                 }
                 if (!catName && product.categories && product.categories.length > 0) { catName = product.categories[0]; }
-                var bc = '<a href="index.html" style="color:#888;text-decoration:none;">首頁</a><span style="color:#ccc;">›</span>' +
-                         '<a href="products.html" style="color:#888;text-decoration:none;">所有花藝</a>' +
-                         (catName ? '<span style="color:#ccc;">›</span><a href="products.html?category=' + encodeURIComponent(catName) + '" style="color:#888;text-decoration:none;">' + catName + '</a>' : '') +
-                         '<span style="color:#ccc;">›</span><span style="color:#383431;font-weight:500;">' + (product.name_zh || product.name_en || '') + '</span>';
+                var bc = '<a href="/en/index.html" style="color:#888;text-decoration:none;">Home</a><span style="color:#ccc;">›</span>' +
+                         '<a href="/en/products.html" style="color:#888;text-decoration:none;">All Flowers</a>' +
+                         (catName ? '<span style="color:#ccc;">›</span><a href="/en/products.html?category=' + encodeURIComponent(catName) + '" style="color:#888;text-decoration:none;">' + catName + '</a>' : '') +
+                         '<span style="color:#ccc;">›</span><span style="color:#383431;font-weight:500;">' + (product.name_en || product.name_zh || '') + '</span>';
                 bcNav.innerHTML = bc;
             }
-        } catch (e) { console.error('麵包屑生成失敗:', e); }
+        } catch (e) { console.error('Breadcrumb failed:', e); }
+        updateProductJsonLd(product);
         var container = document.getElementById('detailContainer');
         var specs = product.specs || {};
         
         // 動態設置 SEO：title、meta description、Open Graph（優先使用後台 seo_title / seo_description）
         var productTitle = (product.seo_title && product.seo_title.trim())
             ? product.seo_title.trim()
-            : ((product.name_zh || product.name_en || '花藝產品') + ' | ' + siteMoney(getCurrentPrice()) + ' | RoyalSpl Florist 香港花店');
+            : ((product.name_en || product.name_zh || 'Flower Product') + ' | ' + siteMoney(getCurrentPrice()) + ' | RoyalSpl Florist Hong Kong');
         var isGlobalItem = (product.tags || []).indexOf('全球配送') > -1;
-        var descBase = (product.seo_description || product.description_zh || product.description || 'RoyalSpl Florist 精心設計的花藝產品').substring(0, 150);
-        var productDesc = isGlobalItem ? (descBase + ' 適合家居擺設、空間展示與室內設計點綴，可全球配送。').substring(0, 170) : descBase;
+        var descBase = (product.description_en || product.seo_description || product.description || 'RoyalSpl Florist premium flower product').substring(0, 150);
+        var productDesc = isGlobalItem ? (descBase + ' Perfect for home decor, space styling and interior design; ships worldwide.').substring(0, 190) : descBase;
         document.title = productTitle;
         var metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) metaDesc.setAttribute('content', productDesc);
@@ -651,16 +558,245 @@
             if (twitterImage) twitterImage.setAttribute('content', productImages[0]);
         }
         var tags = product.tags || [];
-        var scentNotes = product.scent_notes || [];
-        var stockClass = product.stock === '現貨' ? 'status-in-stock' : 'status-pre-order';
-        var stockText = product.stock === '現貨' ? '現貨' : '預訂 ' + (product.delivery_days || 3) + ' 天';
+        // 标签翻译映射
+        var tagTranslations = {
+            '戀愛': 'Love', '生日': 'Birthday', '情人節': "Valentine's Day", '母親節': "Mother's Day",
+            '中秋節': 'Mid-Autumn Festival', '畢業季': 'Graduation', '聖誕節': 'Christmas',
+            '婚禮': 'Wedding', '紀念日': 'Anniversary', '探病': 'Get Well', '開張': 'Grand Opening',
+            '喬遷': 'Housewarming', '商務送禮': 'Business Gift', '企業周年': 'Corporate Anniversary',
+            '父親節': "Father's Day", '新年': 'New Year', '農曆新年': 'Lunar New Year',
+            '教師節': "Teacher's Day", '嬰兒出生': 'New Baby', '升職': 'Promotion',
+            '道歉': 'Apology', '答謝': 'Thank You', '哀悼': 'Condolence', '求婚': 'Proposal', '浪漫': 'Romantic',
+            '玫瑰': 'Rose', '鬱金香': 'Tulip', '芍藥': 'Peony', '荷花': 'Lotus', '百合': 'Lily',
+            '康乃馨': 'Carnation', '向日葵': 'Sunflower', '滿天星': "Baby's Breath",
+            '蘭花': 'Orchid', '牡丹': 'Peony', '進口鮮花': 'Imported Flowers',
+            '尤加利葉': 'Eucalyptus', '飛燕草': 'Delphinium', '洋桔梗': 'Eustoma',
+            '繡球花': 'Hydrangea', '乒乓': 'Ping Pong', '蕾絲花': 'Lace Flower', '蕾丝花': 'Lace Flower',
+            '進口千代': 'Imported Orchid', '進口蝴蝶蘭': 'Imported Phalaenopsis',
+            '薰衣草': 'Lavender', '常春藤': 'Ivy', '菊花': 'Chrysanthemum',
+            '非洲菊': 'Gerbera', '劍蘭': 'Gladiolus', '鳶尾花': 'Iris',
+            '風鈴草': 'Canterbury Bells', '鼠尾草': 'Sage', '庭園玫瑰': 'Garden Rose',
+            '即日鮮花': 'Same Day Flowers', '日式永生花': 'Japanese Preserved Flowers',
+            '法式田園自然風': 'French Countryside Style', '法式自然風': 'French Natural Style',
+            '日式鮮花束': 'Japanese Bouquet',
+            '新娘花禮': 'Bridal Flowers', '進口牡丹/芍藥花': 'Imported Peony Flowers',
+            '韓式花束': 'Korean Bouquet', '歐式古典': 'European Classical',
+            '現代簡約': 'Modern Minimalist', '浪漫風': 'Romantic Style',
+            'HK$300內': 'Under HK$300', 'HK$300-600': 'HK$300-600',
+            '訂閱': 'Subscribe', '節慶場合': 'Occasions',
+            '郁金香花束': 'Tulip Bouquet', '香港花店': 'Hong Kong Florist',
+            '鲜花速递': 'Flower Delivery', '玫瑰花束': 'Rose Bouquet',
+            '高级花艺': 'Premium Floral Art', 'RoyalSpl 花艺': 'RoyalSpl Floral Art',
+            '大麗花': 'Dahlia', '粉掌': 'Pink Anthurium', '配草': 'Filler Greenery',
+            'RoyalSpl 花藝': 'RoyalSpl Floral Art', '厄瓜多爾玫瑰': 'Ecuador Rose',
+            '大頭玫瑰': 'Big Head Rose', '奧斯汀玫瑰': 'Austin Rose', '弗洛伊德玫瑰': 'Floyd Rose',
+            '情人節花束': "Valentine's Day Bouquet", '水果玫瑰': 'Fruit Rose',
+            '石斛蘭': 'Dendrobium Orchid', '粉色花束': 'Pink Bouquet',
+            '紅玫瑰花束': 'Red Rose Bouquet', '蕾丝花': 'Lace Flower',
+            '進口玫瑰': 'Imported Rose', '高級花藝': 'Premium Floral Art',
+            '鬱金香花束': 'Tulip Bouquet', '鮮花速遞': 'Flower Delivery',
+            '中式婚禮': 'Chinese Wedding', '乒乓球菊': 'Ping Pong Chrysanthemum',
+            '垂墜花束': 'Cascading Bouquet', '婚禮套裝': 'Wedding Set',
+            '婚禮花球': 'Wedding Bouquet', '戴安娜玫瑰': 'Diana Rose',
+            '新娘手捧花': 'Bridal Bouquet', '新娘花球': 'Bridal Bouquet',
+            '新娘花禮': 'Bridal Flowers', '新郎襟花': "Groom's Boutonniere",
+            '海洋之歌': 'Ocean Song Rose', '淺粉玫瑰': 'Light Pink Rose',
+            '猩紅色': 'Scarlet', '白色吊米': 'White Amaranthus',
+            '白馬蹄蓮': 'White Calla Lily', '白鬱金香': 'White Tulip',
+            '粉玫瑰': 'Pink Rose', '粉繡球': 'Pink Hydrangea',
+            '粉色婚禮': 'Pink Wedding', '紅玫瑰': 'Red Rose',
+            '紅豆': 'Red Bean', '紫羅蘭': 'Stock', '紫色婚禮': 'Purple Wedding',
+            '絲帶花束': 'Ribbon Bouquet', '進口芍藥': 'Imported Peony',
+            '香檳色': 'Champagne',
+            '周年紀念': 'Anniversary', '商務花束': 'Corporate Bouquet',
+            '小花束': 'Mini Bouquet', '生日派對花束': 'Birthday Party Bouquet',
+            '男士花束': "Men's Bouquet", '祝福花束': 'Blessing Bouquet',
+            '高級鮮花定制': 'Premium Custom Flowers',
+            'XL花束': 'XL Bouquet', '大朵花束': 'Large Bloom Bouquet',
+            '抱抱桶': 'Hug Bucket', '母親節花束': "Mother's Day Bouquet",
+            '牡丹花束': 'Peony Bouquet', '生日花束': 'Birthday Bouquet',
+            '白色花束': 'White Bouquet', '禮盒': 'Gift Box',
+            '芍藥花束': 'Peony Bouquet',
+            '1000-2000': 'HK$1000-2000',
+            '500-1000': 'HK$500-1000',
+            'Juliet玫瑰': 'Juliet Rose',
+            '向日葵': 'Sunflower',
+            '商務花藝': 'Corporate Floral Art',
+            '奢華': 'Luxury',
+            '婚禮佈置': 'Wedding Decor',
+            '尤加利': 'Eucalyptus',
+            '庭園玫瑰': 'Garden Rose',
+            '感恩': 'Thanksgiving',
+            '探訪': 'Visit',
+            '文竹': 'Asparagus Fern',
+            '星芹': 'Astrantia',
+            '橄欖枝': 'Olive Branch',
+            '母亲节': "Mother's Day",
+            '法式清新': 'French Fresh',
+            '法式自然風': 'French Natural Style',
+            '洋甘菊': 'Chamomile',
+            '深紅玫瑰': 'Deep Red Rose',
+            '滿天星': "Baby's Breath",
+            '灰紫玫瑰': 'Grey Purple Rose',
+            '畢業禮花束': 'Graduation Bouquet',
+            '白玫瑰': 'White Rose',
+            '白色系': 'White Theme',
+            '百合': 'Lily',
+            '簡約': 'Minimalist',
+            '簡約風格': 'Minimalist Style',
+            '粉白配色': 'Pink & White',
+            '紫罗兰': 'Stock',
+            '纪念日': 'Anniversary',
+            '自然森系': 'Forest Style',
+            '荷花': 'Lotus',
+            '莫蘭迪色': 'Morandi Color',
+            '薰衣草': 'Lavender',
+            '蝴蝶蘭': 'Phalaenopsis',
+            '裸粉色': 'Nude Pink',
+            '謝禮': 'Thank You Gift',
+            '酒會花藝': 'Cocktail Floral Art',
+            '鐵筷子': 'Hellebore',
+            '铁筷子': 'Hellebore',
+            '闺蜜赠礼': 'Bestie Gift',
+            '陸蓮花': 'Anemone',
+            '韓式自然風': 'Korean Natural Style',
+            '韩式': 'Korean Style',
+            '風鈴花': 'Bellflower',
+            '風鈴草': 'Canterbury Bells',
+            '飞燕草': 'Delphinium',
+            '高腳花': 'Tall Flower',
+            '鼠尾草綠': 'Sage Green',
+            '不凋花': 'Preserved Flower',
+            '永生花': 'Preserved Flower',
+            '生日禮物': 'Birthday Gift',
+            '經典': 'Classic'
+        };
+        function translateTag(tag) { return tagTranslations[tag] || tag; }
+        
+        // 花材名称翻译
+        var flowerTranslations = {
+            '玫瑰': 'Rose', '紅玫瑰': 'Red Rose', '粉玫瑰': 'Pink Rose', '白玫瑰': 'White Rose',
+            '黃玫瑰': 'Yellow Rose', '紫玫瑰': 'Purple Rose', '香檳玫瑰': 'Champagne Rose',
+            '桃紅玫瑰': 'Peach Rose', '庭園玫瑰': 'Garden Rose', '多種玫瑰': 'Mixed Roses',
+            '康乃馨': 'Carnation', '紅康乃馨': 'Red Carnation', '粉康乃馨': 'Pink Carnation',
+            '白康乃馨': 'White Carnation',
+            '滿天星': "Baby's Breath", '繡球': 'Hydrangea', '藍繡球': 'Blue Hydrangea',
+            '粉繡球': 'Pink Hydrangea', '白繡球': 'White Hydrangea', '紫繡球': 'Purple Hydrangea',
+            '桔梗': 'Eustoma', '洋桔梗': 'Eustoma', '紫桔梗': 'Purple Eustoma',
+            '白桔梗': 'White Eustoma', '粉桔梗': 'Pink Eustoma',
+            '百合': 'Lily', '白百合': 'White Lily', '粉百合': 'Pink Lily',
+            '重瓣百合': 'Double Lily', '淡粉重瓣百合': 'Light Pink Double Lily',
+            '鬱金香': 'Tulip', '荷蘭鬱金香': 'Dutch Tulip', '多色鬱金香': 'Multi-color Tulip',
+            '向日葵': 'Sunflower', '蘭花': 'Orchid', '蝴蝶蘭': 'Phalaenopsis Orchid',
+            '胡姬蘭': 'Orchid', '千代蘭': 'Chrysanthemum Orchid',
+            '牡丹': 'Peony', '芍藥': 'Peony', '進口牡丹': 'Imported Peony',
+            '荷花': 'Lotus', '蓮蓬': 'Lotus Pod',
+            '尤加利': 'Eucalyptus', '尤加利葉': 'Eucalyptus Leaves',
+            '飛燕草': 'Delphinium', '風鈴草': 'Canterbury Bells', '鼠尾草': 'Sage',
+            '乒乓': 'Ping Pong Chrysanthemum', '乒乓菊': 'Ping Pong Chrysanthemum',
+            '雪柳': 'Spiraea', '銀葉菊': 'Dusty Miller',
+            '常春藤': 'Ivy', '文竹': 'Asparagus Fern', '富貴竹': 'Lucky Bamboo',
+            '劍蘭': 'Gladiolus', '紅掌': 'Anthurium', '白掌': 'Peace Lily',
+            '風信子': 'Hyacinth', '水仙': 'Daffodil', '雛菊': 'Daisy', '非洲菊': 'Gerbera',
+            '鳶尾花': 'Iris', '薰衣草': 'Lavender', '菊花': 'Chrysanthemum',
+            '進口千代': 'Imported Orchid', '進口蝴蝶蘭': 'Imported Phalaenopsis',
+            '新娘花球': "Bride's Bouquet", '新郎襟花': "Groom's Boutonniere",
+            '花材配搭協調': 'coordinated floral pairing', '配花': 'Filler Flowers',
+            '配葉': 'Foliage', '綠葉': 'Greenery'
+        };
+        
+        // 产地翻译
+        var originTranslations = {
+            '香港': 'Hong Kong', '進口': 'Imported', '荷蘭': 'Netherlands',
+            '日本': 'Japan', '厄瓜多爾': 'Ecuador', '肯亞': 'Kenya',
+            '哥倫比亞': 'Colombia', '新西蘭': 'New Zealand', '澳洲': 'Australia',
+            '泰國': 'Thailand', '中國': 'China', '台灣': 'Taiwan',
+            '本地': 'Local', '本地種植': 'Locally Grown'
+        };
+        
+        // 翻译花材字段（支持 花A+花B+花C 格式）
+        function translateFlowers(text) {
+            if (!text) return 'N/A';
+            // 如果已经是英文（包含英文字母且没有中文），直接返回
+            if (/^[a-zA-Z0-9\s\+\-\,\.\(\)\'\/]+$/.test(text)) return text;
+            // 按 + 分割翻译
+            var parts = text.split('+');
+            var translated = parts.map(function(part) {
+                part = part.trim();
+                return flowerTranslations[part] || part;
+            });
+            return translated.join(' + ');
+        }
+        
+        // 翻译产地
+        function translateOrigin(text) {
+            if (!text) return 'N/A';
+            if (/^[a-zA-Z\s]+$/.test(text)) return text;
+            return originTranslations[text] || text;
+        }
+        
+        // 翻译规格变体名称（组合式规则：数字枝 / 花球 / 襟花 等）
+        function translateVariantName(name) {
+            if (!name) return '';
+            if (/^[a-zA-Z0-9\s\+\-\,\.\(\)\'\/]+$/.test(name)) return name;
+            var result = name;
+            // 数字+枝 → "N Stems of "，末尾无内容时去掉 of
+            result = result.replace(/(\d+)\s*枝/g, '$1 Stems of ');
+            result = result.replace(/\s*of\s*$/g, '');
+            // 全角/半角逗号 → " + "
+            result = result.replace(/[，,]/g, ' + ');
+            var termMap = {
+                '粉芍藥': 'Pink Peony', '白芍藥': 'White Peony', '進口粉芍藥': 'Imported Pink Peony',
+                '粉繡球': 'Pink Hydrangea', '繡球': 'Hydrangea', '芍藥': 'Peony',
+                '花球': 'Bouquet', '襟花': 'Boutonnière', '直徑': 'Diameter', '套裝': 'Set'
+            };
+            for (var tk in termMap) { result = result.split(tk).join(termMap[tk]); }
+            // 半角 + 号两侧补空格；组合词（BouquetDiameter）拆分
+            result = result.replace(/\+/g, ' + ');
+            result = result.replace(/([a-z])([A-Z])/g, '$1 $2');
+            result = result.replace(/\s+/g, ' ').trim();
+            return result;
+        }
+
+        // 翻译规格
+        function translateSpecs(text) {
+            if (!text) return 'N/A';
+            if (/^[a-zA-Z0-9\s\,\.\(\)\-\+]+$/.test(text)) return text;
+            var result = text;
+            result = result.replace(/高約/g, 'Height approx. ');
+            result = result.replace(/闊約/g, 'Width approx. ');
+            result = result.replace(/寬約/g, 'Width approx. ');
+            result = result.replace(/直徑約/g, 'Diameter approx. ');
+            result = result.replace(/直徑/g, 'Diameter ');
+            result = result.replace(/高/g, 'Height ');
+            result = result.replace(/闊/g, 'Width ');
+            result = result.replace(/寬/g, 'Width ');
+            result = result.replace(/長/g, 'Length ');
+            result = result.replace(/標準尺寸/g, 'Standard Size');
+            result = result.replace(/大號/g, 'Large');
+            result = result.replace(/中號/g, 'Medium');
+            result = result.replace(/小號/g, 'Small');
+            result = result.replace(/大型/g, 'Large');
+            result = result.replace(/中型/g, 'Medium');
+            result = result.replace(/小型/g, 'Small');
+            result = result.replace(/花球/g, 'Bouquet');
+            result = result.replace(/襟花/g, 'Boutonniere');
+            result = result.replace(/個/g, ' pcs');
+            result = result.replace(/枝/g, ' stems');
+            result = result.replace(/cm/g, 'cm');
+            return result;
+        }
+        var scentNotes = product.scent_notes_en || product.scent_notes || [];
+        var isInStock = product.stock === 'In Stock' || product.stock === '現貨';
+        var stockClass = isInStock ? 'status-in-stock' : 'status-pre-order';
+        var stockText = isInStock ? 'In Stock' : 'Pre-order ' + (product.delivery_days || 3) + ' days';
         
         var html = '';
         var productImages = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
         html += '<div class="detail-left-col">';
         if (productImages.length > 0) {
             html += '<div class="detail-gallery">';
-            html += '<div class="detail-main-image"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + product.name_zh + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;"><div class="zoom-badge">🔍</div>';
+            html += '<div class="detail-main-image"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + (product.name_en || product.name_zh) + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;"><div class="zoom-badge">🔍</div>';
             if (productImages.length > 1) {
                 html += '<button class="gallery-prev" onclick="changeProductImage(-1)">‹</button>';
                 html += '<button class="gallery-next" onclick="changeProductImage(1)">›</button>';
@@ -670,7 +806,7 @@
             if (productImages.length > 1) {
                 html += '<div class="detail-thumbs">';
                 for (var ti = 0; ti < productImages.length; ti++) {
-                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')"><img src="' + productImages[ti] + '" alt="' + product.name_zh + ' 細圖 ' + (ti+1) + '"></div>';
+                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')"><img src="' + productImages[ti] + '" alt="' + (product.name_en || product.name_zh) + ' detail image ' + (ti+1) + '"></div>';
                 }
                 html += '</div>';
             }
@@ -680,7 +816,7 @@
         } else {
             html += '<div class="detail-image-area"><span class="detail-emoji">' + (product.emoji || '') + '<\/span><\/div>';
         }
-        // 標籤不在頁面顯示，改為寫入 <link rel="tag"> SEO 標籤連結（顧客不可見，搜索引擎可收錄）
+        // Tags hidden from page; inject <link rel="tag"> SEO links instead (invisible to visitors, crawlable by search engines)
         if (tags.length > 0) {
             var headEl = document.head || document.getElementsByTagName('head')[0];
             for (var ti = 0; ti < tags.length; ti++) {
@@ -691,41 +827,41 @@
             }
         }
         html += '<div class="detail-seo-section" style="margin-top:30px;">';
-        // 配送規則（本地 + 全球，折叠展开）
-        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">配送規則 <span>+<\/span><\/div><div class="seo-content" id="deliveryContent">載入中...<\/div><\/div>';
-        // 退換貨政策（折叠展开）
-        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">退換貨政策 <span>+<\/span><\/div><div class="seo-content" id="returnContent">載入中...<\/div><\/div>';
+        // Delivery Policy (Local + Worldwide, collapsible)
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Delivery Policy <span>+<\/span><\/div><div class="seo-content" id="deliveryContent">Loading...<\/div><\/div>';
+        // Return & Refund Policy (collapsible)
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Return &amp; Refund Policy <span>+<\/span><\/div><div class="seo-content" id="returnContent">Loading...<\/div><\/div>';
         // 花材護理知識（默认内容，后续异步更新）
-        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">花材護理知識 <span>+<\/span><\/div><div class="seo-content" id="flowerCareContent">鮮花護理建議：<br>1. 每日更換清水<br>2. 斜剪花腳45度<br>3. 避免陽光直射<br>4. 定期清除枯萎花瓣<\/div><\/div>';
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Flower Care Tips <span>+<\/span><\/div><div class="seo-content" id="flowerCareContent">Flower Care Tips:<br>1. Change water daily<br>2. Trim stems at 45 degrees<br>3. Avoid direct sunlight<br>4. Remove wilted petals regularly<\/div><\/div>';
         html += '<\/div>';
         html += '<\/div>';
         html += '<div class="detail-info-area">';
         html += '<p class="detail-subtitle-en">' + (product.name_en || '').toUpperCase() + '<\/p>';
-        html += '<h1 class="detail-title-zh">' + product.name_zh + '<\/h1>';
+        html += '<h1 class="detail-title-zh">' + (product.name_en || product.name_zh) + '<\/h1>';
         html += '<div class="detail-status ' + stockClass + '">' + stockText + '<\/div>';
         html += '<p class="detail-price">' + siteMoney(getCurrentPrice()) + '<\/p>';
         if (productVariants.length > 0) {
-            html += '<div class="variant-selector"><p class="variant-label">選擇規格<\/p>';
+            html += '<div class="variant-selector"><p class="variant-label">Select Option<\/p>';
             for (var vi = 0; vi < productVariants.length; vi++) {
-                html += '<button type="button" class="variant-option' + (vi === selectedVariantIndex ? ' active' : '') + '" onclick="selectVariant(' + vi + ')">' + productVariants[vi].variant_name + ' — ' + siteMoney(productVariants[vi].variant_price) + '<\/button>';
+                html += '<button type="button" class="variant-option' + (vi === selectedVariantIndex ? ' active' : '') + '" onclick="selectVariant(' + vi + ')">' + translateVariantName(productVariants[vi].variant_name) + ' — ' + siteMoney(productVariants[vi].variant_price) + '<\/button>';
             }
             html += '<\/div>';
         }
-        html += '<p class="detail-description">' + (product.description || '') + '<\/p>';
+        html += '<p class="detail-description">' + (product.description_en || product.description || '') + '<\/p>';
         
         if (scentNotes.length > 0) {
-            html += '<div class="scent-notes"><p class="scent-label">SCENT NOTES 香氣筆記<\/p><div class="scent-pills">';
+            html += '<div class="scent-notes"><p class="scent-label">SCENT NOTES<\/p><div class="scent-pills">';
             for (var j = 0; j < scentNotes.length; j++) { html += '<span class="scent-pill">' + scentNotes[j] + '<\/span>'; }
             html += '<\/div><\/div>';
         }
         
         html += '<div class="specs-matrix">';
-        html += '<div class="spec-row"><span class="spec-label">花材<\/span><span class="spec-value">' + (product.specs_flowers || 'N/A') + '<\/span><\/div>';
-        html += '<div class="spec-row"><span class="spec-label">產地<\/span><span class="spec-value">' + (product.specs_origin || 'N/A') + '<\/span><\/div>';
-        html += '<div class="spec-row"><span class="spec-label">規格<\/span><span class="spec-value">' + (product.specs_size || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Flowers<\/span><span class="spec-value">' + (product.specs_flowers_en || translateFlowers(product.specs_flowers) || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Origin<\/span><span class="spec-value">' + (product.specs_origin_en || translateOrigin(product.specs_origin) || 'N/A') + '<\/span><\/div>';
+        html += '<div class="spec-row"><span class="spec-label">Specifications<\/span><span class="spec-value">' + (product.specs_size_en || translateSpecs(product.specs_size) || 'N/A') + '<\/span><\/div>';
         html += '<\/div>';
         
-        html += '<div class="addon-section"><p class="addon-label">精選加購配件<\/p><div id="addonList"><\/div><\/div>';
+        html += '<div class="addon-section"><p class="addon-label">Featured Add-ons<\/p><div id="addonList"><\/div><\/div>';
         
         html += '<div class="quantity-selector">';
         html += '<button class="qty-btn" onclick="changeQuantity(-1)">−<\/button>';
@@ -733,10 +869,10 @@
         html += '<button class="qty-btn" onclick="changeQuantity(1)">+<\/button>';
         html += '<\/div>';
         
-        html += '<div class="total-display" id="totalDisplay">總計：' + siteMoney(getCurrentPrice()) + '<\/div>';
+        html += '<div class="total-display" id="totalDisplay">Total: ' + siteMoney(getCurrentPrice()) + '<\/div>';
         html += '<div class="purchase-actions">';
-        html += '<button class="add-to-cart-btn" onclick="handleAddToCart()">加入購物車<\/button>';
-        html += '<button class="buy-now-btn" onclick="handleBuyNow()">立即購買<\/button>';
+        html += '<button class="add-to-cart-btn" onclick="handleAddToCart()">' + (isInStock ? 'Add to Cart' : 'Pre-order') + '<\/button>';
+        html += '<button class="buy-now-btn" onclick="handleBuyNow()">' + (isInStock ? 'Buy Now' : 'Pre-order Now') + '<\/button>';
         html += '<\/div>';
         html += '<\/div>';
         
@@ -748,14 +884,14 @@
     }
 
     var allAddons = [];
-    var selectedAddonIds = [];
     var allAddonDetails = {};
+    var selectedAddonIds = [];
 
     async function loadLinkedAddons(product) {
         var addonList = document.getElementById('addonList');
         if (!addonList) return;
         var linkedIds = product.linked_addons || [];
-        if (!linkedIds.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
+        if (!linkedIds.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">No add-ons available</p>'; return; }
         try {
             var dRes = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'addons_details');
             allAddonDetails = {};
@@ -763,12 +899,12 @@
             var result = await supabaseClient.from('addons').select('*').in('id', linkedIds).eq('is_active', true);
             if (result.error) throw result.error;
             allAddons = result.data || [];
-            if (!allAddons.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
+            if (!allAddons.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">No add-ons available</p>'; return; }
             var html = '';
             for (var i = 0; i < allAddons.length; i++) {
                 var a = allAddons[i];
-                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + (a.name_zh || '') + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji"><\/span>';
-                html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()">' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><button type="button" class="addon-detail-btn" onclick="event.preventDefault();event.stopPropagation();showAddonDetail(' + a.id + ')">詳情<\/button><\/label>';
+                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + (a.name_en || a.name_zh || '') + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji"><\/span>';
+                html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()">' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_en || a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><button type="button" class="addon-detail-btn" onclick="event.preventDefault();event.stopPropagation();showAddonDetail(' + a.id + ')">Details<\/button><\/label>';
             }
             addonList.innerHTML = html;
         } catch (err) {
@@ -783,20 +919,20 @@
         if (!a) return;
         var d = (allAddonDetails && allAddonDetails[String(addonId)]) ? allAddonDetails[String(addonId)] : {};
         var rows = '';
-        if (d.material) rows += '<div class="addon-detail-spec"><span class="spec-k">材質<\/span><span class="spec-v">' + d.material + '<\/span><\/div>';
-        if (d.origin) rows += '<div class="addon-detail-spec"><span class="spec-k">產地<\/span><span class="spec-v">' + d.origin + '<\/span><\/div>';
-        if (d.size) rows += '<div class="addon-detail-spec"><span class="spec-k">規格<\/span><span class="spec-v">' + d.size + '<\/span><\/div>';
-        var desc = d.description || '';
+        if (d.material_en) rows += '<div class="addon-detail-spec"><span class="spec-k">Material<\/span><span class="spec-v">' + d.material_en + '<\/span><\/div>';
+        if (d.origin_en) rows += '<div class="addon-detail-spec"><span class="spec-k">Origin<\/span><span class="spec-v">' + d.origin_en + '<\/span><\/div>';
+        if (d.size_en) rows += '<div class="addon-detail-spec"><span class="spec-k">Size<\/span><span class="spec-v">' + d.size_en + '<\/span><\/div>';
+        var desc = d.description_en || '';
         var html = '<div class="addon-detail-overlay" onclick="if(event.target===this)closeAddonDetail()"><div class="addon-detail-modal"><div class="addon-detail-modal-wrap">';
         html += '<button class="addon-detail-close" onclick="closeAddonDetail()">×<\/button>';
-        if (a.image_url) html += '<img class="addon-detail-img" src="' + a.image_url + '" alt="' + (a.name_zh || '') + '">';
+        if (a.image_url) html += '<img class="addon-detail-img" src="' + a.image_url + '" alt="' + (a.name_en || a.name_zh || '') + '">';
         html += '<div class="addon-detail-body">';
-        html += '<div class="addon-detail-title">' + (a.name_zh || '') + '<\/div>';
-        if (a.name_en) html += '<div class="addon-detail-subtitle">' + a.name_en + '<\/div>';
+        html += '<div class="addon-detail-title">' + (a.name_en || a.name_zh || '') + '<\/div>';
+        if (a.name_zh && a.name_zh !== (a.name_en || '')) html += '<div class="addon-detail-subtitle">' + a.name_zh + '<\/div>';
         html += '<div class="addon-detail-price">HK$' + a.price + '<\/div>';
         if (desc) html += '<div class="addon-detail-desc">' + desc + '<\/div>';
         html += rows || '';
-        html += '<div style="margin-top:18px;"><button class="add-to-cart-btn" style="padding:12px;font-size:15px;" onclick="closeAddonDetail()">關閉<\/button><\/div>';
+        html += '<div style="margin-top:18px;"><button class="add-to-cart-btn" style="padding:12px;font-size:15px;" onclick="closeAddonDetail()">Close<\/button><\/div>';
         html += '<\/div><\/div><\/div><\/div>';
         var wrap = document.createElement('div');
         wrap.innerHTML = html;
@@ -831,7 +967,7 @@
             else thumb.classList.remove('active');
         });
     }
-    // 圖片點擊放大（Lightbox）
+    // Click-to-zoom Lightbox
     var lightboxBuilt = false;
     function ensureLightbox() {
         if (lightboxBuilt) return;
@@ -839,11 +975,11 @@
         var box = document.createElement('div');
         box.className = 'lightbox';
         box.id = 'productLightbox';
-        box.innerHTML = '<span class="lightbox-hint">點擊圖片可切換，按 Esc 或點擊空白關閉</span>'
-            + '<button class="lightbox-close" aria-label="關閉">×</button>'
-            + '<button class="lightbox-nav lightbox-prev" aria-label="上一張">‹</button>'
-            + '<img class="lightbox-img" id="lightboxImg" src="" alt="商品細節放大圖">'
-            + '<button class="lightbox-nav lightbox-next" aria-label="下一張">›</button>'
+        box.innerHTML = '<span class="lightbox-hint">Tap to switch images · Press Esc or tap outside to close</span>'
+            + '<button class="lightbox-close" aria-label="Close">×</button>'
+            + '<button class="lightbox-nav lightbox-prev" aria-label="Previous">‹</button>'
+            + '<img class="lightbox-img" id="lightboxImg" src="" alt="Product detail enlarged">'
+            + '<button class="lightbox-nav lightbox-next" aria-label="Next">›</button>'
             + '<div class="lightbox-counter" id="lightboxCounter"></div>';
         document.body.appendChild(box);
         var lb = document.getElementById('productLightbox');
@@ -934,7 +1070,7 @@
         recordView(currentProduct.id);
         var recommendSection = document.createElement('div');
         recommendSection.className = 'recommend-section';
-        recommendSection.innerHTML = '<div class="recommend-title">你可能也喜歡</div><div class="recommend-grid" id="recommendGrid"><div style="grid-column:1/-1;text-align:center;padding:20px;">載入中...</div></div>';
+        recommendSection.innerHTML = '<div class="recommend-title">You May Also Like</div><div class="recommend-grid" id="recommendGrid"><div style="grid-column:1/-1;text-align:center;padding:20px;">Loading...</div></div>';
         var parentContainer = container ? container.parentNode : document.querySelector('.detail-page');
         if (parentContainer) parentContainer.appendChild(recommendSection);
 
@@ -1029,7 +1165,7 @@
 
     function getCurrentVariantName() {
         if (productVariants.length > 0 && selectedVariantIndex >= 0 && productVariants[selectedVariantIndex]) {
-            return productVariants[selectedVariantIndex].variant_name || '';
+            return translateVariantName(productVariants[selectedVariantIndex].variant_name || '');
         }
         return '';
     }
@@ -1060,7 +1196,7 @@
             }
         });
         var total = (getCurrentPrice() + addonTotal) * quantity;
-        document.getElementById('totalDisplay').textContent = '總計：' + siteMoney(total);
+        document.getElementById('totalDisplay').textContent = 'Total: ' + siteMoney(total);
     }
 
     function handleAddToCart() {
@@ -1084,8 +1220,7 @@
             emoji: currentProduct.emoji || '',
             quantity: quantity,
             addons: addons,
-            deliveryDays: currentProduct.delivery_days || 1,
-            isPreorder: currentProduct.stock !== '現貨'
+            deliveryDays: currentProduct.delivery_days || 1
         });
         localStorage.setItem('royalspl_cart', JSON.stringify(cart));
         updateCartBadge();
@@ -1106,7 +1241,7 @@
         
         var toast = document.createElement('div');
         toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;';
-        toast.textContent = '✓ ' + currentProduct.name_zh + ' 已加入購物車';
+        toast.textContent = '✓ ' + (currentProduct.name_en || currentProduct.name_zh) + ' added to cart';
         document.body.appendChild(toast);
         setTimeout(function() { toast.remove(); }, 2500);
     }
@@ -1121,7 +1256,7 @@
                 if (addon) addons.push({ id: addon.id, name: addon.name_zh, price: addon.price });
             }
         });
-        // 立即購買：只買當前這一件（含所選配件），直接去結帳，不影響原本購物車
+        // Buy Now：只買當前這一件（含所選配件），直接去結帳，不影響原本Shopping Cart
         var buyNowItems = [{
             productId: currentProduct.id,
             name: currentProduct.name_zh,
@@ -1131,8 +1266,7 @@
             emoji: currentProduct.emoji || '',
             quantity: quantity,
             addons: addons,
-            deliveryDays: currentProduct.delivery_days || 1,
-            isPreorder: currentProduct.stock !== '現貨'
+            deliveryDays: currentProduct.delivery_days || 1
         }];
         sessionStorage.setItem('royalspl_buynow', JSON.stringify(buyNowItems));
         window.location.href = 'buynow.html';
@@ -1195,7 +1329,7 @@
         } catch(e) { console.log('花材護理知識加载失败:', e); }
     }
 
-    // 配送規則：本地 + 全球（從後台 global_shipping_zones 動態生成）
+    // Delivery Policy: Local + Worldwide (generated from global_shipping_zones)
     async function loadDeliveryRulesContent() {
         const el = document.getElementById('deliveryContent');
         if (!el) return;
@@ -1206,12 +1340,12 @@
         } catch(e) { zones = null; }
         if (!zones || !zones.length) {
             zones = [
-                { zone: '亞洲', fees: { standard: 120, medium: 450, large: 900, xl: 1800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2200 } },
-                { zone: '中東', fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 } },
-                { zone: '大洋洲', fees: { standard: 180, medium: 600, large: 1300, xl: 2600 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 } },
-                { zone: '北美洲', fees: { standard: 250, medium: 700, large: 1400, xl: 2800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 } },
-                { zone: '歐洲', fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 } },
-                { zone: '其他地區', fees: { standard: 300, medium: 800, large: 1600, xl: 3200 }, express: { standard: 350, medium: 800, large: 1600, xl: 2600 } }
+                { zone: 'Asia', fees: { standard: 120, medium: 450, large: 900, xl: 1800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2200 } },
+                { zone: 'Middle East', fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 } },
+                { zone: 'Oceania', fees: { standard: 180, medium: 600, large: 1300, xl: 2600 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 } },
+                { zone: 'North America', fees: { standard: 250, medium: 700, large: 1400, xl: 2800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 } },
+                { zone: 'Europe', fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 } },
+                { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600, xl: 3200 }, express: { standard: 350, medium: 800, large: 1600, xl: 2600 } }
             ];
         }
         let rows = '';
@@ -1219,33 +1353,33 @@
             const f = z.fees || {};
             rows += '<tr><td>' + z.zone + '</td><td>' + siteMoney(f.standard || 0) + '</td><td>' + siteMoney(f.medium || 0) + '</td><td>' + siteMoney(f.large || 0) + '</td><td>' + siteMoney(f.xl || 0) + '</td></tr>';
         });
-        // DHL 附加費暫時屏蔽（待價格確定後恢復）
-        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">地區</th><th style="padding:6px;border:1px solid #e5dccb;">S 碼</th><th style="padding:6px;border:1px solid #e5dccb;">M 碼</th><th style="padding:6px;border:1px solid #e5dccb;">L 碼</th><th style="padding:6px;border:1px solid #e5dccb;">XL 碼</th></tr>' + rows + '</table>' : '';
-        el.innerHTML = '<h4 style="margin:4px 0 6px;font-size:14px;">香港本地配送</h4>'
+        // DHL surcharge temporarily hidden (restore once pricing confirmed)
+        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">Region</th><th style="padding:6px;border:1px solid #e5dccb;">S</th><th style="padding:6px;border:1px solid #e5dccb;">M</th><th style="padding:6px;border:1px solid #e5dccb;">L</th><th style="padding:6px;border:1px solid #e5dccb;">XL</th></tr>' + rows + '</table>' : '';
+        el.innerHTML = '<h4 style="margin:4px 0 6px;font-size:14px;">Hong Kong Local Delivery</h4>'
             + '<ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.9;">'
-            + '<li>派送時間：每天 10:00–18:00，專人速遞配送</li>'
-            + '<li>訂單滿 HK$500：港島／九龍／新界市區免費送貨</li>'
-            + '<li>離島地區：另收 HK$300 附加費</li>'
-            + '<li>即日／緊急送貨及指定送貨時段：另收附加費（以結賬頁顯示為準）</li>'
-            + '<li>鮮花鑑賞期約 5–7 天，實際視環境、氣候、溫度而定</li>'
+            + '<li>Delivery hours: every day 10:00–18:00, courier delivery</li>'
+            + '<li>Free delivery on orders over HK$500 (HK Island / Kowloon / New Territories urban areas)</li>'
+            + '<li>Outlying islands: HK$300 surcharge</li>'
+            + '<li>Same-day / urgent delivery &amp; time slots: additional charge (as shown at checkout)</li>'
+            + '<li>Fresh flowers last approx. 5–7 days depending on environment</li>'
             + '</ul>'
-            + '<h4 style="margin:4px 0 6px;font-size:14px;">全球配送（乾花／永生花）</h4>'
-            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;">標示「全球配送」的商品可寄送至全球多個國家及地區。快遞運費按商品<b>尺寸</b>（S 碼／M 碼／L 碼／XL 碼）<b>及重量</b>與目的地地區計算：</p>'
-            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;"><b>尺寸以花藝整體高度計算（含花材延伸）：</b></p>'
+            + '<h4 style="margin:4px 0 6px;font-size:14px;">Worldwide Delivery (Dried &amp; Preserved Flowers)</h4>'
+            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;">Items marked "Global Delivery" ship worldwide. Shipping is charged by package <b>size</b> (S / M / L / XL) <b>and weight</b> plus destination region:</p>'
+            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;"><b>Size is based on the overall height of the arrangement (including extending stems):</b></p>'
             + '<ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.9;">'
-            + '<li>小件 S：高度 ≤ 50cm（最長 50cm）</li>'
-            + '<li>中件 M：高度 50–80cm（最長 80cm）</li>'
-            + '<li>大件 L：高度 80–120cm（最長 120cm）</li>'
-            + '<li>加大件 XL：高度 120–160cm（最長 160cm）</li>'
+            + '<li>Size S: height ≤ 50cm (max 50cm)</li>'
+            + '<li>Size M: height 50–80cm (max 80cm)</li>'
+            + '<li>Size L: height 80–120cm (max 120cm)</li>'
+            + '<li>Size XL: height 120–160cm (max 160cm)</li>'
             + '</ul>'
             + table
-            + '<p style="margin:10px 0 6px;font-size:14px;line-height:1.8;background:#f7f1e8;border:1px solid #e5dccb;border-radius:6px;padding:10px 12px;"><b>全球免運</b>：全球配送訂單買滿 <b>US$1,000（HK$7,800）</b>即免運費，適用於所有地區。</p>'
-            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;">國際快遞預計 <b>7–14 個工作天</b>送達（實際以目的地海關及物流為準）。</p>'
-            + '<p style="margin:0;font-size:14px;line-height:1.8;">全球訂單僅支援 <b>信用卡／Apple Pay／Google Pay</b> 付款，不設現金或 FPS。結賬時選擇國家／地區即自動計算運費。</p>'
-            + '<p style="margin:10px 0 0;"><a href="delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">詳見完整配送規則 →</a></p>';
+            + '<p style="margin:10px 0 6px;font-size:14px;line-height:1.8;background:#f7f1e8;border:1px solid #e5dccb;border-radius:6px;padding:10px 12px;"><b>Free Worldwide Shipping</b>: Free shipping on global orders over <b>US$1,000 (HK$7,800)</b>, applicable to all regions.</p>'
+            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;">International courier: estimated <b>7–14 business days</b> (subject to destination customs &amp; logistics).</p>'
+            + '<p style="margin:0;font-size:14px;line-height:1.8;">International orders support <b>Credit Card / Apple Pay / Google Pay</b> only. Select your country at checkout for the fee.</p>'
+            + '<p style="margin:10px 0 0;"><a href="/en/delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">View full delivery policy →</a></p>';
     }
 
-    // 退換貨政策（與配送規則相同方法：後台 site_settings 數據 → 直接渲染富文本段落，無卡片包裝）
+    // Return & Refund Policy (same method as Delivery Rules: backend site_settings data -> direct rich-text paragraph render, no card wrapper)
     function renderReturnPolicyText(raw) {
         var txt = String(raw || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim();
         var paras = txt.split(/\r?\n/).map(function(s){ return s.trim(); }).filter(function(s){ return s; });
@@ -1262,18 +1396,16 @@
     async function loadReturnPolicyContent() {
         const el = document.getElementById('returnContent');
         if (!el) return;
-        var fallback = '是否接受退貨？\n本商品均包含天然植物、鮮花、乾花及永生花材，屬於手作易損及定制類藝品。依據國際消費慣例與相關法規，本商品售出後概不接受退換貨（不適用7天無理由退貨）。\n花材形狀、大小或色澤有差異算瑕疵嗎？\n每件花藝作品均由天然花材手作而成，花朵的姿態、大小及色澤微有差異屬自然現象，不屬於商品瑕疵或質量問題。\n運輸損壞如何處理？\n商品寄出前均經過畫廊級嚴格品質檢驗與防震包裝。若收到商品時發現因運輸造成的嚴重破損，請於簽收後 24 小時內拍照或錄影（需包含外箱與破損商品照片），並聯繫售後客服，我們將竭誠為您安排補發或相關售後處理。註：逾期提出或以「不符合想像」、「色差」、「個人喜好」等理由者，恕無法受理。';
+        var fallback = 'Do you accept returns?\nDue to the delicate, handcrafted, and natural character of our preserved and dried botanical creations, all sales are final. This product is non-returnable, non-refundable, and exempt from standard return periods.\nAre natural variations a defect?\nEach botanical piece is handcrafted using genuine dried and preserved florals. Natural variations in size, color, texture, and shape are inherent to the product and do not constitute defects.\nWhat if my item is damaged in transit?\nEvery arrangement undergoes strict inspection and reinforced packaging before dispatch. In the rare event that your item arrives damaged during transit, please inspect your order upon receipt and contact us within 24 hours of delivery, providing clear photos or a brief video showing both the damaged item and the original packaging. Our team will evaluate the request and gladly arrange a suitable resolution or replacement. Please note: Claims submitted after 24 hours or requests based on personal preference will not be eligible for replacement.';
         var raw = null;
         try {
-            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content').maybeSingle();
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content_en').maybeSingle();
             if (data && data.setting_value && data.setting_value.trim()) raw = data.setting_value;
-        } catch(e) { console.log('退換貨政策读取失败:', e); }
-        el.innerHTML = renderReturnPolicyText(raw || fallback) || '<p style="font-size:14px;color:#888;">暫無內容</p>';
+        } catch(e) { console.log('Return policy load failed:', e); }
+        el.innerHTML = renderReturnPolicyText(raw || fallback) || '<p style="font-size:14px;color:#888;">No content yet</p>';
     }
 
-document.addEventListener('DOMContentLoaded', function() {
-        siteInitCurrency();
-        siteRenderCurrencyBtn();
+document.addEventListener('DOMContentLoaded', function() {         siteInitCurrency();         siteRenderCurrencyBtn();
         loadProduct();
         updateCartBadge();
         loadFlowerCareContent();
@@ -1290,6 +1422,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }).catch(function() {});
     })();
     </script>
-        <script src="js/ai-chat-v2.js"></script>
+        <script src="/js/ai-chat-v2.js"></script>
 </body>
 </html>
