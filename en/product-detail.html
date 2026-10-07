@@ -1248,7 +1248,7 @@ function renderProductDetail(product) {
             + '<p style="margin:0;">Please note: Claims submitted after 24 hours or requests based on personal preference will not be eligible for replacement.</p>'
             + '</div>';
         try {
-            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content').maybeSingle();
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content_en').maybeSingle();
             if (data && data.setting_value && data.setting_value.trim()) { el.innerHTML = data.setting_value; return; }
         } catch(e) { console.log('Return policy load failed:', e); }
         el.innerHTML = fallback;
