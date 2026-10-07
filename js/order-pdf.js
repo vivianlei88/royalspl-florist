@@ -61,7 +61,7 @@ function buildPdfHtml(o) {
             var img = it.image || it.image_url || (images && images[i]) || '';
             var q = it.quantity || 1;
             var pr = (it.price != null && it.price !== '') ? parseFloat(it.price) : 0;
-            rows += orderItemRow(img, nm, q, pr);
+            rows += orderItemRow(img, nm, q, pr, o);
             itemCount++;
         }
     } else if (names) {
@@ -69,7 +69,7 @@ function buildPdfHtml(o) {
             if (!names[j]) continue;
             var img2 = (images && images[j]) || '';
             var unitPrice = o.subtotal ? (parseFloat(o.subtotal) / names.filter(Boolean).length) : 0;
-            rows += orderItemRow(img2, names[j], 1, unitPrice);
+            rows += orderItemRow(img2, names[j], 1, unitPrice, o);
             itemCount++;
         }
     } else {
@@ -158,10 +158,10 @@ function buildPdfHtml(o) {
 
         // 金額合計
         + '<table style="width:58%;margin-left:auto;margin-top:14px;font-size:13px;border-collapse:collapse;">'
-        + '<tr><td style="padding:5px 0;">小計：</td><td style="padding:5px 0;text-align:right;">HK$' + fmtMoney(o.subtotal) + '</td></tr>'
-        + '<tr><td style="padding:5px 0;">運費：</td><td style="padding:5px 0;text-align:right;">HK$' + fmtMoney(o.deliveryFee) + '</td></tr>'
-        + (o.discountAmount && parseFloat(o.discountAmount) > 0 ? '<tr><td style="padding:5px 0;color:#d32f2f;">折扣：</td><td style="padding:5px 0;text-align:right;color:#d32f2f;">-HK$' + fmtMoney(o.discountAmount) + '</td></tr>' : '')
-        + '<tr style="font-size:18px;font-weight:bold;"><td style="padding:8px 0;border-top:2px solid #333;">總計：</td><td style="padding:8px 0;border-top:2px solid #333;text-align:right;">HK$' + fmtMoney(o.total || o.totalAmount) + '</td></tr>'
+        + '<tr><td style="padding:5px 0;">小計：</td><td style="padding:5px 0;text-align:right;">' + orderMoneyText(o, o.subtotal) + '</td></tr>'
+        + '<tr><td style="padding:5px 0;">運費：</td><td style="padding:5px 0;text-align:right;">' + orderMoneyText(o, o.deliveryFee) + '</td></tr>'
+        + (o.discountAmount && parseFloat(o.discountAmount) > 0 ? '<tr><td style="padding:5px 0;color:#d32f2f;">折扣：</td><td style="padding:5px 0;text-align:right;color:#d32f2f;">-' + orderMoneyText(o, o.discountAmount) + '</td></tr>' : '')
+        + '<tr style="font-size:18px;font-weight:bold;"><td style="padding:8px 0;border-top:2px solid #333;">總計：</td><td style="padding:8px 0;border-top:2px solid #333;text-align:right;">' + orderMoneyText(o, o.total || o.totalAmount) + '</td></tr>'
         + '</table>'
 
         // 心意卡
@@ -178,7 +178,7 @@ function buildPdfHtml(o) {
         + '</div>';
 }
 
-function orderItemRow(img, name, q, pr) {
+function orderItemRow(img, name, q, pr, o) {
     var imgCell = '';
     if (img) {
         imgCell = '<img src="' + img + '" style="width:44px;height:44px;object-fit:cover;border-radius:4px;display:block;" onerror="this.style.display=\'none\';" />';
@@ -188,14 +188,24 @@ function orderItemRow(img, name, q, pr) {
     return '<tr><td style="padding:7px;border:1px solid #D8DEE6;text-align:center;">' + imgCell + '</td>'
         + '<td style="padding:7px;border:1px solid #D8DEE6;">' + name + '</td>'
         + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:center;">' + q + '</td>'
-        + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:right;">' + (pr ? 'HK$' + fmtMoney(pr) : '-') + '</td>'
-        + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:right;">' + (pr ? 'HK$' + fmtMoney(pr * q) : '-') + '</td></tr>';
+        + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:right;">' + (pr ? orderMoneyText(o, pr) : '-') + '</td>'
+        + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:right;">' + (pr ? orderMoneyText(o, pr * q) : '-') + '</td></tr>';
 }
 
 function fmtMoney(v) {
     if (v == null || v === '') return '0';
     var n = Number(v);
     return (Math.round(n)).toLocaleString('en-US');
+}
+
+// 國際配送訂單 → 美金顯示（固定匯率 7.8）；本地訂單 → 港幣（與結帳所見即所付一致）
+function orderMoneyText(o, v) {
+    if (v == null || v === '') return '-';
+    var n = Number(v) || 0;
+    if ((o.deliveryArea || '').indexOf('國際') === 0) {
+        return 'US$' + (Math.round(n / 7.8 * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    return 'HK$' + fmtMoney(n);
 }
 
 // ============================================
@@ -236,8 +246,8 @@ function buildOrderEmailHtml(o) {
                 + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:center;vertical-align:middle;">' + imgCell + '</td>'
                 + '<td style="padding:7px;border:1px solid #D8DEE6;vertical-align:middle;">' + r.name + '</td>'
                 + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:center;vertical-align:middle;">' + r.q + '</td>'
-                + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:right;vertical-align:middle;">' + (r.pr ? 'HK$' + fmtMoney(r.pr) : '-') + '</td>'
-                + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:right;vertical-align:middle;">' + (r.pr ? 'HK$' + fmtMoney(r.pr * r.q) : '-') + '</td>'
+                + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:right;vertical-align:middle;">' + (r.pr ? orderMoneyText(o, r.pr) : '-') + '</td>'
+                + '<td style="padding:7px;border:1px solid #D8DEE6;text-align:right;vertical-align:middle;">' + (r.pr ? orderMoneyText(o, r.pr * r.q) : '-') + '</td>'
                 + '</tr>';
         }
     } else {
@@ -293,15 +303,15 @@ function buildOrderEmailHtml(o) {
             ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;font-size:13px;border-collapse:collapse;">'
                 + '<tr><td colspan="2" style="background:#FBE9E7;padding:9px 12px;border:1px solid #E8B4B4;font-weight:bold;color:#c0392b;font-size:15px;">退款資料 / Refund Details</td></tr>'
                 + '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;width:110px;"><b>訂單編號</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;">' + e(o.orderCode) + '</td></tr>'
-                + '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;"><b>退款金額</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;font-weight:700;color:#c0392b;font-size:17px;">HK$' + fmtMoney(o.refundAmount) + '</td></tr>'
+                + '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;"><b>退款金額</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;font-weight:700;color:#c0392b;font-size:17px;">' + orderMoneyText(o, o.refundAmount) + '</td></tr>'
                 + '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;"><b>退款方式</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;">' + e(o.refundMethod) + '</td></tr>'
                 + (o.refundNote ? '<tr><td style="padding:8px 12px;border:1px solid #E8B4B4;background:#FAFAFA;"><b>備註</b></td><td style="padding:8px 12px;border:1px solid #E8B4B4;">' + o.refundNote + '</td></tr>' : '')
                 + '<tr><td colspan="2" style="padding:8px 12px;border:1px solid #E8B4B4;color:#666;font-size:12px;">' + (o.refundMessage || '款項將按原付款方式退回，一般 3-10 個工作日到賬。Your refund is being processed via the original payment method, typically 3-10 business days.') + '</td></tr>'
             + '</table>'
             : '<table role="presentation" width="58%" cellpadding="0" cellspacing="0" align="right" style="font-size:13px;margin-top:14px;">'
-                + '<tr><td style="padding:4px 0;">商品小計：</td><td style="padding:4px 0;text-align:right;">HK$' + fmtMoney(o.subtotal) + '</td></tr>'
-                + '<tr><td style="padding:4px 0;">配送費：</td><td style="padding:4px 0;text-align:right;">HK$' + fmtMoney(o.deliveryFee) + '</td></tr>'
-                + '<tr style="font-size:17px;font-weight:bold;"><td style="padding:6px 0;border-top:1px solid #ccc;">總計：</td><td style="padding:6px 0;border-top:1px solid #ccc;text-align:right;">HK$' + fmtMoney(o.total) + '</td></tr>'
+                + '<tr><td style="padding:4px 0;">商品小計：</td><td style="padding:4px 0;text-align:right;">' + orderMoneyText(o, o.subtotal) + '</td></tr>'
+                + '<tr><td style="padding:4px 0;">配送費：</td><td style="padding:4px 0;text-align:right;">' + orderMoneyText(o, o.deliveryFee) + '</td></tr>'
+                + '<tr style="font-size:17px;font-weight:bold;"><td style="padding:6px 0;border-top:1px solid #ccc;">總計：</td><td style="padding:6px 0;border-top:1px solid #ccc;text-align:right;">' + orderMoneyText(o, o.total) + '</td></tr>'
             + '</table>')
         + (o.cardMessage ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;"><tr><td style="background:#FFF8E1;padding:10px 14px;border-left:4px solid #FFC107;font-size:13px;"><b>心意卡：</b>' + o.cardMessage + '</td></tr></table>' : '')
         + (o.remarks ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;"><tr><td style="background:#F0F4F8;padding:10px 14px;border-left:4px solid #8BC8EA;font-size:13px;"><b>特別事項：</b>' + o.remarks + '</td></tr></table>' : '')
