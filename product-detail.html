@@ -1133,10 +1133,10 @@
         let rows = '';
         (zones || []).forEach(function(z) {
             const f = z.fees || {};
-            const e = z.express || {};
-            rows += '<tr><td>' + z.zone + '</td><td>' + siteMoney(f.standard || 0) + '</td><td>' + siteMoney(f.medium || 0) + '</td><td>' + siteMoney(f.large || 0) + '</td><td>' + siteMoney(f.xl || 0) + '</td><td>+' + siteMoney(e.standard || 0) + ' / ' + siteMoney(e.medium || 0) + ' / ' + siteMoney(e.large || 0) + ' / ' + siteMoney(e.xl || 0) + '</td></tr>';
+            rows += '<tr><td>' + z.zone + '</td><td>' + siteMoney(f.standard || 0) + '</td><td>' + siteMoney(f.medium || 0) + '</td><td>' + siteMoney(f.large || 0) + '</td><td>' + siteMoney(f.xl || 0) + '</td></tr>';
         });
-        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">地區</th><th style="padding:6px;border:1px solid #e5dccb;">S 碼</th><th style="padding:6px;border:1px solid #e5dccb;">M 碼</th><th style="padding:6px;border:1px solid #e5dccb;">L 碼</th><th style="padding:6px;border:1px solid #e5dccb;">XL 碼</th><th style="padding:6px;border:1px solid #e5dccb;">DHL 附加費</th></tr>' + rows + '</table>' : '';
+        // DHL 附加費暫時屏蔽（待價格確定後恢復）
+        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">地區</th><th style="padding:6px;border:1px solid #e5dccb;">S 碼</th><th style="padding:6px;border:1px solid #e5dccb;">M 碼</th><th style="padding:6px;border:1px solid #e5dccb;">L 碼</th><th style="padding:6px;border:1px solid #e5dccb;">XL 碼</th></tr>' + rows + '</table>' : '';
         el.innerHTML = '<h4 style="margin:4px 0 6px;font-size:14px;">香港本地配送</h4>'
             + '<ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.9;">'
             + '<li>派送時間：每天 10:00–18:00，專人速遞配送</li>'
@@ -1155,7 +1155,6 @@
             + '<li>加大件 XL：高度 120–160cm（最長 160cm）</li>'
             + '</ul>'
             + table
-            + '<p style="margin:6px 0;font-size:14px;line-height:1.8;">⚡ <b>DHL 特快配送</b>：2–3 天送達，加收附加費（S 碼 +' + siteMoney(350) + '／M 碼 +' + siteMoney(800) + '／L 碼 +' + siteMoney(1600) + '／XL 碼 +' + siteMoney(2200) + ' 起，以結賬頁為準）。</p>'
             + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;">國際快遞預計 <b>7–14 個工作天</b>送達（實際以目的地海關及物流為準）。</p>'
             + '<p style="margin:0;font-size:14px;line-height:1.8;">全球訂單僅支援 <b>信用卡／Apple Pay／Google Pay</b> 付款，不設現金或 FPS。結賬時選擇國家／地區即自動計算運費。</p>'
             + '<p style="margin:10px 0 0;"><a href="delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">詳見完整配送規則 →</a></p>';
