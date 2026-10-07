@@ -1036,9 +1036,9 @@
                     const sur = getZoneExpressByTier(z, tier);
                     const expressTotal = fee + sur;
                     if (z.freeAbove && getSubtotal() >= z.freeAbove) {
-                        info.textContent = '✓ Free shipping over ' + siteMoney(z.freeAbove) + ' (' + zoneLabel + ')';
+                        info.textContent = '✓ Free Worldwide Shipping: orders over US$1,000 (HK$7,800) ship free (' + zoneLabel + ')';
                     } else {
-                        info.textContent = 'Shipping: ' + siteMoney(fee) + ' (' + zoneLabel + ')' + (sur ? '; DHL +' + siteMoney(sur) + ' → ' + siteMoney(expressTotal) : '') + (z.freeAbove ? ', free over ' + siteMoney(z.freeAbove) : '');
+                        info.textContent = 'Shipping: ' + siteMoney(fee) + ' (' + zoneLabel + ')' + (sur ? '; DHL +' + siteMoney(sur) + ' → ' + siteMoney(expressTotal) : '') + (z.freeAbove ? ', free over US$1,000 (HK$7,800)' : '');
                     }
                 }
             }

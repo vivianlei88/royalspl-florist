@@ -1044,7 +1044,7 @@
                     const sur = getZoneExpressByTier(z, tier);
                     const expressTotal = fee + sur;
                     if (z.freeAbove && getSubtotal() >= z.freeAbove) {
-                        info.textContent = '✓ 滿 ' + siteMoney(z.freeAbove) + ' 免運費（' + zoneName + '）';
+                        info.textContent = '✓ 全球免運：訂單滿 US$1,000（HK$7,800）即免運費（' + zoneName + '）';
                     } else {
                         var rows = '';
                         rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;"><span>普通國際快遞（7–14 個工作天）</span><b>' + siteMoney(fee) + '</b></div>';
@@ -1052,7 +1052,7 @@
                             rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;"><span>DHL 特快配送（3–5 天送達）</span><b>+' + siteMoney(sur) + '</b></div>';
                             rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;border-top:1px dashed rgba(26,26,26,0.25);margin-top:4px;"><span>合計運費</span><b>' + siteMoney(expressTotal) + '</b></div>';
                         }
-                        if (z.freeAbove) { rows += '<div style="font-size:13px;color:#8a6d1a;margin-top:6px;">滿 ' + siteMoney(z.freeAbove) + ' 免運費</div>'; }
+                        if (z.freeAbove) { rows += '<div style="font-size:13px;color:#8a6d1a;margin-top:6px;">滿 US$1,000（HK$7,800）免運費</div>'; }
                         info.innerHTML = rows;
                     }
                 }
