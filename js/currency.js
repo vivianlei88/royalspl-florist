@@ -64,15 +64,39 @@
     } catch (e) {}
   };
 
-  // 渲染頁頭幣種切換按鈕（掛到指定容器；容器缺省自動找）
+  // 渲染頁頭幣種切換（單按鈕 + 彈窗選擇）
   window.siteRenderCurrencyBtn = function (container) {
     var host = container || document;
     var wrap = host.querySelector('.site-currency-switch');
     if (!wrap) return;
+    if (wrap.getAttribute('data-cur-rendered')) return;
+    wrap.setAttribute('data-cur-rendered', '1');
     var cur = current();
+    var label = cur === 'usd' ? 'US$' : 'HK$';
+    wrap.style.position = 'relative';
     wrap.innerHTML =
-      '<a href="javascript:void(0)" onclick="siteSetCurrency(\'hkd\')" style="text-decoration:none;font-size:15px;font-weight:' + (cur === 'hkd' ? '800' : '400') + ';color:' + (cur === 'hkd' ? '#1A1A1A' : '#8A8A8A') + ';padding:2px 6px;">HK$</a>' +
-      '<span style="color:#BDBDBD;">|</span>' +
-      '<a href="javascript:void(0)" onclick="siteSetCurrency(\'usd\')" style="text-decoration:none;font-size:15px;font-weight:' + (cur === 'usd' ? '800' : '400') + ';color:' + (cur === 'usd' ? '#1A1A1A' : '#8A8A8A') + ';padding:2px 6px;">US$</a>';
+      '<a href="javascript:void(0)" class="cur-switch-btn" aria-haspopup="true">' + label +
+      '<svg class="cur-caret" width="8" height="5" viewBox="0 0 8 5" aria-hidden="true"><path d="M0 0l4 5 4-5z" fill="currentColor"/></svg>' +
+      '</a>' +
+      '<div class="cur-pop" role="menu">' +
+      '<div class="cur-opt" role="menuitem" data-cur="hkd">港幣 HK$</div>' +
+      '<div class="cur-opt" role="menuitem" data-cur="usd">美金 US$</div>' +
+      '</div>';
+    var btn = wrap.querySelector('.cur-switch-btn');
+    var pop = wrap.querySelector('.cur-pop');
+    function hide() { pop.style.display = 'none'; }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      pop.style.display = pop.style.display === 'none' ? 'block' : 'none';
+    });
+    pop.querySelectorAll('.cur-opt').forEach(function (o) {
+      o.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var c = o.getAttribute('data-cur');
+        hide();
+        if (c && c !== current()) window.siteSetCurrency(c);
+      });
+    });
+    document.addEventListener('click', hide);
   };
 })();
