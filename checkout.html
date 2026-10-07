@@ -449,11 +449,12 @@
             </div>
             <p id="globalShippingInfo" class="global-fee-card">請選擇國家 / 地區以計算運費</p>
             <p class="global-note">全球商品（乾花 / 永生花）以普通國際快遞寄送，預計送達時間：7–14 個工作天（實際以目的地海關及物流為準）</p>
-            <label style="display:flex;align-items:center;gap:10px;margin:12px 0 6px;font-size:16px;cursor:pointer;background:#fff;border:2px solid rgba(26,26,26,0.2);border-radius:8px;padding:15px 18px;">
+            <!-- DHL 選項暫時屏蔽（待價格確定後恢復）：style="display:none" -->
+            <label style="display:none;align-items:center;gap:10px;margin:12px 0 6px;font-size:16px;cursor:pointer;background:#fff;border:2px solid rgba(26,26,26,0.2);border-radius:8px;padding:15px 18px;">
                 <input type="checkbox" id="globalExpressCheck" onchange="toggleGlobalExpress(this.checked)" style="width:22px;height:22px;accent-color:#1A1A1A;flex-shrink:0;">
                 <span>DHL 特快配送（3–5 天送達）<b id="expressSurchargeLabel">+HK$0</b></span>
             </label>
-            <p class="global-note" style="margin-top:8px;">如需特快配送，請√選「DHL 特快配送」附加費</p>
+            <p class="global-note" style="display:none;margin-top:8px;">如需特快配送，請√選「DHL 特快配送」附加費</p>
         </div>
         </div>
 
