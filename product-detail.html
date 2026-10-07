@@ -84,6 +84,21 @@
         .addon-info { flex: 1; }
         .addon-name { font-size: 14px; font-weight: 600; }
         .addon-price { font-size: 13px; color: #383431; }
+        .addon-detail-btn { display: inline-block; font-size: 12px; color: #1A1A1A; border: 1px solid #1A1A1A; border-radius: 20px; padding: 5px 14px; background: transparent; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .addon-detail-btn:hover { background: #1A1A1A; color: #FAF8F5; }
+        .addon-detail-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .addon-detail-modal { background: #FAF8F5; border-radius: 14px; max-width: 420px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 0; box-shadow: 0 12px 40px rgba(0,0,0,0.18); }
+        .addon-detail-modal img.addon-detail-img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 14px 14px 0 0; display: block; }
+        .addon-detail-body { padding: 18px 20px 22px; }
+        .addon-detail-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .addon-detail-subtitle { font-size: 13px; color: #8a857f; margin-bottom: 12px; }
+        .addon-detail-price { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+        .addon-detail-desc { font-size: 14px; color: #383431; line-height: 1.7; margin-bottom: 16px; white-space: pre-line; }
+        .addon-detail-spec { display: flex; gap: 10px; padding: 10px 0; border-top: 1px solid #ECE7E0; font-size: 14px; }
+        .addon-detail-spec .spec-k { flex: 0 0 64px; color: #8a857f; }
+        .addon-detail-spec .spec-v { flex: 1; color: #1A1A1A; }
+        .addon-detail-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.35); color: #fff; border: none; font-size: 18px; line-height: 1; cursor: pointer; z-index: 5; }
+        .addon-detail-modal-wrap { position: relative; width: 100%; }
         .quantity-selector { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
         .qty-btn { width: 40px; height: 40px; border: 1px solid #1A1A1A; background: transparent; font-size: 20px; cursor: pointer; border-radius: 5px; }
         .qty-display { font-size: 20px; font-weight: 600; min-width: 40px; text-align: center; }
@@ -723,6 +738,7 @@
 
     var allAddons = [];
     var selectedAddonIds = [];
+    var allAddonDetails = {};
 
     async function loadLinkedAddons(product) {
         var addonList = document.getElementById('addonList');
@@ -730,6 +746,9 @@
         var linkedIds = product.linked_addons || [];
         if (!linkedIds.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
         try {
+            var dRes = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'addons_details');
+            allAddonDetails = {};
+            if (dRes.data && dRes.data.length && dRes.data[0].setting_value) { try { allAddonDetails = JSON.parse(dRes.data[0].setting_value) || {}; } catch (e) { allAddonDetails = {}; } }
             var result = await supabaseClient.from('addons').select('*').in('id', linkedIds).eq('is_active', true);
             if (result.error) throw result.error;
             allAddons = result.data || [];
@@ -737,14 +756,44 @@
             var html = '';
             for (var i = 0; i < allAddons.length; i++) {
                 var a = allAddons[i];
-                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + a.name + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji"><\/span>';
-                html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()"><\/span>' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><\/label>';
+                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + (a.name_zh || '') + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji"><\/span>';
+                html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()">' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><button type="button" class="addon-detail-btn" onclick="event.preventDefault();event.stopPropagation();showAddonDetail(' + a.id + ')">詳情<\/button><\/label>';
             }
             addonList.innerHTML = html;
         } catch (err) {
             console.error('載入加購配件失敗:', err);
             addonList.innerHTML = '';
         }
+    }
+
+    function showAddonDetail(addonId) {
+        var a = null;
+        for (var i = 0; i < allAddons.length; i++) { if (allAddons[i].id === addonId) { a = allAddons[i]; break; } }
+        if (!a) return;
+        var d = (allAddonDetails && allAddonDetails[String(addonId)]) ? allAddonDetails[String(addonId)] : {};
+        var rows = '';
+        if (d.material) rows += '<div class="addon-detail-spec"><span class="spec-k">材質<\/span><span class="spec-v">' + d.material + '<\/span><\/div>';
+        if (d.origin) rows += '<div class="addon-detail-spec"><span class="spec-k">產地<\/span><span class="spec-v">' + d.origin + '<\/span><\/div>';
+        if (d.size) rows += '<div class="addon-detail-spec"><span class="spec-k">規格<\/span><span class="spec-v">' + d.size + '<\/span><\/div>';
+        var desc = d.description || '';
+        var html = '<div class="addon-detail-overlay" onclick="if(event.target===this)closeAddonDetail()"><div class="addon-detail-modal"><div class="addon-detail-modal-wrap">';
+        html += '<button class="addon-detail-close" onclick="closeAddonDetail()">×<\/button>';
+        if (a.image_url) html += '<img class="addon-detail-img" src="' + a.image_url + '" alt="' + (a.name_zh || '') + '">';
+        html += '<div class="addon-detail-body">';
+        html += '<div class="addon-detail-title">' + (a.name_zh || '') + '<\/div>';
+        if (a.name_en) html += '<div class="addon-detail-subtitle">' + a.name_en + '<\/div>';
+        html += '<div class="addon-detail-price">HK$' + a.price + '<\/div>';
+        if (desc) html += '<div class="addon-detail-desc">' + desc + '<\/div>';
+        html += rows || '';
+        html += '<div style="margin-top:18px;"><button class="add-to-cart-btn" style="padding:12px;font-size:15px;" onclick="closeAddonDetail()">關閉<\/button><\/div>';
+        html += '<\/div><\/div><\/div><\/div>';
+        var wrap = document.createElement('div');
+        wrap.innerHTML = html;
+        document.body.appendChild(wrap.firstChild);
+    }
+    function closeAddonDetail() {
+        var ov = document.querySelector('.addon-detail-overlay');
+        if (ov) ov.remove();
     }
 
 
