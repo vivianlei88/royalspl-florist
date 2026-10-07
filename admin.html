@@ -396,6 +396,20 @@
 
     </style>
     <style>
+        /* 問答卡片編輯器（前台常見問題同款排版） */
+        .faq-edit-card { background: #fff; border: 1px solid #ede8e2; border-radius: 14px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: box-shadow .2s; }
+        .faq-edit-card.open { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .faq-edit-q { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; cursor: pointer; user-select: none; }
+        .q-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 14px; background: #1A1A1A; color: #FAF8F5; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; box-sizing: border-box; }
+        .q-toggle { color: #9a8a78; flex-shrink: 0; font-size: 20px; font-weight: 300; line-height: 1.3; transition: transform .25s ease; }
+        .faq-edit-card.open .q-toggle { transform: rotate(45deg); }
+        .faq-edit-title { flex: 1; font-weight: 600; color: #1A1A1A; font-size: 15px; line-height: 1.5; }
+        .faq-edit-a { display: none; padding: 0 18px 18px 18px; }
+        .faq-edit-card.open .faq-edit-a { display: block; animation: faqFade .25s ease; }
+        .faq-edit-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; margin-bottom: 8px; }
+        .faq-edit-textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; resize: vertical; line-height: 1.6; }
+        .faq-edit-hint { font-size: 12px; color: #999; margin: 8px 0 4px; }
+        @keyframes faqFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         .sidebar-group { position: relative; margin-bottom: 5px; }
         .sidebar-group-header { display: flex; justify-content: space-between; align-items: center; }
         .settings-arrow { font-size: 10px; transition: transform 0.2s; }
@@ -1843,9 +1857,129 @@
     }
 
 
-    // ==================== 常見問題 / 私隱政策編輯 ====================
+    // ==================== 問答卡片編輯器（前台常見問題同款排版）====================
+    var faqCardEditorState = {};
+    function faqEscapeHtml(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function faqParseQa(raw) {
+        var txt = String(raw || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim();
+        var paras = txt.split(/\n\s*\n|\r?\n/).map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+        var faqs = [], i = 0;
+        while (i < paras.length) {
+            var q = paras[i];
+            if (/[？?]/.test(q)) {
+                var ans = [], j = i + 1;
+                while (j < paras.length && !/[？?]$/.test(paras[j])) { ans.push(paras[j]); j++; }
+                faqs.push({ question: q, answer: ans.join('\n') });
+                i = j;
+            } else { i++; }
+        }
+        return faqs;
+    }
+    function faqSerializeHtml(faqs) {
+        var html = '';
+        (faqs || []).forEach(function(faq) {
+            var q = (faq.question || '').trim();
+            if (!q) return;
+            html += '<p>' + faqEscapeHtml(q) + '</p>';
+            String(faq.answer || '').split('\n').forEach(function(line) {
+                var l = line.trim();
+                if (l) html += '<p>' + faqEscapeHtml(l) + '</p>';
+            });
+        });
+        return html;
+    }
+    function faqCardToggle(containerId, idx) { var st = faqCardEditorState[containerId]; if (st) { st.expanded = idx; faqCardPaint(containerId); } }
+    function faqCardSet(containerId, idx, field, value) { var st = faqCardEditorState[containerId]; if (st && st.faqs[idx]) st.faqs[idx][field] = value; }
+    function faqCardDel(containerId, idx) {
+        var st = faqCardEditorState[containerId]; if (!st) return;
+        st.faqs.splice(idx, 1);
+        if (st.expanded >= st.faqs.length) st.expanded = Math.max(0, st.faqs.length - 1);
+        faqCardPaint(containerId);
+    }
+    function faqCardAdd(containerId) {
+        var st = faqCardEditorState[containerId]; if (!st) return;
+        st.faqs.push({ question: '', answer: '' });
+        st.expanded = st.faqs.length - 1;
+        faqCardPaint(containerId);
+    }
+    function faqCardPaint(containerId) {
+        var st = faqCardEditorState[containerId] || { faqs: [], expanded: 0 };
+        var cn = ['一','二','三','四','五','六','七','八','九','十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十'];
+        var html = '';
+        st.faqs.forEach(function(faq, idx) {
+            var open = (idx === st.expanded) ? ' open' : '';
+            var num = cn[idx] || (idx + 1);
+            html += '<div class="faq-edit-card' + open + '">'
+                + '<div class="faq-edit-q" onclick="faqCardToggle(\'' + containerId + '\',' + idx + ')">'
+                + '<span class="q-badge">' + num + '</span>'
+                + '<span class="faq-edit-title">' + (faq.question ? faqEscapeHtml(faq.question) : '（未填寫問題）') + '</span>'
+                + '<span class="q-toggle">+</span>'
+                + '</div>'
+                + '<div class="faq-edit-a">'
+                + '<input type="text" class="faq-edit-input" placeholder="問題（以？結尾）" value="' + faqEscapeHtml(faq.question) + '" oninput="faqCardSet(\'' + containerId + '\',' + idx + ',\'q\',this.value)">'
+                + '<textarea class="faq-edit-textarea" rows="4" placeholder="答案內容" oninput="faqCardSet(\'' + containerId + '\',' + idx + ',\'a\',this.value)">' + faqEscapeHtml(faq.answer) + '</textarea>'
+                + '<div style="text-align:right;"><button class="btn btn-small btn-secondary" onclick="faqCardDel(\'' + containerId + '\',' + idx + ')">刪除本條</button></div>'
+                + '</div>'
+                + '</div>';
+        });
+        if (!st.faqs.length) html += '<div style="padding:16px 18px;color:#888;font-size:14px;text-align:center;">尚未有問答，點擊下方「新增問題」開始編輯</div>';
+        html += '<button class="btn btn-primary" style="margin-top:12px;" onclick="faqCardAdd(\'' + containerId + '\')">+ 新增問題</button>';
+        document.getElementById(containerId).innerHTML = html;
+    }
+    function faqCardInit(containerId, raw) {
+        faqCardEditorState[containerId] = { faqs: faqParseQa(raw), expanded: 0 };
+        faqCardPaint(containerId);
+    }
+
+    // ==================== 常見問題（問答卡片編輯）====================
     async function renderFaqPage(c) {
-        await renderContentEditorPage(c, 'faq', '常見問題', 'faq');
+        let content = '', enContent = '', seo_title = '', seo_description = '';
+        try {
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'faq_content').maybeSingle();
+            if (data) content = data.setting_value || '';
+            const { data: enData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'faq_content_en').maybeSingle();
+            if (enData) enContent = enData.setting_value || '';
+            const { data: seoData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'faq_seo_title').maybeSingle();
+            if (seoData) seo_title = seoData.setting_value || '';
+            const { data: seoDescData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'faq_seo_desc').maybeSingle();
+            if (seoDescData) seo_description = seoDescData.setting_value || '';
+        } catch (e) {}
+
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">常見問題</h2><button class="btn btn-primary" onclick="saveFaqPage()">保存</button></div>';
+        c.innerHTML += '<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">中文版問答（前台中文頁顯示）</label>' +
+            '<div class="faq-edit-hint">每一條：問題以「？」結尾，下方填寫答案；點擊卡片可展開/收起</div>' +
+            '<div id="contentEditor"></div></div>' +
+            '<div><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">英文版問答 English（前台英文頁顯示，留空則顯示中文）</label>' +
+            '<div class="faq-edit-hint">End each question with "?", then write the answer below</div>' +
+            '<div id="contentEditorEn"></div></div>' +
+            '</div>' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);height:fit-content;">' +
+            '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">SEO 設置</div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Title</label>' +
+            '<input type="text" id="contentSeoTitle" value="' + seo_title.replace(/"/g, '&quot;') + '" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
+            '<div><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Description</label>' +
+            '<textarea id="contentSeoDesc" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + seo_description + '</textarea></div>' +
+            '</div></div>';
+        faqCardInit('contentEditor', content);
+        faqCardInit('contentEditorEn', enContent);
+    }
+
+    async function saveFaqPage() {
+        var zhSt = faqCardEditorState['contentEditor'];
+        var enSt = faqCardEditorState['contentEditorEn'];
+        const content = zhSt ? faqSerializeHtml(zhSt.faqs) : '';
+        const enContent = enSt ? faqSerializeHtml(enSt.faqs) : '';
+        const seo_title = document.getElementById('contentSeoTitle').value.trim();
+        const seo_desc = document.getElementById('contentSeoDesc').value.trim();
+        try {
+            await upsertSetting('faq_content', content);
+            await upsertSetting('faq_content_en', enContent);
+            await upsertSetting('faq_seo_title', seo_title);
+            await upsertSetting('faq_seo_desc', seo_desc);
+            alert('保存成功');
+        } catch (e) { alert('保存失敗: ' + e.message); }
     }
 
     async function renderReturnsPage(c) {
@@ -1864,10 +1998,12 @@
         c.innerHTML = '<div class="page-header"><h2 class="page-title">退換貨政策</h2><button class="btn btn-primary" onclick="saveReturnsPage()">保存</button></div>';
         c.innerHTML += '<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">' +
             '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
-            '<div style="margin-bottom:20px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">中文版內容（前台中文頁顯示）</label>' +
-            buildRTE('contentEditor', zh, 320) + '</div>' +
-            '<div><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">英文版內容 English（前台英文頁顯示）</label>' +
-            buildRTE('contentEditorEn', en, 320) + '</div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">中文版問答（前台中文頁顯示）</label>' +
+            '<div class="faq-edit-hint">每一條：問題以「？」結尾，下方填寫答案；點擊卡片可展開/收起</div>' +
+            '<div id="contentEditor"></div></div>' +
+            '<div><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">英文版問答 English（前台英文頁顯示）</label>' +
+            '<div class="faq-edit-hint">End each question with "?", then write the answer below</div>' +
+            '<div id="contentEditorEn"></div></div>' +
             '</div>' +
             '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);height:fit-content;">' +
             '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">SEO 設置</div>' +
@@ -1876,13 +2012,15 @@
             '<div><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Description</label>' +
             '<textarea id="contentSeoDesc" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + seo_description + '</textarea></div>' +
             '</div></div>';
+        faqCardInit('contentEditor', zh);
+        faqCardInit('contentEditorEn', en);
     }
 
     async function saveReturnsPage() {
-        var zhEl = document.getElementById('contentEditor');
-        var enEl = document.getElementById('contentEditorEn');
-        const zh = zhEl ? zhEl.innerHTML : '';
-        const en = enEl ? enEl.innerHTML : '';
+        var zhSt = faqCardEditorState['contentEditor'];
+        var enSt = faqCardEditorState['contentEditorEn'];
+        const zh = zhSt ? faqSerializeHtml(zhSt.faqs) : '';
+        const en = enSt ? faqSerializeHtml(enSt.faqs) : '';
         const seo_title = document.getElementById('contentSeoTitle').value.trim();
         const seo_desc = document.getElementById('contentSeoDesc').value.trim();
         try {
