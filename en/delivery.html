@@ -14,7 +14,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delivery &amp; Shipping Policy | Hong Kong Flower Delivery, Worldwide Dried &amp; Preserved Flowers | RoyalSpl Florist</title>
-    <meta name="description" content="RoyalSpl Florist delivery policy: free Hong Kong flower delivery on orders over HK$500; worldwide shipping (dried &amp; preserved flowers) to Asia, Middle East, Europe, North America by package size with optional DHL Express 2-3 days. Dried flowers are perfect for home decor, space styling and interior design.">
+    <meta name="description" content="RoyalSpl Florist delivery policy: free Hong Kong flower delivery on orders over HK$500; worldwide shipping (dried &amp; preserved flowers) to Asia, Middle East, Europe, North America by package size. Dried flowers are perfect for home decor, space styling and interior design.">
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
@@ -133,10 +133,12 @@
             <p>International courier: estimated <b>7–14 business days</b> (subject to destination customs &amp; logistics).</p>
         </div>
 
+        <!-- DHL Express temporarily hidden (restore once pricing confirmed)
         <div class="dlv-card">
             <h2>⚡ DHL Express Delivery (2–3 days)</h2>
             <p>Choose DHL Express for worldwide orders — surcharge: <b>+HK$350 (S) / +HK$800 (M) / +HK$1600 (L) / +HK$2200 (XL) and up</b> (as shown at checkout). Simply tick "DHL Express Delivery" at checkout.</p>
         </div>
+        -->
 
         <div class="dlv-card">
             <h2>💳 Payment Methods for International Orders</h2>
@@ -184,11 +186,10 @@
                     { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600, xl: 3200 }, express: { standard: 350, medium: 800, large: 1600, xl: 2600 } }
                 ];
             }
-            let rows = '<tr><th>Region</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>DHL Surcharge</th></tr>';
+            let rows = '<tr><th>Region</th><th>S</th><th>M</th><th>L</th><th>XL</th></tr>';
             (zones || []).forEach(function(z) {
                 const f = z.fees || {};
-                const e = z.express || {};
-                rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>HK$' + (f.xl || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + ' / ' + (e.xl || 0) + '</td></tr>';
+                rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>HK$' + (f.xl || 0) + '</td></tr>';
             });
             el.innerHTML = '<table class="dlv-table">' + rows + '</table>';
         }
