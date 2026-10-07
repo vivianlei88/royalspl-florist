@@ -691,12 +691,12 @@
 
     async function loadStripeElement() {
         try {
-            // 先向後端要 client_secret + publishable key
-            const total = getTotal();
+            // 先向後端要 client_secret + publishable key（所見即所付：金額/幣種按當前顯示）
+            const total = payMoney(getTotal());
             const resp = await fetch('/create-payment-intent', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: total })
+                body: JSON.stringify({ amount: total, currency: payCurrency() })
             });
             const data = await resp.json();
             if (!data.clientSecret || !data.publishableKey) {
@@ -743,11 +743,11 @@
         try {
             const stripe = stripePromise;
             const total = getTotal();
-            const amountCents = Math.round(total * 100);
+            const amountCents = Math.round(payMoney(total) * 100);
 
             walletPaymentRequest = stripe.paymentRequest({
                 country: 'HK',
-                currency: 'hkd',
+                currency: payCurrency(),
                 total: {
                     label: 'RoyalSpl Florist',
                     amount: amountCents
@@ -1096,6 +1096,10 @@
     function getDeliveryFee() { if (deliveryMode === 'global') { return getGlobalZoneFee(); } const subtotal = getSubtotal(); const area = getEffectiveArea(); const areaFee = getEffectiveAreaFee(); let fee = Math.max(areaFee, selectedTimeFee); if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 500) { fee = 0; } return fee; }
     function getTotal() { return getSubtotal() + getDeliveryFee(); }
 
+    // ===== What you see is what you pay: currency follows current display (internal amounts stay HKD, fixed FX 7.8) =====
+    function payMoney(hkd) { var n = Number(hkd) || 0; return siteIsUSD() ? Math.round(n / 7.8 * 100) / 100 : n; }
+    function payCurrency() { return siteIsUSD() ? 'usd' : 'hkd'; }
+
     function autoDetectArea(address) {
         if (!address || address.trim() === '') { detectedArea = ''; document.getElementById('autoDetectBanner').classList.remove('show'); highlightTierItem(manualArea || ''); renderSummary(); return; }
         const lowerAddress = address.toLowerCase();
@@ -1218,7 +1222,7 @@
             ${area ? `<div class="delivery-fee-formula">Formula: Max(Time Slot Fee ${siteMoney(selectedTimeFee)}, District Fee ${siteMoney(areaFee)}) = ${siteMoney(deliveryFee)}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>Total</span><span>${siteMoney(total)}</span></div>
-            ${deliveryMode === 'global' && siteIsUSD() ? `<div class="summary-total-usd" style="font-size:12px;color:#8a6d1a;text-align:right;margin-top:4px;">Billed in HKD (HK$${total}); USD shown for reference</div>` : ''}
+            ${deliveryMode === 'global' ? `<div class="summary-total-usd" style="font-size:12px;color:#8a6d1a;text-align:right;margin-top:4px;">Payment settled in ${siteIsUSD() ? 'USD (US$' + payMoney(total).toFixed(2) + ')' : 'HKD (HK$' + total + ')'}</div>` : ''}
             <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">Place Order</button>
         `;
         // UpdateFPSAmount Due
@@ -1569,7 +1573,8 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            amount: orderData.totalAmount,
+                            amount: payMoney(orderData.totalAmount),
+                            currency: payCurrency(),
                             orderId: orderId,
                             orderCode: orderCode,
                             recipientName: orderData.recipientName,
@@ -1593,6 +1598,7 @@
                     deliveryFee: orderData.deliveryFee,
                     total: orderData.totalAmount,
                     paymentMethod: 'card',
+                    deliveryArea: orderData.deliveryArea,
                     recipient: {
                         name: orderData.recipientName,
                         phone: orderData.recipientPhone,
