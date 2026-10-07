@@ -1287,36 +1287,17 @@ function renderProductDetail(product) {
             + '<p style="margin:10px 0 0;"><a href="/en/delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">View full delivery policy →</a></p>';
     }
 
-    // Return & Refund Policy (prefer backend site_settings.returns_content, fallback to built-in copy)
-    // Return & Refund Policy (FAQ-style cards; prefer backend site_settings.returns_content_en, fallback to built-in copy)
-    function renderReturnFaqCards(raw) {
-        var txt = String(raw || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim();
-        var paras = txt.split(/\n\s*\n|\r?\n/).map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-        var faqs = [];
-        var i = 0;
-        while (i < paras.length) {
-            var q = paras[i];
-            if (/[？?]/.test(q)) {
-                var ans = [];
-                var j = i + 1;
-                while (j < paras.length && !/[？?]$/.test(paras[j])) { ans.push(paras[j]); j++; }
-                faqs.push({ question: q, answer: ans.join(' ') });
-                i = j;
-            } else { i++; }
-        }
-        if (!faqs.length) return '';
-        var cn = ['一','二','三','四','五','六','七','八','九','十'];
+    // Return & Refund Policy (same method as Delivery Rules: backend site_settings data -> direct rich-text paragraph render, no card wrapper)
+    function renderReturnPolicyText(raw) {
+        var txt = String(raw || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim();
+        var paras = txt.split(/\r?\n/).map(function(s){ return s.trim(); }).filter(function(s){ return s; });
         var html = '';
-        faqs.forEach(function(faq, idx) {
-            var num = cn[idx] || (idx + 1);
-            html += '<div class="faq-card' + (idx === 0 ? ' open' : '') + '">'
-                + '<div class="faq-q" onclick="this.parentElement.classList.toggle(\'open\')">'
-                + '<span class="q-badge">' + num + '</span>'
-                + '<span class="q-text">' + faq.question + '</span>'
-                + '<span class="q-toggle">+</span>'
-                + '</div>'
-                + '<div class="faq-a">' + faq.answer + '</div>'
-                + '</div>';
+        paras.forEach(function(p) {
+            if (/[？?]$/.test(p)) {
+                html += '<p style="margin:12px 0 4px;font-size:14px;font-weight:600;line-height:1.6;">' + p + '</p>';
+            } else {
+                html += '<p style="margin:0 0 8px;font-size:14px;line-height:1.9;">' + p + '</p>';
+            }
         });
         return html;
     }
@@ -1324,13 +1305,12 @@ function renderProductDetail(product) {
         const el = document.getElementById('returnContent');
         if (!el) return;
         var fallback = 'Do you accept returns?\nDue to the delicate, handcrafted, and natural character of our preserved and dried botanical creations, all sales are final. This product is non-returnable, non-refundable, and exempt from standard return periods.\nAre natural variations a defect?\nEach botanical piece is handcrafted using genuine dried and preserved florals. Natural variations in size, color, texture, and shape are inherent to the product and do not constitute defects.\nWhat if my item is damaged in transit?\nEvery arrangement undergoes strict inspection and reinforced packaging before dispatch. In the rare event that your item arrives damaged during transit, please inspect your order upon receipt and contact us within 24 hours of delivery, providing clear photos or a brief video showing both the damaged item and the original packaging. Our team will evaluate the request and gladly arrange a suitable resolution or replacement. Please note: Claims submitted after 24 hours or requests based on personal preference will not be eligible for replacement.';
-        var html = '';
+        var raw = null;
         try {
             const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content_en').maybeSingle();
-            if (data && data.setting_value && data.setting_value.trim()) { html = renderReturnFaqCards(data.setting_value); }
+            if (data && data.setting_value && data.setting_value.trim()) raw = data.setting_value;
         } catch(e) { console.log('Return policy load failed:', e); }
-        if (!html) html = renderReturnFaqCards(fallback);
-        el.innerHTML = html || '<p style="font-size:14px;color:#888;">No content yet</p>';
+        el.innerHTML = renderReturnPolicyText(raw || fallback) || '<p style="font-size:14px;color:#888;">No content yet</p>';
     }
 
 document.addEventListener('DOMContentLoaded', function() {         siteInitCurrency();         siteRenderCurrencyBtn();
