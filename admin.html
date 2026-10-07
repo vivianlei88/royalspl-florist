@@ -629,6 +629,7 @@
     var ADMIN_PASS = 'royalspl2024';
     var allProducts = [];
     var allAddons = [];
+    var allAddonDetails = {};
     var allCategories = [];
     var allOrders = [];
     var uploadedImages = [];
@@ -5784,6 +5785,11 @@ function setShippingScope(v) {
         c.innerHTML += '<div class="form-group"><label class="form-label">配件圖片</label><div class="upload-area" id="addonUploadArea"><p>點擊上傳圖片</p><input type="file" id="addonFileInput" accept="image/*" style="display:none;"></div><div id="addonImagePreview"></div></div>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="addonNameZh"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="addonNameEn"></div></div>';
         c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格 (HKD)</label><input type="number" class="form-input" id="addonPrice" step="0.01"></div><div class="form-group"><label class="form-label">庫存數量</label><input type="number" class="form-input" id="addonStock" min="0"></div></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">產品簡介（中文）</label><textarea class="form-textarea" id="addonDescription" rows="3" placeholder="配件詳細介紹，前台點擊配件彈窗顯示"></textarea></div>';
+        c.innerHTML += '<div class="form-group"><label class="form-label">產品簡介（英文）</label><textarea class="form-textarea" id="addonDescriptionEn" rows="3" placeholder="Product description (English)"></textarea></div>';
+        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">產品材質（中文）</label><input class="form-input" id="addonMaterial" placeholder="例如：玻璃、陶瓷、永生花材"></div><div class="form-group"><label class="form-label">產品材質（英文）</label><input class="form-input" id="addonMaterialEn" placeholder="e.g. Glass, Ceramic, Preserved flowers"></div></div>';
+        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">產地（中文）</label><input class="form-input" id="addonOrigin" placeholder="例如：香港、日本、進口"></div><div class="form-group"><label class="form-label">產地（英文）</label><input class="form-input" id="addonOriginEn" placeholder="e.g. Hong Kong, Japan, Imported"></div></div>';
+        c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">規格（中文）</label><input class="form-input" id="addonSize" placeholder="例如：高30cm 直徑20cm"></div><div class="form-group"><label class="form-label">規格（英文）</label><input class="form-input" id="addonSizeEn" placeholder="e.g. H30cm D20cm"></div></div>';
         c.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveAddon()">保存配件</button><button class="btn btn-secondary" onclick="hideAddonForm()">取消</button></div></div>';
         addonUploadedImage = ''; initAddonUpload();
     }
@@ -5798,6 +5804,12 @@ function setShippingScope(v) {
                 c.innerHTML += '<div class="form-group"><label class="form-label">配件圖片</label><div class="upload-area" id="addonUploadArea"><p>點擊上傳圖片</p><input type="file" id="addonFileInput" accept="image/*" style="display:none;"></div><div id="addonImagePreview">' + (a.image_url ? '<img src="' + a.image_url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">' : '') + '</div></div>';
                 c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">中文名稱</label><input class="form-input" id="addonNameZh" value="' + (a.name_zh || '') + '"></div><div class="form-group"><label class="form-label">英文名稱</label><input class="form-input" id="addonNameEn" value="' + (a.name_en || '') + '"></div></div>';
                 c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">價格</label><input type="number" class="form-input" id="addonPrice" value="' + (a.price || '') + '"></div><div class="form-group"><label class="form-label">庫存</label><input type="number" class="form-input" id="addonStock" value="' + (a.stock || 0) + '"></div></div>';
+                var ad = (allAddonDetails && allAddonDetails[a.id]) ? allAddonDetails[a.id] : {};
+                c.innerHTML += '<div class="form-group"><label class="form-label">產品簡介（中文）</label><textarea class="form-textarea" id="addonDescription" rows="3" placeholder="配件詳細介紹，前台點擊配件彈窗顯示">' + (ad.description || '') + '</textarea></div>';
+                c.innerHTML += '<div class="form-group"><label class="form-label">產品簡介（英文）</label><textarea class="form-textarea" id="addonDescriptionEn" rows="3" placeholder="Product description (English)">' + (ad.description_en || '') + '</textarea></div>';
+                c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">產品材質（中文）</label><input class="form-input" id="addonMaterial" value="' + (ad.material || '') + '" placeholder="例如：玻璃、陶瓷、永生花材"></div><div class="form-group"><label class="form-label">產品材質（英文）</label><input class="form-input" id="addonMaterialEn" value="' + (ad.material_en || '') + '" placeholder="e.g. Glass, Ceramic, Preserved flowers"></div></div>';
+                c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">產地（中文）</label><input class="form-input" id="addonOrigin" value="' + (ad.origin || '') + '" placeholder="例如：香港、日本、進口"></div><div class="form-group"><label class="form-label">產地（英文）</label><input class="form-input" id="addonOriginEn" value="' + (ad.origin_en || '') + '" placeholder="e.g. Hong Kong, Japan, Imported"></div></div>';
+                c.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">規格（中文）</label><input class="form-input" id="addonSize" value="' + (ad.size || '') + '" placeholder="例如：高30cm 直徑20cm"></div><div class="form-group"><label class="form-label">規格（英文）</label><input class="form-input" id="addonSizeEn" value="' + (ad.size_en || '') + '" placeholder="e.g. H30cm D20cm"></div></div>';
                 c.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveAddon()">保存</button><button class="btn btn-secondary" onclick="hideAddonForm()">取消</button></div></div>';
                 addonUploadedImage = a.image_url || ''; initAddonUpload(); return;
             }
@@ -5805,8 +5817,55 @@ function setShippingScope(v) {
     }
     function initAddonUpload() { var ua = document.getElementById('addonUploadArea'); var fi = document.getElementById('addonFileInput'); if (ua && fi) { ua.onclick = function() { fi.click(); }; fi.onchange = function() { handleAddonFileUpload(this.files[0]); }; } }
     async function handleAddonFileUpload(file) { if (!file) return; var fd = new FormData(); fd.append('file', file); try { var res = await fetch('/r2-upload', { method: 'POST', body: fd }); var data = await res.json(); if (data.url) { addonUploadedImage = data.url; document.getElementById('addonImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">'; } } catch (e) {} }
-    async function saveAddon() { var id = document.getElementById('addonId').value; var data = { name_zh: document.getElementById('addonNameZh').value.trim(), name_en: document.getElementById('addonNameEn').value.trim(), price: parseFloat(document.getElementById('addonPrice').value), stock: parseInt(document.getElementById('addonStock').value) || 0, image_url: addonUploadedImage || null }; if (!data.name_zh || !data.price) { showToast('請填寫'); return; } try { if (id) { await supabaseClient.from('addons').update(data).eq('id', id); } else { await supabaseClient.from('addons').insert(data); } showToast('保存成功'); hideAddonForm(); loadAddons(); } catch (e) { showToast('失敗'); } }
-    async function loadAddons() { var c = document.getElementById('addonsTable'); if (!c) return; try { var r = await supabaseClient.from('addons').select('*').order('id', { ascending: true }); allAddons = r.data || []; if (!allAddons.length) { c.innerHTML = '<div class="empty-state">暫無配件</div>'; return; } var h = '<table class="data-table"><thead><tr><th>圖片</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>'; for (var i = 0; i < allAddons.length; i++) { var a = allAddons[i]; h += '<tr><td>' + (a.image_url ? '<img class="product-img-lg" src="' + a.image_url + '">' : '無圖') + '</td><td><b>' + a.name_zh + '</b>' + (a.name_en ? '<br><small>' + a.name_en + '</small>' : '') + '</td><td>HK$' + a.price + '</td><td>' + a.stock + '</td><td><button class="btn btn-secondary btn-small" onclick="showEditAddonFormById(' + a.id + ')">編輯</button> <button class="btn btn-danger btn-small" onclick="deleteAddon(' + a.id + ')">刪除</button></td></tr>'; } h += '</tbody></table>'; c.innerHTML = h; } catch (e) { c.innerHTML = '請先創建 addons 表'; } }
+    async function saveAddon() {
+        var id = document.getElementById('addonId').value;
+        var data = { name_zh: document.getElementById('addonNameZh').value.trim(), name_en: document.getElementById('addonNameEn').value.trim(), price: parseFloat(document.getElementById('addonPrice').value), stock: parseInt(document.getElementById('addonStock').value) || 0, image_url: addonUploadedImage || null };
+        if (!data.name_zh || !data.price) { showToast('請填寫名稱與價格'); return; }
+        var detail = {
+            description: document.getElementById('addonDescription') ? document.getElementById('addonDescription').value.trim() : '',
+            description_en: document.getElementById('addonDescriptionEn') ? document.getElementById('addonDescriptionEn').value.trim() : '',
+            material: document.getElementById('addonMaterial') ? document.getElementById('addonMaterial').value.trim() : '',
+            material_en: document.getElementById('addonMaterialEn') ? document.getElementById('addonMaterialEn').value.trim() : '',
+            origin: document.getElementById('addonOrigin') ? document.getElementById('addonOrigin').value.trim() : '',
+            origin_en: document.getElementById('addonOriginEn') ? document.getElementById('addonOriginEn').value.trim() : '',
+            size: document.getElementById('addonSize') ? document.getElementById('addonSize').value.trim() : '',
+            size_en: document.getElementById('addonSizeEn') ? document.getElementById('addonSizeEn').value.trim() : ''
+        };
+        try {
+            var savedId = id;
+            if (id) { await supabaseClient.from('addons').update(data).eq('id', id); }
+            else { var ins = await supabaseClient.from('addons').insert(data).select('id'); savedId = ins.data && ins.data[0] ? ins.data[0].id : null; }
+            if (savedId) { await saveAddonDetail(savedId, detail); }
+            showToast('保存成功'); hideAddonForm(); loadAddons();
+        } catch (e) { showToast('保存失敗：' + e.message); }
+    }
+    async function saveAddonDetail(addonId, detail) {
+        var all = allAddonDetails || {};
+        all[String(addonId)] = detail;
+        var r = await supabaseClient.from('site_settings').select('id').eq('setting_key', 'addons_details');
+        var val = JSON.stringify(all);
+        if (r.data && r.data.length) { await supabaseClient.from('site_settings').update({ setting_value: val }).eq('setting_key', 'addons_details'); }
+        else { await supabaseClient.from('site_settings').insert({ setting_key: 'addons_details', setting_value: val }); }
+        allAddonDetails = all;
+    }
+    async function loadAddons() {
+        var c = document.getElementById('addonsTable'); if (!c) return;
+        try {
+            var dr = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'addons_details');
+            allAddonDetails = {};
+            if (dr.data && dr.data.length && dr.data[0].setting_value) { try { allAddonDetails = JSON.parse(dr.data[0].setting_value) || {}; } catch (e) { allAddonDetails = {}; } }
+            var r = await supabaseClient.from('addons').select('*').order('id', { ascending: true });
+            allAddons = r.data || [];
+            if (!allAddons.length) { c.innerHTML = '<div class="empty-state">暫無配件</div>'; return; }
+            var h = '<table class="data-table"><thead><tr><th>圖片</th><th>名稱</th><th>價格</th><th>庫存</th><th>簡介</th><th>操作</th></tr></thead><tbody>';
+            for (var i = 0; i < allAddons.length; i++) {
+                var a = allAddons[i];
+                var ad = (allAddonDetails && allAddonDetails[a.id]) ? allAddonDetails[a.id] : {};
+                h += '<tr><td>' + (a.image_url ? '<img class="product-img-lg" src="' + a.image_url + '">' : '無圖') + '</td><td><b>' + a.name_zh + '</b>' + (a.name_en ? '<br><small>' + a.name_en + '</small>' : '') + '</td><td>HK$' + a.price + '</td><td>' + a.stock + '</td><td style="max-width:220px;font-size:13px;color:#555;">' + (ad.description ? ad.description.slice(0, 60) + (ad.description.length > 60 ? '…' : '') : '<span style="color:#bbb;">—</span>') + '</td><td><button class="btn btn-secondary btn-small" onclick="showEditAddonFormById(' + a.id + ')">編輯</button> <button class="btn btn-danger btn-small" onclick="deleteAddon(' + a.id + ')">刪除</button></td></tr>';
+            }
+            h += '</tbody></table>'; c.innerHTML = h;
+        } catch (e) { c.innerHTML = '請先創建 addons 表'; }
+    }
     async function deleteAddon(id) { if (!confirm('刪除？')) return; await supabaseClient.from('addons').delete().eq('id', id); showToast('已刪除'); loadAddons(); }
 
     // ==================== 商品分類 ====================
