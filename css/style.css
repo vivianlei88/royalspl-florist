@@ -754,6 +754,14 @@ button {
         padding: 0 10px;
     }
 
+    .logo {
+        position: static;
+        transform: none;
+        margin-right: auto;
+        text-align: left;
+        white-space: nowrap;
+    }
+
     .header-actions {
         gap: 8px;
     }
