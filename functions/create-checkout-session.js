@@ -30,8 +30,12 @@ export async function onRequestPost(context) {
       subtotal,
       totalAmount,
       orderId,
-      orderCode
+      orderCode,
+      currency
     } = body;
+
+    // 幣種：前端按當前顯示幣種傳入（usd / hkd），缺省港幣
+    const chargeCurrency = (currency === 'usd' || currency === 'hkd') ? currency : 'hkd';
 
     // 構建 Stripe Checkout Session
     // 用請求來源域決定返回地址（支援 www.royalspl.shop / royalspl.pages.dev 等任何訪問方式）
@@ -41,7 +45,7 @@ export async function onRequestPost(context) {
     formData.append('mode', 'payment');
     formData.append('success_url', baseUrl + '/order-success.html');
     formData.append('cancel_url', baseUrl + '/checkout.html');
-    formData.append('line_items[0][price_data][currency]', 'hkd');
+    formData.append('line_items[0][price_data][currency]', chargeCurrency);
     formData.append('line_items[0][price_data][product_data][name]', 'RoyalSpl Florist 花禮訂單');
     formData.append('line_items[0][price_data][unit_amount]', Math.round(totalAmount * 100));
     formData.append('line_items[0][quantity]', '1');
