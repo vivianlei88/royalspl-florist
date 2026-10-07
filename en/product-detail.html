@@ -1256,21 +1256,21 @@ function renderProductDetail(product) {
         } catch(e) { zones = null; }
         if (!zones || !zones.length) {
             zones = [
-                { zone: 'Asia', fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 } },
-                { zone: 'Middle East', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
-                { zone: 'Oceania', fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 } },
-                { zone: 'North America', fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 } },
-                { zone: 'Europe', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
-                { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 } }
+                { zone: 'Asia', fees: { standard: 120, medium: 450, large: 900, xl: 1800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2200 } },
+                { zone: 'Middle East', fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 } },
+                { zone: 'Oceania', fees: { standard: 180, medium: 600, large: 1300, xl: 2600 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 } },
+                { zone: 'North America', fees: { standard: 250, medium: 700, large: 1400, xl: 2800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 } },
+                { zone: 'Europe', fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 } },
+                { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600, xl: 3200 }, express: { standard: 350, medium: 800, large: 1600, xl: 2600 } }
             ];
         }
         let rows = '';
         (zones || []).forEach(function(z) {
             const f = z.fees || {};
             const e = z.express || {};
-            rows += '<tr><td>' + z.zone + '</td><td>' + siteMoney(f.standard || 0) + '</td><td>' + siteMoney(f.medium || 0) + '</td><td>' + siteMoney(f.large || 0) + '</td><td>+' + siteMoney(e.standard || 0) + ' / ' + siteMoney(e.medium || 0) + ' / ' + siteMoney(e.large || 0) + '</td></tr>';
+            rows += '<tr><td>' + z.zone + '</td><td>' + siteMoney(f.standard || 0) + '</td><td>' + siteMoney(f.medium || 0) + '</td><td>' + siteMoney(f.large || 0) + '</td><td>' + siteMoney(f.xl || 0) + '</td><td>+' + siteMoney(e.standard || 0) + ' / ' + siteMoney(e.medium || 0) + ' / ' + siteMoney(e.large || 0) + ' / ' + siteMoney(e.xl || 0) + '</td></tr>';
         });
-        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">Region</th><th style="padding:6px;border:1px solid #e5dccb;">S</th><th style="padding:6px;border:1px solid #e5dccb;">M</th><th style="padding:6px;border:1px solid #e5dccb;">L</th><th style="padding:6px;border:1px solid #e5dccb;">DHL Surcharge</th></tr>' + rows + '</table>' : '';
+        const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">Region</th><th style="padding:6px;border:1px solid #e5dccb;">S</th><th style="padding:6px;border:1px solid #e5dccb;">M</th><th style="padding:6px;border:1px solid #e5dccb;">L</th><th style="padding:6px;border:1px solid #e5dccb;">XL</th><th style="padding:6px;border:1px solid #e5dccb;">DHL Surcharge</th></tr>' + rows + '</table>' : '';
         el.innerHTML = '<h4 style="margin:4px 0 6px;font-size:14px;">Hong Kong Local Delivery</h4>'
             + '<ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.9;">'
             + '<li>Delivery hours: every day 10:00–18:00, courier delivery</li>'
@@ -1280,9 +1280,16 @@ function renderProductDetail(product) {
             + '<li>Fresh flowers last approx. 5–7 days depending on environment</li>'
             + '</ul>'
             + '<h4 style="margin:4px 0 6px;font-size:14px;">Worldwide Delivery (Dried &amp; Preserved Flowers)</h4>'
-            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;">Items marked "Global Delivery" ship worldwide. Shipping is charged by package size (S / M / L) and destination region:</p>'
+            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;">Items marked "Global Delivery" ship worldwide. Shipping is charged by package size (S / M / L / XL) and destination region:</p>'
+            + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;"><b>Size is based on the overall height of the arrangement (including extending stems):</b></p>'
+            + '<ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.9;">'
+            + '<li>Size S: height ≤ 50cm (max 50cm)</li>'
+            + '<li>Size M: height 50–80cm (max 80cm)</li>'
+            + '<li>Size L: height 80–120cm (max 120cm)</li>'
+            + '<li>Size XL: height 120–160cm (max 160cm)</li>'
+            + '</ul>'
             + table
-            + '<p style="margin:6px 0;font-size:14px;line-height:1.8;">⚡ <b>DHL Express Delivery</b>: 2–3 days, surcharge +' + siteMoney(350) + ' (S) / +' + siteMoney(800) + ' (M) / +' + siteMoney(1600) + ' (L).</p>'
+            + '<p style="margin:6px 0;font-size:14px;line-height:1.8;">⚡ <b>DHL Express Delivery</b>: 2–3 days, surcharge +' + siteMoney(350) + ' (S) / +' + siteMoney(800) + ' (M) / +' + siteMoney(1600) + ' (L) / +' + siteMoney(2200) + ' (XL) and up, as shown at checkout.</p>'
             + '<p style="margin:0 0 6px;font-size:14px;line-height:1.8;">International courier: estimated <b>7–14 business days</b> (subject to destination customs &amp; logistics).</p>'
             + '<p style="margin:0;font-size:14px;line-height:1.8;">International orders support <b>Credit Card / Apple Pay / Google Pay</b> only. Select your country at checkout for the fee.</p>'
             + '<p style="margin:10px 0 0;"><a href="/en/delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">View full delivery policy →</a></p>';
