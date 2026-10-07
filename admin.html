@@ -2669,8 +2669,8 @@
         c.innerHTML = '<div class="page-header"><h2 class="page-title">全球運費設置</h2></div>'
             + '<div style="background:#FFF8E1;border:1px solid #E6C86B;color:#8a6d1a;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;line-height:1.7;">🌏 <b>全球售卖（乾花/永生花）設定：</b>商品在編輯頁的「配送選項」中選擇「全球配送」即可全球寄送（尺寸檔位決定國際運費）；購物車全為全球商品時，結帳頁自動切換為「國際配送」模式（選國家/地區，僅支援信用卡 / Apple Pay / Google Pay 付款）。</div>'
 '<div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;">'
-            + '<div style="font-size:15px;font-weight:600;margin-bottom:4px;">地區分檔運費（標準件 / 中件 / 大件 + DHL）</div>'
-            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">商品在編輯頁的「配送選項」中選擇尺寸檔位（標準件 / 中件 / 大件）決定國際運費；結帳時購物車取最高檔收費。DHL 特快 = 2–3 天送達，為 DHL 附加費。國家以逗號分隔；滿額免運可填 0 表示不設。</div>'
+            + '<div style="font-size:15px;font-weight:600;margin-bottom:4px;">地區分檔運費（標準件 / 中件 / 大件 / 超大件 + DHL）</div>'
+            + '<div style="font-size:13px;color:#666;margin-bottom:14px;">商品在編輯頁的「配送選項」中選擇尺寸檔位（標準件 / 中件 / 大件 / 超大件）決定國際運費；結帳時購物車取最高檔收費。超大件適用於高度約 1.4 米或以上之大型花藝。DHL 特快 = 2–3 天送達，為 DHL 附加費。國家以逗號分隔；滿額免運可填 0 表示不設。</div>'
             + '<div id="gsZonesContainer"></div>'
             + '<div style="margin-top:12px;display:flex;gap:10px;"><button class="btn btn-secondary" onclick="addGlobalZoneRow()">+ 添加地區</button><button class="btn btn-primary" onclick="saveGlobalZones()">儲存運費設置</button></div>'
             + '</div>';
@@ -2680,15 +2680,15 @@
             if (r.data && r.data.setting_value) { try { zones = JSON.parse(r.data.setting_value); } catch(e) {} }
             if (!zones || !zones.length) {
                 zones = [
-                    { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-{ zone: '中東', countries: ['阿聯酋','沙特阿拉伯','卡塔爾','科威特','以色列','巴林','阿曼'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                    { zone: '大洋洲', countries: ['澳洲','新西蘭'], fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                    { zone: '北美洲', countries: ['美國','加拿大'], fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                    { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                    { zone: '其他地區', countries: ['其他'], fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 }
+                    { zone: '亞洲', countries: ['台灣','日本','韓國','新加坡','馬來西亞','泰國','中國內地','澳門'], fees: { standard: 120, medium: 450, large: 900, xl: 1800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2200 }, freeAbove: 0 },
+{ zone: '中東', countries: ['阿聯酋','沙特阿拉伯','卡塔爾','科威特','以色列','巴林','阿曼'], fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 }, freeAbove: 0 },
+                    { zone: '大洋洲', countries: ['澳洲','新西蘭'], fees: { standard: 180, medium: 600, large: 1300, xl: 2600 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 }, freeAbove: 0 },
+                    { zone: '北美洲', countries: ['美國','加拿大'], fees: { standard: 250, medium: 700, large: 1400, xl: 2800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 }, freeAbove: 0 },
+                    { zone: '歐洲', countries: ['英國','法國','德國','荷蘭','意大利','西班牙'], fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 }, freeAbove: 0 },
+                    { zone: '其他地區', countries: ['其他'], fees: { standard: 300, medium: 800, large: 1600, xl: 3200 }, express: { standard: 350, medium: 800, large: 1600, xl: 2600 }, freeAbove: 0 }
                 ];
             }
-            zones.forEach(function(z) { if (!z.fees) { z.fees = { standard: z.fee || 0, medium: z.fee || 0, large: z.fee || 0 }; } if (!z.express) { z.express = { standard: 0, medium: 0, large: 0 }; } });
+            zones.forEach(function(z) { if (!z.fees) { z.fees = { standard: z.fee || 0, medium: z.fee || 0, large: z.fee || 0 }; } if (!z.express) { z.express = { standard: 0, medium: 0, large: 0 }; } if (z.fees && !z.fees.xl) { z.fees.xl = 0; } if (z.express && !z.express.xl) { z.express.xl = 0; } });
             globalZonesEditing = zones;
             renderGlobalZoneRows();
         } catch(e) { console.error('載入全球運費失敗:', e); globalZonesEditing = []; renderGlobalZoneRows(); }
@@ -2711,6 +2711,7 @@
                 + '<span style="font-size:12px;color:#888;width:52px;">標準件</span><input data-z-i="' + i + '" data-z-f="fees.standard" type="number" value="' + (fees.standard || 0) + '" placeholder="運費HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '<span style="font-size:12px;color:#888;width:52px;">中件</span><input data-z-i="' + i + '" data-z-f="fees.medium" type="number" value="' + (fees.medium || 0) + '" placeholder="運費HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '<span style="font-size:12px;color:#888;width:52px;">大件</span><input data-z-i="' + i + '" data-z-f="fees.large" type="number" value="' + (fees.large || 0) + '" placeholder="運費HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;width:52px;">超大件</span><input data-z-i="' + i + '" data-z-f="fees.xl" type="number" value="' + (fees.xl || 0) + '" placeholder="運費HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '<span style="font-size:12px;color:#888;width:52px;">滿額免運</span><input data-z-i="' + i + '" data-z-f="freeAbove" type="number" value="' + (z.freeAbove || 0) + '" placeholder="0=不設" style="width:90px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '</div>'
                 + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;">'
@@ -2718,6 +2719,7 @@
                 + '<span style="font-size:12px;color:#888;">標準</span><input data-z-i="' + i + '" data-z-f="express.standard" type="number" value="' + (exp.standard || 0) + '" placeholder="DHL附加HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '<span style="font-size:12px;color:#888;">中</span><input data-z-i="' + i + '" data-z-f="express.medium" type="number" value="' + (exp.medium || 0) + '" placeholder="DHL附加HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '<span style="font-size:12px;color:#888;">大</span><input data-z-i="' + i + '" data-z-f="express.large" type="number" value="' + (exp.large || 0) + '" placeholder="DHL附加HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
+                + '<span style="font-size:12px;color:#888;">超大</span><input data-z-i="' + i + '" data-z-f="express.xl" type="number" value="' + (exp.xl || 0) + '" placeholder="DHL附加HK$" style="width:80px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">'
                 + '</div>'
                 + '</div>';
         }
@@ -2738,7 +2740,7 @@
             });
         });
     }
-    function addGlobalZoneRow() { globalZonesEditing.push({ zone: '', countries: [], fees: { standard: 0, medium: 0, large: 0 }, express: { standard: 0, medium: 0, large: 0 }, freeAbove: 0 }); renderGlobalZoneRows(); }
+    function addGlobalZoneRow() { globalZonesEditing.push({ zone: '', countries: [], fees: { standard: 0, medium: 0, large: 0, xl: 0 }, express: { standard: 0, medium: 0, large: 0, xl: 0 }, freeAbove: 0 }); renderGlobalZoneRows(); }
     function removeGlobalZoneRow(i) { globalZonesEditing.splice(i, 1); renderGlobalZoneRows(); }
     async function saveGlobalZones() {
         if (!globalZonesEditing.length) { showToast('請至少保留一個地區'); return; }
@@ -5027,7 +5029,7 @@ staticPages.forEach(page => {
         
         f.innerHTML += '<div class="form-group"><label class="form-label">規格變體（Variants）</label><div id="variantsList"></div><button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>';
-        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button></span></div></div><div id="shippingFeeGroup" style="display:none;margin-top:10px;"><div style="font-size:13px;color:#666;margin-bottom:6px;">國際運費（港幣，留空則用區域默認價）：</div><div style="display:flex;gap:10px;flex-wrap:wrap;"><label style="font-size:13px;color:#333;">標準件 <input type="number" id="shippingFeeStandard" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">中件 <input type="number" id="shippingFeeMedium" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">大件 <input type="number" id="shippingFeeLarge" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費；香港本地不受影響。</div></div>';
+        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button><button type="button" class="btn btn-secondary btn-small" data-tier="xl" onclick="setShippingTier(\'xl\')">超大件</button></span></div></div><div id="shippingFeeGroup" style="display:none;margin-top:10px;"><div style="font-size:13px;color:#666;margin-bottom:6px;">國際運費（港幣，留空則用區域默認價）：</div><div style="display:flex;gap:10px;flex-wrap:wrap;"><label style="font-size:13px;color:#333;">標準件 <input type="number" id="shippingFeeStandard" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">中件 <input type="number" id="shippingFeeMedium" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">大件 <input type="number" id="shippingFeeLarge" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">超大件 <input type="number" id="shippingFeeXL" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費（超大件適用於高度約 1.4 米或以上之大型花藝）；香港本地不受影響。</div></div>';
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = []; variants = []; selectedAddons = []; selectedTags = [];
         toggleDeliveryDays(); loadStyleTags(); loadAllTags(); renderUploadedImages(); renderVariants(); renderAddonsCheckbox(); initUploadArea(); initShippingOptions();
@@ -5066,7 +5068,7 @@ staticPages.forEach(page => {
         
         f.innerHTML += '<div class="form-group"><label class="form-label">規格變體（Variants）</label><div id="variantsList"></div><button class="btn btn-secondary btn-small" onclick="addVariantRow()">添加規格</button></div>';
         f.innerHTML += '<div class="form-group"><label class="form-label">關聯加購配件</label><div class="addon-checkbox-list" id="addonsCheckboxList"></div></div>';
-        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button></span></div></div><div id="shippingFeeGroup" style="display:none;margin-top:10px;"><div style="font-size:13px;color:#666;margin-bottom:6px;">國際運費（港幣，留空則用區域默認價）：</div><div style="display:flex;gap:10px;flex-wrap:wrap;"><label style="font-size:13px;color:#333;">標準件 <input type="number" id="shippingFeeStandard" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">中件 <input type="number" id="shippingFeeMedium" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">大件 <input type="number" id="shippingFeeLarge" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費；香港本地不受影響。</div></div>';
+        f.innerHTML += '<div class="form-group"><label class="form-label">配送選項</label><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;"><div><span style="font-size:13px;color:#666;margin-right:8px;">配送範圍：</span><select id="shippingScopeSelect" onchange="setShippingScope(this.value)" style="padding:8px 10px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"><option value="local">香港本地</option><option value="global">全球配送</option></select></div><div><span style="font-size:13px;color:#666;margin-right:8px;">尺寸檔位：</span><span id="shippingTierGroup"><button type="button" class="btn btn-secondary btn-small" data-tier="standard" onclick="setShippingTier(\'standard\')">標準件</button><button type="button" class="btn btn-secondary btn-small" data-tier="medium" onclick="setShippingTier(\'medium\')">中件</button><button type="button" class="btn btn-secondary btn-small" data-tier="large" onclick="setShippingTier(\'large\')">大件</button><button type="button" class="btn btn-secondary btn-small" data-tier="xl" onclick="setShippingTier(\'xl\')">超大件</button></span></div></div><div id="shippingFeeGroup" style="display:none;margin-top:10px;"><div style="font-size:13px;color:#666;margin-bottom:6px;">國際運費（港幣，留空則用區域默認價）：</div><div style="display:flex;gap:10px;flex-wrap:wrap;"><label style="font-size:13px;color:#333;">標準件 <input type="number" id="shippingFeeStandard" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">中件 <input type="number" id="shippingFeeMedium" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">大件 <input type="number" id="shippingFeeLarge" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label><label style="font-size:13px;color:#333;">超大件 <input type="number" id="shippingFeeXL" min="0" placeholder="默認" style="width:86px;padding:6px 8px;border:1px solid #1A1A1A;border-radius:6px;font-size:14px;"></label></div></div><div style="font-size:12px;color:#999;margin-top:6px;">全球配送商品須選擇尺寸檔位以計算國際運費（超大件適用於高度約 1.4 米或以上之大型花藝）；香港本地不受影響。</div></div>';
         f.innerHTML += '<div class="form-actions"><button class="btn btn-primary" onclick="saveProduct()">保存商品</button><button class="btn btn-secondary" onclick="showProductsList()">取消</button></div></div>';
         uploadedImages = p.images || (p.image_url ? [p.image_url] : []);
         selectedAddons = p.linked_addons || [];
@@ -5420,7 +5422,8 @@ function setShippingScope(v) {
         setShippingScope(scopeSel ? scopeSel.value : 'local');
         loadProductShippingFees(document.getElementById('productId') ? document.getElementById('productId').value : '');
         var tier = 'standard';
-        if (selectedTags.indexOf('大件') > -1) tier = 'large';
+        if (selectedTags.indexOf('超大件') > -1) tier = 'xl';
+        else if (selectedTags.indexOf('大件') > -1) tier = 'large';
         else if (selectedTags.indexOf('中件') > -1) tier = 'medium';
         window._shippingTier = tier;
         setShippingTier(tier);
@@ -5432,9 +5435,9 @@ function setShippingScope(v) {
         if (scope === 'global') { if (gi === -1) selectedTags.push('全球配送'); }
         else if (gi > -1) { selectedTags.splice(gi, 1); }
         var tier = window._shippingTier || 'standard';
-        var tierNames = { standard: '標準件', medium: '中件', large: '大件' };
+        var tierNames = { standard: '標準件', medium: '中件', large: '大件', xl: '超大件' };
         var tierName = tierNames[tier] || '標準件';
-        var tiers = ['標準件', '中件', '大件'];
+        var tiers = ['標準件', '中件', '大件', '超大件'];
         for (var i = 0; i < tiers.length; i++) {
             var idx = selectedTags.indexOf(tiers[i]);
             if (tiers[i] === tierName) { if (idx === -1) selectedTags.push(tiers[i]); }
@@ -5451,9 +5454,11 @@ function setShippingScope(v) {
             var s = document.getElementById('shippingFeeStandard');
             var m = document.getElementById('shippingFeeMedium');
             var l = document.getElementById('shippingFeeLarge');
+            var x = document.getElementById('shippingFeeXL');
             if (s) s.value = pf.standard || '';
             if (m) m.value = pf.medium || '';
             if (l) l.value = pf.large || '';
+            if (x) x.value = pf.xl || '';
         } catch(e) {}
     }
     async function syncShippingFees(pid) {
@@ -5461,10 +5466,12 @@ function setShippingScope(v) {
         var s = document.getElementById('shippingFeeStandard');
         var m = document.getElementById('shippingFeeMedium');
         var l = document.getElementById('shippingFeeLarge');
+        var x = document.getElementById('shippingFeeXL');
         var fees = {};
         if (s && s.value !== '' && !isNaN(parseFloat(s.value))) fees.standard = Math.round(parseFloat(s.value));
         if (m && m.value !== '' && !isNaN(parseFloat(m.value))) fees.medium = Math.round(parseFloat(m.value));
         if (l && l.value !== '' && !isNaN(parseFloat(l.value))) fees.large = Math.round(parseFloat(l.value));
+        if (x && x.value !== '' && !isNaN(parseFloat(x.value))) fees.xl = Math.round(parseFloat(x.value));
         try {
             var r = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'product_shipping_fees').maybeSingle();
             var cur = {};
