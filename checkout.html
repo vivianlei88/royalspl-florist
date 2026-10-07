@@ -984,8 +984,8 @@
         cart.forEach(item => {
             const tags = item.tags || [];
             if (tags.indexOf('超大件') > -1) tier = 'xl';
-            else if (tags.indexOf('大件') > -1) tier = 'large';
-            else if (tags.indexOf('中件') > -1 && tier !== 'large') tier = 'medium';
+            else if (tags.indexOf('大件') > -1 && tier !== 'xl') tier = 'large';
+            else if (tags.indexOf('中件') > -1 && tier !== 'xl' && tier !== 'large') tier = 'medium';
         });
         return tier;
     }
