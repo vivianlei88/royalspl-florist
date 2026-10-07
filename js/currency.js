@@ -87,7 +87,14 @@
     function hide() { pop.style.display = 'none'; }
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      pop.style.display = pop.style.display === 'none' ? 'block' : 'none';
+      var shown = pop.getAttribute('data-open') === '1';
+      if (shown) {
+        pop.style.display = 'none';
+        pop.setAttribute('data-open', '0');
+      } else {
+        pop.style.display = 'block';
+        pop.setAttribute('data-open', '1');
+      }
     });
     pop.querySelectorAll('.cur-opt').forEach(function (o) {
       o.addEventListener('click', function (e) {
