@@ -918,12 +918,12 @@
         } catch(e) {}
         if (!globalShippingZones || !globalShippingZones.length) {
             globalShippingZones = [
-                { zone: '亞洲', countries: ['澳門','中國內地','台灣','泰國','韓國','馬來西亞','新加坡','日本','印尼'], fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '北美洲', countries: ['加拿大','美國'], fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '中東', countries: ['阿聯酋','卡達','沙烏地阿拉伯'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '大洋洲', countries: ['澳洲','紐西蘭'], fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '歐洲', countries: ['芬蘭','瑞典','挪威','丹麥','德國','荷蘭','義大利','瑞士','盧森堡','比利時','英國','法國','冰島','西班牙'], fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 },
-                { zone: '其他', countries: ['其他'], fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 }, freeAbove: 0 }
+                { zone: '亞洲', countries: ['澳門','中國內地','台灣','泰國','韓國','馬來西亞','新加坡','日本','印尼'], fees: { standard: 120, medium: 450, large: 900, xl: 1800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2200 }, freeAbove: 0 },
+                { zone: '北美洲', countries: ['加拿大','美國'], fees: { standard: 250, medium: 700, large: 1400, xl: 2800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 }, freeAbove: 0 },
+                { zone: '中東', countries: ['阿聯酋','卡達','沙烏地阿拉伯'], fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 }, freeAbove: 0 },
+                { zone: '大洋洲', countries: ['澳洲','紐西蘭'], fees: { standard: 180, medium: 600, large: 1300, xl: 2600 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 }, freeAbove: 0 },
+                { zone: '歐洲', countries: ['芬蘭','瑞典','挪威','丹麥','德國','荷蘭','義大利','瑞士','盧森堡','比利時','英國','法國','冰島','西班牙'], fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 }, freeAbove: 0 },
+                { zone: '其他', countries: ['其他'], fees: { standard: 300, medium: 800, large: 1600, xl: 3200 }, express: { standard: 350, medium: 800, large: 1600, xl: 2600 }, freeAbove: 0 }
             ];
         }
         applyDeliveryMode();
@@ -983,7 +983,8 @@
         let tier = 'standard';
         cart.forEach(item => {
             const tags = item.tags || [];
-            if (tags.indexOf('大件') > -1) tier = 'large';
+            if (tags.indexOf('超大件') > -1) tier = 'xl';
+            else if (tags.indexOf('大件') > -1) tier = 'large';
             else if (tags.indexOf('中件') > -1 && tier !== 'large') tier = 'medium';
         });
         return tier;
