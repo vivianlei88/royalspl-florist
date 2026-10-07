@@ -250,6 +250,9 @@
             const statusMap = { unpaid: '未Payment', pending_payment: '待ConfirmPayment', paid: 'AlreadyPayment', shipped: 'Already出貨', cancelled: 'Cancelled' };
             let html = '';
             orders.forEach(order => {
+                // International delivery orders show in USD; local orders follow the page currency
+                const isIntlOrder = (order.delivery_area || '').indexOf('國際') === 0;
+                function orderMoney(hkd) { var n = Number(hkd) || 0; if (isIntlOrder) { return 'US$' + (Math.round(n / 7.8 * 100) / 100).toFixed(2); } return siteMoney(n); }
                 const img = getOrderImage(order);
                 const imgHtml = img ? `<img src="${img}" class="order-img" alt="">` : '<div class="order-img-placeholder"></div>';
                 const createdDate = (order.created_at || '').slice(0, 10);
@@ -259,7 +262,7 @@
                         <div class="order-code">${order.order_code}</div>
                         <div class="order-meta">成立日期：${createdDate}</div>
                         <div class="order-meta">送貨日期：${order.delivery_date || '-'}</div>
-                        <div class="order-price">${siteMoney(order.total_amount)}</div>
+                        <div class="order-price">${orderMoney(order.total_amount)}</div>
                     </div>
                     <div class="order-right">
                         <div class="status-badge status-${order.status}">${statusMap[order.status] || order.status}</div>
@@ -297,6 +300,7 @@
                     subtotal: order.subtotal,
                     deliveryFee: order.delivery_fee,
                     total: order.total_amount,
+                    deliveryArea: order.delivery_area,
                     recipient: {
                         name: order.recipient_name,
                         phone: order.recipient_phone,
@@ -306,6 +310,10 @@
                         email: order.customer_email
                     }
                 }));
+
+                // What you see is what you pay: international orders in USD, local orders in HKD
+                const isIntlOrder = (order.delivery_area || '').indexOf('國際') === 0;
+                const payTotal = isIntlOrder ? Math.round((order.total_amount || 0) / 7.8 * 100) / 100 : (order.total_amount || 0);
 
                 // 调用 Stripe Checkout Session
                 const response = await fetch('/create-checkout-session', {
@@ -322,7 +330,8 @@
                         deliveryArea: order.delivery_area,
                         deliveryFee: order.delivery_fee,
                         subtotal: order.subtotal,
-                        totalAmount: order.total_amount,
+                        totalAmount: payTotal,
+                        currency: isIntlOrder ? 'usd' : 'hkd',
                         orderId: order.id,
                         orderCode: order.order_code
                     })
