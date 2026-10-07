@@ -636,8 +636,12 @@
                 localStorage.setItem('pending_order', JSON.stringify({
                     id: order.id, orderCode: order.order_code, items: items,
                     subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount,
+                    deliveryArea: order.delivery_area,
                     recipient: { name: order.recipient_name, phone: order.recipient_phone, address: order.recipient_address, date: order.delivery_date, timeSlot: order.delivery_time_slot, email: order.customer_email }
                 }));
+                // 所見即所付：國際配送訂單 → 美金；本地訂單 → 港幣
+                const isIntlOrder = (order.delivery_area || '').indexOf('國際') === 0;
+                const payTotal = isIntlOrder ? Math.round((order.total_amount || 0) / 7.8 * 100) / 100 : (order.total_amount || 0);
                 const response = await fetch('/create-checkout-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -646,7 +650,8 @@
                         recipientAddress: order.recipient_address, deliveryDate: order.delivery_date,
                         deliveryTimeSlot: order.delivery_time_slot, deliveryHour: order.delivery_hour,
                         deliveryArea: order.delivery_area, deliveryFee: order.delivery_fee,
-                        subtotal: order.subtotal, totalAmount: order.total_amount,
+                        subtotal: order.subtotal, totalAmount: payTotal,
+                        currency: isIntlOrder ? 'usd' : 'hkd',
                         orderId: order.id, orderCode: order.order_code
                     })
                 });
