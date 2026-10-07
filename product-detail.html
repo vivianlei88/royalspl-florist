@@ -1099,7 +1099,7 @@
         const el = document.getElementById('returnContent');
         if (!el) return;
         var fallback = '<div style="font-size:13px;line-height:1.9;">'
-            + '<h4 style="margin:4px 0 6px;font-size:14px;">【退換貨政策 / Return &amp; Refund Policy】</h4>'
+            + '<h4 style="margin:4px 0 6px;font-size:14px;">【退換貨政策】</h4>'
             + '<p style="margin:6px 0;"><b>1. 7天無理由退貨（Final Sale Notice）</b></p>'
             + '<p style="margin:0 0 6px;">本商品均包含天然植物、鮮花、乾花及永生花材，屬於手作易損及定制類藝品。依據國際消費慣例與相關法規，本商品售出後概不接受退換貨（不適用7天無理由退貨）。</p>'
             + '<p style="margin:6px 0;"><b>2. 天然植物特性（Natural Variations）</b></p>'
@@ -1111,21 +1111,7 @@
             + '<li>聯繫售後客服，我們將竭誠為您安排補發或相關售後處理。</li>'
             + '</ul>'
             + '<p style="margin:0;">註：逾期提出或以「不符合想像」、「色差」、「個人喜好」等理由者，恕無法受理。</p>'
-            + '<div style="margin:12px 0 0;border-top:1px dashed #e5dccb;padding-top:10px;">'
-            + '<h4 style="margin:4px 0 6px;font-size:14px;">【Return &amp; Refund Policy】</h4>'
-            + '<p style="margin:6px 0;"><b>1. Final Sale &amp; Non-Returnable</b></p>'
-            + '<p style="margin:0 0 6px;">Due to the delicate, handcrafted, and natural character of our preserved and dried botanical creations, all sales are final. This product is non-returnable, non-refundable, and exempt from standard return periods.</p>'
-            + '<p style="margin:6px 0;"><b>2. Natural Variations</b></p>'
-            + '<p style="margin:0 0 6px;">Each botanical piece is handcrafted using genuine dried and preserved florals. Natural variations in size, color, texture, and shape are inherent to the product and do not constitute defects.</p>'
-            + '<p style="margin:6px 0;"><b>3. Quality Assurance &amp; Transit Damage</b></p>'
-            + '<p style="margin:0 0 6px;">Every arrangement undergoes strict inspection and reinforced packaging before dispatch. In the rare event that your item arrives damaged during transit:</p>'
-            + '<ul style="margin:0 0 6px 18px;">'
-            + '<li>Please inspect your order upon receipt and contact us within <b>24 hours</b> of delivery.</li>'
-            + '<li>Provide clear photos or a brief video showing both the damaged item and the original packaging.</li>'
-            + '<li>Our team will evaluate the request and gladly arrange a suitable resolution or replacement.</li>'
-            + '</ul>'
-            + '<p style="margin:0;">Please note: Claims submitted after 24 hours or requests based on personal preference will not be eligible for replacement.</p>'
-            + '</div></div>';
+            + '</div>';
         try {
             const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content').maybeSingle();
             if (data && data.setting_value && data.setting_value.trim()) { el.innerHTML = data.setting_value; return; }
