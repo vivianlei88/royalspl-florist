@@ -20,7 +20,7 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json();
-    const { amount, orderId, orderCode, recipientName, recipientPhone, recipientAddress, deliveryDate, deliveryTimeSlot } = body;
+    const { amount, orderId, orderCode, recipientName, recipientPhone, recipientAddress, deliveryDate, deliveryTimeSlot, currency } = body;
 
     const stripeKey = env.STRIPE_SECRET_KEY;
     if (!stripeKey) {
@@ -30,10 +30,13 @@ export async function onRequestPost(context) {
       });
     }
 
+    // 幣種：前端按當前顯示幣種傳入（usd / hkd），缺省港幣
+    const chargeCurrency = (currency === 'usd' || currency === 'hkd') ? currency : 'hkd';
+
     // 創建 PaymentIntent（Apple Pay / Google Pay 透過 card 自動顯示）
     const formData = new URLSearchParams();
     formData.append('amount', String(Math.round(parseFloat(amount) * 100)));
-    formData.append('currency', 'hkd');
+    formData.append('currency', chargeCurrency);
     formData.append('payment_method_types[]', 'card');
     formData.append('metadata[order_id]', String(orderId || ''));
     formData.append('metadata[order_code]', orderCode || '');
