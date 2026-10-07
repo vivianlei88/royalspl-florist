@@ -29,7 +29,21 @@
         .detail-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 30px; }
         .detail-gallery { width: 100%; }
         .detail-main-image { position: relative; aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 10px; overflow: hidden; }
-        .detail-main-image img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-main-image img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+        .zoom-badge { position: absolute; bottom: 12px; left: 12px; width: 36px; height: 36px; background: rgba(0,0,0,0.55); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; pointer-events: none; transition: opacity 0.2s; z-index: 2; }
+        /* Click-to-zoom Lightbox */
+        .lightbox { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.25s ease; }
+        .lightbox.open { opacity: 1; visibility: visible; }
+        .lightbox-img { max-width: 92vw; max-height: 85vh; width: auto; height: auto; object-fit: contain; border-radius: 4px; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: 18px; right: 22px; width: 46px; height: 46px; border: none; background: rgba(255,255,255,0.15); color: #fff; font-size: 30px; line-height: 1; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 10; }
+        .lightbox-close:hover { background: rgba(255,255,255,0.3); }
+        .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 52px; height: 52px; border: none; background: rgba(255,255,255,0.15); color: #fff; font-size: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 10; }
+        .lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+        .lightbox-prev { left: 18px; }
+        .lightbox-next { right: 18px; }
+        .lightbox-counter { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(255,255,255,0.15); padding: 6px 16px; border-radius: 20px; font-size: 14px; }
+        .lightbox-hint { position: absolute; top: 18px; left: 22px; color: rgba(255,255,255,0.6); font-size: 13px; letter-spacing: 0.5px; }
+        @media (max-width: 768px) { .lightbox-nav { width: 44px; height: 44px; font-size: 24px; } .lightbox-prev { left: 10px; } .lightbox-next { right: 10px; } .lightbox-close { top: 12px; right: 14px; width: 42px; height: 42px; font-size: 26px; } .lightbox-hint { display: none; } }
         .gallery-prev, .gallery-next { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .gallery-prev:hover, .gallery-next:hover { background: white; }
         .gallery-prev { left: 10px; }
@@ -786,7 +800,7 @@ function renderProductDetail(product) {
         html += '<div class="detail-left-col">';
         if (productImages.length > 0) {
             html += '<div class="detail-gallery">';
-            html += '<div class="detail-main-image"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + (product.name_en || product.name_zh) + '">';
+            html += '<div class="detail-main-image"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + (product.name_en || product.name_zh) + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;"><div class="zoom-badge">🔍</div>';
             if (productImages.length > 1) {
                 html += '<button class="gallery-prev" onclick="changeProductImage(-1)">‹</button>';
                 html += '<button class="gallery-next" onclick="changeProductImage(1)">›</button>';
@@ -952,6 +966,80 @@ function renderProductDetail(product) {
         var thumbs = document.querySelectorAll('.thumb-item');
         if (mainImg) mainImg.src = window.currentProductImages[window.currentImageIndex];
         if (counter) counter.textContent = window.currentImageIndex + 1;
+        thumbs.forEach(function(thumb, i) {
+            if (i === window.currentImageIndex) thumb.classList.add('active');
+            else thumb.classList.remove('active');
+        });
+    }
+    // Click-to-zoom Lightbox
+    var lightboxBuilt = false;
+    function ensureLightbox() {
+        if (lightboxBuilt) return;
+        lightboxBuilt = true;
+        var box = document.createElement('div');
+        box.className = 'lightbox';
+        box.id = 'productLightbox';
+        box.innerHTML = '<span class="lightbox-hint">Tap to switch images · Press Esc or tap outside to close</span>'
+            + '<button class="lightbox-close" aria-label="Close">×</button>'
+            + '<button class="lightbox-nav lightbox-prev" aria-label="Previous">‹</button>'
+            + '<img class="lightbox-img" id="lightboxImg" src="" alt="Product detail enlarged">'
+            + '<button class="lightbox-nav lightbox-next" aria-label="Next">›</button>'
+            + '<div class="lightbox-counter" id="lightboxCounter"></div>';
+        document.body.appendChild(box);
+        var lb = document.getElementById('productLightbox');
+        var touchX = null;
+        lb.addEventListener('click', function(e) {
+            if (e.target === lb) closeLightbox();
+        });
+        document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+        document.querySelector('.lightbox-prev').addEventListener('click', function(e){ e.stopPropagation(); lightboxNav(-1); });
+        document.querySelector('.lightbox-next').addEventListener('click', function(e){ e.stopPropagation(); lightboxNav(1); });
+        lb.addEventListener('touchstart', function(e){ touchX = e.touches[0].clientX; }, { passive: true });
+        lb.addEventListener('touchend', function(e){
+            if (touchX === null) return;
+            var dx = e.changedTouches[0].clientX - touchX;
+            touchX = null;
+            if (Math.abs(dx) > 40) lightboxNav(dx < 0 ? 1 : -1);
+        }, { passive: true });
+        document.addEventListener('keydown', function(e) {
+            if (!document.getElementById('productLightbox').classList.contains('open')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') lightboxNav(-1);
+            if (e.key === 'ArrowRight') lightboxNav(1);
+        });
+    }
+    function openLightbox(index) {
+        if (!window.currentProductImages || window.currentProductImages.length === 0) return;
+        ensureLightbox();
+        window.currentImageIndex = (typeof index === 'number') ? index : (window.currentImageIndex || 0);
+        var lb = document.getElementById('productLightbox');
+        var img = document.getElementById('lightboxImg');
+        var counter = document.getElementById('lightboxCounter');
+        img.src = window.currentProductImages[window.currentImageIndex];
+        counter.textContent = (window.currentImageIndex + 1) + ' / ' + window.currentProductImages.length;
+        document.querySelector('.lightbox-prev').style.display = window.currentProductImages.length > 1 ? 'flex' : 'none';
+        document.querySelector('.lightbox-next').style.display = window.currentProductImages.length > 1 ? 'flex' : 'none';
+        lb.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        var lb = document.getElementById('productLightbox');
+        if (!lb) return;
+        lb.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    function lightboxNav(direction) {
+        if (!window.currentProductImages || window.currentProductImages.length <= 1) return;
+        window.currentImageIndex += direction;
+        if (window.currentImageIndex < 0) window.currentImageIndex = window.currentProductImages.length - 1;
+        if (window.currentImageIndex >= window.currentProductImages.length) window.currentImageIndex = 0;
+        var img = document.getElementById('lightboxImg');
+        var counter = document.getElementById('lightboxCounter');
+        if (img) img.src = window.currentProductImages[window.currentImageIndex];
+        if (counter) counter.textContent = (window.currentImageIndex + 1) + ' / ' + window.currentProductImages.length;
+        var mainImg = document.getElementById('mainProductImage');
+        var thumbs = document.querySelectorAll('.thumb-item');
+        if (mainImg) mainImg.src = window.currentProductImages[window.currentImageIndex];
         thumbs.forEach(function(thumb, i) {
             if (i === window.currentImageIndex) thumb.classList.add('active');
             else thumb.classList.remove('active');
