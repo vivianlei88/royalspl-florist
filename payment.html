@@ -321,6 +321,7 @@
                             subtotal: data.subtotal,
                             deliveryFee: data.delivery_fee,
                             total: data.total_amount,
+                            deliveryArea: data.delivery_area,
                             recipient: {
                                 name: data.recipient_name,
                                 phone: data.recipient_phone,
@@ -339,7 +340,11 @@
 
         function renderOrder() {
             if (!currentOrder) return;
-            
+
+            // 國際配送訂單 → 美金顯示；本地訂單 → 港幣
+            const isIntlOrder = (currentOrder.deliveryArea || '').indexOf('國際') === 0;
+            function orderMoney(hkd) { var n = Number(hkd) || 0; if (isIntlOrder) { return 'US$' + (Math.round(n / 7.8 * 100) / 100).toFixed(2); } return 'HK$' + n; }
+
             document.getElementById('orderCode').textContent = '訂單號：' + currentOrder.orderCode;
             
             // 商品列表
@@ -353,16 +358,16 @@
                         <div class="order-item-name">${item.name}</div>
                         <div class="order-item-qty">數量：${item.quantity}</div>
                     </div>
-                    <div class="order-item-price">HK$${item.price * item.quantity}</div>
+                    <div class="order-item-price">${orderMoney(item.price * item.quantity)}</div>
                 </div>`;
             }).join('');
             document.getElementById('orderItems').innerHTML = itemsHtml;
             
             // 金额
             document.getElementById('orderTotals').innerHTML = `
-                <div class="order-total-row"><span>商品小計</span><span>HK$${currentOrder.subtotal}</span></div>
-                <div class="order-total-row"><span>配送費</span><span>${currentOrder.deliveryFee === 0 ? '免費' : 'HK$' + currentOrder.deliveryFee}</span></div>
-                <div class="order-total-row total"><span>總計</span><span>HK$${currentOrder.total}</span></div>
+                <div class="order-total-row"><span>商品小計</span><span>${orderMoney(currentOrder.subtotal)}</span></div>
+                <div class="order-total-row"><span>配送費</span><span>${currentOrder.deliveryFee === 0 ? '免費' : orderMoney(currentOrder.deliveryFee)}</span></div>
+                <div class="order-total-row total"><span>總計</span><span>${orderMoney(currentOrder.total)}</span></div>
             `;
             
             // 配送信息
@@ -395,7 +400,11 @@
                 const items = (currentOrder.items || []).map(item => ({
                     name: item.name, price: item.price || 0, quantity: item.quantity || 1
                 }));
-                
+
+                // 所見即所付：國際配送訂單 → 美金；本地訂單 → 港幣
+                const isIntlOrder = (currentOrder.deliveryArea || '').indexOf('國際') === 0;
+                const payTotal = isIntlOrder ? Math.round((currentOrder.total || 0) / 7.8 * 100) / 100 : (currentOrder.total || 0);
+
                 const response = await fetch('/create-checkout-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -406,9 +415,11 @@
                         recipientAddress: recipient.address,
                         deliveryDate: recipient.date,
                         deliveryTimeSlot: recipient.timeSlot,
+                        deliveryArea: currentOrder.deliveryArea || '',
                         deliveryFee: currentOrder.deliveryFee || 0,
                         subtotal: currentOrder.subtotal || 0,
-                        totalAmount: currentOrder.total || 0,
+                        totalAmount: payTotal,
+                        currency: isIntlOrder ? 'usd' : 'hkd',
                         orderId: currentOrder.id || orderId,
                         orderCode: currentOrder.orderCode
                     })
