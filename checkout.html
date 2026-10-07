@@ -687,12 +687,12 @@
 
     async function loadStripeElement() {
         try {
-            // 先向後端要 client_secret + publishable key
-            const total = getTotal();
+            // 先向後端要 client_secret + publishable key（所見即所付：金額/幣種按當前顯示）
+            const total = payMoney(getTotal());
             const resp = await fetch('/create-payment-intent', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: total })
+                body: JSON.stringify({ amount: total, currency: payCurrency() })
             });
             const data = await resp.json();
             if (!data.clientSecret || !data.publishableKey) {
@@ -739,11 +739,11 @@
         try {
             const stripe = stripePromise;
             const total = getTotal();
-            const amountCents = Math.round(total * 100);
+            const amountCents = Math.round(payMoney(total) * 100);
 
             walletPaymentRequest = stripe.paymentRequest({
                 country: 'HK',
-                currency: 'hkd',
+                currency: payCurrency(),
                 total: {
                     label: 'RoyalSpl Florist',
                     amount: amountCents
@@ -1111,6 +1111,10 @@
     function getDeliveryFee() { if (deliveryMode === 'global') { return getGlobalZoneFee(); } const subtotal = getSubtotal(); const area = getEffectiveArea(); const areaFee = getEffectiveAreaFee(); let fee = Math.max(areaFee, selectedTimeFee); if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 500) { fee = 0; } return fee; }
     function getTotal() { return getSubtotal() + getDeliveryFee(); }
 
+    // ===== 所見即所付：按當前顯示幣種決定付款幣種與金額（內部金額保持港幣，7.8 固定匯率）=====
+    function payMoney(hkd) { var n = Number(hkd) || 0; return siteIsUSD() ? Math.round(n / 7.8 * 100) / 100 : n; }
+    function payCurrency() { return siteIsUSD() ? 'usd' : 'hkd'; }
+
     function autoDetectArea(address) {
         if (!address || address.trim() === '') { detectedArea = ''; document.getElementById('autoDetectBanner').classList.remove('show'); highlightTierItem(manualArea || ''); renderSummary(); return; }
         const lowerAddress = address.toLowerCase();
@@ -1195,7 +1199,7 @@
             ${area ? `<div class="delivery-fee-formula">公式：Max(時段費 ${siteMoney(selectedTimeFee)}, 地區費 ${siteMoney(areaFee)}) = ${siteMoney(deliveryFee)}</div>` : ''}
             <div class="summary-divider"></div>
             <div class="summary-total"><span>總計</span><span>${siteMoney(total)}</span></div>
-            ${deliveryMode === 'global' && siteIsUSD() ? `<div class="summary-total-usd" style="font-size:12px;color:#8a6d1a;text-align:right;margin-top:4px;">結算以港幣為準（HK$${total}），美金僅供參考</div>` : ''}
+            ${deliveryMode === 'global' ? `<div class="summary-total-usd" style="font-size:12px;color:#8a6d1a;text-align:right;margin-top:4px;">付款以${siteIsUSD() ? '美金（US$' + payMoney(total).toFixed(2) + '）' : '港幣（HK$' + total + '）'}結算</div>` : ''}
             <button class="payment-btn" id="paymentBtn" onclick="submitOrder()">提交訂單（轉數快）</button>
         `;
         // 更新轉數快應付金額
@@ -1546,7 +1550,8 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            amount: orderData.totalAmount,
+                            amount: payMoney(orderData.totalAmount),
+                            currency: payCurrency(),
                             orderId: orderId,
                             orderCode: orderCode,
                             recipientName: orderData.recipientName,
@@ -1570,6 +1575,7 @@
                     deliveryFee: orderData.deliveryFee,
                     total: orderData.totalAmount,
                     paymentMethod: 'card',
+                    deliveryArea: orderData.deliveryArea,
                     recipient: {
                         name: orderData.recipientName,
                         phone: orderData.recipientPhone,
