@@ -293,13 +293,17 @@
                 }));
             }
 
+            // International delivery orders show in USD; local orders follow the page currency (what you see is what you pay)
+            const isIntlOrder = (order.delivery_area || '').indexOf('國際') === 0;
+            function orderMoney(hkd) { var n = Number(hkd) || 0; if (isIntlOrder) { return 'US$' + (Math.round(n / 7.8 * 100) / 100).toFixed(2); } return siteMoney(n); }
+
             let productsHtml = '';
             items.forEach(item => {
                 const imgHtml = item.image 
                     ? (item.productId ? '<a href="product-detail.html?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" alt="' + item.name + '"></a>' : '<img src="' + item.image + '" alt="' + item.name + '">')
                     : '<div class="product-img-placeholder"></div>';
-                const priceHtml = item.price ? siteMoney(item.price) : '-';
-                const subtotal = item.price && item.quantity ? siteMoney(item.price * item.quantity) : '';
+                const priceHtml = item.price ? orderMoney(item.price) : '-';
+                const subtotal = item.price && item.quantity ? orderMoney(item.price * item.quantity) : '';
                 productsHtml += '<div class="product-item">' +
                     imgHtml +
                     '<div class="product-info">' +
@@ -359,9 +363,9 @@
             // 7. 金額明細
             html += '<div class="detail-section">';
             html += '<div class="section-title">金額明細</div>';
-            html += '<div class="detail-row"><span class="detail-label">ProductsSubtotal</span><span class="detail-value">' + siteMoney(order.subtotal || '-') + '</span></div>';
-            html += '<div class="detail-row"><span class="detail-label">Shipping Fee</span><span class="detail-value">' + (order.delivery_fee === 0 ? '免費' : siteMoney(order.delivery_fee || '-')) + '</span></div>';
-            html += '<div class="total-row"><span>總金額</span><span>' + siteMoney(order.total_amount || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">ProductsSubtotal</span><span class="detail-value">' + orderMoney(order.subtotal || '-') + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Shipping Fee</span><span class="detail-value">' + (order.delivery_fee === 0 ? '免費' : orderMoney(order.delivery_fee || '-')) + '</span></div>';
+            html += '<div class="total-row"><span>總金額</span><span>' + orderMoney(order.total_amount || '-') + '</span></div>';
             html += '</div>';
 
             // 未Payment：总金额下面显示立即Pay按钮
@@ -392,8 +396,13 @@
                 localStorage.setItem('pending_order', JSON.stringify({
                     id: order.id, orderCode: order.order_code, items: items,
                     subtotal: order.subtotal, deliveryFee: order.delivery_fee, total: order.total_amount,
+                    deliveryArea: order.delivery_area,
                     recipient: { name: order.recipient_name, phone: order.recipient_phone, address: order.recipient_address, date: order.delivery_date, timeSlot: order.delivery_time_slot, email: order.customer_email }
                 }));
+
+                // What you see is what you pay: international orders in USD, local orders in HKD
+                const isIntlOrder = (order.delivery_area || '').indexOf('國際') === 0;
+                const payTotal = isIntlOrder ? Math.round((order.total_amount || 0) / 7.8 * 100) / 100 : (order.total_amount || 0);
 
                 const response = await fetch('/create-checkout-session', {
                     method: 'POST',
@@ -403,7 +412,8 @@
                         recipientAddress: order.recipient_address, deliveryDate: order.delivery_date,
                         deliveryTimeSlot: order.delivery_time_slot, deliveryHour: order.delivery_hour,
                         deliveryArea: order.delivery_area, deliveryFee: order.delivery_fee,
-                        subtotal: order.subtotal, totalAmount: order.total_amount,
+                        subtotal: order.subtotal, totalAmount: payTotal,
+                        currency: isIntlOrder ? 'usd' : 'hkd',
                         orderId: order.id, orderCode: order.order_code
                     })
                 });
