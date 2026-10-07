@@ -1849,7 +1849,49 @@
     }
 
     async function renderReturnsPage(c) {
-        await renderContentEditorPage(c, 'returns', '退換貨政策', 'faq');
+        let zh = '', en = '', seo_title = '', seo_description = '';
+        try {
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content').maybeSingle();
+            if (data) zh = data.setting_value || '';
+            const { data: enData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content_en').maybeSingle();
+            if (enData) en = enData.setting_value || '';
+            const { data: seoData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_seo_title').maybeSingle();
+            if (seoData) seo_title = seoData.setting_value || '';
+            const { data: seoDescData } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_seo_desc').maybeSingle();
+            if (seoDescData) seo_description = seoDescData.setting_value || '';
+        } catch (e) {}
+
+        c.innerHTML = '<div class="page-header"><h2 class="page-title">退換貨政策</h2><button class="btn btn-primary" onclick="saveReturnsPage()">保存</button></div>';
+        c.innerHTML += '<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">' +
+            '<div style="margin-bottom:20px;"><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">中文版內容（前台中文頁顯示）</label>' +
+            buildRTE('contentEditor', zh, 320) + '</div>' +
+            '<div><label style="display:block;margin-bottom:5px;font-size:14px;font-weight:600;">英文版內容 English（前台英文頁顯示）</label>' +
+            buildRTE('contentEditorEn', en, 320) + '</div>' +
+            '</div>' +
+            '<div style="background:white;border-radius:8px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);height:fit-content;">' +
+            '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">SEO 設置</div>' +
+            '<div style="margin-bottom:10px;"><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Title</label>' +
+            '<input type="text" id="contentSeoTitle" value="' + seo_title.replace(/"/g, '&quot;') + '" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;"></div>' +
+            '<div><label style="display:block;margin-bottom:5px;font-size:13px;color:#666;">SEO Description</label>' +
+            '<textarea id="contentSeoDesc" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;box-sizing:border-box;resize:vertical;">' + seo_description + '</textarea></div>' +
+            '</div></div>';
+    }
+
+    async function saveReturnsPage() {
+        var zhEl = document.getElementById('contentEditor');
+        var enEl = document.getElementById('contentEditorEn');
+        const zh = zhEl ? zhEl.innerHTML : '';
+        const en = enEl ? enEl.innerHTML : '';
+        const seo_title = document.getElementById('contentSeoTitle').value.trim();
+        const seo_desc = document.getElementById('contentSeoDesc').value.trim();
+        try {
+            await upsertSetting('returns_content', zh);
+            await upsertSetting('returns_content_en', en);
+            await upsertSetting('returns_seo_title', seo_title);
+            await upsertSetting('returns_seo_desc', seo_desc);
+            alert('保存成功');
+        } catch (e) { alert('保存失敗: ' + e.message); }
     }
 
     async function renderPrivacyPage(c) {
