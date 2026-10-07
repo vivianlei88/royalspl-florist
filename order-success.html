@@ -254,11 +254,13 @@
                     // FPS 模式：保持 pending_payment（待確認付款），後台核對後才轉已付款
                     
                     // 显示订单信息
+                    const isIntlOrder = (order.deliveryArea || '').indexOf('國際') === 0;
+                    function orderMoney(hkd) { var n = Number(hkd) || 0; if (isIntlOrder) { return 'US$' + (Math.round(n / 7.8 * 100) / 100).toFixed(2); } return siteMoney(n); }
                     document.getElementById('orderInfo').innerHTML = `
                         <div class="order-row"><span class="order-label">訂單號</span><span class="order-value">${order.orderCode}</span></div>
-                        <div class="order-row"><span class="order-label">商品金額</span><span class="order-value">${siteMoney(order.subtotal)}</span></div>
-                        <div class="order-row"><span class="order-label">配送費</span><span class="order-value">${order.deliveryFee === 0 ? '免費' : siteMoney(order.deliveryFee)}</span></div>
-                        <div class="order-row"><span class="order-label">總計</span><span class="order-value" style="font-size:18px;font-weight:700;">${siteMoney(order.total)}</span></div>
+                        <div class="order-row"><span class="order-label">商品金額</span><span class="order-value">${orderMoney(order.subtotal)}</span></div>
+                        <div class="order-row"><span class="order-label">配送費</span><span class="order-value">${order.deliveryFee === 0 ? '免費' : orderMoney(order.deliveryFee)}</span></div>
+                        <div class="order-row"><span class="order-label">總計</span><span class="order-value" style="font-size:18px;font-weight:700;">${orderMoney(order.total)}</span></div>
                         ${isFps ? '<div class="order-row"><span class="order-label">付款狀態</span><span class="order-value" style="color:#c0392b;">待確認付款（轉數快）</span></div>' : ''}
                     `;
                     
@@ -271,7 +273,7 @@
                             body: JSON.stringify({
                                 to: userEmail,
                                 subject: '【RoyalSpl Florist】付款成功通知 ' + order.orderCode,
-                                html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">付款成功</h2><p>親愛的顧客，您的訂單已付款成功！</p><p><strong>訂單號：</strong>' + order.orderCode + '</p><p><strong>付款金額：</strong>' + siteMoney(order.total) + '</p><p>我們會盡快安排配送，配送日期：' + (order.recipient?.date || '') + ' ' + (order.recipient?.timeSlot || '') + '</p><p style="color:#888;font-size:12px;margin-top:30px;">如有任何疑問，請聯繫我們。</p></div>'
+                                html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#1A1A1A;">付款成功</h2><p>親愛的顧客，您的訂單已付款成功！</p><p><strong>訂單號：</strong>' + order.orderCode + '</p><p><strong>付款金額：</strong>' + orderMoney(order.total) + '</p><p>我們會盡快安排配送，配送日期：' + (order.recipient?.date || '') + ' ' + (order.recipient?.timeSlot || '') + '</p><p style="color:#888;font-size:12px;margin-top:30px;">如有任何疑問，請聯繫我們。</p></div>'
                             })
                         }).catch(e => console.warn('發送付款成功郵件失敗:', e));
                     }
@@ -288,8 +290,8 @@
                         });
                         gtag('event', 'purchase', {
                             transaction_id: order.orderCode,
-                            currency: 'HKD',
-                            value: order.total,
+                            currency: isIntlOrder ? 'USD' : 'HKD',
+                            value: isIntlOrder ? Math.round(order.total / 7.8 * 100) / 100 : order.total,
                             items: purchaseItems
                         });
                     }
