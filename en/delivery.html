@@ -121,14 +121,21 @@
         <div class="dlv-card">
             <h2>🌏 Worldwide Delivery (Dried &amp; Preserved Flowers)</h2>
             <p><span class="dlv-tag">Global Delivery</span></p>
-            <p>Items marked "Global Delivery" (dried &amp; preserved flowers) can be shipped worldwide. Shipping is charged by <b>package size</b> (S / M / L) and <b>destination region</b>:</p>
+            <p>Items marked "Global Delivery" (dried &amp; preserved flowers) can be shipped worldwide. Shipping is charged by <b>package size</b> (S / M / L / XL) and <b>destination region</b>:</p>
+            <p><b>Size is based on the overall height of the arrangement (including extending stems):</b></p>
+            <ul>
+                <li>Size S: height ≤ 50cm (max 50cm)</li>
+                <li>Size M: height 50–80cm (max 80cm)</li>
+                <li>Size L: height 80–120cm (max 120cm)</li>
+                <li>Size XL: height 120–160cm (max 160cm)</li>
+            </ul>
             <div class="dlv-table-wrap" id="globalZoneTable">Loading…</div>
             <p>International courier: estimated <b>7–14 business days</b> (subject to destination customs &amp; logistics).</p>
         </div>
 
         <div class="dlv-card">
             <h2>⚡ DHL Express Delivery (2–3 days)</h2>
-            <p>Choose DHL Express for worldwide orders — surcharge: <b>+HK$350 (S) / +HK$800 (M) / +HK$1600 (L)</b>. Simply tick "DHL Express Delivery" at checkout.</p>
+            <p>Choose DHL Express for worldwide orders — surcharge: <b>+HK$350 (S) / +HK$800 (M) / +HK$1600 (L) / +HK$2200 (XL) and up</b> (as shown at checkout). Simply tick "DHL Express Delivery" at checkout.</p>
         </div>
 
         <div class="dlv-card">
@@ -169,19 +176,19 @@
             } catch(e) { zones = null; }
             if (!zones || !zones.length) {
                 zones = [
-                    { zone: 'Asia', fees: { standard: 120, medium: 450, large: 900 }, express: { standard: 350, medium: 800, large: 1600 } },
-                    { zone: 'Middle East', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
-                    { zone: 'Oceania', fees: { standard: 180, medium: 600, large: 1300 }, express: { standard: 350, medium: 800, large: 1600 } },
-                    { zone: 'North America', fees: { standard: 250, medium: 700, large: 1400 }, express: { standard: 350, medium: 800, large: 1600 } },
-                    { zone: 'Europe', fees: { standard: 280, medium: 750, large: 1500 }, express: { standard: 350, medium: 800, large: 1600 } },
-                    { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600 }, express: { standard: 350, medium: 800, large: 1600 } }
+                    { zone: 'Asia', fees: { standard: 120, medium: 450, large: 900, xl: 1800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2200 } },
+                    { zone: 'Middle East', fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 } },
+                    { zone: 'Oceania', fees: { standard: 180, medium: 600, large: 1300, xl: 2600 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 } },
+                    { zone: 'North America', fees: { standard: 250, medium: 700, large: 1400, xl: 2800 }, express: { standard: 350, medium: 800, large: 1600, xl: 2400 } },
+                    { zone: 'Europe', fees: { standard: 280, medium: 750, large: 1500, xl: 3000 }, express: { standard: 350, medium: 800, large: 1600, xl: 2500 } },
+                    { zone: 'Other Regions', fees: { standard: 300, medium: 800, large: 1600, xl: 3200 }, express: { standard: 350, medium: 800, large: 1600, xl: 2600 } }
                 ];
             }
-            let rows = '<tr><th>Region</th><th>S</th><th>M</th><th>L</th><th>DHL Surcharge</th></tr>';
+            let rows = '<tr><th>Region</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>DHL Surcharge</th></tr>';
             (zones || []).forEach(function(z) {
                 const f = z.fees || {};
                 const e = z.express || {};
-                rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + '</td></tr>';
+                rows += '<tr><td>' + z.zone + '</td><td>HK$' + (f.standard || 0) + '</td><td>HK$' + (f.medium || 0) + '</td><td>HK$' + (f.large || 0) + '</td><td>HK$' + (f.xl || 0) + '</td><td>+HK$' + (e.standard || 0) + ' / ' + (e.medium || 0) + ' / ' + (e.large || 0) + ' / ' + (e.xl || 0) + '</td></tr>';
             });
             el.innerHTML = '<table class="dlv-table">' + rows + '</table>';
         }
