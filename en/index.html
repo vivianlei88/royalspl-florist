@@ -477,9 +477,10 @@
                 heroContent.style.display = '';
             }
             
-            if (settings.about_text) {
+            var aboutTxt = settings.about_text_en || settings.about_text || '';
+            if (aboutTxt) {
                 var a = document.getElementById('aboutText');
-                if (a) a.innerHTML = settings.about_text;
+                if (a) a.innerHTML = aboutTxt;
             }
         } catch (e) {
             console.error('載入Home設置失敗:', e);
