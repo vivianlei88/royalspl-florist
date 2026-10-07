@@ -447,7 +447,8 @@
                 <select id="globalCountrySelect" onchange="onGlobalCountryChange(this)" style="width:100%;padding:14px 16px;border:1px solid #1A1A1A;border-radius:6px;font-size:16px;font-family:inherit;background:#fff;"></select>
             </div>
             <p id="globalShippingInfo" class="global-fee-card">Please select your country to calculate shipping fee</p>
-            <label style="display:flex;align-items:center;gap:10px;margin:12px 0 6px;font-size:16px;cursor:pointer;background:#fff;border:2px solid rgba(26,26,26,0.2);border-radius:8px;padding:15px 18px;">
+            <!-- DHL option temporarily hidden (restore once pricing confirmed): style="display:none" -->
+            <label style="display:none;align-items:center;gap:10px;margin:12px 0 6px;font-size:16px;cursor:pointer;background:#fff;border:2px solid rgba(26,26,26,0.2);border-radius:8px;padding:15px 18px;">
                 <input type="checkbox" id="globalExpressCheck" onchange="toggleGlobalExpress(this.checked)" style="width:22px;height:22px;accent-color:#1A1A1A;flex-shrink:0;">
                 <span>⚡ DHL Express Delivery (2–3 days) <b id="expressSurchargeLabel">+HK$0</b></span>
             </label>
