@@ -558,6 +558,7 @@
                 <div class="sidebar-submenu" id="contentSubmenu">
                     <div class="sidebar-item sidebar-subitem" data-page="blog" onclick="switchPage('blog')">部落格文章</div>
                     <div class="sidebar-item sidebar-subitem" data-page="faq" onclick="switchPage('faq')">常見問題</div>
+                    <div class="sidebar-item sidebar-subitem" data-page="returns" onclick="switchPage('returns')">退換貨政策</div>
                     <div class="sidebar-item sidebar-subitem" data-page="privacy" onclick="switchPage('privacy')">私隱政策</div>
                 </div>
             </div>
@@ -1845,6 +1846,10 @@
     // ==================== 常見問題 / 私隱政策編輯 ====================
     async function renderFaqPage(c) {
         await renderContentEditorPage(c, 'faq', '常見問題', 'faq');
+    }
+
+    async function renderReturnsPage(c) {
+        await renderContentEditorPage(c, 'returns', '退換貨政策', 'faq');
     }
 
     async function renderPrivacyPage(c) {
@@ -3257,6 +3262,7 @@ staticPages.forEach(page => {
         else if (page === 'seo') { renderSEOPage(c); }
         else if (page === 'blog') { renderBlogPage(c); }
         else if (page === 'faq') { renderFaqPage(c); }
+        else if (page === 'returns') { renderReturnsPage(c); }
         else if (page === 'privacy') { renderPrivacyPage(c); }
         else if (page === 'edm') { renderEDMPage(c); }
         else if (page === 'media') { renderMediaPage(c); }
