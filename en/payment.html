@@ -321,6 +321,7 @@
                             subtotal: data.subtotal,
                             deliveryFee: data.delivery_fee,
                             total: data.total_amount,
+                            deliveryArea: data.delivery_area,
                             recipient: {
                                 name: data.recipient_name,
                                 phone: data.recipient_phone,
@@ -339,7 +340,11 @@
 
         function renderOrder() {
             if (!currentOrder) return;
-            
+
+            // What you see is what you pay: international orders in USD, local orders in HKD
+            const isIntlOrder = (currentOrder.deliveryArea || '').indexOf('國際') === 0;
+            function orderMoney(hkd) { var n = Number(hkd) || 0; if (isIntlOrder) { return 'US$' + (Math.round(n / 7.8 * 100) / 100).toFixed(2); } return 'HK$' + n; }
+
             document.getElementById('orderCode').textContent = 'Order號：' + currentOrder.orderCode;
             
             // Products列表
@@ -353,16 +358,16 @@
                         <div class="order-item-name">${item.name}</div>
                         <div class="order-item-qty">Quantity：${item.quantity}</div>
                     </div>
-                    <div class="order-item-price">HK$${item.price * item.quantity}</div>
+                    <div class="order-item-price">${orderMoney(item.price * item.quantity)}</div>
                 </div>`;
             }).join('');
             document.getElementById('orderItems').innerHTML = itemsHtml;
             
             // 金额
             document.getElementById('orderTotals').innerHTML = `
-                <div class="order-total-row"><span>ProductsSubtotal</span><span>HK$${currentOrder.subtotal}</span></div>
-                <div class="order-total-row"><span>配送費</span><span>${currentOrder.deliveryFee === 0 ? '免費' : 'HK$' + currentOrder.deliveryFee}</span></div>
-                <div class="order-total-row total"><span>總計</span><span>HK$${currentOrder.total}</span></div>
+                <div class="order-total-row"><span>ProductsSubtotal</span><span>${orderMoney(currentOrder.subtotal)}</span></div>
+                <div class="order-total-row"><span>配送費</span><span>${currentOrder.deliveryFee === 0 ? '免費' : orderMoney(currentOrder.deliveryFee)}</span></div>
+                <div class="order-total-row total"><span>總計</span><span>${orderMoney(currentOrder.total)}</span></div>
             `;
             
             // Delivery Information
