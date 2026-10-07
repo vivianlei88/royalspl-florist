@@ -98,6 +98,16 @@
         .seo-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #F3EFEA; border-radius: 5px; cursor: pointer; font-weight: 600; }
         .seo-content { display: none; padding: 15px; background-color: #FAF8F5; border: 1px solid rgba(26,26,26,0.1); border-radius: 0 0 5px 5px; font-size: 14px; color: #383431; line-height: 1.8; }
         .seo-content.open { display: block; }
+        .faq-card { background: #fff; border: 1px solid #ede8e2; border-radius: 14px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: box-shadow .2s; }
+        .faq-card.open { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .faq-q { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; cursor: pointer; user-select: none; }
+        .q-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 14px; background: #1A1A1A; color: #FAF8F5; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; box-sizing: border-box; }
+        .q-text { flex: 1; font-weight: 600; color: #1A1A1A; font-size: 15px; line-height: 1.5; }
+        .q-toggle { color: #9a8a78; flex-shrink: 0; font-size: 20px; font-weight: 300; line-height: 1.3; transition: transform .25s ease; }
+        .faq-card.open .q-toggle { transform: rotate(45deg); }
+        .faq-a { display: none; padding: 0 18px 18px 52px; color: #383431; line-height: 1.8; font-size: 14px; }
+        .faq-card.open .faq-a { display: block; animation: faqFade .25s ease; }
+        @keyframes faqFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         @media (max-width: 768px) { .detail-container { grid-template-columns: 1fr; gap: 30px; } .detail-gallery { width: 100%; }
         .detail-main-image { position: relative; aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 10px; overflow: hidden; }
         .detail-main-image img { width: 100%; height: 100%; object-fit: cover; }
@@ -1094,29 +1104,49 @@
             + '<p style="margin:10px 0 0;"><a href="delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">詳見完整配送規則 →</a></p>';
     }
 
-    // 退換貨政策（優先讀後台 site_settings.returns_content，無則用內置文案）
+    // 退換貨政策（前台常見問題同款卡片排版；優先讀後台 site_settings.returns_content，無則用內置文案）
+    function renderReturnFaqCards(raw) {
+        var txt = String(raw || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim();
+        var paras = txt.split(/\n\s*\n|\r?\n/).map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+        var faqs = [];
+        var i = 0;
+        while (i < paras.length) {
+            var q = paras[i];
+            if (/[？?]/.test(q)) {
+                var ans = [];
+                var j = i + 1;
+                while (j < paras.length && !/[？?]$/.test(paras[j])) { ans.push(paras[j]); j++; }
+                faqs.push({ question: q, answer: ans.join(' ') });
+                i = j;
+            } else { i++; }
+        }
+        if (!faqs.length) return '';
+        var cn = ['一','二','三','四','五','六','七','八','九','十'];
+        var html = '';
+        faqs.forEach(function(faq, idx) {
+            var num = cn[idx] || (idx + 1);
+            html += '<div class="faq-card' + (idx === 0 ? ' open' : '') + '">'
+                + '<div class="faq-q" onclick="this.parentElement.classList.toggle(\'open\')">'
+                + '<span class="q-badge">' + num + '</span>'
+                + '<span class="q-text">' + faq.question + '</span>'
+                + '<span class="q-toggle">+</span>'
+                + '</div>'
+                + '<div class="faq-a">' + faq.answer + '</div>'
+                + '</div>';
+        });
+        return html;
+    }
     async function loadReturnPolicyContent() {
         const el = document.getElementById('returnContent');
         if (!el) return;
-        var fallback = '<div style="font-size:14px;line-height:1.9;">'
-            + '<h4 style="margin:4px 0 6px;font-size:14px;">【退換貨政策】</h4>'
-            + '<p style="margin:6px 0;"><b>1. 7天無理由退貨</b></p>'
-            + '<p style="margin:0 0 6px;">本商品均包含天然植物、鮮花、乾花及永生花材，屬於手作易損及定制類藝品。依據國際消費慣例與相關法規，本商品售出後概不接受退換貨（不適用7天無理由退貨）。</p>'
-            + '<p style="margin:6px 0;"><b>2. 天然植物特性</b></p>'
-            + '<p style="margin:0 0 6px;">每件花藝作品均由天然花材手作而成，花朵的姿態、大小及色澤微有差異屬自然現象，不屬於商品瑕疵或質量問題。</p>'
-            + '<p style="margin:6px 0;"><b>3. 運輸損壞與售後保障</b></p>'
-            + '<p style="margin:0 0 6px;">商品寄出前均經過畫廊級嚴格品質檢驗與防震包裝。若收到商品時發現因運輸造成的嚴重破損：</p>'
-            + '<ul style="margin:0 0 6px 18px;">'
-            + '<li>請於簽收後 <b>24 小時內</b>拍照/錄影（需包含外箱與破損商品照片）。</li>'
-            + '<li>聯繫售後客服，我們將竭誠為您安排補發或相關售後處理。</li>'
-            + '</ul>'
-            + '<p style="margin:0;">註：逾期提出或以「不符合想像」、「色差」、「個人喜好」等理由者，恕無法受理。</p>'
-            + '</div>';
+        var fallback = '是否接受退貨？\n本商品均包含天然植物、鮮花、乾花及永生花材，屬於手作易損及定制類藝品。依據國際消費慣例與相關法規，本商品售出後概不接受退換貨（不適用7天無理由退貨）。\n花材形狀、大小或色澤有差異算瑕疵嗎？\n每件花藝作品均由天然花材手作而成，花朵的姿態、大小及色澤微有差異屬自然現象，不屬於商品瑕疵或質量問題。\n運輸損壞如何處理？\n商品寄出前均經過畫廊級嚴格品質檢驗與防震包裝。若收到商品時發現因運輸造成的嚴重破損，請於簽收後 24 小時內拍照或錄影（需包含外箱與破損商品照片），並聯繫售後客服，我們將竭誠為您安排補發或相關售後處理。註：逾期提出或以「不符合想像」、「色差」、「個人喜好」等理由者，恕無法受理。';
+        var html = '';
         try {
             const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content').maybeSingle();
-            if (data && data.setting_value && data.setting_value.trim()) { el.innerHTML = data.setting_value; return; }
+            if (data && data.setting_value && data.setting_value.trim()) { html = renderReturnFaqCards(data.setting_value); }
         } catch(e) { console.log('退換貨政策读取失败:', e); }
-        el.innerHTML = fallback;
+        if (!html) html = renderReturnFaqCards(fallback);
+        el.innerHTML = html || '<p style="font-size:14px;color:#888;">暫無內容</p>';
     }
 
 document.addEventListener('DOMContentLoaded', function() {
