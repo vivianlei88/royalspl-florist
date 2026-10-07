@@ -796,6 +796,8 @@ function renderProductDetail(product) {
         html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Flower Care Tips <span>+<\/span><\/div><div class="seo-content" id="flowerCareContent">Flower Care Tips:<br>1. Change water daily<br>2. Trim stems at 45 degrees<br>3. Avoid direct sunlight<br>4. Remove wilted petals regularly<\/div><\/div>';
         // Delivery Policy (Local + Worldwide, collapsible)
         html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Delivery Policy <span>+<\/span><\/div><div class="seo-content" id="deliveryContent">Loading...<\/div><\/div>';
+        // Return & Refund Policy (collapsible)
+        html += '<div class="seo-collapsible"><div class="seo-header" onclick="toggleSeo(this)">Return &amp; Refund Policy <span>+<\/span><\/div><div class="seo-content" id="returnContent">Loading...<\/div><\/div>';
         html += '<\/div>';
         html += '<\/div>';
         html += '<div class="detail-info-area">';
@@ -1226,11 +1228,38 @@ function renderProductDetail(product) {
             + '<p style="margin:10px 0 0;"><a href="/en/delivery.html" style="color:#1A1A1A;text-decoration:underline;font-weight:600;">View full delivery policy →</a></p>';
     }
 
+    // Return & Refund Policy (prefer backend site_settings.returns_content, fallback to built-in copy)
+    async function loadReturnPolicyContent() {
+        const el = document.getElementById('returnContent');
+        if (!el) return;
+        var fallback = '<div style="font-size:13px;line-height:1.9;">'
+            + '<h4 style="margin:4px 0 6px;font-size:14px;">【Return &amp; Refund Policy】</h4>'
+            + '<p style="margin:6px 0;"><b>1. Final Sale &amp; Non-Returnable</b></p>'
+            + '<p style="margin:0 0 6px;">Due to the delicate, handcrafted, and natural character of our preserved and dried botanical creations, all sales are final. This product is non-returnable, non-refundable, and exempt from standard return periods.</p>'
+            + '<p style="margin:6px 0;"><b>2. Natural Variations</b></p>'
+            + '<p style="margin:0 0 6px;">Each botanical piece is handcrafted using genuine dried and preserved florals. Natural variations in size, color, texture, and shape are inherent to the product and do not constitute defects.</p>'
+            + '<p style="margin:6px 0;"><b>3. Quality Assurance &amp; Transit Damage</b></p>'
+            + '<p style="margin:0 0 6px;">Every arrangement undergoes strict inspection and reinforced packaging before dispatch. In the rare event that your item arrives damaged during transit:</p>'
+            + '<ul style="margin:0 0 6px 18px;">'
+            + '<li>Please inspect your order upon receipt and contact us within <b>24 hours</b> of delivery.</li>'
+            + '<li>Provide clear photos or a brief video showing both the damaged item and the original packaging.</li>'
+            + '<li>Our team will evaluate the request and gladly arrange a suitable resolution or replacement.</li>'
+            + '</ul>'
+            + '<p style="margin:0;">Please note: Claims submitted after 24 hours or requests based on personal preference will not be eligible for replacement.</p>'
+            + '</div>';
+        try {
+            const { data } = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'returns_content').maybeSingle();
+            if (data && data.setting_value && data.setting_value.trim()) { el.innerHTML = data.setting_value; return; }
+        } catch(e) { console.log('Return policy load failed:', e); }
+        el.innerHTML = fallback;
+    }
+
 document.addEventListener('DOMContentLoaded', function() {         siteInitCurrency();         siteRenderCurrencyBtn();
         loadProduct();
         updateCartBadge();
         loadFlowerCareContent();
         loadDeliveryRulesContent();
+        loadReturnPolicyContent();
     });
     </script>
     <script>
