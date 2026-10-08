@@ -444,47 +444,62 @@
         slidesContainer.innerHTML = '';
         if (dotsContainer) dotsContainer.innerHTML = '';
         
-        for (var i = 0; i < images.length; i++) {
-            var slide = document.createElement('div');
-            slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
-            slide.style.backgroundImage = 'url(' + images[i] + ')';
-            // 每張圖自己的按鈕文字與跳轉連結（沒有則回退全局 CTA）
-            var slideText = (texts && texts[i]) ? texts[i] : (fallbackText || '');
-            var slideLink = (links && links[i]) ? links[i] : (fallbackLink || '');
-            if (slideLink) {
-                slide.style.cursor = 'pointer';
-            }
-            if (slideText) {
-                var btn = document.createElement('a');
-                btn.className = 'hero-slide-cta';
-                btn.textContent = slideText;
-                (function(url){
-                    btn.onclick = function(e) {
-                        if (e && e.stopPropagation) e.stopPropagation();
-                        if (url) window.location.href = url;
-                    };
-                })(slideLink);
-                slide.appendChild(btn);
-            }
-            if (slideLink) {
-                (function(url){
-                    slide.onclick = function(e) { if (e && e.stopPropagation) e.stopPropagation(); window.location.href = url; };
-                })(slideLink);
-            }
-            slidesContainer.appendChild(slide);
-            
-            if (dotsContainer) {
-                var dot = document.createElement('div');
-                dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
-                dot.onclick = (function(idx) {
-                    return function() { goToHeroSlide(idx); };
-                })(i);
-                dotsContainer.appendChild(dot);
-            }
-        }
+        var loadedCount = 0;
+        var total = images.length;
         
-        if (images.length > 1) {
-            startHeroSlideshow();
+        for (var i = 0; i < total; i++) {
+            (function(idx) {
+                var slide = document.createElement('div');
+                slide.className = 'hero-slide';
+                // 每張圖自己的按鈕文字與跳轉連結（沒有則回退全局 CTA）
+                var slideText = (texts && texts[idx]) ? texts[idx] : (fallbackText || '');
+                var slideLink = (links && links[idx]) ? links[idx] : (fallbackLink || '');
+                if (slideLink) {
+                    slide.style.cursor = 'pointer';
+                }
+                if (slideText) {
+                    var btn = document.createElement('a');
+                    btn.className = 'hero-slide-cta';
+                    btn.textContent = slideText;
+                    (function(url){
+                        btn.onclick = function(e) {
+                            if (e && e.stopPropagation) e.stopPropagation();
+                            if (url) window.location.href = url;
+                        };
+                    })(slideLink);
+                    slide.appendChild(btn);
+                }
+                if (slideLink) {
+                    (function(url){
+                        slide.onclick = function(e) { if (e && e.stopPropagation) e.stopPropagation(); window.location.href = url; };
+                    })(slideLink);
+                }
+                slidesContainer.appendChild(slide);
+                
+                // 預加載圖片：圖片加載完成後才設置背景並淡入，避免加載中露出深色佔位
+                var img = new Image();
+                img.onload = function() {
+                    slide.style.backgroundImage = 'url(' + images[idx] + ')';
+                    if (idx === 0) slide.classList.add('active');
+                    loadedCount++;
+                    if (loadedCount === total && total > 1) startHeroSlideshow();
+                };
+                img.onerror = function() {
+                    slide.style.display = 'none';
+                    loadedCount++;
+                    if (loadedCount === total && total > 1) startHeroSlideshow();
+                };
+                img.src = images[idx];
+                
+                if (dotsContainer) {
+                    var dot = document.createElement('div');
+                    dot.className = 'hero-dot' + (idx === 0 ? ' active' : '');
+                    dot.onclick = (function(idx2) {
+                        return function() { goToHeroSlide(idx2); };
+                    })(idx);
+                    dotsContainer.appendChild(dot);
+                }
+            })(i);
         }
     }
     
