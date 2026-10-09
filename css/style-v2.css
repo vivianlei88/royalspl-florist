@@ -706,7 +706,7 @@ button {
 
 @media (max-width: 768px) {
     .hero {
-        height: 620px;
+        height: 480px;
         aspect-ratio: auto;
     }
     
