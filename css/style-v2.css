@@ -335,7 +335,7 @@ button {
 .hero-slide-cta {
     position: absolute;
     bottom: 16%;
-    right: 40px;
+    right: 160px;
     z-index: 11;
     display: inline-block;
     padding: 14px 40px;
