@@ -257,7 +257,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #f7efdc 0%, #efe4c9 50%, #f7efdc 100%);
+    background: #FAF8F5;
     overflow: hidden;
 }
 
