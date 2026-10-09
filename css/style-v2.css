@@ -695,6 +695,15 @@ button {
 /* ============================================
    響應式設計
    ============================================ */
+@media (min-width: 769px) and (max-width: 991px) {
+    .hero-slide-cta {
+        bottom: 12%;
+        right: 24px;
+        padding: 10px 22px;
+        font-size: 13px;
+    }
+}
+
 @media (max-width: 768px) {
     .hero-content {
         bottom: 12%;
@@ -703,10 +712,10 @@ button {
     }
     
     .hero-slide-cta {
-        bottom: 12%;
-        right: 20px;
-        padding: 12px 26px;
-        font-size: 14px;
+        bottom: 10%;
+        right: 16px;
+        padding: 7px 16px;
+        font-size: 12px;
     }
     
     .hero-title {
