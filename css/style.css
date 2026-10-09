@@ -252,8 +252,7 @@ button {
    ============================================ */
 .hero {
     position: relative;
-    height: 70vh;
-    min-height: 400px;
+    height: 690px;
     display: flex;
     align-items: center;
     justify-content: center;
