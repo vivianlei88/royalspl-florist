@@ -705,11 +705,6 @@ button {
 }
 
 @media (max-width: 768px) {
-    .hero {
-        height: 300px;
-        aspect-ratio: auto;
-    }
-    
     .hero-content {
         bottom: 12%;
         max-width: 85%;
