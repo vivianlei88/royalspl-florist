@@ -261,6 +261,15 @@ button {
     overflow: hidden;
 }
 
+/* 桌面宽屏：hero 高度匹配轮播大图比例（1600:886），图片完整不裁切 */
+@media (min-width: 992px) {
+    .hero {
+        height: auto;
+        min-height: 0;
+        aspect-ratio: 1600 / 886;
+    }
+}
+
 .hero-bg {
     position: absolute;
     top: 0;
