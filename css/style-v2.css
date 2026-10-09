@@ -252,12 +252,21 @@ button {
    ============================================ */
 .hero {
     position: relative;
-    height: 690px;
+    height: auto;
+    aspect-ratio: 1440 / 690;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #f7efdc 0%, #efe4c9 50%, #f7efdc 100%);
     overflow: hidden;
+}
+
+/* 桌面：固定高度 690px */
+@media (min-width: 992px) {
+    .hero {
+        height: 690px;
+        aspect-ratio: auto;
+    }
 }
 
 .hero-bg {
