@@ -757,10 +757,7 @@
         var linkedIds = product.linked_addons || [];
         if (!linkedIds.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
         try {
-            var dRes = await supabaseClient.from('site_settings').select('setting_value').eq('setting_key', 'addons_details');
-            allAddonDetails = {};
-            if (dRes.data && dRes.data.length && dRes.data[0].setting_value) { try { allAddonDetails = JSON.parse(dRes.data[0].setting_value) || {}; } catch (e) { allAddonDetails = {}; } }
-            var result = await supabaseClient.from('addons').select('*').in('id', linkedIds).eq('is_active', true);
+            var result = await supabaseClient.from('products').select('*').in('id', linkedIds).eq('is_active', true);
             if (result.error) throw result.error;
             allAddons = result.data || [];
             if (!allAddons.length) { addonList.innerHTML = '<p style="font-size:13px;color:#888;">暫無加購配件</p>'; return; }
@@ -781,12 +778,11 @@
         var a = null;
         for (var i = 0; i < allAddons.length; i++) { if (allAddons[i].id === addonId) { a = allAddons[i]; break; } }
         if (!a) return;
-        var d = (allAddonDetails && allAddonDetails[String(addonId)]) ? allAddonDetails[String(addonId)] : {};
         var rows = '';
-        if (d.material) rows += '<div class="addon-detail-spec"><span class="spec-k">材質<\/span><span class="spec-v">' + d.material + '<\/span><\/div>';
-        if (d.origin) rows += '<div class="addon-detail-spec"><span class="spec-k">產地<\/span><span class="spec-v">' + d.origin + '<\/span><\/div>';
-        if (d.size) rows += '<div class="addon-detail-spec"><span class="spec-k">規格<\/span><span class="spec-v">' + d.size + '<\/span><\/div>';
-        var desc = d.description || '';
+        if (a.specs_flowers) rows += '<div class="addon-detail-spec"><span class="spec-k">材質<\/span><span class="spec-v">' + a.specs_flowers + '<\/span><\/div>';
+        if (a.specs_origin) rows += '<div class="addon-detail-spec"><span class="spec-k">產地<\/span><span class="spec-v">' + a.specs_origin + '<\/span><\/div>';
+        if (a.specs_size) rows += '<div class="addon-detail-spec"><span class="spec-k">規格<\/span><span class="spec-v">' + a.specs_size + '<\/span><\/div>';
+        var desc = a.description || '';
         var html = '<div class="addon-detail-overlay" onclick="if(event.target===this)closeAddonDetail()"><div class="addon-detail-modal"><div class="addon-detail-modal-wrap">';
         html += '<button class="addon-detail-close" onclick="closeAddonDetail()">×<\/button>';
         if (a.image_url) html += '<img class="addon-detail-img" src="' + a.image_url + '" alt="' + (a.name_zh || '') + '">';
