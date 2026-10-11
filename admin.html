@@ -4077,7 +4077,7 @@ staticPages.forEach(page => {
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;">';
         // 热销商品
         html += '<div style="background:white;border-radius:16px;padding:25px;box-shadow:0 2px 16px rgba(0,0,0,0.04);border:1px solid #f0f0f0;">';
-        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">熱門訪問商品</h3>';
+        html += '<h3 style="font-size:18px;font-weight:600;margin:0 0 20px 0;color:#0A0A0A;">熱門訪問頁面</h3>';
         html += '<div id="topVisitedProducts"><div style="color:#bbb;padding:40px;text-align:center;font-size:14px;">加載中...</div></div>';
         html += '</div>';
         // 访客来源分布
@@ -4366,49 +4366,69 @@ staticPages.forEach(page => {
     
     // 渲染热门访问商品 - 显示商品图 + 商品名称
     function renderTopVisitedProducts(visitors) {
-        var productViews = {};
+        var pageViews = {};
         visitors.forEach(function(v) {
             if (!v.page_url) return;
             var url = v.page_url;
-            var productKey = '';
-            // 提取 id= 參數（product-detail.html?id=23）
+            var key = '';
+            // 商品詳情頁：id= / slug= / /product-page/xxx
             var idMatch = url.match(/[?&]id=(\d+)/);
+            var slugMatch = url.match(/[?&]slug=([^&]+)/);
+            var pp = url.match(/\/product-page\/([^\/?]+)/);
             if (idMatch) {
-                productKey = 'id:' + idMatch[1];
+                key = 'id:' + idMatch[1];
+            } else if (slugMatch) {
+                try { key = 'slug:' + decodeURIComponent(slugMatch[1]); } catch(e) { key = 'slug:' + slugMatch[1]; }
+            } else if (pp) {
+                try { key = 'slug:' + decodeURIComponent(pp[1]); } catch(e) { key = 'slug:' + pp[1]; }
             } else {
-                // 提取 slug 參數（product-detail?slug=xxx）
-                var slugMatch = url.match(/[?&]slug=([^&]+)/);
-                if (slugMatch) {
-                    try { productKey = 'slug:' + decodeURIComponent(slugMatch[1]); }
-                    catch(e) { productKey = 'slug:' + slugMatch[1]; }
+                // 非商品頁：全站任何網址都計入（路徑 + 參數歸一化）
+                var path = '';
+                try { path = new URL(url).pathname; } catch(e) { path = url.split('?')[0] || url; }
+                if (path === '') path = url;
+                var tagMatch = url.match(/[?&]tag=([^&]+)/);
+                var catMatch = url.match(/[?&]category=([^&]+)/);
+                if (tagMatch) {
+                    try { key = 'tag:' + decodeURIComponent(tagMatch[1]); } catch(e) { key = 'tag:' + tagMatch[1]; }
+                } else if (catMatch) {
+                    try { key = 'cat:' + decodeURIComponent(catMatch[1]); } catch(e) { key = 'cat:' + catMatch[1]; }
                 } else {
-                    // /product-page/xxx 舊網址格式
-                    var pp = url.match(/\/product-page\/([^\/?]+)/);
-                    if (pp) {
-                        try { productKey = 'slug:' + decodeURIComponent(pp[1]); }
-                        catch(e) { productKey = 'slug:' + pp[1]; }
-                    }
+                    key = 'page:' + path;
                 }
             }
-            // 唔係商品頁（products.html 列表頁等）→ 唔統計
-            if (!productKey) return;
-            productViews[productKey] = (productViews[productKey] || 0) + 1;
+            pageViews[key] = (pageViews[key] || 0) + 1;
         });
         
-        var sorted = Object.entries(productViews).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
+        var sorted = Object.entries(pageViews).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
         var maxViews = sorted.length > 0 ? sorted[0][1] : 1;
         
         // 收集 id / slug 用嚟查商品名同圖片
         var idKeys = [], slugKeys = [];
         sorted.forEach(function(p) {
             if (p[0].indexOf('slug:') === 0) slugKeys.push(p[0].substring(5));
-            else idKeys.push(parseInt(p[0].substring(3)));
+            else if (p[0].indexOf('id:') === 0) idKeys.push(parseInt(p[0].substring(3)));
         });
+        
+        // 非商品頁顯示名稱映射
+        var pageNames = {
+            '/': '首頁', '/index.html': '首頁',
+            '/products.html': '商品列表頁', '/products': '商品列表頁',
+            '/blog.html': '博客列表頁', '/blog': '博客列表頁', '/blog-detail': '博客詳情頁',
+            '/categories.html': '分類總覽頁', '/categories': '分類總覽頁',
+            '/contact.html': '聯繫我們頁', '/contact': '聯繫我們頁',
+            '/faq.html': '常見問題頁', '/faq': '常見問題頁',
+            '/privacy.html': '隱私政策頁', '/privacy': '隱私政策頁',
+            '/en/': '首頁（英文）', '/en/index.html': '首頁（英文）',
+            '/en/products': '商品列表頁（英文）', '/en/blog': '博客列表頁（英文）',
+            '/en/blog-detail': '博客詳情頁（英文）', '/en/categories': '分類總覽頁（英文）',
+            '/en/contact': '聯繫我們頁（英文）', '/en/faq': '常見問題頁（英文）',
+            '/en/privacy': '隱私政策頁（英文）'
+        };
         
         function render(nameMap) {
             var html = '<div style="display:flex;flex-direction:column;gap:8px;">';
             if (sorted.length === 0) {
-                html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無商品訪問數據</div>';
+                html += '<div style="color:#bbb;padding:30px;text-align:center;font-size:14px;">暫無訪問數據</div>';
             } else {
                 sorted.forEach(function(p, i) {
                     var rankColor = i < 3 ? '#C9A961' : '#ddd';
@@ -4417,8 +4437,14 @@ staticPages.forEach(page => {
                     var img = info.image
                         ? '<img src="' + info.image + '" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;">'
                         : '<span style="width:32px;height:32px;background:#eee;border-radius:8px;flex-shrink:0;"></span>';
-                    var rawName = info.name || '';
-                    var displayName = rawName || (p[0].indexOf('slug:') === 0 ? '商品（' + p[0].substring(5) + '）' : '商品 #' + p[0].substring(3));
+                    var displayName = info.name || '';
+                    if (!displayName) {
+                        if (p[0].indexOf('id:') === 0) displayName = '商品詳情 #' + p[0].substring(3);
+                        else if (p[0].indexOf('slug:') === 0) displayName = '商品（' + p[0].substring(5) + '）';
+                        else if (p[0].indexOf('tag:') === 0) displayName = '標籤頁：' + p[0].substring(4);
+                        else if (p[0].indexOf('cat:') === 0) displayName = '分類頁：' + p[0].substring(4);
+                        else displayName = pageNames[p[0].substring(5)] || p[0].substring(5);
+                    }
                     if (displayName.length > 25) displayName = displayName.slice(0, 25) + '...';
                     html += '<div style="padding:12px;background:#fafafa;border-radius:10px;">';
                     html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">';
@@ -4457,9 +4483,7 @@ staticPages.forEach(page => {
         }).catch(function() { render({}); });
     }
     
-    // 渲染访客来源分布 - 时尚样式
-    // 全渠道来源识别：优先按 UTM 广告参数，其次按 referrer 来源域名归类
-    function renderTrafficSources(visitors) {
+function renderTrafficSources(visitors) {
         var sources = {
             '直接訪問': 0,
             'Google 搜索': 0,
