@@ -30,7 +30,6 @@
         .detail-gallery { width: 100%; }
         .detail-main-image { position: relative; aspect-ratio: 1 / 1; background-color: #F3EFEA; border-radius: 10px; overflow: hidden; }
         .detail-main-image img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
-        .zoom-badge { position: absolute; bottom: 12px; left: 12px; width: 36px; height: 36px; background: rgba(0,0,0,0.55); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; pointer-events: none; transition: opacity 0.2s; z-index: 2; }
         /* 點擊放大 Lightbox */
         .lightbox { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.25s ease; }
         .lightbox.open { opacity: 1; visibility: visible; }
@@ -660,7 +659,7 @@
         html += '<div class="detail-left-col">';
         if (productImages.length > 0) {
             html += '<div class="detail-gallery">';
-            html += '<div class="detail-main-image"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + product.name_zh + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;"><div class="zoom-badge">🔍</div>';
+            html += '<div class="detail-main-image"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + product.name_zh + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;">';
             if (productImages.length > 1) {
                 html += '<button class="gallery-prev" onclick="changeProductImage(-1)">‹</button>';
                 html += '<button class="gallery-next" onclick="changeProductImage(1)">›</button>';
