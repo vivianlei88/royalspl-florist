@@ -58,13 +58,9 @@
 /en/category/*    /    301
 /en/ja/*    /    301
 
-# WIX 靜態資源和舊頁面 → 對應新頁面
+# WIX 舊站無 .html URL → 新站對應 .html 頁面
 /about    /about.html    301
-/about.html    /about.html    301
 /contact    /contact.html    301
-/contact.html    /contact.html    301
 /blog    /blog.html    301
-/blog.html    /blog.html    301
 /products    /products.html    301
-/products.html    /products.html    301
 /index.html    /    301
