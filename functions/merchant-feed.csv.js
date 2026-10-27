@@ -40,13 +40,12 @@ export async function onRequest(context) {
       const isPreorder = (p.stock === '預訂' || p.is_preorder);
       const avail = isPreorder ? 'preorder' : 'in stock';
       
-      let availDate = '';
-      if (isPreorder) {
-        const days = p.delivery_days || 1;
-        const d = new Date(today);
-        d.setDate(d.getDate() + days);
-        availDate = d.toISOString().split('T')[0];
-      }
+      // 所有产品都填 availability_date
+      // 预售：delivery_days 天后；现货：1天后
+      const days = isPreorder ? (p.delivery_days || 1) : 1;
+      const d = new Date(today);
+      d.setDate(d.getDate() + days);
+      const availDate = d.toISOString().split('T')[0];
       
       const gpc = isDried ? 'Dried Flowers' : 'Fresh Flowers';
       const label = isDried ? '乾花' : '鮮花';
