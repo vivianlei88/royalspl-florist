@@ -10,10 +10,10 @@ export async function onRequest(context) {
     });
     const products = await res.json();
 
-    const header = 'id,title,description,link,image_link,price,sale_price,availability,availability_date,condition,brand,google_product_category,custom_label_0';
+    const header = 'id,title,description,link,image_link,price,sale_price,availability,availability_date,condition,brand,google_product_category,custom_label_0,shipping_label';
     const rows = [header];
 
-    // 香港时间 UTC+8，避免 Cloudflare Workers UTC 导致日期偏差
+    // 香港时间 UTC+8
     const today = new Date(Date.now() + 8 * 60 * 60 * 1000);
 
     for (const p of products) {
@@ -41,16 +41,15 @@ export async function onRequest(context) {
       const isPreorder = (p.stock === '預訂' || p.is_preorder);
       const avail = isPreorder ? 'preorder' : 'in stock';
       
-      // 所有产品都填 availability_date（香港时间 UTC+8）
-      // 预售：delivery_days 天后；现货：1天后
       const days = isPreorder ? (p.delivery_days || 1) : 1;
       const d = new Date(today);
       d.setDate(d.getDate() + days);
       const availDate = d.toISOString().split('T')[0];
       
-      // Google 官方分类 ID：1937 = Flowers
       const gpc = '1937';
       const label = isDried ? '乾花' : '鮮花';
+      // shipping_label：干花全球配送，鲜花香港本地配送
+      const shipLabel = isDried ? 'global_shipping' : 'hk_local';
 
       const csvField = (v) => `"${String(v).replace(/"/g, '""')}"`;
       rows.push([
@@ -67,6 +66,7 @@ export async function onRequest(context) {
         csvField('RoyalSpl Florist'),
         csvField(gpc),
         csvField(label),
+        csvField(shipLabel),
       ].join(','));
     }
 
