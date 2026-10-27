@@ -13,7 +13,8 @@ export async function onRequest(context) {
     const header = 'id,title,description,link,image_link,price,sale_price,availability,availability_date,condition,brand,google_product_category,custom_label_0';
     const rows = [header];
 
-    const today = new Date();
+    // 香港时间 UTC+8，避免 Cloudflare Workers UTC 导致日期偏差
+    const today = new Date(Date.now() + 8 * 60 * 60 * 1000);
 
     for (const p of products) {
       let image = '';
@@ -40,14 +41,15 @@ export async function onRequest(context) {
       const isPreorder = (p.stock === '預訂' || p.is_preorder);
       const avail = isPreorder ? 'preorder' : 'in stock';
       
-      // 所有产品都填 availability_date
+      // 所有产品都填 availability_date（香港时间 UTC+8）
       // 预售：delivery_days 天后；现货：1天后
       const days = isPreorder ? (p.delivery_days || 1) : 1;
       const d = new Date(today);
       d.setDate(d.getDate() + days);
       const availDate = d.toISOString().split('T')[0];
       
-      const gpc = isDried ? 'Dried Flowers' : 'Fresh Flowers';
+      // Google 官方分类 ID：1937 = Flowers
+      const gpc = '1937';
       const label = isDried ? '乾花' : '鮮花';
 
       const csvField = (v) => `"${String(v).replace(/"/g, '""')}"`;
