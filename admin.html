@@ -6655,10 +6655,11 @@ function setShippingScope(v) {
         } else { showToast('狀態已更新'); }
         loadOrders();
     }
-    function showAddOrderForm() {
+    async function showAddOrderForm() {
         var c = document.getElementById('addOrderFormContainer');
         c.style.display = 'block';
         selectedOrderProducts = [];
+        if (!allProducts || allProducts.length === 0) { try { await ensureProductsLoaded(); } catch(e) {} }
         var h = '<div class="form-container"><h2>新增訂單</h2><div class="form-group"><label class="form-label">選擇商品</label><div class="addon-checkbox-list">';
         for (var i = 0; i < allProducts.length; i++) { h += '<label class="addon-checkbox-item"><input type="checkbox" value="' + allProducts[i].id + '" onchange="toggleOrderProduct(' + allProducts[i].id + ')">' + (allProducts[i].image_url ? '<img src="' + allProducts[i].image_url + '">' : '') + allProducts[i].name_zh + ' (HK$' + allProducts[i].price + ')</label>'; }
         h += '</div></div><div class="form-row"><div class="form-group"><label class="form-label">收件人姓名</label><input class="form-input" id="orderRecipientName"></div><div class="form-group"><label class="form-label">收件人電話</label><input class="form-input" id="orderRecipientPhone"></div></div>';
@@ -6672,17 +6673,21 @@ function setShippingScope(v) {
     function hideAddOrderForm() { document.getElementById('addOrderFormContainer').style.display = 'none'; }
     // 手機端新增訂單表單
     var mobileOrderProducts = {}; // {productId: quantity}
-    function showMobileAddOrderForm() {
+    async function showMobileAddOrderForm() {
         mobileOrderProducts = {};
         var c = document.getElementById('mobileAddOrderForm');
         if (!c) return;
         c.style.display = 'block';
         document.getElementById('ordersTable').style.display = 'none';
 
-        // 檢查商品是否已加載
+        // 檢查商品是否已加載，未加載則先從數據庫載入
         if (!allProducts || allProducts.length === 0) {
-            c.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f5f5;z-index:9999;display:flex;align-items:center;justify-content:center;"><div style="text-align:center;"><div style="font-size:20px;font-weight:bold;color:#1a1a1a;margin-bottom:15px;">商品加載中...</div><button onclick="hideMobileAddOrderForm()" style="padding:12px 30px;background:#1a1a1a;color:white;border:none;border-radius:8px;font-size:18px;font-weight:bold;">返回</button></div></div>';
-            return;
+            c.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f5f5;z-index:9999;display:flex;align-items:center;justify-content:center;"><div style="text-align:center;"><div style="font-size:20px;font-weight:bold;color:#1a1a1a;margin-bottom:15px;">商品加載中...</div></div></div>';
+            try { await ensureProductsLoaded(); } catch(e) {}
+            if (!allProducts || allProducts.length === 0) {
+                c.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f5f5;z-index:9999;display:flex;align-items:center;justify-content:center;"><div style="text-align:center;"><div style="font-size:20px;font-weight:bold;color:#d32f2f;margin-bottom:15px;">商品載入失敗，請重試</div><button onclick="hideMobileAddOrderForm()" style="padding:12px 30px;background:#1a1a1a;color:white;border:none;border-radius:8px;font-size:18px;font-weight:bold;">返回</button></div></div>';
+                return;
+            }
         }
 
         var h = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f0f0f0;z-index:9999;overflow-y:auto;">';
