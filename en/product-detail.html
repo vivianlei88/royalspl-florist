@@ -796,7 +796,12 @@ function renderProductDetail(product) {
         html += '<div class="detail-left-col">';
         if (productImages.length > 0) {
             html += '<div class="detail-gallery">';
-            html += '<div class="detail-main-image"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + (product.name_en || product.name_zh) + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;"><div class="zoom-badge">🔍</div>';
+            var firstIsVideo = /\.mp4(\?|$)/i.test(productImages[0]);
+            if (firstIsVideo) {
+                html += '<div class="detail-main-image" id="mainImageContainer"><video id="mainProductImage" src="' + productImages[0] + '" autoplay muted loop playsinline onclick="openLightbox(window.currentImageIndex || 0)" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in;"></video>';
+            } else {
+                html += '<div class="detail-main-image" id="mainImageContainer"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + (product.name_en || product.name_zh) + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;"><div class="zoom-badge">🔍</div>';
+            }
             if (productImages.length > 1) {
                 html += '<button class="gallery-prev" onclick="changeProductImage(-1)">‹</button>';
                 html += '<button class="gallery-next" onclick="changeProductImage(1)">›</button>';
@@ -806,7 +811,14 @@ function renderProductDetail(product) {
             if (productImages.length > 1) {
                 html += '<div class="detail-thumbs">';
                 for (var ti = 0; ti < productImages.length; ti++) {
-                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')"><img src="' + productImages[ti] + '" alt="' + (product.name_en || product.name_zh) + ' detail image ' + (ti+1) + '"></div>';
+                    var isVid = /\.mp4(\?|$)/i.test(productImages[ti]);
+                    html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')">';
+                    if (isVid) {
+                        html += '<img src="' + productImages[0] + '" alt="video thumb" style="opacity:0.6;"><span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:20px;text-shadow:0 1px 3px rgba(0,0,0,0.5);">&#9658;</span>';
+                    } else {
+                        html += '<img src="' + productImages[ti] + '" alt="' + (product.name_en || product.name_zh) + ' detail image ' + (ti+1) + '">';
+                    }
+                    html += '</div>';
                 }
                 html += '</div>';
             }
@@ -953,10 +965,36 @@ function renderProductDetail(product) {
         updateProductImageDisplay();
     }
     function updateProductImageDisplay() {
-        var mainImg = document.getElementById('mainProductImage');
+        var container = document.getElementById('mainImageContainer');
         var counter = document.getElementById('currentImageIndex');
         var thumbs = document.querySelectorAll('.thumb-item');
-        if (mainImg) mainImg.src = window.currentProductImages[window.currentImageIndex];
+        var url = window.currentProductImages[window.currentImageIndex];
+        var isVid = /\.mp4(\?|$)/i.test(url);
+        if (container) {
+            var existing = document.getElementById('mainProductImage');
+            var existingIsVid = existing && existing.tagName === 'VIDEO';
+            if (isVid !== existingIsVid) {
+                container.innerHTML = '';
+                var el;
+                if (isVid) {
+                    el = document.createElement('video');
+                    el.id = 'mainProductImage';
+                    el.src = url;
+                    el.autoplay = true; el.muted = true; el.loop = true; el.playsInline = true;
+                    el.style.cssText = 'width:100%;height:100%;object-fit:cover;cursor:zoom-in;';
+                    el.onclick = function() { openLightbox(window.currentImageIndex || 0); };
+                } else {
+                    el = document.createElement('img');
+                    el.id = 'mainProductImage';
+                    el.src = url;
+                    el.style.cssText = 'width:100%;height:100%;object-fit:cover;cursor:zoom-in;';
+                    el.onclick = function() { openLightbox(window.currentImageIndex || 0); };
+                }
+                container.appendChild(el);
+            } else if (existing) {
+                existing.src = url;
+            }
+        }
         if (counter) counter.textContent = window.currentImageIndex + 1;
         thumbs.forEach(function(thumb, i) {
             if (i === window.currentImageIndex) thumb.classList.add('active');
@@ -1005,9 +1043,28 @@ function renderProductDetail(product) {
         ensureLightbox();
         window.currentImageIndex = (typeof index === 'number') ? index : (window.currentImageIndex || 0);
         var lb = document.getElementById('productLightbox');
-        var img = document.getElementById('lightboxImg');
         var counter = document.getElementById('lightboxCounter');
-        img.src = window.currentProductImages[window.currentImageIndex];
+        var url = window.currentProductImages[window.currentImageIndex];
+        var isVid = /\.mp4(\?|$)/i.test(url);
+        var lbContent = document.querySelector('.lightbox-content');
+        if (!lbContent) {
+            lbContent = document.createElement('div');
+            lbContent.className = 'lightbox-content';
+            lbContent.style.cssText = 'position:relative;max-width:90vw;max-height:85vh;display:flex;align-items:center;justify-content:center;';
+            lb.insertBefore(lbContent, document.querySelector('.lightbox-close'));
+        }
+        lbContent.innerHTML = '';
+        if (isVid) {
+            var v = document.createElement('video');
+            v.src = url; v.autoplay = true; v.controls = true; v.loop = true;
+            v.style.cssText = 'max-width:90vw;max-height:85vh;border-radius:8px;';
+            lbContent.appendChild(v);
+        } else {
+            var img = document.createElement('img');
+            img.id = 'lightboxImg'; img.src = url;
+            img.style.cssText = 'max-width:90vw;max-height:85vh;border-radius:8px;object-fit:contain;';
+            lbContent.appendChild(img);
+        }
         counter.textContent = (window.currentImageIndex + 1) + ' / ' + window.currentProductImages.length;
         document.querySelector('.lightbox-prev').style.display = window.currentProductImages.length > 1 ? 'flex' : 'none';
         document.querySelector('.lightbox-next').style.display = window.currentProductImages.length > 1 ? 'flex' : 'none';
@@ -1025,17 +1082,8 @@ function renderProductDetail(product) {
         window.currentImageIndex += direction;
         if (window.currentImageIndex < 0) window.currentImageIndex = window.currentProductImages.length - 1;
         if (window.currentImageIndex >= window.currentProductImages.length) window.currentImageIndex = 0;
-        var img = document.getElementById('lightboxImg');
-        var counter = document.getElementById('lightboxCounter');
-        if (img) img.src = window.currentProductImages[window.currentImageIndex];
-        if (counter) counter.textContent = (window.currentImageIndex + 1) + ' / ' + window.currentProductImages.length;
-        var mainImg = document.getElementById('mainProductImage');
-        var thumbs = document.querySelectorAll('.thumb-item');
-        if (mainImg) mainImg.src = window.currentProductImages[window.currentImageIndex];
-        thumbs.forEach(function(thumb, i) {
-            if (i === window.currentImageIndex) thumb.classList.add('active');
-            else thumb.classList.remove('active');
-        });
+        openLightbox(window.currentImageIndex);
+        updateProductImageDisplay();
     }
     var pageEnterTime = Date.now();
     var pageEnterTime = Date.now();
