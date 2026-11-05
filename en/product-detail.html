@@ -803,7 +803,7 @@ function renderProductDetail(product) {
             if (firstIsVideo) {
                 html += '<div class="detail-main-image" id="mainImageContainer"><video id="mainProductImage" src="' + productImages[0] + '" autoplay muted loop playsinline onclick="openLightbox(window.currentImageIndex || 0)" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in;"></video>';
             } else {
-                html += '<div class="detail-main-image" id="mainImageContainer"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + (product.name_en || product.name_zh) + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;"><div class="zoom-badge">🔍</div>';
+                html += '<div class="detail-main-image" id="mainImageContainer"><img id="mainProductImage" src="' + productImages[0] + '" alt="' + (product.name_en || product.name_zh) + '" onclick="openLightbox(window.currentImageIndex || 0)" style="cursor:zoom-in;">';
             }
             if (productImages.length > 1) {
                 html += '<button class="gallery-prev" onclick="changeProductImage(-1)">‹</button>';
