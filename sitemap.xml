@@ -2,91 +2,109 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.royalspl.shop/</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/products.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/categories.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/blog.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/contact.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/faq.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/privacy.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/products.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/categories.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/blog.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/contact.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/faq.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/privacy.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=271</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=339</loc>
     <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=368</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=272</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -97,25 +115,25 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=271</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=267</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=269</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=29</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=303</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=305</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -133,6 +151,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=305</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=309</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
@@ -140,13 +164,7 @@
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=33</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=21</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -157,13 +175,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=323</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=377</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=27</loc>
+    <loc>https://www.royalspl.shop/product-detail.html?id=323</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -175,20 +193,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=354</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=23</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=25</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -199,50 +211,32 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=31</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=153</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=270</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=378</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=355</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=265</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=24</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=272</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=249</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=268</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=266</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -254,19 +248,13 @@
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=259</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=342</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=255</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -284,13 +272,19 @@
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=22</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=275</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=252</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -301,8 +295,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=356</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=382</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -325,8 +319,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=358</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=356</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=383</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -337,8 +337,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=248</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=31</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=249</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -356,7 +362,13 @@
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=260</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=26</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -367,8 +379,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=365</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=21</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -379,20 +391,20 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=24</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=262</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=344</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=352</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=365</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -409,8 +421,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=26</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=357</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=344</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -421,20 +439,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=357</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=270</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=341</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=351</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=375</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -445,26 +457,26 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=384</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=342</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=361</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=265</loc>
-    <lastmod>2026-10-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=336</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=335</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=341</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -475,26 +487,38 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=335</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=304</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=366</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=381</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=263</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=336</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=258</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=385</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -505,14 +529,20 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=34</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=251</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=251</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=345</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=34</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -523,32 +553,44 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=347</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=387</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=281</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=347</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=366</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=388</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=274</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=278</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=28</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=348</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -559,14 +601,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=348</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=282</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=389</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -577,32 +613,50 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=358</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=264</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=273</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=355</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=32</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=261</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=353</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=372</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=157</loc>
     <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=373</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -619,62 +673,80 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=248</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=254</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=256</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=345</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=28</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=267</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=379</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=359</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=349</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=351</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=368</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=380</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=257</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=277</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=349</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=253</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=27</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=353</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -685,14 +757,20 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=280</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=386</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=250</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=354</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -709,19 +787,37 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=261</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=371</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=332</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=269</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=352</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=276</loc>
+    <loc>https://www.royalspl.shop/product-detail.html?id=374</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=314</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -733,26 +829,32 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=314</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=282</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=367</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=281</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/product-detail.html?id=331</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=268</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=280</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -775,14 +877,20 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=273</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=263</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/product-detail.html?id=252</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/product-detail.html?id=277</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/product-detail.html?id=276</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -805,8 +913,26 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=271</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=339</loc>
     <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=368</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=272</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -817,25 +943,25 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=271</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=267</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=269</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=29</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=303</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=305</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -853,6 +979,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=305</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=309</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
@@ -860,13 +992,7 @@
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=33</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=21</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -877,13 +1003,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=323</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=377</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=27</loc>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=323</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -895,20 +1021,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=354</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=23</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=25</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -919,50 +1039,32 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=31</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=153</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=270</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=378</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=355</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=265</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=24</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=272</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=249</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=268</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=266</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -974,19 +1076,13 @@
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=259</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=342</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=255</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1004,13 +1100,19 @@
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=22</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=275</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=252</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1021,8 +1123,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=356</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=382</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1045,8 +1147,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=358</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=356</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=383</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1057,8 +1165,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=248</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=31</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=249</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1076,7 +1190,13 @@
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=260</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=26</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1087,8 +1207,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=365</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=21</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1099,20 +1219,20 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=24</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=262</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=344</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=352</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=365</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1129,8 +1249,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=26</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=357</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=344</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1141,20 +1267,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=357</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=270</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=341</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=351</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=375</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1165,26 +1285,26 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=384</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=342</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=361</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=265</loc>
-    <lastmod>2026-10-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=336</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=335</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=341</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1195,26 +1315,38 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=335</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=304</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=366</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=381</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=263</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=336</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=258</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=385</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1225,14 +1357,20 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=34</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=251</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=251</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=345</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=34</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1243,32 +1381,44 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=347</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=387</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=281</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=347</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=366</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=388</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=274</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=278</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=28</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=348</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1279,14 +1429,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=348</loc>
-    <lastmod>2026-10-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=282</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=389</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1297,32 +1441,50 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=358</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=264</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=273</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=355</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=32</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=261</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=353</loc>
-    <lastmod>2026-10-27</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=372</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=157</loc>
     <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=373</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1339,62 +1501,80 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=248</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=254</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=256</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=345</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=28</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=267</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=379</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=359</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=349</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=351</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=368</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=380</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=257</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=277</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=349</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=253</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=27</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=353</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1405,14 +1585,20 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=280</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=386</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=250</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=354</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1429,19 +1615,37 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=261</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=371</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=332</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=269</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=352</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=276</loc>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=374</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=314</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -1453,26 +1657,32 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=314</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=282</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=367</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=281</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.royalspl.shop/en/product-detail.html?id=331</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=268</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=280</loc>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1495,14 +1705,20 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=273</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=263</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.royalspl.shop/en/product-detail.html?id=252</loc>
-    <lastmod>2026-10-28</lastmod>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=277</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/product-detail.html?id=276</loc>
+    <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -2217,6 +2433,12 @@
   <url>
     <loc>https://www.royalspl.shop/blog-detail.html?id=388</loc>
     <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/blog-detail.html?id=596</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -3633,6 +3855,12 @@
   <url>
     <loc>https://www.royalspl.shop/en/blog-detail.html?id=388</loc>
     <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.royalspl.shop/en/blog-detail.html?id=596</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
