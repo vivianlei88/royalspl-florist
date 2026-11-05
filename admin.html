@@ -4038,19 +4038,19 @@ staticPages.forEach(page => {
         html += '<div style="font-size:38px;font-weight:700;letter-spacing:-1px;" id="todayOrders">--</div>';
         html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;" id="statOrdersSub">全部狀態訂單 · 最近7天</div>';
         html += '</div>';
+        // 未发货订单 - 红色高亮待办
+        html += '<div style="background:linear-gradient(135deg,#E74C3C 0%,#C0392B 100%);color:white;padding:24px;border-radius:16px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(231,76,60,0.3);cursor:pointer;" onclick="switchPage(\'orders\')">';
+        html += '<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,0.1);border-radius:50%;"></div>';
+        html += '<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">未發貨訂單</div>';
+        html += '<div style="font-size:38px;font-weight:700;letter-spacing:-1px;" id="unshippedCount">--</div>';
+        html += '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:8px;">點擊查看訂單列表</div>';
+        html += '</div>';
         // 成交金额
         html += '<div style="background:linear-gradient(135deg,#0A0A0A 0%,#1A1A2E 100%);color:white;padding:24px;border-radius:16px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.15);">';
         html += '<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(201,169,97,0.15);border-radius:50%;"></div>';
         html += '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">成交金額</div>';
         html += '<div style="font-size:38px;font-weight:700;letter-spacing:-1px;" id="todaySales">--</div>';
         html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;" id="statSalesSub">已付款訂單金額 · 最近7天</div>';
-        html += '</div>';
-        // 未发货订单 - 红色高亮待办
-        html += '<div style="background:linear-gradient(135deg,#E74C3C 0%,#C0392B 100%);color:white;padding:24px;border-radius:16px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(231,76,60,0.3);cursor:pointer;" onclick="switchPage(\'orders\')">';
-        html += '<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,0.1);border-radius:50%;"></div>';
-        html += '<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">⚠️ 未發貨訂單</div>';
-        html += '<div style="font-size:38px;font-weight:700;letter-spacing:-1px;" id="unshippedCount">--</div>';
-        html += '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:8px;">點擊查看訂單列表</div>';
         html += '</div>';
         html += '</div>';
         
