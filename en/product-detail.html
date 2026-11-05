@@ -740,14 +740,16 @@ function renderProductDetail(product) {
             if (!name) return '';
             if (/^[a-zA-Z0-9\s\+\-\,\.\(\)\'\/]+$/.test(name)) return name;
             var result = name;
-            // 数字+枝 → "N Stems of "，末尾无内容时去掉 of
-            result = result.replace(/(\d+)\s*枝/g, '$1 Stems of ');
+            // 数字+枝/枚 → "N Stems of "，末尾无内容时去掉 of
+            result = result.replace(/(\d+)\s*[枝枚]/g, '$1 Stems of ');
             result = result.replace(/\s*of\s*$/g, '');
-            // 全角/半角逗号 → " + "
-            result = result.replace(/[，,]/g, ' + ');
+            // 全角/半角逗号、点号 → " + "
+            result = result.replace(/[，,\.]/g, ' + ');
             var termMap = {
                 '粉芍藥': 'Pink Peony', '白芍藥': 'White Peony', '進口粉芍藥': 'Imported Pink Peony',
-                '粉繡球': 'Pink Hydrangea', '繡球': 'Hydrangea', '芍藥': 'Peony',
+                '進口芍藥': 'Imported Peony', '芍藥': 'Peony',
+                '粉繡球': 'Pink Hydrangea', '繡球': 'Hydrangea',
+                '玫瑰': 'Rose', '白色洋牡丹': 'White Ranunculus',
                 '花球': 'Bouquet', '襟花': 'Boutonnière', '直徑': 'Diameter', '套裝': 'Set',
                 '約': 'approx.', '標準': 'Standard'
             };
