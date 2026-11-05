@@ -748,7 +748,8 @@ function renderProductDetail(product) {
             var termMap = {
                 '粉芍藥': 'Pink Peony', '白芍藥': 'White Peony', '進口粉芍藥': 'Imported Pink Peony',
                 '粉繡球': 'Pink Hydrangea', '繡球': 'Hydrangea', '芍藥': 'Peony',
-                '花球': 'Bouquet', '襟花': 'Boutonnière', '直徑': 'Diameter', '套裝': 'Set'
+                '花球': 'Bouquet', '襟花': 'Boutonnière', '直徑': 'Diameter', '套裝': 'Set',
+                '約': 'approx.', '標準': 'Standard'
             };
             for (var tk in termMap) { result = result.split(tk).join(termMap[tk]); }
             // 半角 + 号两侧补空格；组合词（BouquetDiameter）拆分
@@ -936,7 +937,6 @@ function renderProductDetail(product) {
         if (a.image_url) html += '<img class="addon-detail-img" src="' + a.image_url + '" alt="' + (a.name_en || a.name_zh || '') + '">';
         html += '<div class="addon-detail-body">';
         html += '<div class="addon-detail-title">' + (a.name_en || a.name_zh || '') + '<\/div>';
-        if (a.name_zh && a.name_zh !== (a.name_en || '')) html += '<div class="addon-detail-subtitle">' + a.name_zh + '<\/div>';
         html += '<div class="addon-detail-price">HK$' + a.price + '<\/div>';
         if (desc) html += '<div class="addon-detail-desc">' + desc + '<\/div>';
         html += rows || '';
