@@ -40,6 +40,9 @@
         .filter-pill:hover { background-color: #F3EFEA; }
         .filter-pill.active { background-color: #1A1A1A; color: #FAF8F5; }
 .filter-more { border-style: dashed; opacity: 0.7; }
+        .nav-pill { display: inline-block; padding: 6px 14px; border: 1px solid #ccc; background: transparent; color: #333; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: inherit; text-decoration: none; margin: 2px; }
+        .nav-pill:hover { background-color: #F3EFEA; border-color: #999; }
+        .nav-pill-more { border-style: dashed; opacity: 0.7; background: transparent; }
 .filter-extra { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
         .products-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-top: 20px; border-top: 1px solid rgba(26,26,26,0.1); }
         .products-count { font-size: 14px; color: #383431; font-weight: 500; }
@@ -312,26 +315,11 @@
             <div class="nav-item"><a href="/en/products.html" class="nav-link"><span class="nav-zh">All Flowers</span><span class="nav-en">THE COLLECTION</span></a></div>
             <div class="nav-item" data-expandable>
                 <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">Occasions</span><span class="nav-en">OCCASIONS</span><span class="nav-plus">+</span></div>
-                <div class="nav-submenu">
-                    <a href="products.html?tag=情人節" class="nav-sub-link">Valentine's Day</a>
-                    <a href="products.html?tag=母親節" class="nav-sub-link">Mother's Day</a>
-                    <a href="products.html?tag=中秋節" class="nav-sub-link">Mid-Autumn</a>
-                    <a href="products.html?tag=生日" class="nav-sub-link">Birthday</a>
-                    <a href="products.html?tag=婚禮" class="nav-sub-link">Wedding</a>
-                    <a href="products.html?tag=開張" class="nav-sub-link">Grand Opening</a>
-                    <a href="products.html?tag=商務送禮" class="nav-sub-link">Business Gift</a>
-                </div>
+                <div class="nav-submenu" id="navOccasions"></div>
             </div>
             <div class="nav-item" data-expandable>
                 <div class="nav-link" onclick="toggleNavSection(this)"><span class="nav-zh">Flower Types</span><span class="nav-en">FLOWER TYPES</span><span class="nav-plus">+</span></div>
-                <div class="nav-submenu">
-                    <a href="products.html?tag=玫瑰" class="nav-sub-link">Rose</a>
-                    <a href="products.html?tag=鬱金香" class="nav-sub-link">Tulip</a>
-                    <a href="products.html?tag=芍藥" class="nav-sub-link">Peony</a>
-                    <a href="products.html?tag=荷花" class="nav-sub-link">Lotus</a>
-                    <a href="products.html?tag=進口鮮花" class="nav-sub-link">Imported Flowers</a>
-                    <a href="products.html?tag=大麗花" class="nav-sub-link">Dahlia</a>
-                </div>
+                <div class="nav-submenu" id="navFlowers"></div>
             </div>
             <div class="nav-item"><a href="/en/blog.html" class="nav-link"><span class="nav-zh">Blog</span><span class="nav-en">BLOG</span></a></div>
             <div class="nav-item"><a href="/en/contact.html" class="nav-link"><span class="nav-zh">Designer &amp; Business</span><span class="nav-en">DESIGNER &amp; BUSINESS</span></a></div>
@@ -573,6 +561,40 @@
         }
     }
 
+    function buildNavPills(tags, containerId) {
+        var SHOW = 8;
+        var shown = tags.slice(0, SHOW);
+        var extra = tags.slice(SHOW);
+        var html = '';
+        for (var i = 0; i < shown.length; i++) {
+            var label = translateTag(shown[i]);
+            html += '<a href="/en/products.html?tag=' + encodeURIComponent(shown[i]) + '" class="nav-pill">' + label + '<\/a>';
+        }
+        if (extra.length > 0) {
+            html += '<button class="nav-pill nav-pill-more" id="' + containerId + '-more" onclick="toggleNavMore(\'' + containerId + '\',\'All ▾\',\'Hide ▴\')">All ▾<\/button>';
+            html += '<div class="nav-pill-extra" id="' + containerId + '-extra" style="display:none;flex-wrap:wrap;gap:8px;margin-top:8px;">';
+            for (var j = 0; j < extra.length; j++) {
+                var label2 = translateTag(extra[j]);
+                html += '<a href="/en/products.html?tag=' + encodeURIComponent(extra[j]) + '" class="nav-pill">' + label2 + '<\/a>';
+            }
+            html += '<\/div>';
+        }
+        return html;
+    }
+    function toggleNavMore(containerId, expandText, collapseText) {
+        var extra = document.getElementById(containerId + '-extra');
+        var btn = document.getElementById(containerId + '-more');
+        if (!extra || !btn) return;
+        if (extra.style.display === 'none') { extra.style.display = 'flex'; btn.innerHTML = collapseText; }
+        else { extra.style.display = 'none'; btn.innerHTML = expandText; }
+    }
+    function initNavTags() {
+        var oc = document.getElementById('navOccasions');
+        var fl = document.getElementById('navFlowers');
+        if (oc) oc.innerHTML = buildNavPills(tagDimensions['場景用途'], 'navOccasions');
+        if (fl) fl.innerHTML = buildNavPills(tagDimensions['核心花材'], 'navFlowers');
+    }
+
     function getUrlParam(param) { return new URLSearchParams(window.location.search).get(param); }
 
     function buildPillsHtml(tags, clickFn, containerId, dataAttr, labelFn, expandText, collapseText) {
@@ -619,6 +641,7 @@
                 container.innerHTML = buildPillsHtml(dim.tags, 'toggleTag', dim.id, 'data-tag', translateTag, 'All ▾', 'Hide ▴');
             }
         });
+        initNavTags();
         loadStyleCategories();
     }
 
