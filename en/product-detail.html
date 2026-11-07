@@ -533,9 +533,9 @@ function renderProductDetail(product) {
         var specs = product.specs || {};
         
         // 動態設置 SEO：title、meta description、Open Graph（優先使用後台 seo_title / seo_description）
-        var productTitle = (product.seo_title && product.seo_title.trim())
+        var productTitle = (product.seo_title && product.seo_title.trim() && !/[\u4e00-\u9fff]/.test(product.seo_title))
             ? product.seo_title.trim()
-            : ((product.name_en || product.name_zh || 'Flower Product') + ' | ' + siteMoney(getCurrentPrice()) + ' | RoyalSpl Florist Hong Kong');
+            : ((product.name_en || product.name_zh || 'Flower Product') + ' | RoyalSpl Florist Hong Kong');
         var isGlobalItem = (product.tags || []).indexOf('全球配送') > -1;
         var descBase = (product.description_en || product.seo_description || product.description || 'RoyalSpl Florist premium flower product').substring(0, 150);
         var productDesc = isGlobalItem ? (descBase + ' Perfect for home decor, space styling and interior design; ships worldwide.').substring(0, 190) : descBase;
@@ -736,11 +736,12 @@ function renderProductDetail(product) {
         // 翻译规格变体名称（组合式规则：数字枝 / 花球 / 襟花 等）
         function translateVariantName(name) {
             if (!name) return '';
-            if (/^[a-zA-Z0-9\s\+\-\,\.\(\)\'\/]+$/.test(name)) return name;
+            if (/^[a-zA-Z0-9\s\+\-\,\.\(\)\'\/:]+$/.test(name)) return name;
             var result = name;
-            // 数字+枝/枚 → "N Stems of "，末尾无内容时去掉 of
-            result = result.replace(/(\d+)\s*[枝枚]/g, '$1 Stems of ');
-            result = result.replace(/\s*of\s*$/g, '');
+            // Full-width punctuation → half-width
+            result = result.replace(/：/g, ': ').replace(/（/g, ' (').replace(/）/g, ')');
+            // 数字+枝/枚 → "N Stems"
+            result = result.replace(/(\d+)\s*[枝枚]/g, '$1 Stems');
             // 全角/半角逗号、点号 → " + "
             result = result.replace(/[，,\.]/g, ' + ');
             var termMap = {
@@ -749,13 +750,15 @@ function renderProductDetail(product) {
                 '粉繡球': 'Pink Hydrangea', '繡球': 'Hydrangea',
                 '玫瑰': 'Rose', '白色洋牡丹': 'White Ranunculus',
                 '花球': 'Bouquet', '襟花': 'Boutonnière', '直徑': 'Diameter', '套裝': 'Set',
-                '約': 'approx.', '標準': 'Standard'
+                '約': 'approx.', '標準': 'Standard', '如圖': 'as shown',
+                '配花加量': 'with fuller arrangement', '配花': 'with added fillers'
             };
             for (var tk in termMap) { result = result.split(tk).join(termMap[tk]); }
-            // 半角 + 号两侧补空格；组合词（BouquetDiameter）拆分
+            // 半角 + 号两侧补空格；组合词拆分
             result = result.replace(/\+/g, ' + ');
             result = result.replace(/([a-z])([A-Z])/g, '$1 $2');
-            result = result.replace(/\s+/g, ' ').trim();
+            // Clean up multiple spaces
+            result = result.replace(/\s+/g, ' ').replace(/\s+\)/g, ')').replace(/\(\s+/g, '(').trim();
             return result;
         }
 
@@ -784,7 +787,10 @@ function renderProductDetail(product) {
             result = result.replace(/襟花/g, 'Boutonniere');
             result = result.replace(/個/g, ' pcs');
             result = result.replace(/枝/g, ' stems');
+            result = result.replace(/標準/g, 'Standard');
+            result = result.replace(/約/g, 'approx. ');
             result = result.replace(/cm/g, 'cm');
+            result = result.replace(/\s+/g, ' ').trim();
             return result;
         }
         var scentNotes = product.scent_notes_en || product.scent_notes || [];
