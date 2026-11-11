@@ -6657,7 +6657,14 @@ function setShippingScope(v) {
             } else { showToast('狀態已更新'); }
         } else { showToast('狀態已更新'); }
     }
-    // 核對轉數快付款：待確認付款 → 已付款
+    // 詳情頁（手機 / 電腦）狀態下拉：沿用 updateOrderStatus 的持久化與通知邏輯，再刷新本地記錄並重繪詳情
+    async function changeDetailOrderStatus(id, status) {
+        await updateOrderStatus(id, status);
+        for (var i = 0; i < allOrders.length; i++) {
+            if (allOrders[i].id === id) { allOrders[i].status = status; currentOrderDetail = allOrders[i]; break; }
+        }
+        openOrderDetail(id);
+    }
     async function markOrderPaid(id) {
         if (!confirm('確認已收到顧客的轉數快付款？將訂單標記為已付款並通知顧客。')) return;
         await supabaseClient.from('orders').update({ status: 'paid', updated_at: new Date().toISOString() }).eq('id', id);
@@ -7072,6 +7079,16 @@ function setShippingScope(v) {
         v.innerHTML += '</div>';
         // 商品信息放在店鋪資料和訂單編號中間
         v.innerHTML += '<div class="form-group"><label class="form-label">商品</label><div>' + (productHtml || '無產品') + '</div></div>';
+        // 訂單狀態選擇器（手機 / 電腦端詳情頁統一可改）
+        var statusOptions = [
+            ['unpaid', '未付款'], ['pending_payment', '待確認付款'], ['paid', '已付款'],
+            ['shipped', '已出貨'], ['refunded', '已退款'], ['cancelled', '已取消'], ['archived', '已封存']
+        ];
+        var statusOptionsHtml = '';
+        for (var so = 0; so < statusOptions.length; so++) {
+            statusOptionsHtml += '<option value="' + statusOptions[so][0] + '"' + (o.status === statusOptions[so][0] ? ' selected' : '') + '>' + statusOptions[so][1] + '</option>';
+        }
+        v.innerHTML += '<div class="form-group"><label class="form-label">訂單狀態</label><select id="detailOrderStatus" onchange="changeDetailOrderStatus(' + o.id + ', this.value)" style="width:100%;padding:12px 14px;font-size:17px;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;font-weight:600;color:#1a1a1a;">' + statusOptionsHtml + '</select></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂單編號</label><input class="form-input" id="detailOrderCode" value="' + o.order_code + '"></div><div class="form-group"><label class="form-label">送貨日期</label><input type="date" class="form-input" id="detailDeliveryDate" value="' + (o.delivery_date || '') + '"></div></div>';
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">訂購人姓名</label><input class="form-input" id="detailCustomerName" value="' + (o.customer_name || o.recipient_name || '') + '"></div><div class="form-group"><label class="form-label">訂購人電話</label><input class="form-input" id="detailCustomerPhone" value="' + (o.customer_phone || o.recipient_phone || '') + '"></div></div>';
         v.innerHTML += '<div class="form-group"><label class="form-label">訂購人 Email</label><input class="form-input" id="detailCustomerEmail" value="' + (o.customer_email || '') + '"></div>';
