@@ -28,19 +28,19 @@ export async function onRequest() {
   // Static pages
   const staticPages = [
     ['/', '1.0'],
-    ['/products.html', '0.8'],
-    ['/categories.html', '0.8'],
-    ['/blog.html', '0.8'],
-    ['/contact.html', '0.6'],
-    ['/faq.html', '0.6'],
-    ['/privacy.html', '0.3'],
+    ['/products', '0.8'],
+    ['/categories', '0.8'],
+    ['/blog', '0.8'],
+    ['/contact', '0.6'],
+    ['/faq', '0.6'],
+    ['/privacy', '0.3'],
     ['/en/', '1.0'],
-    ['/en/products.html', '0.8'],
-    ['/en/categories.html', '0.8'],
-    ['/en/blog.html', '0.8'],
-    ['/en/contact.html', '0.6'],
-    ['/en/faq.html', '0.6'],
-    ['/en/privacy.html', '0.3'],
+    ['/en/products', '0.8'],
+    ['/en/categories', '0.8'],
+    ['/en/blog', '0.8'],
+    ['/en/contact', '0.6'],
+    ['/en/faq', '0.6'],
+    ['/en/privacy', '0.3'],
   ];
   
   for (const [path, priority] of staticPages) {
@@ -56,13 +56,13 @@ export async function onRequest() {
   for (const p of products) {
     const lm = p.updated_at ? p.updated_at.split('T')[0] : today;
     urls.push({
-      loc: `https://www.royalspl.shop/product-detail.html?id=${p.id}`,
+      loc: `https://www.royalspl.shop/product-detail?id=${p.id}`,
       lastmod: lm,
       changefreq: 'weekly',
       priority: '0.7'
     });
     urls.push({
-      loc: `https://www.royalspl.shop/en/product-detail.html?id=${p.id}`,
+      loc: `https://www.royalspl.shop/en/product-detail?id=${p.id}`,
       lastmod: lm,
       changefreq: 'weekly',
       priority: '0.7'
@@ -73,13 +73,13 @@ export async function onRequest() {
   for (const b of blogs) {
     const lm = b.updated_at ? b.updated_at.split('T')[0] : today;
     urls.push({
-      loc: `https://www.royalspl.shop/blog-detail.html?id=${b.id}`,
+      loc: `https://www.royalspl.shop/blog-detail?id=${b.id}`,
       lastmod: lm,
       changefreq: 'monthly',
       priority: '0.6'
     });
     urls.push({
-      loc: `https://www.royalspl.shop/en/blog-detail.html?id=${b.id}`,
+      loc: `https://www.royalspl.shop/en/blog-detail?id=${b.id}`,
       lastmod: lm,
       changefreq: 'monthly',
       priority: '0.6'

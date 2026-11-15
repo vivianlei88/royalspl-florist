@@ -201,7 +201,7 @@
     <link rel="stylesheet" href="/css/ai-chat.css">
 
     <meta name="description" content="RoyalSpl Florist MemberCenter，Manage your account information、ViewOrder History、Manage Favorites。">
-    <link rel="canonical" href="https://www.royalspl.shop/en/account.html">
+    <link rel="canonical" href="https://www.royalspl.shop/en/account">
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -239,9 +239,9 @@
         }
     })();
     </script>
-    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/account.html">
-    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/account.html">
-    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/account.html">
+    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/account">
+    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/account">
+    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/account">
 
     <meta name="robots" content="noindex, nofollow">
 </head>
@@ -602,16 +602,16 @@
                 const imgHtml = img ? '<img src="' + img + '" class="account-order-img" alt="">' : '<div class="account-order-img-ph"></div>';
                 const createdDate = (order.created_at || '').slice(0, 10);
                 html += '<div class="account-order-item">';
-                html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;">' + imgHtml + '</a>';
+                html += '<a href="order-detail?id=' + order.id + '" style="text-decoration:none;color:inherit;">' + imgHtml + '</a>';
                 html += '<div class="account-order-info">';
-                html += '<a href="order-detail.html?id=' + order.id + '" style="text-decoration:none;color:inherit;"><div class="account-order-code">' + order.order_code + '</div></a>';
+                html += '<a href="order-detail?id=' + order.id + '" style="text-decoration:none;color:inherit;"><div class="account-order-code">' + order.order_code + '</div></a>';
                 html += '<div class="account-order-meta">成立：' + createdDate + ' | 送貨：' + (order.delivery_date || '-') + '</div>';
                 html += '<div class="account-order-price">' + siteMoney(order.total_amount) + '</div>';
                 html += '</div>';
                 html += '<div class="account-order-right">';
                 html += '<span class="status-badge-sm status-' + order.status + '">' + (statusMap[order.status] || order.status) + '</span>';
                 html += '<div class="account-order-actions">';
-                html += '<a href="order-detail.html?id=' + order.id + '" class="account-order-btn account-order-btn-detail">詳情</a>';
+                html += '<a href="order-detail?id=' + order.id + '" class="account-order-btn account-order-btn-detail">詳情</a>';
                 if (order.status === 'unpaid') {
                     html += '<button class="account-order-btn account-order-btn-pay" onclick="payAccountOrder(' + order.id + ', this)">支付</button>';
                 }

@@ -194,7 +194,7 @@
 
     </style>
     <link rel="stylesheet" href="css/ai-chat.css">
-    <link rel="canonical" href="https://www.royalspl.shop/products.html">
+    <link rel="canonical" href="https://www.royalspl.shop/products">
     <meta property="og:title" content="所有花藝 | RoyalSpl Florist 香港花店">
     <meta property="og:description" content="瀏覽 RoyalSpl Florist 所有花藝產品，包括生日花束、開業花籃、節日花禮。香港頂級花藝設計，新鮮花材，品質保證。">
     <meta property="og:image" content="https://www.royalspl.shop/assets/og-share.jpg">
@@ -279,9 +279,9 @@
         }
     })();
     </script>
-    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/products.html">
-    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/products.html">
-    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/products.html">
+    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/products">
+    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/products">
+    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/products">
 
 </head>
 <body>
@@ -724,7 +724,7 @@
                         "@type": "ListItem",
                         "position": idx + 1,
                         "name": p.name_zh || p.name_en || '',
-                        "url": "https://www.royalspl.shop/product-detail.html?id=" + p.id
+                        "url": "https://www.royalspl.shop/product-detail?id=" + p.id
                     };
                 });
                 try {
@@ -741,7 +741,7 @@
             var stockClass = p.stock === '現貨' ? 'in-stock' : 'pre-order';
             var stockText = p.stock === '現貨' ? '[現貨]' : '[預訂]';
             var productImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
-            html += '<a href="product-detail.html?id=' + p.id + '" class="product-card" data-tags="' + (tags.join(',') || '') + '">';
+            html += '<a href="product-detail?id=' + p.id + '" class="product-card" data-tags="' + (tags.join(',') || '') + '">';
             if (productImg) {
                 html += '<div class="product-card-img"><img src="' + productImg + '" alt="' + p.name_zh + '"><\/div>';
             } else {

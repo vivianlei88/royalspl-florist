@@ -1540,7 +1540,7 @@
             }
             // 百度收錄推送（僅發布時）
             if (publish && blogId) {
-                try { await pushToBaidu(['https://www.royalspl.shop/blog-detail.html?id=' + blogId]); } catch (e2) { console.error('百度推送失敗:', e2); }
+                try { await pushToBaidu(['https://www.royalspl.shop/blog-detail?id=' + blogId]); } catch (e2) { console.error('百度推送失敗:', e2); }
             }
             alert(publish ? '發布成功' : '保存成功');
             window.currentPage = 'blog';
@@ -2907,7 +2907,7 @@ staticPages.forEach(page => {
             (products || []).forEach(p => {
                 const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
-                xml += '    <loc>' + baseUrl + 'product-detail.html?id=' + p.id + '</loc>\n';
+                xml += '    <loc>' + baseUrl + 'product-detail?id=' + p.id + '</loc>\n';
                 xml += '    <lastmod>' + lastmod + '</lastmod>\n';
                 xml += '    <changefreq>weekly</changefreq>\n';
                 xml += '    <priority>0.7</priority>\n';
@@ -2917,7 +2917,7 @@ staticPages.forEach(page => {
 (products || []).forEach(p => {
                 const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
-                xml += '    <loc>' + baseUrl + 'en/product-detail.html?id=' + p.id + '</loc>\n';
+                xml += '    <loc>' + baseUrl + 'en/product-detail?id=' + p.id + '</loc>\n';
                 xml += '    <lastmod>' + lastmod + '</lastmod>\n';
                 xml += '    <changefreq>weekly</changefreq>\n';
                 xml += '    <priority>0.7</priority>\n';
@@ -2926,7 +2926,7 @@ staticPages.forEach(page => {
             (categories || []).forEach(c => {
                 const lastmod = c.updated_at ? c.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
-                xml += '    <loc>' + baseUrl + 'categories.html?id=' + c.id + '</loc>\n';
+                xml += '    <loc>' + baseUrl + 'categories?id=' + c.id + '</loc>\n';
                 xml += '    <lastmod>' + lastmod + '</lastmod>\n';
                 xml += '    <changefreq>weekly</changefreq>\n';
                 xml += '    <priority>0.6</priority>\n';
@@ -2936,7 +2936,7 @@ staticPages.forEach(page => {
 (categories || []).forEach(c => {
                 const lastmod = c.updated_at ? c.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
-                xml += '    <loc>' + baseUrl + 'en/categories.html?id=' + c.id + '</loc>\n';
+                xml += '    <loc>' + baseUrl + 'en/categories?id=' + c.id + '</loc>\n';
                 xml += '    <lastmod>' + lastmod + '</lastmod>\n';
                 xml += '    <changefreq>weekly</changefreq>\n';
                 xml += '    <priority>0.6</priority>\n';
@@ -2945,7 +2945,7 @@ staticPages.forEach(page => {
             (posts || []).forEach(p => {
                 const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
-                xml += '    <loc>' + baseUrl + 'blog-detail.html?id=' + p.id + '</loc>\n';
+                xml += '    <loc>' + baseUrl + 'blog-detail?id=' + p.id + '</loc>\n';
                 xml += '    <lastmod>' + lastmod + '</lastmod>\n';
                 xml += '    <changefreq>monthly</changefreq>\n';
                 xml += '    <priority>0.5</priority>\n';
@@ -2955,7 +2955,7 @@ staticPages.forEach(page => {
 (posts || []).forEach(p => {
                 const lastmod = p.updated_at ? p.updated_at.split('T')[0] : today;
                 xml += '  <url>\n';
-                xml += '    <loc>' + baseUrl + 'en/blog-detail.html?id=' + p.id + '</loc>\n';
+                xml += '    <loc>' + baseUrl + 'en/blog-detail?id=' + p.id + '</loc>\n';
                 xml += '    <lastmod>' + lastmod + '</lastmod>\n';
                 xml += '    <changefreq>monthly</changefreq>\n';
                 xml += '    <priority>0.5</priority>\n';
@@ -5606,7 +5606,7 @@ function setShippingScope(v) {
                 var img = p.image_url ? '<img class="product-img-lg" src="' + p.image_url + '">' : '無圖';
                 var sku = p.sku || ('RS-' + String(p.id).padStart(3, '0'));
                 var eye = p.is_active !== false ? '顯示' : '隱藏';
-                h += '<tr onclick="showEditFormById(' + p.id + ')"><td class="checkbox-col" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><span class="product-name-cell"><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></span></td><td>HK$' + p.price + '</td><td>' + p.stock + '</td><td onclick="event.stopPropagation()"><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td onclick="event.stopPropagation()"><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail.html?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
+                h += '<tr onclick="showEditFormById(' + p.id + ')"><td class="checkbox-col" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" value="' + p.id + '"></td><td>' + img + '</td><td>' + sku + '</td><td><span class="product-name-cell"><b>' + p.name_zh + '</b><br><small>' + p.name_en + '</small></span></td><td>HK$' + p.price + '</td><td>' + p.stock + '</td><td onclick="event.stopPropagation()"><span style="cursor:pointer;" onclick="toggleActive(' + p.id + ',' + (p.is_active !== false) + ')">' + eye + '</span></td><td onclick="event.stopPropagation()"><button class="btn btn-secondary btn-small" onclick="showEditFormById(' + p.id + ')">編輯</button> <a href="product-detail?id=' + p.id + '" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;display:inline-block;">查看</a> <button class="btn btn-danger btn-small" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
             }
             h += '</tbody></table>';
             c.innerHTML = h;
@@ -5625,7 +5625,7 @@ function setShippingScope(v) {
             '<h3 style="font-size:18px;font-weight:700;margin:0;">' + (p.name_zh || '') + '</h3></div>' +
             '<div style="border-top:1px solid #eee;padding-top:10px;">' +
             '<div onclick="document.body.removeChild(this.closest(\'div\').parentNode;showEditFormById(' + id + ')" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;border-bottom:1px solid #f5f5f5;">編輯商品</div>' +
-            '<div onclick="document.body.removeChild(this.closest(\'div\').parentNode;window.open(\'product-detail.html?id=' + id + '\',\'_blank\')" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;border-bottom:1px solid #f5f5f5;">查看前台</div>' +
+            '<div onclick="document.body.removeChild(this.closest(\'div\').parentNode;window.open(\'product-detail?id=' + id + '\',\'_blank\')" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;border-bottom:1px solid #f5f5f5;">查看前台</div>' +
             '<div onclick="document.body.removeChild(this.closest(\'div\').parentNode;toggleActive(' + id + ',' + (p.is_active !== false) + ')" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;border-bottom:1px solid #f5f5f5;">' + (p.is_active !== false ? '下架' : '上架') + '</div>' +
             '<div onclick="if(confirm(\'刪除？\')){document.body.removeChild(this.closest(\'div\').parentNode);deleteProduct(' + id + ');}" style="padding:15px 10px;cursor:pointer;font-size:16px;font-weight:600;color:#ef4444;">刪除商品</div>' +
             '</div></div>';
@@ -7029,7 +7029,7 @@ function setShippingScope(v) {
         for (var pi = 0; pi < orderItems.length; pi++) {
             var item = orderItems[pi];
             productHtml += '<div class="order-product-item" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;">';
-            if (item.image) { productHtml += (item.productId ? '<a href="product-detail.html?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;cursor:pointer;"></a>' : '<img src="' + item.image + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;">'); }
+            if (item.image) { productHtml += (item.productId ? '<a href="product-detail?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;cursor:pointer;"></a>' : '<img src="' + item.image + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;">'); }
             else { productHtml += '<div style="width:100px;height:100px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:40px;"></div>'; }
             productHtml += '<div style="flex:1;">';
             productHtml += '<div style="font-size:13px;font-weight:500;">' + item.name + '</div>';

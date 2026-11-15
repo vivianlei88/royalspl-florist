@@ -185,7 +185,7 @@
     <link rel="stylesheet" href="css/ai-chat.css">
 
     <meta name="description" content="查看您的 RoyalSpl Florist 訂單詳情，包括商品、配送信息和付款狀態。">
-    <link rel="canonical" href="https://www.royalspl.shop/order-detail.html">
+    <link rel="canonical" href="https://www.royalspl.shop/order-detail">
     <meta property="og:title" content="訂單詳情 | RoyalSpl Florist 香港花店">
     <meta property="og:description" content="查看您的 RoyalSpl Florist 訂單詳情，包括商品、配送信息和付款狀態。">
     <meta property="og:image" content="https://www.royalspl.shop/assets/og-share.jpg">
@@ -213,9 +213,9 @@
         }
     })();
     </script>
-    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/order-detail.html">
-    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/order-detail.html">
-    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/order-detail.html">
+    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/order-detail">
+    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/order-detail">
+    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/order-detail">
 
     <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -300,7 +300,7 @@
             let productsHtml = '';
             items.forEach(item => {
                 const imgHtml = item.image 
-                    ? (item.productId ? '<a href="product-detail.html?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" alt="' + item.name + '"></a>' : '<img src="' + item.image + '" alt="' + item.name + '">')
+                    ? (item.productId ? '<a href="product-detail?id=' + item.productId + '" target="_blank"><img src="' + item.image + '" alt="' + item.name + '"></a>' : '<img src="' + item.image + '" alt="' + item.name + '">')
                     : '<div class="product-img-placeholder"></div>';
                 const priceHtml = item.price ? orderMoney(item.price) : '-';
                 const subtotal = item.price && item.quantity ? orderMoney(item.price * item.quantity) : '';

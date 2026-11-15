@@ -156,7 +156,7 @@
     <link rel="stylesheet" href="/css/ai-chat.css">
 
     <meta name="description" content="Read RoyalSpl Florist Floral Articles，Learn more about floral knowledge、Flower Gifting EtiquetteandHoliday FlowersRecommendations。">
-    <link rel="canonical" href="https://www.royalspl.shop/en/blog-detail.html">
+    <link rel="canonical" href="https://www.royalspl.shop/en/blog-detail">
     <meta property="og:title" content="Floral Articles | RoyalSpl Florist Hong Kong Florist">
     <meta property="og:description" content="Read RoyalSpl Florist Floral Articles，Learn more about floral knowledge、Flower Gifting EtiquetteandHoliday FlowersRecommendations。">
     <meta property="og:image" content="https://www.royalspl.shop/assets/og-share.jpg">
@@ -210,9 +210,9 @@
     })();
     </script>
 
-    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/blog-detail.html">
-    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/blog-detail.html">
-    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/blog-detail.html">
+    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/blog-detail">
+    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/blog-detail">
+    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/blog-detail">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -317,11 +317,11 @@
                 try {
                     var postId = post.id || new URLSearchParams(window.location.search).get('id') || '';
                     var canonLink = document.querySelector('link[rel="canonical"]');
-                    if (canonLink && postId) canonLink.href = 'https://www.royalspl.shop/en/blog-detail.html?id=' + postId;
+                    if (canonLink && postId) canonLink.href = 'https://www.royalspl.shop/en/blog-detail?id=' + postId;
                     var hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]');
                     hreflangs.forEach(function(l) {
-                        if (l.hreflang === 'zh-HK' || l.hreflang === 'x-default') l.href = 'https://www.royalspl.shop/blog-detail.html?id=' + postId;
-                        else if (l.hreflang === 'en') l.href = 'https://www.royalspl.shop/en/blog-detail.html?id=' + postId;
+                        if (l.hreflang === 'zh-HK' || l.hreflang === 'x-default') l.href = 'https://www.royalspl.shop/blog-detail?id=' + postId;
+                        else if (l.hreflang === 'en') l.href = 'https://www.royalspl.shop/en/blog-detail?id=' + postId;
                     });
                 } catch (e2) { console.error('更新 canonical/hreflang 失敗:', e2); }
                 const data = {
@@ -346,7 +346,7 @@
                     },
                     "mainEntityOfPage": {
                         "@type": "WebPage",
-                        "@id": "https://www.royalspl.shop/blog-detail.html?id=" + (post.id || "")
+                        "@id": "https://www.royalspl.shop/blog-detail?id=" + (post.id || "")
                     }
                 };
                 script.textContent = JSON.stringify(data);
@@ -429,7 +429,7 @@
                 products.forEach(p => {
                     const img = p.images && p.images.length > 0 ? p.images[0] : (p.image_url || '');
                     html += `
-                        <a href="product-detail.html?id=${p.id}" style="text-decoration:none;color:inherit;display:block;">
+                        <a href="product-detail?id=${p.id}" style="text-decoration:none;color:inherit;display:block;">
                             <div style="border-radius:8px;overflow:hidden;background:#f9f9f9;">
                                 ${img ? `<img src="${img}" alt="${p.name_zh}" style="width:100%;height:180px;object-fit:cover;">` : '<div style="width:100%;height:180px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:40px;"></div>'}
                                 <div style="padding:12px;">

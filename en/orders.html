@@ -173,7 +173,7 @@
     </style>
 
     <meta name="description" content="View your RoyalSpl Florist Order HistoryandOrder Status。">
-    <link rel="canonical" href="https://www.royalspl.shop/en/orders.html">
+    <link rel="canonical" href="https://www.royalspl.shop/en/orders">
     <meta property="og:title" content="My Orders | RoyalSpl Florist Hong Kong">
     <meta property="og:description" content="View your RoyalSpl Florist Order HistoryandOrder Status。">
     <meta property="og:image" content="https://www.royalspl.shop/assets/og-share.jpg">
@@ -201,9 +201,9 @@
         }
     })();
     </script>
-    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/orders.html">
-    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/orders.html">
-    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/orders.html">
+    <link rel="alternate" hreflang="zh-HK" href="https://www.royalspl.shop/orders">
+    <link rel="alternate" hreflang="en" href="https://www.royalspl.shop/en/orders">
+    <link rel="alternate" hreflang="x-default" href="https://www.royalspl.shop/orders">
 
     <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -267,7 +267,7 @@
                     <div class="order-right">
                         <div class="status-badge status-${order.status}">${statusMap[order.status] || order.status}</div>
                         <div class="order-actions">
-                            <a href="order-detail.html?id=${order.id}" class="btn-detail">View Details</a>
+                            <a href="order-detail?id=${order.id}" class="btn-detail">View Details</a>
                             ${order.status === 'unpaid' ? `<button class="btn-pay" onclick="payNow(${order.id}, this)">立即Pay</button>` : ''}
                         </div>
                     </div>

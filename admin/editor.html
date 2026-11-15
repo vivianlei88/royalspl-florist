@@ -507,9 +507,9 @@
         var iframe = document.getElementById('previewIframe');
         var prefix = currentLang === 'en' ? '/en/' : '/';
         if (currentPage === 'product-detail' && currentProductId) {
-            iframe.src = prefix + 'product-detail.html?id=' + currentProductId;
+            iframe.src = prefix + 'product-detail?id=' + currentProductId;
         } else if (currentPage === 'blog' && currentBlogId) {
-            iframe.src = prefix + 'blog-detail.html?id=' + currentBlogId;
+            iframe.src = prefix + 'blog-detail?id=' + currentBlogId;
         } else {
             iframe.src = prefix + currentPage + '.html';
         }
