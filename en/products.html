@@ -357,7 +357,7 @@
             <div class="products-toolbar">
                 <span class="products-count" id="productsCount">Loading...</span>
                 <select class="sort-select" id="sortSelect">
-                    <option value="default">Default Sort</option>
+                    <option value="default">Newest Arrivals</option>
                     <option value="price_asc">Price: Low to High</option>
                     <option value="price_desc">Price: High to Low</option>
                 </select>
@@ -845,13 +845,10 @@
                        (p.tags && p.tags.some(function(tag) { return tag.indexOf(searchKeyword) > -1; }));
             });
         }
-        // 默認排序：分類內跟後台分類設定嘅 sort_order_in_category（未設值排最後）
-        if (currentSort === 'default' && selectedCategory) {
+        // Default sort: newest first (higher id = newer)
+        if (currentSort === 'default') {
             filtered.sort(function(a, b) {
-                var sa = (a.sort_order_in_category == null) ? 99999 : a.sort_order_in_category;
-                var sb = (b.sort_order_in_category == null) ? 99999 : b.sort_order_in_category;
-                if (sa !== sb) return sa - sb;
-                return a.id - b.id;
+                return b.id - a.id;
             });
         }
         if (currentSort === 'price_asc') { filtered.sort(function(a,b) { return a.price - b.price; }); }
@@ -930,7 +927,7 @@
     async function loadProducts() {
         var grid = document.getElementById('productsGrid');
         try {
-            var result = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: true });
+            var result = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: false });
             if (result.error) throw result.error;
             allProducts = result.data || [];
             try {

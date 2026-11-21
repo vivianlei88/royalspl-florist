@@ -593,7 +593,7 @@
                 }
             }
             // 若無Featured Flowers設定，fallback：顯示前 6 件商品
-            var result = await supabaseClient.from('products').select('*').eq('is_active', true).limit(6).order('id', { ascending: true });
+            var result = await supabaseClient.from('products').select('*').eq('is_active', true).limit(6).order('id', { ascending: false });
             if (result.error) throw result.error;
             featuredProductsData = result.data || [];
             renderFeaturedProducts();
