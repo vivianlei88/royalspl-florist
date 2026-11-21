@@ -1405,9 +1405,11 @@ function renderProductDetail(product) {
             ];
         }
         let rows = '';
+        const zoneMap = { '亞洲': 'Asia', '北美洲': 'North America', '中東': 'Middle East', '大洋洲': 'Oceania', '歐洲': 'Europe', '其他': 'Other Regions' };
         (zones || []).forEach(function(z) {
             const f = z.fees || {};
-            rows += '<tr><td>' + z.zone + '</td><td>' + siteMoney(f.standard || 0) + '</td><td>' + siteMoney(f.medium || 0) + '</td><td>' + siteMoney(f.large || 0) + '</td><td>' + siteMoney(f.xl || 0) + '</td></tr>';
+            const zn = zoneMap[z.zone] || z.zone;
+            rows += '<tr><td>' + zn + '</td><td>' + siteMoney(f.standard || 0) + '</td><td>' + siteMoney(f.medium || 0) + '</td><td>' + siteMoney(f.large || 0) + '</td><td>' + siteMoney(f.xl || 0) + '</td></tr>';
         });
         // DHL surcharge temporarily hidden (restore once pricing confirmed)
         const table = rows ? '<table style="width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;"><tr style="background:#f7f1e8;"><th style="padding:6px;border:1px solid #e5dccb;">Region</th><th style="padding:6px;border:1px solid #e5dccb;">S</th><th style="padding:6px;border:1px solid #e5dccb;">M</th><th style="padding:6px;border:1px solid #e5dccb;">L</th><th style="padding:6px;border:1px solid #e5dccb;">XL</th></tr>' + rows + '</table>' : '';
