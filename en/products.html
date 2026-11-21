@@ -195,22 +195,22 @@
     </style>
     <link rel="stylesheet" href="/css/ai-chat.css">
     <link rel="canonical" href="https://www.royalspl.shop/en/products">
-    <meta property="og:title" content="All Flowers | RoyalSpl Florist 香港花店">
-    <meta property="og:description" content="瀏覽 RoyalSpl Florist All Flowers產品，包括生日花束、開業花籃、Holiday Flowers。香港頂級花藝設計，新鮮花材，品質保證。">
+    <meta property="og:title" content="All Flowers | RoyalSpl Florist Hong Kong">
+    <meta property="og:description" content="Browse RoyalSpl Florist's all flowers, including birthday bouquets, opening baskets and holiday flowers. Premium Hong Kong florist design with fresh stems and guaranteed quality.">
     <meta property="og:image" content="https://www.royalspl.shop/assets/og-share.jpg">
     <meta property="og:url" content="https://www.royalspl.shop/products.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
     <meta property="og:locale" content="en_HK">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="All Flowers | RoyalSpl Florist 香港花店">
-    <meta name="twitter:description" content="瀏覽 RoyalSpl Florist All Flowers產品，包括生日花束、開業花籃、Holiday Flowers。香港頂級花藝設計，新鮮花材，品質保證。">
+    <meta name="twitter:title" content="All Flowers | RoyalSpl Florist Hong Kong">
+    <meta name="twitter:description" content="Browse RoyalSpl Florist's all flowers, including birthday bouquets, opening baskets and holiday flowers. Premium Hong Kong florist design with fresh stems and guaranteed quality.">
     <meta name="twitter:image" content="https://www.royalspl.shop/assets/og-share.jpg">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      "name": "All Flowers產品",
+      "name": "All Flowers",
       "itemListElement": []
     }
     </script>
@@ -222,7 +222,7 @@
         {
           "@type": "ListItem",
           "position": 1,
-          "name": "首頁",
+          "name": "Home",
           "item": "https://www.royalspl.shop/"
         },
         {
@@ -604,8 +604,8 @@
     function buildPillsHtml(tags, clickFn, containerId, dataAttr, labelFn, expandText, collapseText) {
         var attr = dataAttr || 'data-tag';
         var lab = labelFn || function(t) { return t; };
-        var expT = expandText || '全部 ▾';
-        var colT = collapseText || '收起 ▴';
+        var expT = expandText || 'All ▾';
+        var colT = collapseText || 'Hide ▴';
         var SHOW = 8;
         var shown = tags.slice(0, SHOW);
         var extra = tags.slice(SHOW);
@@ -627,8 +627,8 @@
         var extra = document.getElementById(containerId + '-extra');
         var btn = document.getElementById(containerId + '-more');
         if (!extra || !btn) return;
-        var e = expandText || '全部 ▾';
-        var c = collapseText || '收起 ▴';
+        var e = expandText || 'All ▾';
+        var c = collapseText || 'Hide ▴';
         if (extra.style.display === 'none') { extra.style.display = 'flex'; btn.innerHTML = c; }
         else { extra.style.display = 'none'; btn.innerHTML = e; }
     }
@@ -915,13 +915,12 @@
             var productImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
             html += '<a href="product-detail?id=' + p.id + '" class="product-card" data-tags="' + ((p.tags || []).join(',') || '') + '">';
             if (productImg) {
-                html += '<div class="product-card-img"><img src="' + productImg + '" alt="' + p.name_zh + '"><\/div>';
+                html += '<div class="product-card-img"><img src="' + productImg + '" alt="' + (p.name_en || p.name_zh) + '"><\/div>';
             } else {
                 html += '<div class="product-emoji">' + (p.emoji || '') + '<\/div>';
             }
             html += '<div class="product-status ' + stockClass + '">' + stockText + '<\/div>';
-            html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
-            html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
+            html += '<h3 class="product-name">' + (p.name_en || p.name_zh || '') + '<\/h3>';
             html += '<p class="product-price">' + (variantMinMap[p.id] ? 'From ' + siteMoney(variantMinMap[p.id]) : siteMoney(p.price)) + '<\/p>';
             html += '<\/a>';
         }

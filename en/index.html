@@ -109,7 +109,7 @@
     </style>
     <link rel="stylesheet" href="/css/ai-chat.css">
     <link rel="canonical" href="https://www.royalspl.shop/en/">
-    <meta property="og:title" content="RoyalSpl Florist Hong Kong | Hong Kong Florist | 極簡奢華花藝">
+    <meta property="og:title" content="RoyalSpl Florist Hong Kong | Hong Kong Florist | Minimalist Luxury Florals">
     <meta property="og:description" content="RoyalSpl Florist Hong Kong - Premium minimalist luxury floral design. Same-day flower delivery in Hong Kong. Birthday bouquets, opening baskets, wedding flowers. Free delivery on orders.">
     <meta property="og:image" content="https://www.royalspl.shop/assets/hero.jpg">
     <meta property="og:image:width" content="1600">
@@ -119,7 +119,7 @@
     <meta property="og:site_name" content="RoyalSpl Florist Hong Kong">
     <meta property="og:locale" content="en_HK">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="RoyalSpl Florist Hong Kong | Hong Kong Florist | 極簡奢華花藝">
+    <meta name="twitter:title" content="RoyalSpl Florist Hong Kong | Hong Kong Florist | Minimalist Luxury Florals">
     <meta name="twitter:description" content="RoyalSpl Florist Hong Kong - Premium minimalist luxury floral design. Same-day flower delivery in Hong Kong. Birthday bouquets, opening baskets, wedding flowers. Free delivery on orders.">
     <meta name="twitter:image" content="https://www.royalspl.shop/assets/og-share.jpg">
     <script type="application/ld+json">
@@ -129,7 +129,7 @@
       "name": "RoyalSpl Florist Hong Kong",
       "url": "https://www.royalspl.shop/",
       "logo": "https://www.royalspl.shop/assets/og-share.jpg",
-      "description": "RoyalSpl Florist Hong Kong Florist，提供極簡奢華花藝設計，香港Flower Delivery服務。",
+      "description": "RoyalSpl Florist Hong Kong - premium minimalist luxury floral design and same-day flower delivery in Hong Kong.",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "2F, 2-16, Wo Liu Hang St, Fo Tan",
@@ -174,7 +174,7 @@
       },
       "openingHours": "Mo-Su 09:00-21:00",
       "priceRange": "$$",
-      "description": "香港頂級花藝設計，提供生日Bouquet、Opening Basket、婚禮花藝、節日Floral Gifts。"
+      "description": "Premium floral design in Hong Kong, offering birthday bouquets, opening baskets, wedding florals and festive floral gifts."
     }
     </script>
 
@@ -297,10 +297,10 @@
     <section class="collections-section">
         <div class="section-header">
             <span class="section-subtitle-en">THE COLLECTIONS</span>
-            <h2 class="section-title-zh" style="cursor:pointer;" onclick="location.href='categories.html'">臻選系列</h2>
+            <h2 class="section-title-zh" style="cursor:pointer;" onclick="location.href='categories.html'">The Collections</h2>
         </div>
         <div class="collections-grid" id="collectionsGrid">
-            <div style="text-align:center;padding:40px;grid-column:1/-1;">載入中...</div>
+            <div style="text-align:center;padding:40px;grid-column:1/-1;">Loading...</div>
         </div>
     </section>
 
@@ -310,7 +310,7 @@
             <h2 class="section-title-zh" style="cursor:pointer;" onclick="location.href='products.html'">Featured Flowers</h2>
         </div>
         <div class="featured-grid" id="featuredProducts">
-            <div style="text-align:center;padding:40px;grid-column:1/-1;">載入中...</div>
+            <div style="text-align:center;padding:40px;grid-column:1/-1;">Loading...</div>
         </div>
     </section>
 
@@ -318,7 +318,7 @@
         <div class="about-content">
             <span class="section-subtitle-en">ABOUT US</span>
             <h2 class="section-title-zh">About Us</h2>
-            <p class="about-text" id="aboutText">RoyalSpl Florist 致力於為香港帶來最優質的花藝體驗。</p>
+            <p class="about-text" id="aboutText">RoyalSpl Florist brings you the finest floral experience in Hong Kong.</p>
             <a href="/en/about.html" class="about-link">Learn More →</a>
         </div>
     </section>
@@ -601,7 +601,7 @@
             renderFeaturedProducts();
         } catch (err) {
             console.error('載入商品失敗:', err);
-            container.innerHTML = '<div style="text-align:center;padding:40px;grid-column:1/-1;">❌ 載入失敗</div>';
+            container.innerHTML = '<div style="text-align:center;padding:40px;grid-column:1/-1;">❌ Failed to load</div>';
         }
     }
 
@@ -752,13 +752,12 @@
             var cardImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
             html += '<a href="product-detail?id=' + p.id + '" class="product-card">';
             if (cardImg) {
-                html += '<div class="product-card-img"><img src="' + cardImg + '" alt="' + p.name_zh + '"><\/div>';
+                html += '<div class="product-card-img"><img src="' + cardImg + '" alt="' + (p.name_en || p.name_zh) + '"><\/div>';
             } else {
                 html += '<div class="product-emoji">' + (p.emoji || '') + '<\/div>';
             }
             html += '<div class="product-card-info">';
-            html += '<p class="product-name-en">' + (p.name_en || '') + '<\/p>';
-            html += '<h3 class="product-name">' + p.name_zh + '<\/h3>';
+            html += '<h3 class="product-name">' + (p.name_en || p.name_zh || '') + '<\/h3>';
             html += '<p class="product-price">' + (variantMinMap[p.id] ? 'From ' + siteMoney(variantMinMap[p.id]) : siteMoney(p.price)) + '<\/p>';
             // Tags hidden from customers, written as <link rel="tag"> for SEO (crawler-visible)
             if (tags.length > 0) {
@@ -794,7 +793,7 @@
         updateCartBadge();
         var toast = document.createElement('div');
         toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#1A1A1A;color:#FAF8F5;padding:15px 25px;border-radius:5px;z-index:9999;';
-        toast.textContent = '✓ ' + (product.name_en || product.name_zh) + ' 已Add to Cart';
+        toast.textContent = '✓ ' + (product.name_en || product.name_zh) + ' Added to Cart';
         document.body.appendChild(toast);
         setTimeout(function() { toast.remove(); }, 2500);
     }
