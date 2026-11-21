@@ -249,7 +249,7 @@
 
     <div class="nav-drawer" id="navDrawer">
         <div class="nav-drawer-header">
-            <h2 class="nav-drawer-title">選單</h2>
+            <h2 class="nav-drawer-title">Menu</h2>
             <button class="nav-close-btn" id="navCloseBtn">✕</button>
         </div>
         <nav class="nav-drawer-content">
@@ -539,8 +539,7 @@
                 html += '<a href="' + link + '" class="collection-card collection-card-' + (i+1) + '">';
                 html += imgHtml;
                 html += '<div class="collection-card-text">';
-                html += '<p class="en">' + (card.title_en || '') + '</p>';
-                html += '<h3 class="zh">' + (card.title_zh || '') + '</h3>';
+                html += '<h3 class="zh">' + (card.title_en || card.title_zh || '') + '</h3>';
                 if (desc) html += '<p class="collection-card-desc">' + desc + '</p>';
                 html += '</div></a>';
             }
