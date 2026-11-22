@@ -13,9 +13,6 @@ export async function onRequest(context) {
     const header = 'id,title,description,link,image_link,price,sale_price,availability,availability_date,condition,brand,google_product_category,custom_label_0,shipping_label';
     const rows = [header];
 
-    // 香港时间 UTC+8
-    const today = new Date(Date.now() + 8 * 60 * 60 * 1000);
-
     for (const p of products) {
       let image = '';
       if (p.images && Array.isArray(p.images) && p.images.length > 0) {
@@ -34,17 +31,25 @@ export async function onRequest(context) {
       const feedId = p.sku || `PROD-${p.id}`;
       const title = (p.name_zh || p.name_en || '').substring(0, 150);
       const desc = (p.description || '').substring(0, 5000);
-      const link = `https://www.royalspl.shop/product-detail.html?id=${p.id}`;
+      const link = `https://www.royalspl.shop/product-detail?id=${p.id}`;
       const price = `${Number(p.price || 0).toFixed(2)} HKD`;
       const salePrice = p.sale_price ? `${Number(p.sale_price).toFixed(2)} HKD` : '';
-      
+
       const isPreorder = (p.stock === '預訂' || p.is_preorder);
       const avail = isPreorder ? 'preorder' : 'in stock';
-      
-      const days = isPreorder ? (p.delivery_days || 1) : 1;
-      const d = new Date(today);
-      d.setDate(d.getDate() + days);
-      const availDate = d.toISOString().split('T')[0];
+
+      // availability_date 仅对 preorder/backorder 必填；in stock 留空。
+      // 格式须为 ISO 8601 带时间与时区（CSV：YYYY-MM-DDThh:mm+0800），纯日期会被 Google 判为缺失。
+      let availDate = '';
+      if (isPreorder) {
+        const days = p.delivery_days || 1;
+        const hk = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        hk.setUTCDate(hk.getUTCDate() + days);
+        const y = hk.getUTCFullYear();
+        const mo = String(hk.getUTCMonth() + 1).padStart(2, '0');
+        const dd = String(hk.getUTCDate()).padStart(2, '0');
+        availDate = `${y}-${mo}-${dd}T13:00+0800`;
+      }
       
       const gpc = '1937';
       const label = isDried ? '乾花' : '鮮花';
