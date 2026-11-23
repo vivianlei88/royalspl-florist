@@ -602,6 +602,11 @@
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
     var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // 讀取首跳來源歸因（js/attribution.js 提供），下單時一併寫入訂單
+    function getOrderAttribution() {
+        try { return (window.RoyalSplAttribution && RoyalSplAttribution.get()) || {}; } catch (e) { return {}; }
+    }
+
     let cart = JSON.parse(localStorage.getItem('royalspl_cart') || '[]');
     
     // 「Buy Now」模式：URL 帶 buynow=1 時，讀取獨立暫存，不影響原本Shopping Cart
@@ -833,6 +838,7 @@
     async function createOrderForWallet(paymentMethod) {
         let orderExtra = {};
         try { orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}'); } catch(e) {}
+        var attr = getOrderAttribution();
         if (cart.length === 0) return { success: false, error: 'Shopping cart is empty' };
         if (!validateForm()) return { success: false, error: 'Please fill inDelivery Information' };
 
@@ -872,7 +878,15 @@
                         price: item.price, quantity: item.quantity, image: item.image || '', addons: item.addons || []
                     })),
                     remarks: orderExtra.remarks || '',
-                    card_message: orderExtra.cardMessage || ''
+                    card_message: orderExtra.cardMessage || '',
+                    traffic_source: attr.traffic_source || '',
+                    utm_source: attr.utm_source || '',
+                    utm_medium: attr.utm_medium || '',
+                    utm_campaign: attr.utm_campaign || '',
+                    referrer: attr.referrer || '',
+                    landing_page: attr.landing_page || '',
+                    gclid: attr.gclid || '',
+                    fbclid: attr.fbclid || ''
                 })
                 .select();
 
@@ -1267,6 +1281,7 @@
         try {
             orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}');
         } catch(e) {}
+        var attr = getOrderAttribution();
         if (cart.length === 0) { showToast('Shopping cart is empty'); window.location.href = 'products.html'; return; }
         if (!validateForm()) return;
 
@@ -1363,7 +1378,15 @@
                         addons: item.addons || []
                     })),
                     remarks: orderExtra.remarks || '',
-                    card_message: orderExtra.cardMessage || ''
+                    card_message: orderExtra.cardMessage || '',
+                    traffic_source: attr.traffic_source || '',
+                    utm_source: attr.utm_source || '',
+                    utm_medium: attr.utm_medium || '',
+                    utm_campaign: attr.utm_campaign || '',
+                    referrer: attr.referrer || '',
+                    landing_page: attr.landing_page || '',
+                    gclid: attr.gclid || '',
+                    fbclid: attr.fbclid || ''
                 })
                 .select();
 
@@ -1477,6 +1500,7 @@
         try {
             orderExtra = JSON.parse(localStorage.getItem('order_extra') || '{}');
         } catch(e) {}
+        var attr = getOrderAttribution();
         if (cart.length === 0) { showToast('Shopping cart is empty'); window.location.href = 'products.html'; return; }
         if (!validateForm()) return;
 
@@ -1552,7 +1576,15 @@
                         addons: item.addons || []
                     })),
                     remarks: orderExtra.remarks || '',
-                    card_message: orderExtra.cardMessage || ''
+                    card_message: orderExtra.cardMessage || '',
+                    traffic_source: attr.traffic_source || '',
+                    utm_source: attr.utm_source || '',
+                    utm_medium: attr.utm_medium || '',
+                    utm_campaign: attr.utm_campaign || '',
+                    referrer: attr.referrer || '',
+                    landing_page: attr.landing_page || '',
+                    gclid: attr.gclid || '',
+                    fbclid: attr.fbclid || ''
                 })
                 .select();
 
@@ -1760,5 +1792,6 @@
     })();
     </script>
     <script src="/js/ai-chat-v2.js"></script>
+    <script src="/js/attribution.js"></script>
 </body>
 </html>

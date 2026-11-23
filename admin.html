@@ -7102,6 +7102,30 @@ function setShippingScope(v) {
         v.innerHTML += '<div class="form-row"><div class="form-group"><label class="form-label">商品小計</label><input type="number" class="form-input" id="detailSubtotal" value="' + (o.subtotal || 0) + '" readonly></div><div class="form-group"><label class="form-label">運費</label><input type="number" class="form-input" id="detailDeliveryFee" value="' + (o.delivery_fee || 0) + '"></div></div>';
         // 付款信息（轉數快/信用卡）
         v.innerHTML += '<div class="form-group"><label class="form-label">付款方式</label><input class="form-input" id="detailPaymentMethod" value="' + (o.payment_method === 'fps' ? '轉數快 FPS' : o.payment_method === 'card' ? '信用卡/Apple Pay' : '') + '" readonly></div>';
+        // 獲客來源（唯讀，供查詢每筆訂單從哪個渠道進入）
+        (function(){
+            function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+            var rows = [];
+            if (o.traffic_source) rows.push(['渠道', o.traffic_source]);
+            if (o.utm_source) rows.push(['UTM 來源', o.utm_source]);
+            if (o.utm_medium) rows.push(['UTM 媒介', o.utm_medium]);
+            if (o.utm_campaign) rows.push(['UTM 活動', o.utm_campaign]);
+            if (o.referrer) rows.push(['外部引薦', o.referrer]);
+            if (o.landing_page) rows.push(['落地頁', o.landing_page]);
+            if (o.gclid) rows.push(['Google 點擊 ID', o.gclid]);
+            if (o.fbclid) rows.push(['Facebook 點擊 ID', o.fbclid]);
+            var box = '<div class="form-group" style="background:#f6f8fa;border:1px solid #e6eaee;border-radius:10px;padding:15px;margin-bottom:15px;">' +
+                '<label class="form-label" style="font-weight:700;margin-bottom:10px;">獲客來源</label>';
+            if (rows.length) {
+                for (var ai=0; ai<rows.length; ai++) {
+                    box += '<div style="font-size:13px;line-height:1.8;color:#444;"><span style="color:#888;display:inline-block;min-width:100px;">' + esc(rows[ai][0]) + '</span><span style="word-break:break-all;">' + esc(rows[ai][1]) + '</span></div>';
+                }
+            } else {
+                box += '<div style="font-size:13px;color:#999;">未記錄（舊訂單或直接訪問）</div>';
+            }
+            box += '</div>';
+            v.innerHTML += box;
+        })();
         if (o.payment_method === 'fps') {
             v.innerHTML += '<div class="form-group"><label class="form-label">轉數快交易參考編號</label><input class="form-input" id="detailFpsRef" value="' + (o.fps_ref || '') + '" readonly></div>';
             if (o.fps_screenshot) { v.innerHTML += '<div class="form-group"><label class="form-label">付款截圖</label><a href="' + o.fps_screenshot + '" target="_blank"><img src="' + o.fps_screenshot + '" style="max-width:220px;max-height:220px;object-fit:contain;border:1px solid #ddd;border-radius:6px;cursor:zoom-in;"></a></div>'; }
