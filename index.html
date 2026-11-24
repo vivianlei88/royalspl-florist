@@ -37,7 +37,8 @@
     <link rel="stylesheet" href="css/style-v3.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link rel="preload" as="image" href="https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/royalspl-florist/1795545421673-l481ni.webp" fetchpriority="high">
+    <script defer src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         .user-icon { display: flex; align-items: center; justify-content: center; padding: 5px; color: #1A1A1A; }
         .user-icon svg { display: block; }
@@ -428,7 +429,7 @@
     <script>
     var SUPABASE_URL = 'https://gefqlrmozxbgfhxgngtg.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZnFscm1venhiZ2ZoeGduZ3RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTI0MDQsImV4cCI6MjEwMTg2ODQwNH0.oH0fI1xpKn6arQlpvznrXXMMWsD1ZxNazRP4LZeZ68Y';
-    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var supabaseClient = null;
 
     var featuredProductsData = [];
     var variantMinMap = {};
@@ -624,7 +625,7 @@
                 var card = cards[i];
                 var link = card.link_url || ('products.html?category=' + encodeURIComponent(card.title_zh || ''));
                 var imgHtml = card.image_url 
-                    ? '<div class="collection-card-img-wrap"><img src="' + card.image_url + '" alt="' + (card.title_zh || card.title_en || '花藝系列') + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+                    ? '<div class="collection-card-img-wrap"><img src="' + card.image_url + '" alt="' + (card.title_zh || card.title_en || '花藝系列') + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
                     : '<div class="collection-card-img-wrap" style="background:#F3EFEA;display:flex;align-items:center;justify-content:center;"></div>';
                 var desc = card.description || '';
                 if (desc.length > 50) desc = desc.substring(0, 50) + '...';
@@ -707,7 +708,7 @@
             var cardImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
             html += '<a href="product-detail?id=' + p.id + '" class="product-card">';
             if (cardImg) {
-                html += '<div class="product-card-img"><img src="' + cardImg + '" alt="' + p.name_zh + '"><\/div>';
+                html += '<div class="product-card-img"><img src="' + cardImg + '" alt="' + p.name_zh + '" loading="lazy"><\/div>';
             } else {
                 html += '<div class="product-emoji">' + (p.emoji || '') + '<\/div>';
             }
@@ -773,6 +774,7 @@
     if (navCloseBtn) navCloseBtn.addEventListener('click', function() { navDrawer.classList.remove('open'); });
 
     document.addEventListener('DOMContentLoaded', function() {         siteInitCurrency();         siteRenderCurrencyBtn();
+        if (window.supabase && !supabaseClient) { supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
         // 先隱藏默認Hero文字，等待數據庫設置載入
         var heroContent = document.querySelector('.hero-content');
         if (heroContent) heroContent.style.display = 'none';

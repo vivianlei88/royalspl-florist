@@ -341,7 +341,7 @@
                 for (let i = 0; i < categories.length; i++) {
                     const cat = categories[i];
                     const imgHtml = cat.image_url
-                        ? '<div class="category-card-img-wrap"><img src="' + cat.image_url + '" alt="' + cat.name_zh + '"></div>'
+                        ? '<div class="category-card-img-wrap"><img src="' + cat.image_url + '" alt="' + cat.name_zh + '" loading="lazy"></div>'
                         : '<div class="category-card-img-wrap" style="display:flex;align-items:center;justify-content:center;"></div>';
                     html += '<a href="products.html?category=' + encodeURIComponent(cat.name_zh) + '" class="category-card">';
                     html += imgHtml;

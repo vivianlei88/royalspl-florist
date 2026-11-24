@@ -828,9 +828,9 @@ function renderProductDetail(product) {
                     var isVid = /\.mp4(\?|$)/i.test(productImages[ti]);
                     html += '<div class="thumb-item' + (ti === 0 ? ' active' : '') + '" onclick="selectProductImage(' + ti + ')">';
                     if (isVid) {
-                        html += '<img src="' + productImages[0] + '" alt="video thumb" style="opacity:0.6;"><span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:20px;text-shadow:0 1px 3px rgba(0,0,0,0.5);">&#9658;</span>';
+                        html += '<img src="' + productImages[0] + '" alt="video thumb" loading="lazy" style="opacity:0.6;"><span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:20px;text-shadow:0 1px 3px rgba(0,0,0,0.5);">&#9658;</span>';
                     } else {
-                        html += '<img src="' + productImages[ti] + '" alt="' + (product.name_en || product.name_zh) + ' detail image ' + (ti+1) + '">';
+                        html += '<img src="' + productImages[ti] + '" alt="' + (product.name_en || product.name_zh) + ' detail image ' + (ti+1) + '" loading="lazy">';
                     }
                     html += '</div>';
                 }
@@ -926,7 +926,7 @@ function renderProductDetail(product) {
             var html = '';
             for (var i = 0; i < allAddons.length; i++) {
                 var a = allAddons[i];
-                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + (a.name_en || a.name_zh || '') + '" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji"><\/span>';
+                var img = a.image_url ? '<img src="' + a.image_url + '" alt="' + (a.name_en || a.name_zh || '') + '" loading="lazy" style="width:40px;height:40px;object-fit:cover;border-radius:5px;">' : '<span class="addon-emoji"><\/span>';
                 html += '<label class="addon-item"><input type="checkbox" class="addon-checkbox" data-id="' + a.id + '" data-price="' + a.price + '" onchange="updateTotal()">' + img + '<div class="addon-info"><p class="addon-name">' + (a.name_en || a.name_zh || '') + '<\/p><p class="addon-price">+HK$' + a.price + '<\/p><\/div><button type="button" class="addon-detail-btn" onclick="event.preventDefault();event.stopPropagation();showAddonDetail(' + a.id + ')">Details<\/button><\/label>';
             }
             addonList.innerHTML = html;
@@ -947,7 +947,7 @@ function renderProductDetail(product) {
         var desc = a.description_en || '';
         var html = '<div class="addon-detail-overlay" onclick="if(event.target===this)closeAddonDetail()"><div class="addon-detail-modal"><div class="addon-detail-modal-wrap">';
         html += '<button class="addon-detail-close" onclick="closeAddonDetail()">×<\/button>';
-        if (a.image_url) html += '<img class="addon-detail-img" src="' + a.image_url + '" alt="' + (a.name_en || a.name_zh || '') + '">';
+        if (a.image_url) html += '<img class="addon-detail-img" src="' + a.image_url + '" alt="' + (a.name_en || a.name_zh || '') + '" loading="lazy">';
         html += '<div class="addon-detail-body">';
         html += '<div class="addon-detail-title">' + (a.name_en || a.name_zh || '') + '<\/div>';
         html += '<div class="addon-detail-price">HK$' + a.price + '<\/div>';
@@ -1199,7 +1199,7 @@ function renderProductDetail(product) {
                 var p = recommended[i];
                 var img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || '');
                 html += '<a href="product-detail?id=' + p.id + '" class="recommend-card">';
-                html += '<div class="recommend-card-img">' + (img ? '<img src="' + img + '" alt="' + (p.name_en || p.name_zh) + '">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;"></div>') + '</div>';
+                html += '<div class="recommend-card-img">' + (img ? '<img src="' + img + '" alt="' + (p.name_en || p.name_zh) + '" loading="lazy">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;"></div>') + '</div>';
                 html += '<div class="recommend-card-name">' + (p.name_en || p.name_zh || '') + '</div>';
                 html += '<div class="recommend-card-price">' + siteMoney(p.price) + '</div>';
                 html += '</a>';
