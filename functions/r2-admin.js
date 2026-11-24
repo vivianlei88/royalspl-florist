@@ -10,6 +10,9 @@ const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const ADMIN_KEY = 'royalspl2024';
 const R2_URL_PREFIX = 'https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/';
 
+// 受保护前缀：业务存档，即使未被数据库引用也一律不自动删除。
+const PROTECTED_PREFIXES = ['email-attachments/'];
+
 // 静态代码里硬编码、必须保留的 R2 对象 key（数据库不存，需单独兜底）。
 const STATIC_KEEP = [
   'royalspl-florist/1795545421673-l481ni.webp', // 首页首屏预加载横幅
@@ -51,8 +54,9 @@ async function collectInUse() {
     ['collection_cards', 'image_url'],
     ['homepage_settings', 'hero_image,hero_images'],
     ['addons', 'image_url'],
-    ['blog_posts', 'image_url'],
+    ['blog_posts', 'image_url,content,content_en'],
     ['categories', 'image_url'],
+    ['orders', 'product_images,items,fps_screenshot'],
   ];
   for (const [table, cols] of tables) {
     try {
@@ -142,6 +146,7 @@ export async function onRequestPost(context) {
   const toDelete = [];
   for (const key of targets) {
     if (inUse.has(key)) { protectedKeys.push(key); continue; }
+    if (PROTECTED_PREFIXES.some((p) => key.startsWith(p))) { protectedKeys.push(key); continue; }
     if (!bucketKeys.has(key)) { missing.push(key); continue; }
     toDelete.push(key);
   }
