@@ -6538,6 +6538,21 @@ function setShippingScope(v) {
                     lastDate = dateDisplay;
                 }
                 
+                // 商品圖片（product_images 為 JSON 字串，需解析後取第一張）
+                var productImg = '';
+                if (o.product_images) {
+                    try {
+                        var parsedImg = JSON.parse(o.product_images);
+                        productImg = Array.isArray(parsedImg) ? (parsedImg[0] || '') : parsedImg;
+                    } catch (e) {
+                        productImg = (o.product_images || '').split('|')[0] || '';
+                    }
+                }
+                if (!productImg) {
+                    var itemsArr2 = (typeof o.items === 'string') ? (function(){ try { return JSON.parse(o.items); } catch(e2) { return []; } })() : (o.items || []);
+                    if (itemsArr2.length > 0 && itemsArr2[0].image) { productImg = itemsArr2[0].image; }
+                }
+                
                 // 狀態標籤
                 var statusText = getOrderStatusText(o.status);
                 var statusColor = o.status === 'paid' || o.status === 'shipped' ? '#2D5016' : (o.status === 'unpaid' ? '#999' : '#B8860B');
@@ -6545,6 +6560,14 @@ function setShippingScope(v) {
                 
                 // 訂單卡片
                 h += '<div onclick="openOrderDetail(' + o.id + ')" style="display:flex;gap:15px;padding:15px;background:white;border-radius:12px;margin-bottom:12px;cursor:pointer;border:1px solid #eee;align-items:center;">';
+                // 左側圖片
+                h += '<div style="width:80px;height:80px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">';
+                if (productImg) {
+                    h += '<img src="' + productImg + '" style="width:100%;height:100%;object-fit:cover;">';
+                } else {
+                    h += '<span style="color:#ccc;font-size:12px;">無圖</span>';
+                }
+                h += '</div>';
                 // 中間信息
                 h += '<div style="flex:1;min-width:0;">';
                 h += '<div style="font-size:18px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">' + (o.recipient_name || o.customer_name || '未知客戶') + '</div>';
@@ -6564,10 +6587,19 @@ function setShippingScope(v) {
         }
         
         // 電腦端：表格顯示
-        var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
+        var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>圖片</th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
         for (var i = 0; i < orders.length; i++) {
             var o = orders[i];
+            var productImg = '';
+            if (o.product_images) {
+                try { var parsedT = JSON.parse(o.product_images); productImg = Array.isArray(parsedT) ? (parsedT[0] || '') : parsedT; } catch (eT) { productImg = (o.product_images || '').split('|')[0] || ''; }
+            }
+            if (!productImg) {
+                var itemsArrT = (typeof o.items === 'string') ? (function(){ try { return JSON.parse(o.items); } catch(e2T) { return []; } })() : (o.items || []);
+                if (itemsArrT.length > 0 && itemsArrT[0].image) { productImg = itemsArrT[0].image; }
+            }
             h += '<tr><td class="checkbox-col"><input type="checkbox" class="order-check" value="' + o.id + '"></td>';
+            h += '<td style="width:60px;"><div style="width:50px;height:50px;border-radius:6px;overflow:hidden;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">' + (productImg ? '<img src="' + productImg + '" style="width:100%;height:100%;object-fit:cover;">' : '<span style="color:#ccc;font-size:11px;">無圖</span>') + '</div></td>';
             h += '<td>' + o.order_code + '</td><td>' + (o.created_at || '').slice(0,10) + '</td><td>' + (o.delivery_date || '-') + '</td><td>' + o.recipient_name + '</td><td>' + o.recipient_phone + '</td><td>HK$' + o.total_amount + (o.refund_status ? '<div style="font-size:11px;color:#c0392b;font-weight:600;">已退 HK$' + (o.refund_amount || 0) + '</div>' : '') + '</td>';
             h += '<td><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:5px;border:1px solid #1A1A1A;border-radius:3px;"><option value="unpaid"' + (o.status === 'unpaid' ? ' selected' : '') + '>未付款</option><option value="pending_payment"' + (o.status === 'pending_payment' ? ' selected' : '') + '>待確認付款</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>已付款</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>已出貨</option><option value="refunded"' + (o.status === 'refunded' ? ' selected' : '') + '>已退款</option></select></td>';
             var actionBtns = '<button class="btn btn-secondary btn-small" onclick="openOrderDetail(' + o.id + ')">詳情</button> ';
