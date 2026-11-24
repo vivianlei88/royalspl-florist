@@ -111,6 +111,22 @@
         .data-table tbody tr:hover { background: #f5f0eb; }
         .product-name-cell { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
         .product-name-cell small { display: block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        /* 訂單表格：平板/窄屏可橫向滾動，避免右側狀態/操作列被裁切 */
+        #ordersTable { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .orders-table { min-width: 1190px; table-layout: fixed; }
+        .orders-table th, .orders-table td { white-space: nowrap; }
+        .orders-table th:nth-child(1), .orders-table td:nth-child(1) { width: 40px; }
+        .orders-table th:nth-child(2), .orders-table td:nth-child(2) { width: 60px; }
+        .orders-table th:nth-child(3), .orders-table td:nth-child(3) { width: 150px; }
+        .orders-table th:nth-child(4), .orders-table td:nth-child(4) { width: 100px; }
+        .orders-table th:nth-child(5), .orders-table td:nth-child(5) { width: 100px; }
+        .orders-table th:nth-child(6), .orders-table td:nth-child(6) { width: 100px; }
+        .orders-table th:nth-child(7), .orders-table td:nth-child(7) { width: 120px; }
+        .orders-table th:nth-child(8), .orders-table td:nth-child(8) { width: 110px; }
+        .orders-table th:nth-child(9), .orders-table td:nth-child(9) { width: 130px; }
+        .orders-table th:nth-child(10), .orders-table td:nth-child(10) { width: 280px; }
+        .orders-table .btn-group { flex-wrap: wrap; gap: 6px; }
+        .orders-table .btn-small { padding: 6px 10px; font-size: 13px; }
         .product-img-lg { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; }
         .form-container { background: white; border-radius: 10px; padding: 35px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 750px; }
         .form-group { margin-bottom: 22px; }
@@ -194,6 +210,12 @@
         .products-sticky-header { position: sticky; top: 0; background: #FAF8F5; z-index: 100; padding: 12px 0; border-bottom: 1px solid #e0d8cf; margin-bottom: 15px; }
     .products-header-row { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
     .products-search { width: 220px; padding: 10px 14px; border: 1px solid #1A1A1A; border-radius: 5px; font-size: 15px; }
+    /* 平板橫屏：壓縮訂單表格字號與按鈕，配合橫向滾動完整顯示 */
+    @media (max-width: 1100px) {
+        .orders-table { min-width: 1000px; }
+        .orders-table th, .orders-table td { padding: 10px 8px; font-size: 14px; }
+        .orders-table .btn-small { padding: 5px 8px; font-size: 12px; }
+    }
     @media (max-width: 768px) {
         /* 側邊欄改為頂部可滾動導航 */
         .sidebar {
@@ -6587,7 +6609,7 @@ function setShippingScope(v) {
         }
         
         // 電腦端：表格顯示
-        var h = '<table class="data-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>圖片</th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
+        var h = '<table class="data-table orders-table"><thead><tr><th class="checkbox-col"><input type="checkbox" id="checkAllOrders" onchange="toggleCheckAllOrders()"></th><th>圖片</th><th>訂單編號</th><th>成立日期</th><th>送貨日期</th><th>收花人</th><th>電話</th><th>總金額</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
         for (var i = 0; i < orders.length; i++) {
             var o = orders[i];
             var productImg = '';
