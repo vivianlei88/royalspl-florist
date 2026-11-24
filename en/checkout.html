@@ -415,7 +415,7 @@
             <h2 class="checkout-section-title" id="hkDeliverySection">Delivery District and additional fees</h2>
             <div class="tier-list" id="tierList">
                 <div class="tier-item" data-tier="tier1" data-fee="90" onclick="manualSelectTier('tier1')">
-                    <div class="tier-item-header"><span class="tier-item-label">Tier 1</span><span class="tier-item-fee">Over HK$500 Free，Otherwise HK$90</span></div>
+                    <div class="tier-item-header"><span class="tier-item-label">Tier 1</span><span class="tier-item-fee">Over HK$600 Free，Otherwise HK$90</span></div>
                     <p class="tier-item-area">New Territories and Urban Areas along KCR/Commercial Building</p>
                 </div>
                 <div class="tier-item" data-tier="tier2" data-fee="100" onclick="manualSelectTier('tier2')">
@@ -473,7 +473,7 @@
             <h2 class="checkout-section-title">Delivery Time Slot</h2>
             <div class="time-slot-options" id="timeSlotOptions">
                 <div class="time-slot-option selected" data-slot="full_day" data-fee="90" onclick="selectTimeSlot(this)">
-                    <div class="time-slot-main"><span class="time-slot-name">① All Day Delivery (10:00–18:00)</span><span class="time-slot-fee">Over HK$500 Free，Otherwise HK$90</span></div>
+                    <div class="time-slot-main"><span class="time-slot-name">① All Day Delivery (10:00–18:00)</span><span class="time-slot-fee">Over HK$600 Free，Otherwise HK$90</span></div>
                 </div>
                 <div class="time-slot-option" data-slot="specified_time" data-fee="150" onclick="selectTimeSlot(this)">
                     <div class="time-slot-main"><span class="time-slot-name">② Specific Time Delivery</span><span class="time-slot-fee">+HK$150</span></div>
@@ -1107,7 +1107,7 @@
     }
 
     function getSubtotal() { return cart.reduce((sum, item) => { const addons = item.addons || []; const addonsTotal = addons.reduce((a, addon) => a + (addon.price || 0), 0); return sum + ((item.price || 0) + addonsTotal) * (item.quantity || 1); }, 0); }
-    function getDeliveryFee() { if (deliveryMode === 'global') { return getGlobalZoneFee(); } const subtotal = getSubtotal(); const area = getEffectiveArea(); const areaFee = getEffectiveAreaFee(); let fee = Math.max(areaFee, selectedTimeFee); if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 500) { fee = 0; } return fee; }
+    function getDeliveryFee() { if (deliveryMode === 'global') { return getGlobalZoneFee(); } const subtotal = getSubtotal(); const area = getEffectiveArea(); const areaFee = getEffectiveAreaFee(); let fee = Math.max(areaFee, selectedTimeFee); if (area === 'tier1' && selectedTimeSlot === 'full_day' && subtotal >= 600) { fee = 0; } return fee; }
     function getTotal() { return getSubtotal() + getDeliveryFee(); }
 
     // ===== What you see is what you pay: currency follows current display (internal amounts stay HKD, fixed FX 7.8) =====
