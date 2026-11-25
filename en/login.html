@@ -398,10 +398,17 @@
         btn.disabled = true;
         btn.textContent = 'Register中...';
         try {
-            var result = await supabaseClient.auth.signUp({ email: email, password: password });
+            var result = await supabaseClient.auth.signUp({ email: email, password: password, options: { data: { full_name: name } } });
             if (result.error) throw result.error;
             if (result.data.user) {
-                await supabaseClient.from('user_profiles').insert({ id: result.data.user.id, name: name, phone: phone });
+                // 註冊成功後把姓名/電話/Email 收錄進後台會員管理（失敗不阻斷註冊）
+                try {
+                    await fetch('/sync-member', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: result.data.user.id, name: name, phone: phone, email: email, source: '網站註冊' })
+                    });
+                } catch (e) { console.warn('會員收錄失敗:', e); }
             }
             showMessage('success', '✓ RegisterSuccess！請Login');
             setTimeout(function() { switchTab('login'); }, 1500);

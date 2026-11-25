@@ -61,13 +61,20 @@ async function ensureMember(SUPABASE_URL, headers, record) {
     const phone = normalizeText(record.phone);
     const email = normalizeEmail(record.email);
     const orderCode = normalizeText(record.orderCode);
+    const userId = normalizeText(record.userId);
+    const source = normalizeText(record.source) || '訂單收錄';
 
     // 沒有任何聯絡方式，無法建檔
     if (!email && !phone) return { action: 'skipped', reason: 'no_contact' };
 
-    // 1. 先按 email 查，再按 phone 查既有會員
+    // 1. 註冊場景已知 auth uid：優先按 id 直查；否則按 email，再按 phone 查既有會員
     let existing = null;
-    if (email) {
+    if (userId) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?select=*&id=eq.${encodeURIComponent(userId)}&limit=1`, { headers });
+        const j = await r.json();
+        if (Array.isArray(j) && j.length > 0) existing = j[0];
+    }
+    if (!existing && email) {
         const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?select=*&email=eq.${encodeURIComponent(email)}&limit=1`, { headers });
         const j = await r.json();
         if (Array.isArray(j) && j.length > 0) existing = j[0];
@@ -93,8 +100,8 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         return { action: 'updated', id: existing.id };
     }
 
-    // 2. 先在 auth 建立對應用戶（不發送重置郵件），取其 UUID
-    const authId = await getOrCreateAuthUser(SUPABASE_URL, headers, email, phone, name);
+    // 2. 註冊場景已有 auth uid 直接沿用；訂單場景再按需在 auth 建立對應用戶（不發送重置郵件）
+    const authId = userId || await getOrCreateAuthUser(SUPABASE_URL, headers, email, phone, name);
     if (!authId) return { action: 'skipped', reason: 'auth_user_unavailable' };
 
     // 觸發器通常會為新 auth 用戶自動建一條空 profile；先回查，存在則補全，不存在才新增
@@ -107,7 +114,7 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         if (!existingProfile.full_name && name) patch.full_name = name;
         if (!existingProfile.phone && phone) patch.phone = phone;
         if (!existingProfile.email && email) patch.email = email;
-        if (!existingProfile.source) patch.source = '訂單收錄';
+        if (!existingProfile.source) patch.source = source;
         await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${authId}`, {
             method: 'PATCH',
             headers,
@@ -122,7 +129,7 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         email: email,
         phone: phone,
         member_status: 'active',
-        source: '訂單收錄',
+        source: source,
         last_active: new Date().toISOString(),
         created_at: new Date().toISOString(),
     };

@@ -383,6 +383,16 @@
                 options: { data: { full_name: name } }
             });
             if (error) return alert('註冊失敗：' + error.message);
+            // 註冊成功後把姓名/Email 收錄進後台會員管理（失敗不阻斷註冊）
+            if (data && data.user) {
+                try {
+                    await fetch('/sync-member', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: data.user.id, name: name, phone: '', email: email, source: '網站註冊' })
+                    });
+                } catch (e) { console.warn('會員收錄失敗:', e); }
+            }
             alert('註冊成功！請檢查信箱完成驗證。');
             switchAuthTab('login');
         }
