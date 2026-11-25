@@ -62,8 +62,8 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         return { action: 'updated', id: existing.id };
     }
 
-    // 2. 新建會員檔案（臨時 id，不創建 auth 帳號、不發送郵件）
-    const newId = 'order_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+    // 2. 新建會員檔案（臨時帳號，不發送郵件）
+    const newId = crypto.randomUUID();
     const payload = {
         id: newId,
         full_name: name,
