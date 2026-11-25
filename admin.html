@@ -7889,7 +7889,7 @@ function setShippingScope(v) {
         });
         var html = '<table style="width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed;"><thead><tr style="border-bottom:2px solid #1A1A1A;">';
         html += '<th style="padding:12px 6px;text-align:left;width:4%;"><input type="checkbox" id="selectAllMembers" onchange="toggleAllMembers(this)"></th>';
-        html += '<th style="padding:12px 6px;text-align:left;width:13%;">名稱</th><th style="padding:12px 6px;text-align:left;width:16%;">電子郵件</th>';
+        html += '<th style="padding:12px 6px;text-align:left;width:13%;">名字，姓氏</th><th style="padding:12px 6px;text-align:left;width:16%;">電子郵件</th>';
         html += '<th style="padding:12px 6px;text-align:left;width:10%;">電話</th><th style="padding:12px 6px;text-align:left;width:8%;">積分</th><th style="padding:12px 6px;text-align:left;width:9%;">會員狀態</th>';
         html += '<th style="padding:12px 6px;text-align:left;width:10%;">標籤</th><th style="padding:12px 6px;text-align:left;width:15%;">最近活動</th><th style="padding:12px 6px;text-align:left;width:15%;">建立日期</th></tr></thead><tbody>';
         if (filtered.length === 0) {
@@ -9613,7 +9613,7 @@ function setShippingScope(v) {
                                 React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } },
                                     React.createElement('input', { type: 'checkbox', checked: selected.length === members.length && members.length > 0, onChange: toggleSelectAll })
                                 ),
-                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '名稱'),
+                                React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '名字，姓氏'),
                                 React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '電子郵件'),
                                 React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '電話'),
                                 React.createElement('th', { style: { padding: '12px 8px', textAlign: 'left' } }, '會員狀態'),

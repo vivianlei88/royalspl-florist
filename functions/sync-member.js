@@ -25,6 +25,26 @@ function normalizeText(v) {
     return String(v || '').trim();
 }
 
+// 訂閱狀態歸一：已訂閱 / 未訂閱
+function normalizeSub(v) {
+    const t = normalizeText(v);
+    if (!t) return '';
+    return /已訂閱|已订阅/.test(t) ? '已訂閱' : '未訂閱';
+}
+
+// 語言僅保留 zh / en，其餘代碼視為無效
+function normalizeLang(v) {
+    const t = normalizeText(v).toLowerCase();
+    return (t === 'zh' || t === 'en') ? t : '';
+}
+
+// 僅當既有欄位為空白時補入新值，不覆蓋已有資料
+function fillIfBlank(patch, existing, field, value) {
+    const cur = existing[field];
+    const blank = cur === null || cur === undefined || String(cur).trim() === '';
+    if (blank && value) patch[field] = value;
+}
+
 // 取得（必要時建立）auth 用戶 UUID；失敗返回 null
 async function getOrCreateAuthUser(SUPABASE_URL, headers, email, phone, name) {
     const password = 'Temp' + Date.now() + '!' + Math.random().toString(36).slice(2, 10);
@@ -63,6 +83,13 @@ async function ensureMember(SUPABASE_URL, headers, record) {
     const orderCode = normalizeText(record.orderCode);
     const userId = normalizeText(record.userId);
     const source = normalizeText(record.source) || '訂單收錄';
+    const shippingAddress = normalizeText(record.shipping_address);
+    const billingAddress = normalizeText(record.billing_address);
+    const address = normalizeText(record.address);
+    const tags = normalizeText(record.tags);
+    const language = normalizeLang(record.language);
+    const emailSub = normalizeSub(record.email_subscription);
+    const smsSub = normalizeSub(record.sms_subscription);
 
     // 沒有任何聯絡方式，無法建檔
     if (!email && !phone) return { action: 'skipped', reason: 'no_contact' };
@@ -88,9 +115,16 @@ async function ensureMember(SUPABASE_URL, headers, record) {
     if (existing) {
         // 僅補空白欄位，不覆蓋已有資料 / 標籤 / 積分
         const patch = { last_active: new Date().toISOString() };
-        if (!existing.full_name && name) patch.full_name = name;
-        if (!existing.phone && phone) patch.phone = phone;
-        if (!existing.email && email) patch.email = email;
+        fillIfBlank(patch, existing, 'full_name', name);
+        fillIfBlank(patch, existing, 'phone', phone);
+        fillIfBlank(patch, existing, 'email', email);
+        fillIfBlank(patch, existing, 'shipping_address', shippingAddress);
+        fillIfBlank(patch, existing, 'billing_address', billingAddress);
+        fillIfBlank(patch, existing, 'address', address);
+        fillIfBlank(patch, existing, 'tags', tags);
+        fillIfBlank(patch, existing, 'language', language);
+        fillIfBlank(patch, existing, 'email_subscription', emailSub);
+        fillIfBlank(patch, existing, 'sms_subscription', smsSub);
 
         await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${existing.id}`, {
             method: 'PATCH',
@@ -111,9 +145,16 @@ async function ensureMember(SUPABASE_URL, headers, record) {
 
     if (existingProfile) {
         const patch = { last_active: new Date().toISOString() };
-        if (!existingProfile.full_name && name) patch.full_name = name;
-        if (!existingProfile.phone && phone) patch.phone = phone;
-        if (!existingProfile.email && email) patch.email = email;
+        fillIfBlank(patch, existingProfile, 'full_name', name);
+        fillIfBlank(patch, existingProfile, 'phone', phone);
+        fillIfBlank(patch, existingProfile, 'email', email);
+        fillIfBlank(patch, existingProfile, 'shipping_address', shippingAddress);
+        fillIfBlank(patch, existingProfile, 'billing_address', billingAddress);
+        fillIfBlank(patch, existingProfile, 'address', address);
+        fillIfBlank(patch, existingProfile, 'tags', tags);
+        fillIfBlank(patch, existingProfile, 'language', language);
+        fillIfBlank(patch, existingProfile, 'email_subscription', emailSub);
+        fillIfBlank(patch, existingProfile, 'sms_subscription', smsSub);
         if (!existingProfile.source) patch.source = source;
         await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${authId}`, {
             method: 'PATCH',
@@ -133,6 +174,13 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         last_active: new Date().toISOString(),
         created_at: new Date().toISOString(),
     };
+    if (shippingAddress) payload.shipping_address = shippingAddress;
+    if (billingAddress) payload.billing_address = billingAddress;
+    if (address) payload.address = address;
+    if (tags) payload.tags = tags;
+    if (language) payload.language = language;
+    if (emailSub) payload.email_subscription = emailSub;
+    if (smsSub) payload.sms_subscription = smsSub;
 
     const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
         method: 'POST',
