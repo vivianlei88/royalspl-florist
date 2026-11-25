@@ -124,9 +124,15 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         fillIfBlank(patch, existing, 'billing_address', billingAddress);
         fillIfBlank(patch, existing, 'address', address);
         fillIfBlank(patch, existing, 'tags', tags);
-        fillIfBlank(patch, existing, 'language', language);
-        fillIfBlank(patch, existing, 'email_subscription', emailSub);
-        fillIfBlank(patch, existing, 'sms_subscription', smsSub);
+        if (forceName) {
+            if (language) patch.language = language;
+            if (emailSub) patch.email_subscription = emailSub;
+            if (smsSub) patch.sms_subscription = smsSub;
+        } else {
+            fillIfBlank(patch, existing, 'language', language);
+            fillIfBlank(patch, existing, 'email_subscription', emailSub);
+            fillIfBlank(patch, existing, 'sms_subscription', smsSub);
+        }
 
         await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${existing.id}`, {
             method: 'PATCH',
@@ -155,9 +161,15 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         fillIfBlank(patch, existingProfile, 'billing_address', billingAddress);
         fillIfBlank(patch, existingProfile, 'address', address);
         fillIfBlank(patch, existingProfile, 'tags', tags);
-        fillIfBlank(patch, existingProfile, 'language', language);
-        fillIfBlank(patch, existingProfile, 'email_subscription', emailSub);
-        fillIfBlank(patch, existingProfile, 'sms_subscription', smsSub);
+        if (forceName) {
+            if (language) patch.language = language;
+            if (emailSub) patch.email_subscription = emailSub;
+            if (smsSub) patch.sms_subscription = smsSub;
+        } else {
+            fillIfBlank(patch, existingProfile, 'language', language);
+            fillIfBlank(patch, existingProfile, 'email_subscription', emailSub);
+            fillIfBlank(patch, existingProfile, 'sms_subscription', smsSub);
+        }
         if (!existingProfile.source) patch.source = source;
         await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${authId}`, {
             method: 'PATCH',
