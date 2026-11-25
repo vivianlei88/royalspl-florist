@@ -3,7 +3,7 @@
 // 規則：
 //   - email 優先匹配，無 email 再用 phone 匹配；
 //   - 命中既有會員：僅補空白欄位（姓名/電話/Email），不覆蓋既有標籤、積分、訂單統計；
-//   - 未命中：新建會員檔案（臨時 id，不開通 auth 登錄帳號），source 標記「訂單收錄」；
+//   - 未命中：先在 auth 建立對應用戶（臨時密碼、不發送重置郵件），再以其 UUID 建 profile；
 //   - 服務端二次查詢保證冪等，重複調用不會重複建檔。
 // 請求格式：
 //   單條：{ name, phone, email, orderCode }
@@ -23,6 +23,37 @@ function normalizeEmail(v) {
 
 function normalizeText(v) {
     return String(v || '').trim();
+}
+
+// 取得（必要時建立）auth 用戶 UUID；失敗返回 null
+async function getOrCreateAuthUser(SUPABASE_URL, headers, email, phone, name) {
+    const password = 'Temp' + Date.now() + '!' + Math.random().toString(36).slice(2, 10);
+    const body = {
+        password,
+        email_confirm: true,
+        phone_confirm: true,
+        user_metadata: { full_name: name },
+    };
+    if (email) body.email = email;
+    else if (phone) body.phone = phone;
+
+    const resp = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+
+    if (resp.ok && data && data.id) return data.id;
+
+    // email 已註冊：按 email 反查既有 auth 用戶
+    if (email) {
+        const q = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?filter=email.eq.${encodeURIComponent(email)}`, { headers });
+        const qj = await q.json();
+        const users = qj && (qj.users || qj);
+        if (Array.isArray(users) && users.length > 0) return users[0].id;
+    }
+    return null;
 }
 
 async function ensureMember(SUPABASE_URL, headers, record) {
@@ -62,10 +93,12 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         return { action: 'updated', id: existing.id };
     }
 
-    // 2. 新建會員檔案（臨時帳號，不發送郵件）
-    const newId = crypto.randomUUID();
+    // 2. 先在 auth 建立對應用戶（不發送重置郵件），取其 UUID 建 profile
+    const authId = await getOrCreateAuthUser(SUPABASE_URL, headers, email, phone, name);
+    if (!authId) return { action: 'skipped', reason: 'auth_user_unavailable' };
+
     const payload = {
-        id: newId,
+        id: authId,
         full_name: name,
         email: email,
         phone: phone,
@@ -85,7 +118,7 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         const errText = await r.text();
         throw new Error('建立會員失敗: ' + errText);
     }
-    return { action: 'created', id: newId, orderCode };
+    return { action: 'created', id: authId, orderCode };
 }
 
 export async function onRequestPost(context) {
