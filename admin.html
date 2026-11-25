@@ -9477,7 +9477,11 @@ function setShippingScope(v) {
             const [loading, setLoading] = React.useState(false);
             const [syncing, setSyncing] = React.useState(false);
 
-            React.useEffect(() => { loadMembers(); }, []);
+            React.useEffect(() => {
+                loadMembers();
+                // 進入會員管理時自動從訂單同步尚未收錄的客戶，無需手動操作
+                syncOrdersToMembers({ silent: true });
+            }, []);
 
             const loadMembers = async () => {
                 setLoading(true);
@@ -9539,9 +9543,11 @@ function setShippingScope(v) {
             };
 
             // 從歷史訂單把訂購人收錄進會員管理（服務端按 email/phone 去重，不重複建檔）
-            const syncOrdersToMembers = async () => {
-                if (!window.confirm('將從歷史訂單把訂購人姓名、電話、Email 收錄進會員管理，是否繼續？')) return;
-                setSyncing(true);
+            // silent=true：進入頁面自動後台同步，不彈確認框、不彈結果提示；手動點鈕時走默認互動流程
+            const syncOrdersToMembers = async (opts) => {
+                const silent = !!(opts && opts.silent);
+                if (!silent && !window.confirm('將從歷史訂單把訂購人姓名、電話、Email 收錄進會員管理，是否繼續？')) return;
+                if (!silent) setSyncing(true);
                 try {
                     const { data, error } = await window.supabaseClient
                         .from('orders')
@@ -9555,20 +9561,24 @@ function setShippingScope(v) {
                             orderCode: o.order_code || ''
                         }))
                         .filter(r => (r.email && r.email.trim()) || (r.phone && r.phone.trim()));
-                    if (records.length === 0) { alert('沒有可收錄的訂單客戶'); return; }
+                    if (records.length === 0) { if (!silent) alert('沒有可收錄的訂單客戶'); return; }
                     const resp = await fetch('/sync-member', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ orders: records })
                     });
                     const res = await resp.json();
-                    alert('同步完成：新增 ' + (res.created || 0) + ' 位、補全 ' + (res.updated || 0) + ' 位、略過 ' + (res.skipped || 0) + ' 位' + (res.failed ? '，失敗 ' + res.failed : ''));
+                    if (!silent) {
+                        alert('同步完成：新增 ' + (res.created || 0) + ' 位、補全 ' + (res.updated || 0) + ' 位、略過 ' + (res.skipped || 0) + ' 位' + (res.failed ? '，失敗 ' + res.failed : ''));
+                    } else {
+                        console.log('自動訂單同步完成:', res);
+                    }
                     loadMembers();
                 } catch (e) {
                     console.error('訂單同步會員失敗:', e);
-                    alert('同步失敗：' + (e.message || e));
+                    if (!silent) alert('同步失敗：' + (e.message || e));
                 } finally {
-                    setSyncing(false);
+                    if (!silent) setSyncing(false);
                 }
             };
 
