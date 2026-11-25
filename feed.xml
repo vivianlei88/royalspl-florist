@@ -2426,5 +2426,41 @@
         <g:price>150.00 HKD</g:price>
       </g:shipping>
     </item>
+    <item>
+      <g:id>PROD-407</g:id>
+      <g:title>Peony Hydrangea Garden Rose Bucket</g:title>
+      <g:description>Peony, Hydrangea and Garden Rose Bucket, featuring full peonies, soft hydrangeas and layered garden roses with light accent flowers arranged into a lush standing bucket. Layered blooms in gentle elegant tones — peonies symbolize beauty and prosperity, roses convey deep romance, and hydrangeas express caring sentiments. Ideal for birthdays, anniversaries, proposals, Mother's Day, gifting to friends, and corporate gifting. RoyalSpl Florist Hong Kong, fresh blooms in stock with same-day delivery across Hong Kong; complimentary greeting card, vase available as an add-on.</g:description>
+      <g:link>https://www.royalspl.shop/en/product-detail?id=407</g:link>
+      <g:image_link>https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/royalspl-florist/1795646424425-c4rgwb.webp</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>780.00 HKD</g:price>
+      <g:brand>RoyalSpl Florist</g:brand>
+      <g:google_product_category>Fresh Flowers</g:google_product_category>
+      <g:product_type>Fresh Flowers &gt; Bouquets</g:product_type>
+      <g:condition>new</g:condition>
+      <g:shipping>
+        <g:country>HK</g:country>
+        <g:service>Standard Delivery</g:service>
+        <g:price>150.00 HKD</g:price>
+      </g:shipping>
+    </item>
+    <item>
+      <g:id>PROD-408</g:id>
+      <g:title>Carnation Eustoma Garden Rose Bucket</g:title>
+      <g:description>Carnation, Eustoma and Garden Rose Bucket, featuring ruffled carnations and lisianthus paired with soft pink garden roses and creamy white spray roses in a lush standing bucket. Rich layers in a gentle romantic mood — carnations convey warm affection, lisianthus symbolize lasting sincerity, and roses express deep love. Ideal for birthdays, anniversaries, confessions, Mother's Day, get-well wishes, and gifting to friends. RoyalSpl Florist Hong Kong, fresh blooms in stock with same-day delivery across Hong Kong; complimentary greeting card, vase available as an add-on.</g:description>
+      <g:link>https://www.royalspl.shop/en/product-detail?id=408</g:link>
+      <g:image_link>https://pub-aed48a8286cf45d29bfc6eeefeb882fd.r2.dev/royalspl-florist/1795646430887-13m52a.webp</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>680.00 HKD</g:price>
+      <g:brand>RoyalSpl Florist</g:brand>
+      <g:google_product_category>Fresh Flowers</g:google_product_category>
+      <g:product_type>Fresh Flowers &gt; Bouquets</g:product_type>
+      <g:condition>new</g:condition>
+      <g:shipping>
+        <g:country>HK</g:country>
+        <g:service>Standard Delivery</g:service>
+        <g:price>150.00 HKD</g:price>
+      </g:shipping>
+    </item>
   </channel>
 </rss>
