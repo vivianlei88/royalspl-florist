@@ -9475,6 +9475,7 @@ function setShippingScope(v) {
             const [selected, setSelected] = React.useState([]);
             const [search, setSearch] = React.useState('');
             const [loading, setLoading] = React.useState(false);
+            const [syncing, setSyncing] = React.useState(false);
 
             React.useEffect(() => { loadMembers(); }, []);
 
@@ -9537,6 +9538,40 @@ function setShippingScope(v) {
                 reader.readAsText(file);
             };
 
+            // 從歷史訂單把訂購人收錄進會員管理（服務端按 email/phone 去重，不重複建檔）
+            const syncOrdersToMembers = async () => {
+                if (!window.confirm('將從歷史訂單把訂購人姓名、電話、Email 收錄進會員管理，是否繼續？')) return;
+                setSyncing(true);
+                try {
+                    const { data, error } = await window.supabaseClient
+                        .from('orders')
+                        .select('customer_name, customer_phone, customer_email, order_code');
+                    if (error) throw error;
+                    const records = (data || [])
+                        .map(o => ({
+                            name: o.customer_name || '',
+                            phone: o.customer_phone || '',
+                            email: o.customer_email || '',
+                            orderCode: o.order_code || ''
+                        }))
+                        .filter(r => (r.email && r.email.trim()) || (r.phone && r.phone.trim()));
+                    if (records.length === 0) { alert('沒有可收錄的訂單客戶'); return; }
+                    const resp = await fetch('/sync-member', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orders: records })
+                    });
+                    const res = await resp.json();
+                    alert('同步完成：新增 ' + (res.created || 0) + ' 位、補全 ' + (res.updated || 0) + ' 位、略過 ' + (res.skipped || 0) + ' 位' + (res.failed ? '，失敗 ' + res.failed : ''));
+                    loadMembers();
+                } catch (e) {
+                    console.error('訂單同步會員失敗:', e);
+                    alert('同步失敗：' + (e.message || e));
+                } finally {
+                    setSyncing(false);
+                }
+            };
+
             const filtered = members.filter(m =>
                 !search || (m.full_name || '').includes(search) || (m.email || '').includes(search)
             );
@@ -9553,6 +9588,7 @@ function setShippingScope(v) {
                             onChange: (e) => setSearch(e.target.value),
                             style: { padding: '8px 12px', border: '1px solid #ddd', borderRadius: '5px', fontSize: '14px' }
                         }),
+                        React.createElement('button', { className: 'btn btn-secondary', onClick: syncOrdersToMembers, disabled: syncing }, syncing ? '同步中...' : '從訂單同步'),
                         React.createElement('button', { className: 'btn btn-secondary', onClick: exportCSV }, '匯出 CSV'),
                         React.createElement('label', { className: 'btn btn-primary', style: { cursor: 'pointer' } },
                             '匯入 CSV',

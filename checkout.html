@@ -907,6 +907,10 @@
                     subtotal: getSubtotal(), deliveryFee: getDeliveryFee(), total: getTotal(),
                     paymentMethod: 'wallet'
                 }));
+                await syncMemberFromOrder(
+                    orderExtra.contactName || (paymentMethod && paymentMethod.billing_details ? paymentMethod.billing_details.name : ''),
+                    orderExtra.contactPhone, customerEmail, orderCode
+                );
                 return { success: true, orderId: newOrder[0].id, orderCode: orderCode };
             }
             return { success: false, error: '訂單創建失敗' };
@@ -932,6 +936,22 @@
     };
 
     function getEffectiveArea() { return detectedArea || manualArea; }
+
+    // 下單成功後把訂購人自動收錄進會員管理（失敗不阻斷下單流程）
+    async function syncMemberFromOrder(customerName, customerPhone, customerEmail, orderCode) {
+        try {
+            await fetch('/sync-member', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: customerName || '',
+                    phone: customerPhone || '',
+                    email: customerEmail || '',
+                    orderCode: orderCode || ''
+                })
+            });
+        } catch (e) { console.warn('會員收錄失敗:', e); }
+    }
 
     async function loadGlobalShippingConfig() {
         try {
@@ -1465,6 +1485,12 @@
                     }
                 }));
 
+                await syncMemberFromOrder(
+                    orderExtra.contactName || orderData.recipientName,
+                    orderExtra.contactPhone || orderData.recipientPhone,
+                    customerEmail, orderCode
+                );
+
                 // 清空購物車
                 if (isBuyNow) {
                     sessionStorage.removeItem('royalspl_buynow');
@@ -1629,6 +1655,12 @@
                         timeSlot: orderData.deliveryTimeSlot
                     }
                 }));
+
+                await syncMemberFromOrder(
+                    orderExtra.contactName || orderData.recipientName,
+                    orderExtra.contactPhone || orderData.recipientPhone,
+                    customerEmail, orderCode
+                );
 
                 if (clientSecret && window.Stripe) {
                     // 內嵌確認付款
