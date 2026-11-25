@@ -90,6 +90,7 @@ async function ensureMember(SUPABASE_URL, headers, record) {
     const language = normalizeLang(record.language);
     const emailSub = normalizeSub(record.email_subscription);
     const smsSub = normalizeSub(record.sms_subscription);
+    const forceName = record.forceName === true;
 
     // 沒有任何聯絡方式，無法建檔
     if (!email && !phone) return { action: 'skipped', reason: 'no_contact' };
@@ -115,7 +116,8 @@ async function ensureMember(SUPABASE_URL, headers, record) {
     if (existing) {
         // 僅補空白欄位，不覆蓋已有資料 / 標籤 / 積分
         const patch = { last_active: new Date().toISOString() };
-        fillIfBlank(patch, existing, 'full_name', name);
+        if (forceName && name) patch.full_name = name;
+        else fillIfBlank(patch, existing, 'full_name', name);
         fillIfBlank(patch, existing, 'phone', phone);
         fillIfBlank(patch, existing, 'email', email);
         fillIfBlank(patch, existing, 'shipping_address', shippingAddress);
@@ -145,7 +147,8 @@ async function ensureMember(SUPABASE_URL, headers, record) {
 
     if (existingProfile) {
         const patch = { last_active: new Date().toISOString() };
-        fillIfBlank(patch, existingProfile, 'full_name', name);
+        if (forceName && name) patch.full_name = name;
+        else fillIfBlank(patch, existingProfile, 'full_name', name);
         fillIfBlank(patch, existingProfile, 'phone', phone);
         fillIfBlank(patch, existingProfile, 'email', email);
         fillIfBlank(patch, existingProfile, 'shipping_address', shippingAddress);
