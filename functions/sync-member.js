@@ -93,9 +93,28 @@ async function ensureMember(SUPABASE_URL, headers, record) {
         return { action: 'updated', id: existing.id };
     }
 
-    // 2. 先在 auth 建立對應用戶（不發送重置郵件），取其 UUID 建 profile
+    // 2. 先在 auth 建立對應用戶（不發送重置郵件），取其 UUID
     const authId = await getOrCreateAuthUser(SUPABASE_URL, headers, email, phone, name);
     if (!authId) return { action: 'skipped', reason: 'auth_user_unavailable' };
+
+    // 觸發器通常會為新 auth 用戶自動建一條空 profile；先回查，存在則補全，不存在才新增
+    const existingR = await fetch(`${SUPABASE_URL}/rest/v1/profiles?select=*&id=eq.${authId}&limit=1`, { headers });
+    const existingJ = await existingR.json();
+    const existingProfile = Array.isArray(existingJ) && existingJ.length > 0 ? existingJ[0] : null;
+
+    if (existingProfile) {
+        const patch = { last_active: new Date().toISOString() };
+        if (!existingProfile.full_name && name) patch.full_name = name;
+        if (!existingProfile.phone && phone) patch.phone = phone;
+        if (!existingProfile.email && email) patch.email = email;
+        if (!existingProfile.source) patch.source = '訂單收錄';
+        await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${authId}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(patch),
+        });
+        return { action: 'updated', id: authId, orderCode };
+    }
 
     const payload = {
         id: authId,
